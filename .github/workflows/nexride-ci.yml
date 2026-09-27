@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  build:
+  qa:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -19,5 +19,18 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm install
+      - name: Unit tests
+        run: npm test
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium webkit
+      - name: E2E tests
+        run: npm run test:e2e
       - name: Production build
         run: npm run build
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nexride-playwright-report
+          path: playwright-report/
+          if-no-files-found: ignore
