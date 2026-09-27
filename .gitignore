@@ -1,0 +1,24 @@
+# local environment
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Next.js
+.next/
+out/
+
+# dependencies
+node_modules/
+
+# Playwright
+playwright-report/
+test-results/
+
+# Vercel
+.vercel/
+
+# misc
+.DS_Store
+*.log
