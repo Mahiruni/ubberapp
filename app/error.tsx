@@ -1,0 +1,2 @@
+'use client';
+export default function Error({reset}:{error:Error&{digest?:string};reset:()=>void}){return <main className="app error-screen"><div className="error-card"><span className="eyebrow">NEXRIDE</span><h1>We hit a temporary problem.</h1><p>Your trip data is protected. Try again, or return to the ride screen.</p><div><button onClick={()=>reset()} className="primary">Try again <span>→</span></button><button onClick={()=>window.location.assign('/')} className="error-home">Back to NexRide</button></div></div></main>}
