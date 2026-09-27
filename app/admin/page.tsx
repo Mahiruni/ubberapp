@@ -104,9 +104,9 @@ export default function AdminPage(){
  };
 
  const filtered=useMemo(()=>{const q=query.trim().toLowerCase();if(!q)return rows;return rows.filter(r=>Object.values(r).some(v=>String(v??'').toLowerCase().includes(q)))},[rows,query]);
- const active=Number(metrics.trips||0);
+ const active=Number(metrics.active_rides||0);
  const revenue=Number(metrics.revenue_minor||0)/100;
- const drivers=Number(metrics.drivers||0);
+ const drivers=Number(metrics.online_drivers||0);
  const customers=Number(metrics.customers||0);
 
  if(loading)return <div className="admin-loading"><span/>Securing NexRide Control Center…</div>;
