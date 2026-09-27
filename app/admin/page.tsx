@@ -31,9 +31,10 @@ export default function AdminPage(){
 
  useEffect(()=>{
    if(!supabase){setLoading(false);return}
-   supabase.auth.getSession().then(({data})=>{setSession(data.session);if(data.session)checkAdmin(data.session.user.id);else setLoading(false)});
+   const failSafe=window.setTimeout(()=>setLoading(false),2500);
+   supabase.auth.getSession().then(({data})=>{setSession(data.session);if(data.session)checkAdmin(data.session.user.id);else setLoading(false)}).catch(()=>setLoading(false));
    const {data:{subscription}}=supabase.auth.onAuthStateChange((_e,s)=>{setSession(s);if(s)checkAdmin(s.user.id);else{setAdmin(null);setLoading(false)}});
-   return()=>subscription.unsubscribe();
+   return()=>{window.clearTimeout(failSafe);subscription.unsubscribe()};
  },[]);
 
  const checkAdmin=async(userId:string)=>{
