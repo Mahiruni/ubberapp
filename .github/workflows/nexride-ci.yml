@@ -13,8 +13,8 @@ jobs:
       NEXT_PUBLIC_APP_NAME: NexRide
       NEXT_PUBLIC_APP_ENV: test
       NEXT_PUBLIC_APP_URL: http://localhost:3000
-      NEXT_PUBLIC_SUPABASE_URL: https://ci-placeholder.supabase.co
-      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
+      NEXT_PUBLIC_SUPABASE_URL: https://mrbgtdrpscdoxwdgvfcs.supabase.co
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_7iNsTBn4QsGPZPkX2nOULA_awelYkSl
       NEXT_PUBLIC_MAPBOX_TOKEN: pk.ci-placeholder
     steps:
       - name: Checkout
