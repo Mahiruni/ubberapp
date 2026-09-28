@@ -78,3 +78,14 @@ button:disabled{cursor:not-allowed;opacity:.55;transform:none!important;box-shad
 html[lang="am"] .onboard-copy h1,html[lang="am"] .driver-setup h2{line-height:1.22}
 
 .onboard-auth{display:grid;gap:8px;margin:10px 0 2px}.onboard-auth input,.onboard-auth button{height:46px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2);color:var(--text);padding:0 13px;font:inherit;font-size:12px}.onboard-auth button{font-weight:850}.onboard-auth>div{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:10px;justify-content:center}.onboard-auth>div span{height:1px;background:var(--line);flex:1}
+
+
+/* Real Addis taxi welcome visual */
+.onboard-taxi-visual{background:#dce7e4;isolation:isolate}
+.onboard-taxi-visual:before{display:none}
+.onboard-taxi-visual img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;filter:saturate(1.03) contrast(1.02);transform:scale(1.01)}
+.onboard-taxi-visual:after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(3,12,18,.08) 0%,rgba(3,12,18,.03) 46%,rgba(3,12,18,.58) 100%);z-index:1}
+.onboard-taxi-overlay{position:absolute;z-index:2;left:18px;right:18px;bottom:17px;display:flex;align-items:end;justify-content:space-between;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.3)}
+.onboard-taxi-overlay b{font-size:13px;letter-spacing:.08em}
+.onboard-taxi-overlay span{font-size:9px;font-weight:900;letter-spacing:.16em;opacity:.88}
+@media(max-width:650px){.onboard-taxi-visual img{object-position:center}.onboard-taxi-overlay{left:15px;right:15px;bottom:14px}}
