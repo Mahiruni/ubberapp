@@ -82,3 +82,66 @@
  .driver-map-hero{box-shadow:0 22px 60px rgba(8,25,38,.14)}
  .driver-demand-card{backdrop-filter:blur(28px) saturate(155%)}
 }
+
+
+/* Orange daylight mobility direction — applied to rider surfaces */
+:root{--nex-orange:#FF6B00;--nex-orange-dark:#e85f00;--nex-orange-soft:#fff1e7;--nex-white:#fff;--nex-gray:#f4f5f6}
+.app{background:#f7f7f6}
+.topbar{background:rgba(255,255,255,.86);border-color:rgba(15,20,25,.06);backdrop-filter:blur(22px) saturate(145%)}
+.primary{background:var(--nex-orange)!important;border-color:var(--nex-orange)!important;box-shadow:0 14px 30px rgba(255,107,0,.22)}
+.primary:hover{background:var(--nex-orange-dark)!important;box-shadow:0 18px 38px rgba(255,107,0,.26)}
+.nav.active{color:var(--nex-orange);background:var(--nex-orange-soft)}
+.nav.active .nav-icon{background:var(--nex-orange);color:#fff;box-shadow:0 8px 18px rgba(255,107,0,.2)}
+.map-card.parking-surface{border-radius:28px;overflow:hidden;background:#ececeb;box-shadow:0 28px 70px rgba(23,27,30,.13);position:relative}
+.map-card.parking-surface .live-map{filter:saturate(.82) contrast(.98) brightness(1.04)}
+.parking-surface:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(255,255,255,.24),transparent 36%,rgba(255,255,255,.08));z-index:2}
+.parking-availability{position:absolute;z-index:5;left:18px;top:18px;display:flex;align-items:center;gap:10px;min-width:190px;padding:11px 13px;border:1px solid rgba(255,255,255,.88);border-radius:18px;background:rgba(255,255,255,.9);box-shadow:0 16px 36px rgba(18,22,26,.14);backdrop-filter:blur(22px) saturate(150%)}
+.parking-availability .availability-dot{width:10px;height:10px;border-radius:50%;background:var(--nex-orange);box-shadow:0 0 0 5px rgba(255,107,0,.12)}
+.parking-availability div{display:grid;gap:2px;flex:1}
+.parking-availability b{font-size:14px;letter-spacing:-.02em;color:#151719}
+.parking-availability small{font-size:9px;color:#74787d}
+.parking-availability>strong{font-size:11px;color:var(--nex-orange)}
+.parking-panel{background:rgba(255,255,255,.96);border:1px solid rgba(20,24,28,.06);box-shadow:0 24px 60px rgba(20,24,28,.09);border-radius:28px}
+.parking-panel .eyebrow{color:var(--nex-orange)}
+.parking-panel h1{letter-spacing:-.055em}
+.parking-panel .round{border-color:#ececec;background:#fff}
+.parking-panel .route-inputs label:focus-within{border-color:rgba(255,107,0,.4);box-shadow:0 0 0 4px rgba(255,107,0,.08)}
+.parking-panel .pin.blue{background:var(--nex-orange);box-shadow:0 0 0 4px rgba(255,107,0,.1)}
+.parking-panel .quick button:hover{background:var(--nex-orange-soft);color:var(--nex-orange)}
+.parking-panel .ride.selected{border-color:var(--nex-orange);background:#fff8f3;box-shadow:0 12px 28px rgba(255,107,0,.1)}
+.parking-panel .ride.selected .ride-symbol{background:var(--nex-orange);color:#fff}
+.parking-panel .fare-row strong{color:var(--nex-orange)}
+.schedule{color:var(--nex-orange)!important}
+.mobile-nav{background:rgba(255,255,255,.92);border-color:rgba(15,20,25,.08);box-shadow:0 16px 40px rgba(15,20,25,.14);backdrop-filter:blur(24px)}
+.mobile-nav .nav.active{background:var(--nex-orange-soft);color:var(--nex-orange)}
+.mobile-nav .nav.active .nav-icon{background:var(--nex-orange);color:#fff}
+.trip-grid .map-card{border-radius:28px;overflow:hidden;box-shadow:0 28px 70px rgba(10,14,18,.14)}
+.trip-status{border-color:rgba(255,107,0,.15)!important;box-shadow:0 16px 38px rgba(20,24,28,.12)}
+.trip-status b{color:var(--nex-orange)!important}
+.eta span{color:var(--nex-orange)!important}
+.trip-actions .danger{color:var(--nex-orange);border-color:rgba(255,107,0,.18)}
+@media(max-width:650px){
+ .home-grid{padding:8px 10px 88px;gap:10px}
+ .map-card.parking-surface{height:52vh;min-height:410px;max-height:560px;border-radius:24px}
+ .parking-availability{left:12px;top:12px;min-width:176px;padding:10px 11px;border-radius:16px}
+ .parking-panel{margin-top:-6px;border-radius:24px;padding:16px}
+ .parking-panel .primary{height:56px;border-radius:17px}
+ .parking-panel .ride-list{gap:7px}
+ .parking-panel .ride{min-height:62px;border-radius:15px}
+ .map-card.parking-surface .map-controls{z-index:6}
+}
+@media(min-width:651px){
+ .home-grid{grid-template-columns:minmax(0,1.35fr) minmax(390px,.65fr);gap:18px}
+ .map-card.parking-surface{min-height:700px}
+ .parking-panel{position:relative;z-index:4}
+}
+.app.dark{background:#08090a}
+.app.dark .topbar{background:rgba(15,15,16,.84);border-color:rgba(255,255,255,.08)}
+.app.dark .parking-panel{background:#111214;border-color:rgba(255,255,255,.07);color:#f5f5f5}
+.app.dark .parking-panel h1,.app.dark .parking-panel b{color:#f5f5f5}
+.app.dark .parking-panel .round{background:#17181a;border-color:#28292b;color:#fff}
+.app.dark .parking-panel .route-inputs label,.app.dark .parking-panel .ride{background:#17181a;border-color:#292a2d}
+.app.dark .parking-panel .ride.selected{background:#21160f;border-color:var(--nex-orange)}
+.app.dark .parking-availability{background:rgba(20,20,21,.88);border-color:rgba(255,255,255,.1)}
+.app.dark .parking-availability b{color:#fff}
+@media(prefers-reduced-motion:reduce){.primary,.parking-panel .ride,.mobile-nav .nav{transition:none!important}}
