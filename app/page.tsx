@@ -1,5 +1,5 @@
 'use client';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ComponentType } from 'react';
 import { supabase } from '../lib/supabase';
 import { ArrowRight, BriefcaseBusiness, CarFront, Check, ChevronRight, CircleAlert, CircleDollarSign, CircleHelp, Clock3, CreditCard, FileText, Home as HomeIcon, Layers3, LocateFixed, LogOut, MapPin, Menu, MessageCircle, Moon, Navigation, Phone, Plane, Settings2, Share2, ShieldCheck, Siren, SlidersHorizontal, Star, Sun, Tag, UserRound, UsersRound, WalletCards, X } from 'lucide-react';
 const iconMap={arrowRight:ArrowRight,briefcase:BriefcaseBusiness,car:CarFront,check:Check,chevronRight:ChevronRight,alert:CircleAlert,money:CircleDollarSign,help:CircleHelp,clock:Clock3,card:CreditCard,file:FileText,home:HomeIcon,layers:Layers3,locate:LocateFixed,logout:LogOut,pin:MapPin,menu:Menu,chat:MessageCircle,moon:Moon,navigation:Navigation,phone:Phone,plane:Plane,settings:Settings2,share:Share2,shield:ShieldCheck,sos:Siren,sliders:SlidersHorizontal,star:Star,sun:Sun,tag:Tag,user:UserRound,users:UsersRound,wallet:WalletCards,close:X} as const;
