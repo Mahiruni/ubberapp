@@ -1,0 +1,5 @@
+import type {SVGProps} from 'react';
+export type IconName='home'|'clock'|'wallet'|'shield'|'user'|'car'|'star'|'users'|'navigation'|'settings'|'help'|'sun'|'moon'|'menu'|'close'|'arrowRight'|'check'|'pin'|'plane'|'briefcase'|'chat'|'phone'|'share'|'sos'|'file'|'money'|'card'|'layers'|'locate'|'logout';
+const d:Record<IconName,string>={
+home:'M3 10l9-7 9 7M5 9v11h14V9M9 20v-6h6v6',clock:'M12 7v5l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18',wallet:'M3 6h18v13H3zM16 12h5',shield:'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6zM9 12l2 2 4-4',user:'M20 21a8 8 0 0 0-16 0M12 13a4 4 0 1 0 0-8 4 4 0 0 0 0 8'};
+export function Icon({name,size=20,strokeWidth=1.8,...p}:{name:IconName;size?:number;strokeWidth?:number}&SVGProps<SVGSVGElement>){return <svg {...p} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={d[name]}/></svg>}
