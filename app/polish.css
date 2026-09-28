@@ -758,3 +758,145 @@ body{font-size:var(--nx-body);line-height:1.5}
   .app:not(.dark) .driver-head h1{font-size:34px}
   .app:not(.dark) .map-card{border-radius:20px;min-height:390px}
 }
+
+
+/* =========================================================
+   NEXRIDE DRIVER HOME — DAYLIGHT DEMAND MAP
+   Reference direction: bright, map-first, high-key, tactile.
+   ========================================================= */
+.app:not(.dark) .driver-page .driver-map-hero{
+  position:relative;
+  min-height:560px;
+  overflow:hidden;
+  border-radius:28px;
+  border:1px solid rgba(10,37,64,.08);
+  background:#eaf0f4;
+  box-shadow:0 22px 65px rgba(10,37,64,.12);
+  isolation:isolate;
+  margin-bottom:18px;
+}
+.app:not(.dark) .driver-map-hero .live-map{
+  position:absolute;
+  inset:0;
+  min-height:0;
+  border:0;
+  border-radius:0;
+  box-shadow:none;
+}
+.driver-map-wash{
+  position:absolute;
+  inset:0;
+  z-index:2;
+  pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,255,255,.26),transparent 28%,rgba(255,255,255,.04) 62%,rgba(255,255,255,.28));
+}
+.demand-zone{
+  position:absolute;
+  z-index:3;
+  pointer-events:none;
+  border-radius:999px;
+  filter:blur(18px);
+  opacity:.72;
+}
+.demand-zone:after{
+  content:"";
+  position:absolute;
+  inset:18%;
+  border-radius:inherit;
+  border:2px solid rgba(255,255,255,.42);
+}
+.zone-a{
+  width:250px;height:170px;
+  left:16%;top:30%;
+  background:radial-gradient(circle,rgba(255,128,0,.72),rgba(255,69,58,.32) 48%,transparent 72%);
+  transform:rotate(-12deg);
+}
+.zone-b{
+  width:220px;height:150px;
+  right:13%;top:44%;
+  background:radial-gradient(circle,rgba(125,72,255,.72),rgba(83,54,220,.28) 48%,transparent 74%);
+  transform:rotate(14deg);
+}
+.demand-zone span{position:absolute;inset:0;display:grid;place-items:center;font-size:10px;font-weight:850;letter-spacing:.13em;color:#fff;text-shadow:0 1px 5px rgba(0,0,0,.3);filter:none}
+.driver-map-top{
+  position:absolute;
+  z-index:5;
+  top:18px;left:18px;right:18px;
+  display:flex;justify-content:space-between;align-items:center;gap:12px;
+  padding:13px 15px;
+  border:1px solid rgba(255,255,255,.72);
+  border-radius:17px;
+  background:rgba(255,255,255,.78);
+  box-shadow:0 12px 34px rgba(10,37,64,.13);
+  backdrop-filter:blur(18px) saturate(150%);
+}
+.driver-map-top>div:first-child{display:grid;gap:3px}
+.driver-map-top b{font-size:15px;letter-spacing:-.02em;color:var(--nx-ink)}
+.driver-map-status{
+  display:flex;align-items:center;gap:7px;
+  padding:8px 10px;border-radius:999px;
+  background:rgba(255,255,255,.75);
+  color:#334155;font-size:12px;font-weight:800;
+}
+.driver-map-status .dot{width:8px;height:8px;border-radius:50%;background:#94A3B8}
+.driver-map-status .dot.live{background:#00C853;box-shadow:0 0 0 5px rgba(0,200,83,.12)}
+.driver-opportunity{
+  position:absolute;
+  z-index:5;
+  left:18px;bottom:92px;
+  width:min(360px,calc(100% - 36px));
+  display:grid;gap:5px;
+  padding:16px 18px;
+  border:1px solid rgba(255,255,255,.78);
+  border-radius:19px;
+  background:rgba(255,255,255,.86);
+  box-shadow:0 18px 44px rgba(10,37,64,.15);
+  backdrop-filter:blur(20px) saturate(155%);
+}
+.driver-opportunity strong{font-size:19px;letter-spacing:-.03em;color:var(--nx-ink)}
+.driver-opportunity>span:last-child{font-size:13px;color:#64748B}
+.driver-go-online{
+  position:absolute;
+  z-index:6;
+  left:50%;bottom:20px;
+  transform:translateX(-50%);
+  width:min(330px,calc(100% - 36px));
+  min-height:58px;
+  border:0;
+  border-radius:17px;
+  background:#2979FF;
+  color:#fff;
+  font-size:16px;
+  font-weight:850;
+  letter-spacing:.01em;
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  box-shadow:0 14px 32px rgba(41,121,255,.30),0 3px 8px rgba(10,37,64,.12);
+  transition:transform .2s ease,box-shadow .2s ease,background-color .2s ease;
+}
+.driver-go-online:hover{transform:translateX(-50%) translateY(-1px);box-shadow:0 18px 38px rgba(41,121,255,.34)}
+.driver-go-online:active{transform:translateX(-50%) scale(.985)}
+.app:not(.dark) .driver-page .driver-toggle{
+  background:#2979FF;
+  color:#fff;
+  border-color:#2979FF;
+  box-shadow:0 10px 25px rgba(41,121,255,.22);
+}
+.app:not(.dark) .driver-page .driver-toggle.online{background:#00C853;border-color:#00C853;color:#052015}
+.app:not(.dark) .driver-page .primary{
+  background:#2979FF;
+  color:#fff;
+  box-shadow:0 10px 25px rgba(41,121,255,.20);
+}
+.app:not(.dark) .driver-page .primary:hover{box-shadow:0 14px 32px rgba(41,121,255,.28)}
+@media(max-width:650px){
+  .app:not(.dark) .driver-page .driver-map-hero{
+    min-height:500px;
+    margin:0 0 14px;
+    border-radius:22px;
+  }
+  .driver-map-top{top:12px;left:12px;right:12px;padding:11px 12px}
+  .driver-opportunity{left:12px;bottom:84px;width:calc(100% - 24px);padding:14px 15px}
+  .driver-go-online{bottom:14px;width:calc(100% - 24px);min-height:56px}
+  .zone-a{width:180px;height:130px;left:5%;top:32%}
+  .zone-b{width:160px;height:115px;right:2%;top:48%}
+}
