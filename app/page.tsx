@@ -29,7 +29,8 @@ export default function Home(){
    setCoords(savedCoords);
    setDriverOnline(cacheGet('driver-online',false));
    const completed=cacheGet('onboarding-complete',false); if(!completed){setOnboarding('rider');setOnboardStep(0)}
-   setOnline(navigator.onLine);\n   if(!navigator.geolocation){setLocationFresh(false);}
+   setOnline(navigator.onLine);
+   if(!navigator.geolocation){setLocationFresh(false);}
    const onOnline=()=>{setOnline(true);toast('Connection restored · NexRide is synced')};
    const onOffline=()=>{setOnline(false);toast('Weak connection · cached essentials remain available')};
    window.addEventListener('online',onOnline); window.addEventListener('offline',onOffline);
