@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import './polish.css';
+import './premium-overrides.css';
 
 export const metadata: Metadata = {
   title: 'NexRide',
@@ -22,7 +23,7 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
-  themeColor: '#0A2540',
+  themeColor: '#F7F8FA',
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
