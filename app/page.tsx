@@ -87,13 +87,20 @@ export default function Home(){
   {screen==='profile'&&<div className="page"><PageTitle title="Profile" sub="Your NexRide account and preferences."/><div className="profile-card"><div className="avatar large">MA</div><div><h2>Mahir Aman</h2><p>Verified rider · ★ 4.9</p></div><button onClick={()=>toast('Profile editor opened')}>Edit profile</button></div><div className="settings"><button onClick={()=>{setScreen('driver');setDriverTab('overview');resumeOnboarding('driver')}}><span>▣</span><div><b>Driver mode</b><small>Switch between rider and driver workspace</small></div><em>→</em></button><button onClick={()=>setStop(!stop)}><span>＋</span><div><b>Multiple stops</b><small>{stop?'Enabled for this ride':'Add an extra stop when booking'}</small></div><em>{stop?'✓':'→'}</em></button><button onClick={()=>setLanguage(lang==='EN'?'AM':'EN')}><span>文</span><div><b>Language</b><small>{lang==='EN'?'English':'አማርኛ'}</small></div><em>→</em></button></div></div>}
   {screen==='driver'&&<DriverWorkspace tab={driverTab} setTab={setDriverTab} online={driverOnline} setOnline={setDriverOnline} onDriverOnline={setDriverOnlineBackend} onDriverAccept={acceptDriverRequest} onDriverStage={advanceDriverStage} requestOpen={requestOpen} setRequestOpen={setRequestOpen} requestAccepted={requestAccepted} setRequestAccepted={setRequestAccepted} stage={driverStage} nextStage={nextStage} stageLabel={stageLabel} openMaps={openMaps} earnPeriod={earnPeriod} setEarnPeriod={setEarnPeriod} area={area} setArea={setArea} destinationFilter={destinationFilter} setDestinationFilter={setDestinationFilter} quietHours={quietHours} setQuietHours={setQuietHours} ridePrefs={ridePrefs} setRidePrefs={setRidePrefs} docs={docs} setDocs={setDocs} reportOpen={reportOpen} setReportOpen={setReportOpen} toast={toast}/>}
   <footer><span>© 2026 NexRide</span><span>Built for clear, confident movement.</span><button onClick={()=>toast('Terms opened')}>Terms</button><button onClick={()=>toast('Privacy opened')}>Privacy</button></footer></section>{notice&&<div className="toast">✓ {notice}</div>}
- <MobileNav screen={screen} onNavigate={(next)=>setScreen(next)} />
+ <MobileNav screen={screen} driverTab={driverTab} onNavigate={(next)=>setScreen(next)} onDriverTab={setDriverTab} />
  </main>
 }
 
 
-function MobileNav({screen,onNavigate}:{screen:Screen;onNavigate:(next:Screen)=>void}){
- return <nav className="mobile-nav" aria-label="Primary navigation">
+function MobileNav({screen,driverTab,onNavigate,onDriverTab}:{screen:Screen;driverTab:DriverTab;onNavigate:(next:Screen)=>void;onDriverTab:(next:DriverTab)=>void}){
+ if(screen==='driver') return <nav className="mobile-nav driver-mobile-nav" aria-label="Driver navigation">
+  <Nav icon="⌂" text="Overview" active={driverTab==='overview'} onClick={()=>onDriverTab('overview')}/>
+  <Nav icon="↗" text="Requests" active={driverTab==='requests'} onClick={()=>onDriverTab('requests')}/>
+  <Nav icon="ETB" text="Earnings" active={driverTab==='earnings'} onClick={()=>onDriverTab('earnings')}/>
+  <Nav icon="⚙" text="Prefs" active={driverTab==='preferences'} onClick={()=>onDriverTab('preferences')}/>
+  <Nav icon="!" text="Safety" active={driverTab==='safety'} onClick={()=>onDriverTab('safety')}/>
+ </nav>;
+ return <nav className="mobile-nav" aria-label="Rider navigation">
   <Nav icon="⌂" text="Ride" active={screen==='home'||screen==='rides'} onClick={()=>onNavigate('home')}/>
   <Nav icon="◷" text="Trips" active={screen==='history'} onClick={()=>onNavigate('history')}/>
   <Nav icon="▱" text="Wallet" active={screen==='wallet'} onClick={()=>onNavigate('wallet')}/>
