@@ -478,3 +478,53 @@ svg.lucide{
 .map-controls button{width:42px;height:42px;border-radius:14px}
 .map-credit{position:relative;z-index:6}
 
+
+
+/* --- NexRide header + typography standard --- */
+:root{
+  --nx-display:32px;
+  --nx-title-1:24px;
+  --nx-title-2:20px;
+  --nx-body:16px;
+  --nx-body-small:14px;
+  --nx-caption:12px;
+  --nx-button:16px;
+}
+body{font-size:var(--nx-body);line-height:1.5}
+.topbar{
+  min-height:64px;height:64px;
+  padding:0 28px;
+  padding-top:env(safe-area-inset-top);
+  box-sizing:content-box;
+  display:flex;align-items:center;
+}
+.topbar strong{font-size:var(--nx-title-2);line-height:1.2;letter-spacing:-.025em}
+.eyebrow{font-size:var(--nx-caption);line-height:1.2;font-weight:750}
+.top-actions{gap:8px}
+.top-actions button{font-size:var(--nx-body-small)}
+.panel-head h1,.trip-panel h1{font-size:var(--nx-display);line-height:1.08}
+.page-title h1,.driver-head h1{font-size:var(--nx-display);line-height:1.08}
+.page-title p{font-size:var(--nx-body-small);line-height:1.6}
+.page h2,.settings h2,.safety-card h2,.profile-card h2{font-size:var(--nx-title-2);line-height:1.25}
+.ride strong,.fare-row strong,.driver-kpis strong{font-size:var(--nx-title-2)}
+.ride,.history-row,.request-row,.quick button{font-size:var(--nx-body-small)}
+.primary,.onboard-next{font-size:var(--nx-button);font-weight:750}
+.route-inputs input{font-size:var(--nx-body)}
+.coords,.map-credit,.caption,.eyebrow{font-size:var(--nx-caption)}
+.onboard-copy h1{font-size:var(--nx-display);line-height:1.08}
+.onboard-copy p{font-size:var(--nx-body);line-height:1.6}
+.onboard-tagline{display:flex;flex-direction:column;gap:5px;margin:0 0 18px}
+.onboard-tagline strong{font-size:var(--nx-title-2);line-height:1.25;letter-spacing:-.02em;color:var(--text)}
+.onboard-tagline span{font-size:var(--nx-caption);line-height:1.4;color:var(--muted);letter-spacing:.01em}
+@media(max-width:650px){
+  .topbar{
+    height:56px;min-height:56px;
+    padding:0 14px;
+    padding-top:env(safe-area-inset-top);
+  }
+  .topbar strong{font-size:18px}
+  .content{padding-top:12px}
+  .page{padding-top:24px}
+  .panel-head h1,.trip-panel h1,.onboard-copy h1,.page-title h1,.driver-head h1{font-size:30px}
+  .onboard-tagline{margin-bottom:16px}
+}
