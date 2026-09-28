@@ -254,3 +254,87 @@ button,input,.nav,.ride,.big-ride,.quick button,.map-controls button,.primary{
   }
   .mobile-nav .nav:hover{background:rgba(0,200,83,.07);color:var(--text)}
 }
+
+/* --- Award-level finishing pass: tactile states, readability, and mobile ergonomics --- */
+.app{
+  text-rendering:optimizeLegibility;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+button{-webkit-tap-highlight-color:transparent}
+button:active:not(:disabled){transform:scale(.985)}
+input::placeholder{color:var(--muted);opacity:.72}
+.route-inputs input{font-size:15px;font-weight:650}
+.suggestions button:focus-visible,.ride:focus-visible,.quick button:focus-visible,.primary:focus-visible{
+  outline:3px solid rgba(41,121,255,.28);
+  outline-offset:2px;
+}
+.ride strong,.fare-row strong,.driver-kpis strong,.earnings-hero strong,.metric strong{
+  font-variant-numeric:tabular-nums;
+}
+.network-banner{
+  border:1px solid rgba(234,179,8,.25);
+  box-shadow:0 8px 24px rgba(10,37,64,.06);
+}
+.driver-page .driver-nav{
+  border-bottom-color:var(--nx-line);
+}
+.driver-page .driver-nav button{
+  min-height:44px;
+  border-radius:11px;
+  font-weight:750;
+}
+.driver-page .driver-nav button.active{
+  box-shadow:inset 0 -2px var(--nx-green);
+}
+.driver-toggle{
+  min-width:132px;
+  min-height:52px;
+  border-radius:15px;
+}
+.request-actions .primary,.flow-actions .primary,.request-row-actions .primary{
+  min-height:52px;
+}
+.safety-card button,.preference-card button,.documents-card button,.vehicle-card button{
+  min-height:44px;
+}
+.modal{
+  border-radius:20px;
+  box-shadow:var(--nx-shadow-2);
+}
+@media(max-width:650px){
+  .top-actions .help{display:none}
+  .topbar strong{max-width:190px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mobile-nav{
+    padding-bottom:calc(7px + env(safe-area-inset-bottom));
+    bottom:calc(8px + env(safe-area-inset-bottom));
+  }
+  .driver-mobile-nav .nav{
+    min-height:58px;
+  }
+  .driver-mobile-nav .nav span:first-child{
+    font-size:15px;
+    font-variant-numeric:tabular-nums;
+  }
+  .driver-page .driver-head{
+    gap:16px;
+  }
+  .driver-page .driver-head h1{
+    font-size:36px;
+  }
+  .driver-page .driver-toggle{
+    width:100%;
+  }
+  .driver-page .driver-nav{
+    display:none;
+  }
+  .request-actions{
+    grid-template-columns:1fr;
+  }
+  .request-actions .primary{
+    order:-1;
+  }
+}
+@media(min-width:651px){
+  .mobile-nav{display:none!important}
+}
