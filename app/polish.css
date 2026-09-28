@@ -460,3 +460,14 @@ svg.lucide{
 @media(prefers-reduced-motion:reduce){
   .menu-backdrop,.app-menu{animation:none}
 }
+
+/* Unified SVG icon geometry */
+.lucide-icon{display:inline-block;flex:0 0 auto;vertical-align:middle;color:currentColor}
+.nav-icon{width:22px;height:22px;display:grid;place-items:center;flex:0 0 22px}
+.nav-icon .lucide-icon{width:19px;height:19px}
+.nav{gap:10px}
+.nav>span:last-child{min-width:0}
+.ride-symbol{width:42px;height:42px;display:grid;place-items:center;border-radius:12px;color:var(--nx-ink);background:rgba(10,37,64,.055)}
+.ride.selected .ride-symbol{color:var(--nx-green);background:rgba(0,200,83,.10)}
+.quick button,.help,.round,.map-controls button,.flow-actions button,.schedule,.share,.cancel,.trust-badge{display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.help svg,.round svg,.quick svg,.map-controls svg,.flow-actions svg,.share svg,.trust-badge svg{flex:0 0 auto}
