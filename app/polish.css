@@ -471,3 +471,9 @@ svg.lucide{
 .ride.selected .ride-symbol{color:var(--nx-green);background:rgba(0,200,83,.10)}
 .quick button,.help,.round,.map-controls button,.flow-actions button,.schedule,.share,.cancel,.trust-badge{display:inline-flex;align-items:center;justify-content:center;gap:8px}
 .help svg,.round svg,.quick svg,.map-controls svg,.flow-actions svg,.share svg,.trust-badge svg{flex:0 0 auto}
+
+.live-map{overflow:hidden;background:#e9eef2}
+.google-map-frame{position:absolute;inset:0;width:100%;height:100%;border:0}
+.map-controls{z-index:5}
+.map-controls button{width:42px;height:42px;border-radius:14px}
+.map-credit{position:relative;z-index:6}
