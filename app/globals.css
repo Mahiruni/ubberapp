@@ -64,3 +64,21 @@
 }
 @media(min-width:651px){.driver-map-hero{height:680px}.driver-map-stats{max-width:520px}.driver-mobile-tabs{display:none}}
 @media(prefers-reduced-motion:reduce){.driver-go-online,.driver-map-tools>button{transition:none!important}}
+
+
+/* Award UX polish — remove legacy onboarding imagery and sharpen interaction hierarchy */
+.onboard-visual{position:relative;overflow:hidden;background:linear-gradient(145deg,#f6f8f7,#e8eeeb);border:1px solid rgba(20,35,45,.07);box-shadow:inset 0 1px rgba(255,255,255,.9)}
+.onboard-visual:before{content:"";position:absolute;width:180px;height:180px;border-radius:50%;right:-55px;top:-65px;background:rgba(23,105,232,.08);filter:blur(2px)}
+.onboard-visual span{position:relative;z-index:1;font-weight:900;letter-spacing:-.04em}
+.onboard-visual small{position:relative;z-index:1;letter-spacing:.16em;font-weight:850}
+.driver-page{max-width:1280px;margin:auto}
+.driver-map-hero{transition:box-shadow .35s ease,transform .35s ease}
+.driver-map-hero:hover{box-shadow:0 34px 92px rgba(8,25,38,.18)}
+.driver-map-tools>button,.driver-mobile-tabs button,.driver-go-online,.driver-request-panel button{transition:transform .18s ease,box-shadow .18s ease,background-color .18s ease}
+.driver-map-tools>button:hover{transform:translateY(-1px)}
+.driver-mobile-tabs button:active,.driver-map-tools>button:active{transform:scale(.96)}
+@media(max-width:650px){
+ .driver-page{max-width:none}
+ .driver-map-hero{box-shadow:0 22px 60px rgba(8,25,38,.14)}
+ .driver-demand-card{backdrop-filter:blur(28px) saturate(155%)}
+}
