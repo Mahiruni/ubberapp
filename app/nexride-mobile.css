@@ -48,3 +48,5 @@ button:focus-visible,input:focus-visible{outline:3px solid rgba(39,110,241,.3);o
 .nx-account-legal{display:block;margin-top:15px;text-align:center;color:#888;font-size:10px;line-height:1.5}
 .nx-logout{margin-top:4px!important;color:#c43d3d!important}
 @media(min-width:700px){.nx-account{padding-top:40px}.nx-account-card{padding:20px 0 30px}}
+
+.nx-account{position:relative}.nx-account-menu{position:absolute;z-index:20;top:max(18px,env(safe-area-inset-top));right:18px}.nx-floating-menu{position:absolute;z-index:40;top:max(16px,env(safe-area-inset-top));left:14px}
