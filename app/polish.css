@@ -911,3 +911,13 @@ body{font-size:var(--nx-body);line-height:1.5}
 .app:not(.dark) .driver-go-online{font-size:17px;min-height:62px;border-radius:18px}
 .app:not(.dark) .driver-go-online .go-label{letter-spacing:.02em}
 @media(max-width:650px){.app:not(.dark) .driver-map-tools{gap:5px}.app:not(.dark) .driver-map-tools>button{width:35px;height:35px}.app:not(.dark) .driver-map-status{display:none}.app:not(.dark) .driver-go-online{min-height:58px}}
+
+
+/* NEXRIDE DRIVER HOME — AWARD DAYLIGHT HEADER */
+.app:not(.dark) .driver-brand{display:grid;gap:2px;align-content:center}
+.app:not(.dark) .driver-brand strong{font-size:23px;line-height:1;font-weight:900;letter-spacing:-.055em;color:#080B10}
+.app:not(.dark) .driver-brand span{font-size:10px;font-weight:750;letter-spacing:.06em;text-transform:uppercase;color:#64748B}
+.app:not(.dark) .driver-map-tools>button.safety-icon{color:#2979FF;background:rgba(241,247,255,.94);border-color:rgba(41,121,255,.14)}
+.app:not(.dark) .driver-map-top{background:rgba(255,255,255,.90);box-shadow:0 14px 38px rgba(10,37,64,.12);backdrop-filter:blur(22px) saturate(165%)}
+.app:not(.dark) .driver-go-online{background:#2979FF;color:#fff;font-weight:900;letter-spacing:.015em}
+@media(max-width:650px){.app:not(.dark) .driver-brand strong{font-size:21px}.app:not(.dark) .driver-brand span{font-size:9px}}
