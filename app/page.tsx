@@ -154,4 +154,93 @@ function PageTitle({title,sub}:{title:string;sub:string}){return <div className=
 function RideCard({ride,selected,onClick}:{ride:Ride;selected:boolean;onClick:()=>void}){return <button className={selected?'ride selected':'ride'} onClick={onClick}><span className="ride-symbol"><Icon name={ride.icon} size={24}/></span><span><b>{ride.name}</b><small>{ride.eta} · {ride.seats} seats</small></span><strong>{ride.price} ETB</strong></button>}
 function Safety({title,icon,text,action,onClick,danger}:{title:string;icon:IconName;text:string;action:string;onClick:()=>void;danger?:boolean}){return <div className="safety-card"><div className={danger?'safety-icon danger':'safety-icon'}><Icon name={icon} size={20}/></div><h2>{title}</h2><p>{text}</p><button onClick={onClick}>{action} <Icon name="arrowRight" size={16}/></button></div>}
 function Stat({label,value}:{label:string;value:string}){return <div><small>{label}</small><strong>{value}</strong></div>}
-function Map({coords,destination,trip}:{coords:{lat:number;lng:number};destination:string;trip?:boolean}){const mapKey=process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;const q=encodeURIComponent(destination||'Addis Ababa, Ethiopia');return <div className="map live-map" aria-label="NexRide interactive map">{mapKey?<iframe title="NexRide map" loading="lazy" src={`https://www.google.com/maps/embed/v1/place?key=${mapKey}&q=${q}`} className="google-map-frame"/>:<><div className="map-grid"/><div className="road r1"/><div className="road r2"/><div className="road r3"/><div className="road r4"/><div className="district d1">BOLE</div><div className="district d2">KAZANCHIS</div><div className="district d3">MESKEL</div><div className="you"><span/><b>You</b></div>{trip&&<div className="destination-pin"><span>●</span></div>}<div className="map-label">{destination||'Addis Ababa'}</div></>}<div className="coords">{coords.lat.toFixed(4)}° · {coords.lng.toFixed(4)}°</div></div>}
+function Map({coords,destination,trip}:{coords:{lat:number;lng:number};destination:string;trip?:boolean}){
+ const mapKey=process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+ const mapRef=useRef<HTMLDivElement|null>(null);
+ const instanceRef=useRef<any>(null);
+ const pickupMarkerRef=useRef<any>(null);
+ const destinationMarkerRef=useRef<any>(null);
+ const routeRendererRef=useRef<any>(null);
+ const [ready,setReady]=useState(false);
+ const [error,setError]=useState(false);
+
+ useEffect(()=>{
+   if(!mapKey){setError(true);return}
+   const existing=document.querySelector('script[data-nexride-google-maps]') as HTMLScriptElement|null;
+   if((window as any).google?.maps){setReady(true);return}
+   if(existing){
+     const onReady=()=>setReady(true);
+     existing.addEventListener('load',onReady);
+     return()=>existing.removeEventListener('load',onReady);
+   }
+   const script=document.createElement('script');
+   script.src=`https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(mapKey)}&libraries=places&v=weekly`;
+   script.async=true;script.defer=true;script.dataset.nexrideGoogleMaps='true';
+   script.onload=()=>setReady(true);script.onerror=()=>setError(true);
+   document.head.appendChild(script);
+ },[mapKey]);
+
+ useEffect(()=>{
+   if(!ready||!mapRef.current)return;
+   const g=(window as any).google;
+   if(!g?.maps)return;
+   const center={lat:coords.lat,lng:coords.lng};
+   if(!instanceRef.current){
+     instanceRef.current=new g.maps.Map(mapRef.current,{
+       center,zoom:14,disableDefaultUI:true,gestureHandling:'greedy',
+       clickableIcons:false,fullscreenControl:false,mapTypeControl:false,streetViewControl:false,
+       styles:document.documentElement.classList.contains('dark')?[
+         {elementType:'geometry',stylers:[{color:'#18212b'}]},
+         {elementType:'labels.text.fill',stylers:[{color:'#aab6c3'}]},
+         {elementType:'labels.text.stroke',stylers:[{color:'#18212b'}]},
+         {featureType:'road',elementType:'geometry',stylers:[{color:'#293744'}]},
+         {featureType:'road',elementType:'geometry.stroke',stylers:[{color:'#202b35'}]},
+         {featureType:'water',elementType:'geometry',stylers:[{color:'#0e2635'}]}
+       ]:undefined
+     });
+     pickupMarkerRef.current=new g.maps.Marker({map:instanceRef.current,position:center,title:'Pickup location',draggable:true});
+     pickupMarkerRef.current.addListener('dragend',()=>{const p=pickupMarkerRef.current.getPosition();if(p)instanceRef.current.panTo(p)});
+     routeRendererRef.current=new g.maps.DirectionsRenderer({map:instanceRef.current,suppressMarkers:true,preserveViewport:true,polylineOptions:{strokeColor:'#00C853',strokeOpacity:.9,strokeWeight:5}});
+   }else{
+     instanceRef.current.panTo(center);
+     pickupMarkerRef.current?.setPosition(center);
+   }
+ },[ready,coords.lat,coords.lng]);
+
+ useEffect(()=>{
+   if(!ready||!instanceRef.current)return;
+   const g=(window as any).google;
+   if(!g?.maps)return;
+   const geocoder=new g.maps.Geocoder();
+   if(!destination.trim()){
+     destinationMarkerRef.current?.setMap(null);
+     routeRendererRef.current?.set('directions',null);
+     return;
+   }
+   geocoder.geocode({address:destination,region:'ET'},(results:any,status:string)=>{
+     if(status!=='OK'||!results?.[0])return;
+     const loc=results[0].geometry.location;
+     if(!destinationMarkerRef.current)destinationMarkerRef.current=new g.maps.Marker({map:instanceRef.current,position:loc,title:destination});
+     else {destinationMarkerRef.current.setMap(instanceRef.current);destinationMarkerRef.current.setPosition(loc);destinationMarkerRef.current.setTitle(destination)}
+     const service=new g.maps.DirectionsService();
+     service.route({origin:{lat:coords.lat,lng:coords.lng},destination:loc,travelMode:g.maps.TravelMode.DRIVING,provideRouteAlternatives:false},(result:any,directionsStatus:string)=>{
+       if(directionsStatus==='OK')routeRendererRef.current?.setDirections(result);
+     });
+   });
+ },[ready,destination,coords.lat,coords.lng,trip]);
+
+ const recenter=()=>{if(instanceRef.current)instanceRef.current.panTo({lat:coords.lat,lng:coords.lng})};
+ const zoom=(delta:number)=>{if(instanceRef.current){const z=instanceRef.current.getZoom()||14;instanceRef.current.setZoom(Math.max(10,Math.min(20,z+delta)))}};
+
+ return <div className="map live-map" aria-label="NexRide interactive map">
+   {mapKey&&!error?<div ref={mapRef} className="google-map-surface"/>:<div className="map-fallback" aria-label="Map unavailable"><div className="map-grid"/><div className="road r1"/><div className="road r2"/><div className="road r3"/><div className="road r4"/><div className="district d1">BOLE</div><div className="district d2">KAZANCHIS</div><div className="district d3">MESKEL</div><div className="you"><span/><b>You</b></div>{trip&&<div className="destination-pin"><span>●</span></div>}<div className="map-label">{destination||'Addis Ababa'}</div></div>}
+   <div className="map-controls" aria-label="Map controls">
+     <button type="button" onClick={recenter} aria-label="Center on my location"><Icon name="locate" size={19}/></button>
+     <button type="button" onClick={()=>zoom(1)} aria-label="Zoom in">+</button>
+     <button type="button" onClick={()=>zoom(-1)} aria-label="Zoom out">−</button>
+   </div>
+   {!mapKey&&<div className="map-credit">Add <b>NEXT_PUBLIC_GOOGLE_MAPS_API_KEY</b> in Vercel to enable live maps, routing and draggable pickup.</div>}
+   {mapKey&&error&&<div className="map-credit">Map service unavailable · cached ride controls remain available.</div>}
+   <div className="coords">{coords.lat.toFixed(4)}° · {coords.lng.toFixed(4)}°</div>
+ </div>
+}\n
