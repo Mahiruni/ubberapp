@@ -1,59 +1,214 @@
-/* NexRide polish layer — additive, preserves the existing product flow */
+/* NexRide award-level interaction layer — preserves existing rider + driver behavior */
 :root{
-  --nx-shadow-soft:0 8px 30px rgba(15,23,42,.06);
-  --nx-shadow-float:0 18px 55px rgba(15,23,42,.12);
+  --nx-ink:#0A2540;
+  --nx-green:#00C853;
+  --nx-blue:#2979FF;
+  --nx-paper:#F7F9FC;
+  --nx-line:rgba(10,37,64,.10);
+  --nx-shadow-1:0 10px 30px rgba(10,37,64,.07);
+  --nx-shadow-2:0 24px 70px rgba(10,37,64,.12);
+  --nx-shadow-dark:0 24px 70px rgba(0,0,0,.30);
 }
-.app{background:radial-gradient(circle at 88% -10%,rgba(0,200,83,.035),transparent 28%),var(--bg)}
-.dark.app{background:radial-gradient(circle at 88% -10%,rgba(0,200,83,.055),transparent 28%),var(--bg)}
-.rail{box-shadow:10px 0 35px rgba(0,0,0,.08)}
-.brand{letter-spacing:-.045em}
-.brand span{position:relative;overflow:hidden}
-.brand span:after{content:"";position:absolute;inset:-40%;background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.42) 50%,transparent 65%);transform:translateX(-70%);animation:nxShine 5s ease-in-out infinite}
-.topbar{box-shadow:0 1px 0 rgba(15,23,42,.02)}
-.content{max-width:1600px}
-.map-card{box-shadow:var(--nx-shadow-float);border:1px solid rgba(255,255,255,.45)}
-.booking-panel,.trip-panel,.driver-request-panel,.driver-earn-card,.request-row,.trip-flow{box-shadow:var(--nx-shadow-soft)}
-.booking-panel,.trip-panel{border-radius:20px}
-.route-inputs{box-shadow:inset 0 1px 0 rgba(255,255,255,.35)}
-.quick button{font-weight:700}
-.ride{min-height:62px}
-.ride.selected{background:color-mix(in srgb,var(--green) 7%,var(--surface));border-color:color-mix(in srgb,var(--green) 28%,var(--line))}
-.ride.selected .ride-symbol{transform:scale(1.06)}
-.primary{letter-spacing:-.01em}
-.primary span{transition:transform .18s ease}
-.primary:hover span{transform:translateX(3px)}
-.map-controls button{background:color-mix(in srgb,var(--surface) 92%,transparent);backdrop-filter:blur(12px)}
-.map-label{backdrop-filter:blur(8px)}
-.page{max-width:1280px}
-.page-title h1,.driver-head h1{letter-spacing:-.07em}
-.history,.settings{box-shadow:var(--nx-shadow-soft)}
-.history-row{min-height:76px}
-.safety-card{box-shadow:var(--nx-shadow-soft)}
-.profile-card{box-shadow:var(--nx-shadow-soft)}
-.driver-banner{box-shadow:var(--nx-shadow-soft)}
-.driver-kpis>div{box-shadow:var(--nx-shadow-soft);transition:transform .18s ease,box-shadow .18s ease}
-.driver-kpis>div:hover{transform:translateY(-2px);box-shadow:var(--nx-shadow-float)}
-.driver-request-panel{border-radius:20px}
-.driver-toggle{box-shadow:var(--nx-shadow-soft)}
-.request-timer{font-variant-numeric:tabular-nums}
-.trip-status{box-shadow:0 20px 55px rgba(0,0,0,.22)}
-.onboarding-card{border-radius:24px}
-.onboard-visual{background:radial-gradient(circle at 50% 45%,color-mix(in srgb,var(--green) 8%,var(--surface-2)),var(--surface-2))}
-.onboard-next{box-shadow:0 12px 28px rgba(0,200,83,.16)}
-.toast{backdrop-filter:blur(14px)}
-@keyframes nxShine{0%,72%,100%{transform:translateX(-70%)}84%{transform:translateX(70%)}}
+
+/* --- Global surface + type refinement --- */
+.app{
+  background:var(--bg);
+  font-feature-settings:"cv02" 1,"cv03" 1,"cv04" 1,"cv11" 1;
+}
+.dark.app{background:var(--bg)}
+body{letter-spacing:-.014em}
+button,input{font-feature-settings:inherit}
+button:focus-visible,input:focus-visible{outline:3px solid rgba(41,121,255,.30);outline-offset:3px}
+
+/* --- Navigation: quiet, architectural, never decorative --- */
+.rail{
+  width:248px;
+  padding:28px 16px 18px;
+  background:#0A2540;
+  box-shadow:10px 0 35px rgba(10,37,64,.08);
+}
+.brand{
+  padding:3px 10px 34px;
+  gap:12px;
+  font-size:20px;
+}
+.brand span{
+  width:38px;height:38px;border-radius:12px;
+  background:var(--nx-green);
+  box-shadow:none;
+}
+.brand span:after{display:none}
+.rail nav{gap:4px}
+.nav{
+  min-height:46px;
+  padding:12px 13px;
+  border-radius:12px;
+  color:#9FB2C3;
+  font-weight:650;
+}
+.nav:hover{background:#123453;color:#fff;transform:none}
+.nav.active{
+  background:#123453;
+  color:#fff;
+  box-shadow:inset 3px 0 0 var(--nx-green);
+}
+.profile-mini{padding:17px 8px 3px;border-color:rgba(255,255,255,.10)}
+.profile-mini small{color:#8EA5B8}
+
+/* --- Header --- */
+.shell{margin-left:248px}
+.topbar{
+  height:76px;
+  padding:0 36px;
+  border-bottom:1px solid var(--line);
+  background:var(--bg);
+  backdrop-filter:none;
+}
+.topbar strong{font-size:16px}
+.eyebrow{letter-spacing:.14em}
+.icon-btn,.lang,.help,.round{
+  border-color:var(--nx-line);
+  box-shadow:none;
+}
+.icon-btn:hover,.lang:hover,.round:hover{transform:none;border-color:rgba(0,200,83,.42)}
+.help{background:var(--nx-ink);border-color:var(--nx-ink)}
+
+/* --- Rider home: map + command panel --- */
+.content{padding:24px 36px;max-width:1680px}
+.home-grid{grid-template-columns:minmax(0,1.55fr) minmax(390px,.62fr);gap:18px}
+.map-card{
+  min-height:704px;
+  border-radius:18px;
+  border:1px solid rgba(10,37,64,.08);
+  box-shadow:var(--nx-shadow-2);
+}
+.map-grid{opacity:.16}
+.road{background:rgba(255,255,255,.88)}
+.you span{box-shadow:0 0 0 7px rgba(41,121,255,.13),0 4px 14px rgba(10,37,64,.14)}
+.map-controls{right:18px;top:18px}
+.map-controls button{width:42px;height:42px;border-radius:12px;box-shadow:0 7px 20px rgba(10,37,64,.08)}
+.map-credit,.coords{box-shadow:none}
+.booking-panel,.trip-panel{
+  padding:26px;
+  border-radius:18px;
+  border:1px solid var(--nx-line);
+  box-shadow:var(--nx-shadow-1);
+}
+.panel-head h1,.trip-panel h1{
+  font-size:36px;
+  line-height:1.04;
+  letter-spacing:-.065em;
+}
+.route-inputs{
+  border-radius:14px;
+  padding:5px 14px;
+  box-shadow:none;
+}
+.route-inputs label{height:50px}
+.quick{margin:12px 0 22px}
+.quick button{
+  min-height:40px;
+  padding:9px 13px;
+  border-radius:11px;
+  font-weight:700;
+}
+.ride-list{gap:5px}
+.ride{
+  min-height:68px;
+  padding:12px;
+  border-radius:13px;
+}
+.ride.selected{
+  background:rgba(0,200,83,.055);
+  border-color:rgba(0,200,83,.24);
+  box-shadow:inset 3px 0 var(--nx-green);
+}
+.fare-row{padding:17px 2px 12px}
+.fare-row strong{font-size:25px}
+.primary{
+  height:52px;
+  border-radius:13px;
+  background:var(--nx-green);
+  color:#062019;
+  box-shadow:0 9px 22px rgba(0,200,83,.16);
+}
+.primary:hover{transform:translateY(-1px);box-shadow:0 12px 26px rgba(0,200,83,.20)}
+
+/* --- Content pages --- */
+.page{max-width:1280px;padding:48px 6.5% 70px}
+.page-title h1,.driver-head h1{font-size:46px;line-height:1.02;letter-spacing:-.07em}
+.page-title p{font-size:14px;max-width:620px;line-height:1.65}
+.history,.settings,.safety-card,.profile-card,.driver-banner,.driver-request-panel,.driver-earn-card,.request-row,.trip-flow{
+  border-color:var(--nx-line);
+  box-shadow:var(--nx-shadow-1);
+}
+.history{border-radius:16px}
+.history-row{min-height:82px;padding:19px}
+.big-ride{border-radius:16px;box-shadow:none}
+.big-ride:hover{box-shadow:var(--nx-shadow-1)}
+.wallet-card{border-radius:18px;box-shadow:var(--nx-shadow-2)}
+
+/* --- Driver workspace: large targets, fast scanning --- */
+.driver-kpis>div{
+  border-radius:16px;
+  box-shadow:var(--nx-shadow-1);
+}
+.driver-kpis>div:hover{transform:translateY(-1px);box-shadow:var(--nx-shadow-2)}
+.driver-request-panel{border-radius:18px}
+.driver-toggle{box-shadow:none}
+.request-timer{font-variant-numeric:tabular-nums;font-weight:800}
+
+/* --- Trip state: reassurance first, controls second --- */
+.trip-status{box-shadow:var(--nx-shadow-dark);border-radius:18px}
+.trip-status button{min-height:44px}
+
+/* --- Onboarding --- */
+.onboarding-card{border-radius:22px;box-shadow:var(--nx-shadow-2)}
+.onboard-visual{background:var(--surface-2)}
+.onboard-next{box-shadow:0 10px 24px rgba(0,200,83,.15)}
+
+/* --- Toasts and feedback --- */
+.toast{backdrop-filter:blur(14px);border-radius:13px;box-shadow:var(--nx-shadow-2)}
+
+/* --- Accessibility + motion discipline --- */
+button,input,.nav,.ride,.big-ride,.quick button,.map-controls button,.primary{
+  transition-property:background-color,border-color,color,box-shadow,transform,opacity;
+  transition-duration:.18s;
+  transition-timing-function:cubic-bezier(.2,.8,.2,1);
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms!important;
+    animation-iteration-count:1!important;
+    scroll-behavior:auto!important;
+    transition-duration:.01ms!important;
+  }
+}
+
+/* --- Responsive: preserve one-handed reach and visual hierarchy --- */
+@media(max-width:1050px){
+  .rail{width:76px;padding:22px 9px 14px}
+  .brand{justify-content:center;padding-left:0;padding-right:0}
+  .brand b,.nav strong,.profile-mini>div:not(.avatar){display:none}
+  .nav{justify-content:center;padding-left:10px;padding-right:10px}
+  .nav span{width:auto}
+  .profile-mini{justify-content:center}
+  .shell{margin-left:76px}
+  .content{padding-left:22px;padding-right:22px}
+  .home-grid{grid-template-columns:1fr}
+  .map-card{min-height:560px}
+}
 @media(max-width:650px){
-  .content{padding:14px 12px 88px}
-  .topbar{height:70px;padding:0 14px}
-  .topbar strong{font-size:14px}
-  .top-actions{gap:5px}
-  .help{display:none}
+  .rail{display:none}
+  .shell{margin-left:0}
+  .topbar{height:68px;padding:0 14px}
+  .content{padding:12px 12px 88px}
   .home-grid{gap:12px}
-  .map-card{min-height:390px;border-radius:18px}
-  .booking-panel,.trip-panel{padding:18px;border-radius:18px}
-  .panel-head h1,.trip-panel h1{font-size:29px;margin-bottom:16px}
+  .map-card{min-height:360px;border-radius:16px}
+  .booking-panel,.trip-panel{padding:18px;border-radius:16px}
+  .panel-head h1,.trip-panel h1{font-size:30px;margin-bottom:15px}
   .page{padding:28px 14px 92px}
-  .page-title h1{font-size:36px}
+  .page-title h1{font-size:38px}
   .history-row{grid-template-columns:36px 1fr auto;gap:10px;padding:15px}
   .history-row button{grid-column:2/-1;justify-self:start}
   .wallet-card{margin-top:20px}
