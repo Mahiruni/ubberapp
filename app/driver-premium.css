@@ -1,0 +1,213 @@
+/* NexRide Driver — definitive mobile-first visual system */
+
+.driver-page{
+  --driver-bg:#F7F7F5;
+  --driver-surface:#FFFFFF;
+  --driver-text:#111111;
+  --driver-muted:#737373;
+  --driver-blue:#276EF1;
+  --driver-green:#00A86B;
+  min-height:100dvh;
+  background:var(--driver-bg)!important;
+  color:var(--driver-text)!important;
+}
+
+.driver-page .driver-head{
+  max-width:1120px!important;
+  margin:0 auto!important;
+  padding:30px 28px 18px!important;
+}
+.driver-page .driver-head h1{
+  margin:0!important;
+  font-size:34px!important;
+  line-height:1.05!important;
+  letter-spacing:-.055em!important;
+}
+.driver-page .driver-head p{
+  margin:8px 0 0!important;
+  color:var(--driver-muted)!important;
+  font-size:14px!important;
+}
+
+.driver-page .driver-kpis{
+  max-width:1120px!important;
+  margin:0 auto 14px!important;
+  padding:0 28px!important;
+  display:grid!important;
+  grid-template-columns:1.25fr 1fr 1fr!important;
+  gap:10px!important;
+}
+.driver-page .driver-kpis>div{
+  min-height:108px!important;
+  padding:19px!important;
+  background:var(--driver-surface)!important;
+  border:1px solid #E7E7E5!important;
+  border-radius:20px!important;
+  box-shadow:0 5px 22px rgba(0,0,0,.055)!important;
+}
+.driver-page .driver-kpis strong{
+  font-size:28px!important;
+  letter-spacing:-.045em!important;
+  font-variant-numeric:tabular-nums!important;
+}
+.driver-page .driver-kpis small{color:var(--driver-muted)!important}
+
+.driver-page .driver-banner,
+.driver-page .driver-request-panel,
+.driver-page .driver-earn-card,
+.driver-page .request-row{
+  background:var(--driver-surface)!important;
+  border:1px solid #E7E7E5!important;
+  border-radius:21px!important;
+  box-shadow:0 7px 28px rgba(0,0,0,.06)!important;
+}
+.driver-page .driver-banner,
+.driver-page .driver-request-panel{
+  max-width:1120px!important;
+  margin-left:auto!important;
+  margin-right:auto!important;
+}
+
+/* The online control is the only visually dominant action. */
+.driver-page .driver-toggle{
+  min-width:148px!important;
+  min-height:54px!important;
+  border:0!important;
+  border-radius:999px!important;
+  background:var(--driver-blue)!important;
+  color:#fff!important;
+  box-shadow:0 9px 22px rgba(39,110,241,.19)!important;
+  font-weight:800!important;
+}
+.driver-page .driver-toggle:hover{transform:translateY(-1px)!important}
+
+.driver-page .request-actions .primary,
+.driver-page .flow-actions .primary,
+.driver-page .request-row-actions .primary{
+  min-height:54px!important;
+  border-radius:16px!important;
+  background:var(--driver-green)!important;
+  color:#fff!important;
+  box-shadow:0 8px 20px rgba(0,168,107,.16)!important;
+}
+
+/* Mobile-native composition */
+@media(max-width:650px){
+  .driver-page{
+    padding-bottom:92px!important;
+    background:#F7F7F5!important;
+  }
+  .driver-page .driver-head{
+    padding:18px 16px 12px!important;
+    display:flex!important;
+    flex-direction:column!important;
+    gap:6px!important;
+  }
+  .driver-page .driver-head h1{font-size:30px!important}
+  .driver-page .driver-head p{font-size:13px!important}
+
+  .driver-page .driver-kpis{
+    margin:0 12px 12px!important;
+    padding:0!important;
+    grid-template-columns:1.3fr 1fr!important;
+    gap:8px!important;
+  }
+  .driver-page .driver-kpis>div{
+    min-height:82px!important;
+    padding:15px!important;
+    border-radius:18px!important;
+  }
+  .driver-page .driver-kpis>div:first-child{
+    grid-row:span 2;
+    min-height:172px!important;
+  }
+  .driver-page .driver-kpis strong{font-size:25px!important}
+
+  .driver-page .driver-banner,
+  .driver-page .driver-request-panel,
+  .driver-page .driver-earn-card,
+  .driver-page .request-row{
+    margin:0 12px 12px!important;
+    border-radius:20px!important;
+  }
+
+  .driver-page .driver-toggle{
+    width:100%!important;
+    min-height:58px!important;
+    border-radius:18px!important;
+    font-size:17px!important;
+  }
+
+  .driver-page .request-actions{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    gap:8px!important;
+  }
+  .driver-page .request-actions .primary{order:-1!important}
+
+  /* Existing floating navigation becomes the native-feeling footer. */
+  .driver-page .mobile-nav{
+    position:fixed!important;
+    z-index:100!important;
+    left:12px!important;
+    right:12px!important;
+    bottom:calc(10px + env(safe-area-inset-bottom))!important;
+    display:grid!important;
+    grid-template-columns:repeat(4,1fr)!important;
+    gap:2px!important;
+    padding:6px!important;
+    border:1px solid rgba(255,255,255,.72)!important;
+    border-radius:22px!important;
+    background:rgba(255,255,255,.78)!important;
+    -webkit-backdrop-filter:blur(26px) saturate(155%)!important;
+    backdrop-filter:blur(26px) saturate(155%)!important;
+    box-shadow:0 16px 42px rgba(0,0,0,.14)!important;
+  }
+  .driver-page .mobile-nav .nav{
+    min-height:55px!important;
+    border-radius:16px!important;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:4px!important;
+    font-size:10px!important;
+  }
+  .driver-page .mobile-nav .nav.active{
+    color:var(--driver-blue)!important;
+    background:rgba(39,110,241,.09)!important;
+    box-shadow:none!important;
+  }
+
+  /* The old horizontal driver navigation is intentionally removed on phones. */
+  .driver-page .driver-nav{display:none!important}
+}
+
+@media(prefers-color-scheme:dark){
+  .dark .driver-page,
+  .driver-page.dark{
+    --driver-bg:#121212;
+    --driver-surface:#1C1C1C;
+    --driver-text:#F5F5F5;
+    --driver-muted:#A5A5A5;
+    background:#121212!important;
+    color:#F5F5F5!important;
+  }
+  .dark .driver-page .driver-kpis>div,
+  .dark .driver-page .driver-banner,
+  .dark .driver-page .driver-request-panel,
+  .dark .driver-page .driver-earn-card,
+  .dark .driver-page .request-row{
+    background:#1C1C1C!important;
+    border-color:#303030!important;
+    color:#F5F5F5!important;
+  }
+  .dark .driver-page .mobile-nav{
+    background:rgba(24,24,24,.82)!important;
+    border-color:rgba(255,255,255,.12)!important;
+  }
+}
+
+@media(prefers-reduced-motion:reduce){
+  .driver-page *{transition-duration:.01ms!important;animation-duration:.01ms!important}
+}
