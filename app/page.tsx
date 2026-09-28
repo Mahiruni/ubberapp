@@ -61,7 +61,30 @@ const places:Place[]=[
 {name:'Summit Furi',address:'Summit area',lat:8.9990,lng:38.8700},
 {name:'Kolfe',address:'Kolfe Keranio, Addis Ababa',lat:9.0025,lng:38.6940},
 {name:'Merkato',address:'Merkato, Addis Ababa',lat:9.0306,lng:38.7384},
-{name:'Shiro Meda',address:'Shiro Meda, Addis Ababa',lat:9.0572,lng:38.7700}
+{name:'Shiro Meda',address:'Shiro Meda, Addis Ababa',lat:9.0572,lng:38.7700},
+{name:'Bethel Hospital',address:'Weyira Area, Kolfe Keranyo',lat:9.00459,lng:38.69292},
+{name:'Bethel Adebabay',address:'Bethel, Kolfe Keranyo',lat:9.0032,lng:38.6965},
+{name:'Anfo Adebabay',address:'Anfo Adebabay, Kolfe Keranyo',lat:9.02101,lng:38.67874},
+{name:'Anfo Meda',address:'Anfo, Kolfe Keranyo',lat:9.0185,lng:38.6810},
+{name:'Anfo Bridge',address:'Anfo Dildiy, Kolfe Keranyo',lat:9.0146,lng:38.6770},
+{name:'Anfo Mosque',address:'Ambo Road, Anfo Adebabay',lat:9.0178,lng:38.6798},
+{name:'Kolfe',address:'Kolfe, Addis Ababa',lat:9.0374,lng:38.71696},
+{name:'Kolfe Keranyo',address:'Kolfe Keranyo Sub-City',lat:8.9977331,lng:38.68622481},
+{name:'Kolfe Tiwan',address:'Kolfe Tiwan, Addis Ababa',lat:9.04436,lng:38.71831},
+{name:'Kolfe Health Center',address:'Kolfe Keranyo, Addis Ababa',lat:9.045128,lng:38.711155},
+{name:'Kera',address:'Kera, Nefas Silk / Kirkos area',lat:8.98478,lng:38.75024},
+{name:'Kera Gofa Road',address:'Kera, Gofa Road',lat:8.98134,lng:38.74970},
+{name:'Gotera',address:'Gotera, Addis Ababa',lat:8.9915,lng:38.7380},
+{name:'Bulgariya Mazoriya',address:'Bulgariya Mazoriya, Addis Ababa',lat:8.9858,lng:38.7440},
+{name:'Lancha',address:'Lancha, Addis Ababa',lat:8.9880,lng:38.7560},
+{name:'Nifas Silk',address:'Nifas Silk, Addis Ababa',lat:8.97572,lng:38.72710},
+{name:'Nifas Silk Lafto',address:'Nifas Silk Lafto Sub-City',lat:8.95077233,lng:38.73041217},
+{name:'Akaki Kaliti',address:'Akaki Kaliti Sub-City',lat:8.898546,lng:38.80237141},
+{name:'Akaki Beseka',address:'Akaki Beseka, Addis Ababa',lat:8.866667,lng:38.783333},
+{name:'Lemi Kura',address:'Lemi Kura Sub-City',lat:9.00995695,lng:38.87032423},
+{name:'Gullele',address:'Gullele Sub-City',lat:9.07112227,lng:38.73670792},
+{name:'Arada',address:'Arada Sub-City',lat:9.03568992,lng:38.755621},
+{name:'Kirkos',address:'Kirkos, Addis Ababa',lat:9.0048,lng:38.7568}
 ];
 export default function Home(){const[mode,setMode]=useState<Mode>('rider');const[riderScreen,setRiderScreen]=useState<RiderScreen>('home');const[driverScreen,setDriverScreen]=useState<DriverScreen>('home');const[destination,setDestination]=useState('');const[currentLocation,setCurrentLocation]=useState<{lat:number;lng:number}|null>(null);const[locationStatus,setLocationStatus]=useState<'idle'|'loading'|'ready'|'denied'>('idle');const[selectedRide,setSelectedRide]=useState(rides[0]);const[online,setOnline]=useState(false);const[requestVisible,setRequestVisible]=useState(true);const[tripStarted,setTripStarted]=useState(false);const[rating,setRating]=useState(0);const[menuOpen,setMenuOpen]=useState(false);const[accountCreated,setAccountCreated]=useState(false);const[form,setForm]=useState({name:'',phone:'',email:'',password:''});useEffect(()=>{if(!navigator.geolocation)return;setLocationStatus('loading');navigator.geolocation.getCurrentPosition(pos=>{setCurrentLocation({lat:pos.coords.latitude,lng:pos.coords.longitude});setLocationStatus('ready')},()=>setLocationStatus('denied'),{enableHighAccuracy:true,maximumAge:30000,timeout:10000})},[]);
 const distanceKm=(a:{lat:number;lng:number},b:{lat:number;lng:number})=>{const R=6371;const dLat=(b.lat-a.lat)*Math.PI/180;const dLng=(b.lng-a.lng)*Math.PI/180;const x=Math.sin(dLat/2)**2+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLng/2)**2;return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x))};
