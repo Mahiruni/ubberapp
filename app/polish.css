@@ -528,3 +528,233 @@ body{font-size:var(--nx-body);line-height:1.5}
   .panel-head h1,.trip-panel h1,.onboard-copy h1,.page-title h1,.driver-head h1{font-size:30px}
   .onboard-tagline{margin-bottom:16px}
 }
+
+
+/* =========================================================
+   NEXRIDE AWARD SYSTEM — LIGHT FIRST
+   Calm mobility, editorial hierarchy, tactile controls.
+   ========================================================= */
+:root{
+  --nx-green:#00C853;
+  --nx-green-dark:#009b41;
+  --nx-ink:#0A2540;
+  --nx-blue:#2979FF;
+  --nx-bg:#F7F9FC;
+  --nx-surface:#FFFFFF;
+  --nx-soft:#F1F5F9;
+  --nx-border:#E4EAF0;
+  --nx-muted:#64748B;
+  --nx-shadow-soft:0 8px 30px rgba(10,37,64,.055);
+  --nx-shadow-card:0 18px 55px rgba(10,37,64,.085);
+  --nx-shadow-float:0 22px 60px rgba(10,37,64,.14);
+}
+.app:not(.dark){
+  background:
+    radial-gradient(circle at 72% -8%,rgba(0,200,83,.055),transparent 27rem),
+    var(--bg);
+}
+.app:not(.dark) .shell{background:transparent}
+.app:not(.dark) .topbar{
+  background:rgba(247,249,252,.84);
+  border-bottom-color:rgba(10,37,64,.075);
+  backdrop-filter:blur(20px) saturate(140%);
+}
+.app:not(.dark) .rail{
+  background:var(--nx-ink);
+  box-shadow:8px 0 40px rgba(10,37,64,.08);
+}
+.app:not(.dark) .brand span{
+  border-radius:11px;
+  box-shadow:0 8px 20px rgba(0,200,83,.18);
+}
+.app:not(.dark) .content{padding-top:20px}
+.app:not(.dark) .map-card{
+  border:1px solid rgba(10,37,64,.08);
+  box-shadow:var(--nx-shadow-card);
+  border-radius:24px;
+}
+.app:not(.dark) .booking-panel{
+  border:1px solid rgba(10,37,64,.075);
+  box-shadow:var(--nx-shadow-card);
+  border-radius:24px;
+  padding:28px;
+}
+.app:not(.dark) .panel-head h1{
+  font-size:38px;
+  letter-spacing:-.065em;
+  margin-top:7px;
+}
+.app:not(.dark) .route-inputs{
+  background:#F5F7FA;
+  border:1px solid rgba(10,37,64,.055);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.9);
+  padding:7px 15px;
+}
+.app:not(.dark) .route-inputs label{height:50px}
+.app:not(.dark) .quick button{
+  background:#fff;
+  border-color:#E5EAF0;
+  color:#334155;
+  box-shadow:0 2px 8px rgba(10,37,64,.025);
+}
+.app:not(.dark) .ride{
+  min-height:72px;
+  border:1px solid transparent;
+  background:transparent;
+}
+.app:not(.dark) .ride:hover{background:#F7FAF9}
+.app:not(.dark) .ride.selected{
+  background:rgba(0,200,83,.055);
+  border-color:rgba(0,200,83,.22);
+  box-shadow:inset 3px 0 var(--nx-green),0 5px 18px rgba(10,37,64,.035);
+}
+.app:not(.dark) .ride-symbol{
+  width:44px;height:44px;
+  background:#F1F5F8;
+  border:1px solid #E6EBF0;
+}
+.app:not(.dark) .ride.selected .ride-symbol{
+  background:rgba(0,200,83,.10);
+  border-color:rgba(0,200,83,.16);
+}
+.app:not(.dark) .primary{
+  height:54px;
+  border-radius:15px;
+  color:#062019;
+  box-shadow:0 10px 25px rgba(0,200,83,.17);
+  letter-spacing:-.01em;
+}
+.app:not(.dark) .primary:hover{box-shadow:0 14px 32px rgba(0,200,83,.23)}
+.app:not(.dark) .fare-row{
+  padding-top:18px;
+  border-top:1px solid rgba(10,37,64,.06);
+  margin-top:12px;
+}
+.app:not(.dark) .map-controls button{
+  background:rgba(255,255,255,.92);
+  border-color:rgba(10,37,64,.08);
+  box-shadow:0 8px 24px rgba(10,37,64,.10);
+}
+.app:not(.dark) .map-credit,
+.app:not(.dark) .coords{
+  background:rgba(255,255,255,.86);
+  color:#475569;
+  border:1px solid rgba(10,37,64,.06);
+  backdrop-filter:blur(12px);
+}
+.app:not(.dark) .page{
+  padding-top:42px;
+}
+.app:not(.dark) .page-title h1,
+.app:not(.dark) .driver-head h1{
+  font-size:48px;
+  letter-spacing:-.075em;
+}
+.app:not(.dark) .page-title p,
+.app:not(.dark) .driver-head p{
+  max-width:650px;
+  font-size:15px;
+}
+.app:not(.dark) .history,
+.app:not(.dark) .setting-card,
+.app:not(.dark) .safety-card,
+.app:not(.dark) .profile-card,
+.app:not(.dark) .settings,
+.app:not(.dark) .driver-banner,
+.app:not(.dark) .driver-request-panel,
+.app:not(.dark) .driver-earn-card,
+.app:not(.dark) .request-row,
+.app:not(.dark) .trip-flow,
+.app:not(.dark) .earnings-hero,
+.app:not(.dark) .earn-breakdown,
+.app:not(.dark) .payout-card,
+.app:not(.dark) .bonus-card,
+.app:not(.dark) .preference-card,
+.app:not(.dark) .driver-safety-banner,
+.app:not(.dark) .driver-profile-card,
+.app:not(.dark) .vehicle-card,
+.app:not(.dark) .documents-card,
+.app:not(.dark) .feedback-card{
+  border-color:rgba(10,37,64,.075);
+  box-shadow:var(--nx-shadow-soft);
+}
+.app:not(.dark) .history,
+.app:not(.dark) .setting-card,
+.app:not(.dark) .safety-card,
+.app:not(.dark) .profile-card,
+.app:not(.dark) .settings,
+.app:not(.dark) .driver-request-panel,
+.app:not(.dark) .driver-earn-card,
+.app:not(.dark) .request-row,
+.app:not(.dark) .trip-flow,
+.app:not(.dark) .earnings-hero,
+.app:not(.dark) .earn-breakdown,
+.app:not(.dark) .payout-card,
+.app:not(.dark) .bonus-card,
+.app:not(.dark) .preference-card,
+.app:not(.dark) .driver-safety-banner,
+.app:not(.dark) .driver-profile-card,
+.app:not(.dark) .vehicle-card,
+.app:not(.dark) .documents-card,
+.app:not(.dark) .feedback-card{
+  background:#fff;
+}
+.app:not(.dark) .big-ride{
+  background:#fff;
+  border-color:rgba(10,37,64,.075);
+  box-shadow:var(--nx-shadow-soft);
+}
+.app:not(.dark) .big-ride:hover{box-shadow:var(--nx-shadow-card)}
+.app:not(.dark) .trip-status{
+  background:rgba(10,37,64,.94);
+  box-shadow:var(--nx-shadow-float);
+}
+.app:not(.dark) .driver-kpis>div{
+  background:#fff;
+  border:1px solid rgba(10,37,64,.075);
+}
+.app:not(.dark) .driver-nav{
+  background:rgba(255,255,255,.72);
+  border:1px solid rgba(10,37,64,.065);
+  border-radius:15px;
+  padding:5px;
+  box-shadow:0 5px 20px rgba(10,37,64,.045);
+}
+.app:not(.dark) .driver-nav button.active{
+  background:#F1F7F3;
+  border-radius:11px;
+}
+.app:not(.dark) .mobile-nav{
+  background:rgba(255,255,255,.82);
+  border-color:rgba(255,255,255,.95);
+  box-shadow:0 18px 48px rgba(10,37,64,.16),0 3px 10px rgba(10,37,64,.06);
+}
+.app:not(.dark) .mobile-nav .nav.active{
+  background:#EEF7F1;
+  color:var(--nx-ink);
+}
+.app:not(.dark) .onboarding-backdrop{
+  background:rgba(10,37,64,.28);
+  backdrop-filter:blur(12px);
+}
+.app:not(.dark) .onboarding-card{
+  background:#fff;
+  border-color:rgba(10,37,64,.08);
+  box-shadow:0 30px 90px rgba(10,37,64,.20);
+}
+.app:not(.dark) .onboard-visual{
+  background:linear-gradient(145deg,#F5F8FA,#EAF2EF);
+}
+.app:not(.dark) .toast{
+  background:var(--nx-ink);
+  box-shadow:0 18px 48px rgba(10,37,64,.20);
+}
+@media(max-width:650px){
+  .app:not(.dark) .content{padding:10px 12px 96px}
+  .app:not(.dark) .booking-panel{padding:20px 16px;border-radius:20px}
+  .app:not(.dark) .panel-head h1{font-size:32px}
+  .app:not(.dark) .page{padding:28px 14px 98px}
+  .app:not(.dark) .page-title h1,
+  .app:not(.dark) .driver-head h1{font-size:34px}
+  .app:not(.dark) .map-card{border-radius:20px;min-height:390px}
+}
