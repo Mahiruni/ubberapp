@@ -1,0 +1,127 @@
+/* NexRide premium mobile-first visual system — final override layer */
+:root{
+  --nr-blue:#276EF1;
+  --nr-blue-deep:#1558cf;
+  --nr-green:#00A86B;
+  --nr-ink:#101828;
+  --nr-muted:#667085;
+  --nr-line:#e7eaf0;
+  --nr-surface:#ffffff;
+  --nr-soft:#f7f8fa;
+  --nr-shadow:0 18px 50px rgba(16,24,40,.10);
+  --nr-shadow-lg:0 28px 80px rgba(16,24,40,.16);
+}
+
+/* Reset the earlier concept-art treatment. */
+.driver-map-hero{
+  background:#eef2f5!important;
+  border-radius:28px!important;
+  box-shadow:var(--nr-shadow-lg)!important;
+  isolation:isolate!important;
+}
+.driver-map-hero:after{display:none!important}
+.driver-map-wash{background:linear-gradient(180deg,rgba(255,255,255,.74),rgba(255,255,255,0) 34%,rgba(255,255,255,.18) 70%,rgba(255,255,255,.62))!important}
+.demand-zone{opacity:.72!important;filter:none!important;box-shadow:none!important}
+.zone-a{background:radial-gradient(ellipse,rgba(255,111,0,.36),rgba(255,111,0,.10) 55%,transparent 72%)!important}
+.zone-b{background:radial-gradient(ellipse,rgba(111,76,190,.30),rgba(111,76,190,.08) 55%,transparent 72%)!important}
+.demand-zone:before{display:none!important}
+
+.driver-map-top{
+  background:rgba(255,255,255,.92)!important;
+  border:1px solid rgba(255,255,255,.9)!important;
+  box-shadow:0 10px 32px rgba(16,24,40,.10)!important;
+  backdrop-filter:blur(22px) saturate(140%)!important;
+}
+.driver-brand strong{color:#111827!important;letter-spacing:-.055em!important}
+.driver-map-tools>button{background:#fff!important;color:#172033!important;border:1px solid #edf0f4!important;box-shadow:0 8px 20px rgba(16,24,40,.08)!important}
+.driver-map-tools>button.safety-icon{background:#eef5ff!important;color:#276EF1!important}
+
+.driver-map-location{
+  background:rgba(255,255,255,.88)!important;
+  border:1px solid rgba(255,255,255,.95)!important;
+  box-shadow:0 8px 22px rgba(16,24,40,.08)!important;
+  color:#344054!important;
+}
+
+/* One calm information card instead of a dashboard stack. */
+.driver-demand-card{
+  background:rgba(255,255,255,.95)!important;
+  border:1px solid #edf0f4!important;
+  box-shadow:var(--nr-shadow)!important;
+  backdrop-filter:blur(18px)!important;
+}
+.demand-copy .eyebrow{color:#98a2b3!important}
+.demand-copy strong{color:#101828!important;font-weight:760!important}
+.demand-earn{border-left:1px solid #eaecf0!important}
+.demand-earn b{color:#101828!important}
+
+/* Remove the dense stat strip. The primary action gets the attention. */
+.driver-map-stats{display:none!important}
+.driver-go-wrap{bottom:18px!important}
+.driver-go-online{
+  height:70px!important;
+  border-radius:22px!important;
+  background:var(--nr-blue)!important;
+  box-shadow:0 18px 38px rgba(39,110,241,.28)!important;
+  border:0!important;
+}
+.driver-go-online:hover{background:var(--nr-blue-deep)!important}
+.go-ring{width:54px!important;height:54px!important;border-radius:17px!important;background:rgba(255,255,255,.14)!important}
+.go-meta b{font-size:15px!important}
+.go-meta small{font-size:10px!important;opacity:.78!important}
+
+/* Driver navigation: quiet, tactile, predictable. */
+.driver-mobile-tabs{
+  background:rgba(255,255,255,.94)!important;
+  border:1px solid #e8ebf0!important;
+  box-shadow:0 14px 40px rgba(16,24,40,.13)!important;
+  backdrop-filter:blur(24px)!important;
+}
+.driver-mobile-tabs button{color:#667085!important}
+.driver-mobile-tabs button.active{background:#edf4ff!important;color:#276EF1!important}
+
+/* Request state: a real ride-request sheet, not a promotional card. */
+.driver-request-panel{
+  background:#fff!important;
+  border:1px solid #eaecf0!important;
+  box-shadow:var(--nr-shadow)!important;
+}
+.request-facts>div{background:#f8f9fb!important;border:1px solid #edf0f3!important;box-shadow:none!important}
+.driver-mobile-request-actions .accept-driver{background:var(--nr-green)!important;color:#fff!important;box-shadow:0 12px 26px rgba(0,168,107,.20)!important}
+.driver-mobile-request-actions .decline{background:#f2f4f7!important;color:#344054!important;border:1px solid #eaecf0!important}
+
+/* General application surfaces */
+button{ -webkit-tap-highlight-color:transparent; }
+.lucide-icon{stroke-width:1.8!important}
+
+@media(max-width:650px){
+  .driver-page{padding:6px 10px 92px!important}
+  .driver-map-hero{min-height:calc(100dvh - 92px)!important;height:calc(100dvh - 92px)!important;border-radius:24px!important}
+  .driver-map-top{top:10px!important;left:10px!important;right:10px!important;border-radius:17px!important}
+  .driver-map-location{top:70px!important;left:12px!important}
+  .driver-demand-card{left:10px!important;right:10px!important;bottom:100px!important;border-radius:18px!important;padding:13px!important}
+  .driver-go-wrap{left:10px!important;right:10px!important;bottom:10px!important}
+  .driver-go-online{height:62px!important;border-radius:18px!important}
+  .driver-mobile-tabs{left:10px!important;right:10px!important;bottom:10px!important;border-radius:18px!important}
+}
+
+/* Respect system accessibility preferences. */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important}
+}
+
+/* Dark mode remains intentional, while light mode is the default. */
+@media(prefers-color-scheme:dark){
+  :root{--nr-surface:#181a1d;--nr-soft:#22252a;--nr-ink:#f7f8fa;--nr-muted:#98a2b3;--nr-line:#30343a}
+  .driver-map-hero{background:#202328!important}
+  .driver-map-wash{background:linear-gradient(180deg,rgba(18,20,23,.70),rgba(18,20,23,0) 38%,rgba(18,20,23,.34) 70%,rgba(18,20,23,.78))!important}
+  .driver-map-top,.driver-demand-card{background:rgba(27,30,34,.92)!important;border-color:rgba(255,255,255,.08)!important}
+  .driver-brand strong,.demand-copy strong{color:#f7f8fa!important}
+  .driver-map-tools>button{background:#202328!important;color:#f2f4f7!important;border-color:#30343a!important}
+  .driver-map-location{background:rgba(27,30,34,.90)!important;color:#d0d5dd!important;border-color:#30343a!important}
+  .demand-earn{border-color:#30343a!important}.demand-earn b{color:#f7f8fa!important}
+  .driver-mobile-tabs{background:rgba(27,30,34,.94)!important;border-color:#30343a!important}
+  .driver-mobile-tabs button{color:#98a2b3!important}
+  .driver-request-panel{background:#181a1d!important;border-color:#30343a!important}
+  .request-facts>div{background:#22252a!important;border-color:#30343a!important}
+}
