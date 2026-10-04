@@ -1,109 +1,657 @@
-'use client';
-
-import { useEffect, useMemo, useState } from 'react';
-import './nexride-mobile.css';
-
-type Mode = 'rider' | 'driver';
-type RiderScreen = 'home' | 'destination' | 'rides' | 'trip' | 'summary' | 'wallet' | 'trips' | 'profile';
-type DriverScreen = 'home' | 'request' | 'navigation' | 'earnings' | 'history' | 'profile';
-type IconName = 'home' | 'search' | 'clock' | 'wallet' | 'user' | 'car' | 'shield' | 'settings' | 'locate' | 'menu' | 'arrow' | 'check' | 'phone' | 'chat' | 'navigation' | 'money' | 'close' | 'sun' | 'share';
-const paths: Record<IconName,string> = {home:'M3 10.5 12 3l9 7.5M5 9.5V21h14V9.5M9 21v-6h6v6',search:'m21 21-4.35-4.35M10.8 18a7.2 7.2 0 1 0 0-14.4 7.2 7.2 0 0 0 0 14.4Z',clock:'M12 7v5l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z',wallet:'M3 6h18v13H3zM16 12h5M16 12a2 2 0 1 0 0 4h5v-4',user:'M20 21a8 8 0 0 0-16 0M12 13a4 4 0 1 0 0-8 4 4 0 0 0 0 8',car:'M5 17h14M6 17l-1-5 2-5h10l2 5-1 5M7 15h.01M17 15h.01',shield:'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3Z',settings:'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8ZM4 12H2m20 0h-2M12 4V2m0 20v-2',locate:'M12 2v4m0 12v4M2 12h4m12 0h4M18 12a6 6 0 1 0-12 0 6 6 0 0 0 12 0Z',menu:'M4 6h16M4 12h16M4 18h16',arrow:'M5 12h14m-7-7 7 7-7 7',check:'m5 12 4 4L19 6',phone:'M6 3l3 1-1 4-2 1a15 15 0 0 0 7 7l1-2 4-1 1 3a2 2 0 0 1-2 2C10 18 6 14 3 7a2 2 0 0 1 3-4Z',chat:'M4 5h16v11H8l-4 4V5Z',navigation:'M4 4l16 8-16 8 4-8-4-8Z',money:'M3 6h18v12H3zM12 8v8M7 12h.01M17 12h.01',close:'M6 6l12 12M18 6 6 18',sun:'M12 3v2m0 14v2M3 12h2m14 0h2M5.6 5.6l1.4 1.4m10 10 1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0',share:'M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7M8 8l4-4 4 4M12 4v12'};
-function Icon({name,size=20}:{name:IconName;size?:number}){return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={paths[name]}/></svg>}
-const rides=[{id:'economy',name:'Economy',description:'Everyday rides',eta:'3 min',seats:4,base:70,perKm:25,perMin:3},{id:'comfort',name:'Comfort',description:'Newer, quieter cars',eta:'5 min',seats:4,base:90,perKm:35,perMin:4},{id:'premium',name:'Premium',description:'Top-rated drivers',eta:'7 min',seats:4,base:120,perKm:55,perMin:6},{id:'xl',name:'XL',description:'More room for groups',eta:'6 min',seats:6,base:100,perKm:40,perMin:4}];
-type Place = { name:string; address:string; lat:number; lng:number };
-const places:Place[]=[
-{name:'Bole Atlas',address:'Bole, Atlas area',lat:8.9956,lng:38.7885},
-{name:'Bole Airport',address:'Bole International Airport',lat:8.9779,lng:38.7993},
-{name:'Bole Medhanealem',address:'Bole, Medhanealem area',lat:8.9970,lng:38.7854},
-{name:'Edna Mall',address:'Bole Road, near Medhanealem',lat:8.9962,lng:38.7858},
-{name:'Friendship Mall',address:'Bole Road, Bole',lat:8.9870,lng:38.7889},
-{name:'Kazanchis',address:'Kazanchis business district',lat:9.0146,lng:38.7670},
-{name:'UNECA',address:'Menelik II Avenue, Kazanchis',lat:9.0078,lng:38.7625},
-{name:'Meskel Square',address:'Meskel Square, Addis Ababa',lat:9.0107,lng:38.7613},
-{name:'Mexico Square',address:'Mexico Square, Addis Ababa',lat:9.0034,lng:38.7466},
-{name:'Piassa',address:'Piassa, Addis Ababa',lat:9.0349,lng:38.7524},
-{name:'4 Kilo',address:'4 Kilo, Arada',lat:9.0370,lng:38.7616},
-{name:'6 Kilo',address:'6 Kilo, Addis Ababa',lat:9.0321,lng:38.7703},
-{name:'National Palace',address:'Churchill Avenue area',lat:9.0197,lng:38.7525},
-{name:'St. George Cathedral',address:'Piazza, Arada',lat:9.0355,lng:38.7522},
-{name:'Lideta',address:'Lideta, Addis Ababa',lat:9.0158,lng:38.7408},
-{name:'Gotera',address:'Gotera, Addis Ababa',lat:8.9915,lng:38.7380},
-{name:'Sar Bet',address:'Sar Bet, Addis Ababa',lat:9.0046,lng:38.7278},
-{name:'Jemo',address:'Jemo, Addis Ababa',lat:8.9642,lng:38.6928},
-{name:'Lafto',address:'Lafto, Nifas Silk-Lafto',lat:8.9757,lng:38.7046},
-{name:'Gerji',address:'Gerji, Addis Ababa',lat:9.0045,lng:38.8215},
-{name:'Megenagna',address:'Megenagna, Addis Ababa',lat:9.0164,lng:38.8080},
-{name:'CMC',address:'CMC, Yeka',lat:9.0225,lng:38.8352},
-{name:'Ayat',address:'Ayat, Yeka',lat:9.0275,lng:38.8578},
-{name:'Summit',address:'Summit, Yeka',lat:9.0165,lng:38.8738},
-{name:'Shola',address:'Shola Market area',lat:9.0197,lng:38.7955},
-{name:'Gerji Mebrat Hayl',address:'Gerji Mebrat Hayl',lat:9.0067,lng:38.8290},
-{name:'Hayat Hospital',address:'Bole, Hayat area',lat:8.9910,lng:38.8175},
-{name:'Africa Avenue',address:'Bole Road, Africa Avenue',lat:9.0017,lng:38.7706},
-{name:'Bole Rwanda',address:'Bole Rwanda, Addis Ababa',lat:8.9951,lng:38.7710},
-{name:'CMC Michael',address:'CMC Michael area',lat:9.0222,lng:38.8292},
-{name:'Entoto Park',address:'Entoto Mountain, Addis Ababa',lat:9.0830,lng:38.7667},
-{name:'Entoto Maryam',address:'Entoto Mountain',lat:9.0862,lng:38.7643},
-{name:'Unity Park',address:'Menelik II Palace grounds',lat:9.0207,lng:38.7610},
-{name:'Addis Ababa Stadium',address:'Churchill Avenue / Stadium area',lat:9.0110,lng:38.7508},
-{name:'Sheraton Addis',address:'Taitu Street, Addis Ababa',lat:9.0235,lng:38.7600},
-{name:'Hilton Addis Ababa',address:'Menelik II Avenue',lat:9.0237,lng:38.7685},
-{name:'Hyatt Regency Addis Ababa',address:'Meskel Square area',lat:9.0108,lng:38.7618},
-{name:'African Union',address:'Roosevelt Street, Addis Ababa',lat:9.0004,lng:38.7465},
-{name:'Bole Atlas Mall',address:'Bole Atlas, Addis Ababa',lat:8.9960,lng:38.7900},
-{name:'Shola Gebeya',address:'Shola Market, Yeka',lat:9.0202,lng:38.7970},
-{name:'Megenagna Square',address:'Megenagna, Addis Ababa',lat:9.0170,lng:38.8074},
-{name:'Kirkos',address:'Kirkos, Addis Ababa',lat:9.0048,lng:38.7568},
-{name:'Kazanchis Roundabout',address:'Kazanchis, Addis Ababa',lat:9.0130,lng:38.7690},
-{name:'Legehar',address:'Legehar / Railway Station area',lat:9.0180,lng:38.7428},
-{name:'Stadium',address:'Addis Ababa Stadium area',lat:9.0110,lng:38.7508},
-{name:'Old Airport',address:'Old Airport, Addis Ababa',lat:8.9975,lng:38.7797},
-{name:'Summit Furi',address:'Summit area',lat:8.9990,lng:38.8700},
-{name:'Kolfe',address:'Kolfe Keranio, Addis Ababa',lat:9.0025,lng:38.6940},
-{name:'Merkato',address:'Merkato, Addis Ababa',lat:9.0306,lng:38.7384},
-{name:'Shiro Meda',address:'Shiro Meda, Addis Ababa',lat:9.0572,lng:38.7700},
-{name:'Bethel Hospital',address:'Weyira Area, Kolfe Keranyo',lat:9.00459,lng:38.69292},
-{name:'Bethel Adebabay',address:'Bethel, Kolfe Keranyo',lat:9.0032,lng:38.6965},
-{name:'Anfo Adebabay',address:'Anfo Adebabay, Kolfe Keranyo',lat:9.02101,lng:38.67874},
-{name:'Anfo Meda',address:'Anfo, Kolfe Keranyo',lat:9.0185,lng:38.6810},
-{name:'Anfo Bridge',address:'Anfo Dildiy, Kolfe Keranyo',lat:9.0146,lng:38.6770},
-{name:'Anfo Mosque',address:'Ambo Road, Anfo Adebabay',lat:9.0178,lng:38.6798},
-{name:'Kolfe',address:'Kolfe, Addis Ababa',lat:9.0374,lng:38.71696},
-{name:'Kolfe Keranyo',address:'Kolfe Keranyo Sub-City',lat:8.9977331,lng:38.68622481},
-{name:'Kolfe Tiwan',address:'Kolfe Tiwan, Addis Ababa',lat:9.04436,lng:38.71831},
-{name:'Kolfe Health Center',address:'Kolfe Keranyo, Addis Ababa',lat:9.045128,lng:38.711155},
-{name:'Kera',address:'Kera, Nefas Silk / Kirkos area',lat:8.98478,lng:38.75024},
-{name:'Kera Gofa Road',address:'Kera, Gofa Road',lat:8.98134,lng:38.74970},
-{name:'Gotera',address:'Gotera, Addis Ababa',lat:8.9915,lng:38.7380},
-{name:'Bulgariya Mazoriya',address:'Bulgariya Mazoriya, Addis Ababa',lat:8.9858,lng:38.7440},
-{name:'Lancha',address:'Lancha, Addis Ababa',lat:8.9880,lng:38.7560},
-{name:'Nifas Silk',address:'Nifas Silk, Addis Ababa',lat:8.97572,lng:38.72710},
-{name:'Nifas Silk Lafto',address:'Nifas Silk Lafto Sub-City',lat:8.95077233,lng:38.73041217},
-{name:'Akaki Kaliti',address:'Akaki Kaliti Sub-City',lat:8.898546,lng:38.80237141},
-{name:'Akaki Beseka',address:'Akaki Beseka, Addis Ababa',lat:8.866667,lng:38.783333},
-{name:'Lemi Kura',address:'Lemi Kura Sub-City',lat:9.00995695,lng:38.87032423},
-{name:'Gullele',address:'Gullele Sub-City',lat:9.07112227,lng:38.73670792},
-{name:'Arada',address:'Arada Sub-City',lat:9.03568992,lng:38.755621},
-{name:'Kirkos',address:'Kirkos, Addis Ababa',lat:9.0048,lng:38.7568}
-];
-export default function Home(){const[savedState,setSavedState]=useState(false);const[safetyOpen,setSafetyOpen]=useState(false);const[profilePanel,setProfilePanel]=useState<'personal'|'settings'|null>(null);const[notifications,setNotifications]=useState(true);const[mode,setMode]=useState<Mode>('rider');const[theme,setTheme]=useState<'light'|'dark'>('light');const[riderScreen,setRiderScreen]=useState<RiderScreen>('home');const[driverScreen,setDriverScreen]=useState<DriverScreen>('home');const[destination,setDestination]=useState('');const[currentLocation,setCurrentLocation]=useState<{lat:number;lng:number}|null>(null);const[locationStatus,setLocationStatus]=useState<'idle'|'loading'|'ready'|'denied'>('idle');const[selectedRide,setSelectedRide]=useState(rides[0]);const[online,setOnline]=useState(false);const[requestVisible,setRequestVisible]=useState(true);const[tripStarted,setTripStarted]=useState(false);const[rating,setRating]=useState(0);const[menuOpen,setMenuOpen]=useState(false);const[accountCreated,setAccountCreated]=useState(false);const[form,setForm]=useState({name:'',phone:'',email:'',password:''});useEffect(()=>{try{const raw=localStorage.getItem('nexride-state');if(raw){const s=JSON.parse(raw);if(s.accountCreated)setAccountCreated(true);if(s.mode)setMode(s.mode);if(s.riderScreen)setRiderScreen(s.riderScreen);if(s.driverScreen)setDriverScreen(s.driverScreen);if(s.destination)setDestination(s.destination);if(s.selectedRide)setSelectedRide(s.selectedRide);if(s.online)setOnline(s.online);if(s.requestVisible===false)setRequestVisible(false);if(s.tripStarted)setTripStarted(true);if(s.rating)setRating(s.rating);if(s.form)setForm(s.form);if(s.theme)setTheme(s.theme);if(typeof s.notifications==='boolean')setNotifications(s.notifications)} }catch{}setSavedState(true)},[]);useEffect(()=>{if(!savedState)return;try{localStorage.setItem('nexride-state',JSON.stringify({accountCreated,mode,riderScreen,driverScreen,destination,selectedRide,online,requestVisible,tripStarted,rating,form,theme,notifications}))}catch{}},[savedState,accountCreated,mode,riderScreen,driverScreen,destination,selectedRide,online,requestVisible,tripStarted,rating,form,theme]);useEffect(()=>{if(!navigator.geolocation)return;setLocationStatus('loading');navigator.geolocation.getCurrentPosition(pos=>{setCurrentLocation({lat:pos.coords.latitude,lng:pos.coords.longitude});setLocationStatus('ready')},()=>setLocationStatus('denied'),{enableHighAccuracy:true,maximumAge:30000,timeout:10000})},[]);
-const distanceKm=(a:{lat:number;lng:number},b:{lat:number;lng:number})=>{const R=6371;const dLat=(b.lat-a.lat)*Math.PI/180;const dLng=(b.lng-a.lng)*Math.PI/180;const x=Math.sin(dLat/2)**2+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLng/2)**2;return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x))};
-const filteredPlaces=useMemo(()=>{const q=destination.trim().toLowerCase();const matches=q?places.filter(p=>p.name.toLowerCase().includes(q)||p.address.toLowerCase().includes(q)):places;return [...matches].sort((a,b)=>currentLocation?distanceKm(currentLocation,a)-distanceKm(currentLocation,b):a.name.localeCompare(b.name)).slice(0,12)},[destination,currentLocation]);
-const destinationPlace=places.find(p=>p.name===destination)||null;
-const routeDistanceKm=useMemo(()=>{if(!currentLocation||!destinationPlace)return null;return Math.max(0.5,distanceKm(currentLocation,destinationPlace)*1.28)},[currentLocation,destinationPlace]);
-const routeDurationMin=useMemo(()=>routeDistanceKm===null?null:Math.max(4,Math.ceil((routeDistanceKm/22)*60)),[routeDistanceKm]);
-const fareFor=(r:typeof rides[number])=>routeDistanceKm===null||routeDurationMin===null?null:Math.max(100,Math.round(r.base+r.perKm*routeDistanceKm+r.perMin*routeDurationMin));
-const selectedFare=fareFor(selectedRide);
-const choose=(p:string)=>{setDestination(p);setRiderScreen('rides')};if(!savedState)return <main className="nx-app"><div className="nx-boot"><span className="nx-account-mark">N</span><strong>Restoring NexRide…</strong></div></main>;return <main className="nx-app" data-theme={theme}>{safetyOpen&&<SafetyCenter onClose={()=>setSafetyOpen(false)}/>} {profilePanel&&<ProfilePanel type={profilePanel} form={form} notifications={notifications} setNotifications={setNotifications} onToggleTheme={()=>setTheme(v=>v==='light'?'dark':'light')} onClose={()=>setProfilePanel(null)} onLogout={()=>{setAccountCreated(false);setProfilePanel(null);try{localStorage.removeItem('nexride-state')}catch{}}}/>} {menuOpen&&<NexRideMenu accountCreated={accountCreated} form={form} onClose={()=>setMenuOpen(false)} onProfile={()=>{setRiderScreen('profile');setMode('rider');setMenuOpen(false)}} onWallet={()=>{setRiderScreen('wallet');setMode('rider');setMenuOpen(false)}} onTrips={()=>{setRiderScreen('trips');setMode('rider');setMenuOpen(false)}} onSettings={()=>{setRiderScreen('profile');setMode('rider');setMenuOpen(false)}} onHelp={()=>{setMenuOpen(false);setSafetyOpen(true)}} onSwitchDriver={()=>{setMode('driver');setDriverScreen('home');setMenuOpen(false)}} onLogout={()=>{setAccountCreated(false);setMenuOpen(false);try{localStorage.removeItem('nexride-state')}catch{}}} onToggleTheme={()=>setTheme(v=>v==='light'?'dark':'light')}/>}{!accountCreated?<AccountCreation form={form} setForm={setForm} onContinue={()=>setAccountCreated(true)} onMenu={()=>setMenuOpen(true)}/>:mode==='rider'?<RiderApp screen={riderScreen} destination={destination} selectedRide={selectedRide} filteredPlaces={filteredPlaces} currentLocation={currentLocation} locationStatus={locationStatus} distanceKm={distanceKm} routeDistanceKm={routeDistanceKm} routeDurationMin={routeDurationMin} fareFor={fareFor} selectedFare={selectedFare} rating={rating} onMenu={()=>setMenuOpen(true)} onDestinationChange={setDestination} onChoose={choose} onSelect={setSelectedRide} onBook={()=>setRiderScreen('trip')} onSetRating={setRating} onNavigate={setRiderScreen} onSwitchDriver={()=>{setMode('driver');setDriverScreen('home')}} onSafety={()=>setSafetyOpen(true)}/>:<DriverApp screen={driverScreen} online={online} requestVisible={requestVisible} tripStarted={tripStarted} onMenu={()=>setMenuOpen(true)} onToggleOnline={()=>setOnline(v=>!v)} onAccept={()=>{setRequestVisible(false);setDriverScreen('navigation')}} onDecline={()=>setRequestVisible(false)} onStartTrip={()=>setTripStarted(true)} onComplete={()=>setDriverScreen('earnings')} onNavigate={setDriverScreen} onSwitchRider={()=>{setMode('rider');setRiderScreen('home')}} onOpenProfilePanel={setProfilePanel}/>}</main>}
-function NexRideMenu({accountCreated,form,onClose,onProfile,onWallet,onTrips,onSettings,onHelp,onSwitchDriver,onLogout,onToggleTheme}:{accountCreated:boolean;form:{name:string;phone:string;email:string;password:string};onClose:()=>void;onProfile:()=>void;onWallet:()=>void;onTrips:()=>void;onSettings:()=>void;onHelp:()=>void;onSwitchDriver:()=>void;onLogout:()=>void;onToggleTheme:()=>void}){return <div className="nx-menu-backdrop" onClick={onClose}><aside className="nx-menu" onClick={e=>e.stopPropagation()}><div className="nx-menu-head"><strong>NexRide</strong><button onClick={onClose} aria-label="Close"><Icon name="close"/></button></div>{accountCreated&&<div className="nx-menu-profile"><div className="nx-avatar">MA</div><div><strong>{form.name||'NexRide Rider'}</strong><small>{form.phone||'Rider account'}</small></div></div>}{accountCreated?<><button onClick={onProfile}><Icon name="user"/> Profile</button><button onClick={onWallet}><Icon name="wallet"/> Payments & Wallet</button><button onClick={onTrips}><Icon name="clock"/> Trips</button><button onClick={onSettings}><Icon name="settings"/> Settings</button><button onClick={onHelp}><Icon name="chat"/> Help & Support</button><div className="nx-menu-divider"/><button className="nx-theme-toggle" onClick={onToggleTheme}><Icon name="sun"/><span>Appearance</span><small>Switch theme</small></button><button className="nx-driver-switch" onClick={onSwitchDriver}><Icon name="car"/> Drive with NexRide <Icon name="arrow" size={17}/></button><button className="nx-logout" onClick={onLogout}><Icon name="close"/> Log out</button></>:<><button onClick={onHelp}><Icon name="chat"/> Help & Support</button><button onClick={onClose}><Icon name="shield"/> Safety & privacy</button></>}</aside></div>}
-function AccountCreation({form,setForm,onContinue,onMenu}:{form:{name:string;phone:string;email:string;password:string};setForm:(f:{name:string;phone:string;email:string;password:string})=>void;onContinue:()=>void;onMenu:()=>void}){const valid=form.name.trim()&&form.phone.trim()&&form.password.length>=6;return <main className="nx-account"><button className="nx-account-menu nx-icon-button" onClick={onMenu} aria-label="Open menu"><Icon name="menu"/></button><div className="nx-account-brand"><span className="nx-account-mark">N</span><strong>NexRide</strong></div><div className="nx-account-card"><div className="nx-account-kicker">WELCOME TO NEXRIDE</div><h1>Create your account</h1><p>Set up your rider account to request rides, manage payments, and track every trip.</p><form onSubmit={e=>{e.preventDefault();if(valid)onContinue()}}><label>Full name<input value={form.name} onChange={e=>setForm({...form,name:e.target.value})} placeholder="Your name" autoComplete="name" required/></label><label>Phone number<input value={form.phone} onChange={e=>setForm({...form,phone:e.target.value})} placeholder="+251 9•• ••• •••" inputMode="tel" autoComplete="tel" required/></label><label>Email <span>(optional)</span><input value={form.email} onChange={e=>setForm({...form,email:e.target.value})} placeholder="you@example.com" type="email" autoComplete="email"/></label><label>Password<input value={form.password} onChange={e=>setForm({...form,password:e.target.value})} placeholder="At least 6 characters" type="password" autoComplete="new-password" minLength={6} required/></label><button className="nx-primary nx-account-submit" disabled={!valid}>Create account <Icon name="arrow" size={18}/></button></form><small className="nx-account-legal">By continuing, you agree to NexRide's Terms and Privacy Policy.</small></div></main>}
-function Map({route=false,driver=false}:{route?:boolean;driver?:boolean}){return <div className="nx-map"><div className="nx-map-grid"/><div className="nx-road nx-road-a"/><div className="nx-road nx-road-b"/><div className="nx-road nx-road-c"/><div className="nx-road nx-road-d"/>{route&&<div className="nx-route"/>}<div className="nx-pin nx-pin-start"/>{route&&<div className="nx-pin nx-pin-end"/>}{driver&&<div className="nx-driver-car"><Icon name="car" size={18}/></div>}<div className="nx-map-controls"><button aria-label="Current location"><Icon name="locate"/></button><button aria-label="Map layers">◈</button></div><small className="nx-map-credit">NexRide maps</small></div>}
-function Header({title,onMenu}:{title:string;onMenu:()=>void}){return <header className="nx-header"><button className="nx-icon-button" onClick={onMenu} aria-label="Open menu"><Icon name="menu"/></button><strong>{title}</strong><span/></header>}
-function RiderApp({screen,destination,selectedRide,filteredPlaces,currentLocation,locationStatus,distanceKm,routeDistanceKm,routeDurationMin,fareFor,selectedFare,rating,onMenu,onDestinationChange,onChoose,onSelect,onBook,onSetRating,onNavigate,onSwitchDriver,onSafety,onOpenProfilePanel}:{screen:RiderScreen;destination:string;selectedRide:typeof rides[number];filteredPlaces:Place[];currentLocation:{lat:number;lng:number}|null;locationStatus:'idle'|'loading'|'ready'|'denied';distanceKm:(a:{lat:number;lng:number},b:{lat:number;lng:number})=>number;routeDistanceKm:number|null;routeDurationMin:number|null;fareFor:(r:typeof rides[number])=>number|null;selectedFare:number|null;rating:number;onMenu:()=>void;onDestinationChange:(v:string)=>void;onChoose:(v:string)=>void;onSelect:(r:typeof rides[number])=>void;onBook:()=>void;onSetRating:(n:number)=>void;onNavigate:(s:RiderScreen)=>void;onSwitchDriver:()=>void;onSafety:()=>void;onOpenProfilePanel:(p:'personal'|'settings')=>void}){if(screen==='destination')return <div className="nx-mobile-shell"><Header title="Where to?" onMenu={onMenu}/><section className="nx-search-page"><div className="nx-search-box"><Icon name="search"/><input autoFocus value={destination} onChange={e=>onDestinationChange(e.target.value)} placeholder="Search destination"/></div><div className="nx-current"><span className={`nx-dot ${locationStatus==='ready'?'blue':'green'}`}/><span>{locationStatus==='ready'?'Current location detected':'Current location'}</span>{locationStatus==='loading'&&<small>Locating…</small>}{locationStatus==='denied'&&<small>Allow location for live distance</small>}</div><h2>{destination?'Destinations':'Nearby places'}</h2><div className="nx-place-list">{filteredPlaces.map(p=><button key={p.name} onClick={()=>onChoose(p.name)}><span className="nx-place-icon"><Icon name="locate" size={18}/></span><span><strong>{p.name}</strong><small>{p.address}{currentLocation? ` · ${distanceKm(currentLocation,p).toFixed(1)} km away`:''}</small></span><Icon name="arrow" size={17}/></button>)}</div></section></div>;if(screen==='rides')return <div className="nx-mobile-shell nx-map-shell"><button className="nx-floating-menu nx-icon-button" onClick={onMenu} aria-label="Open menu"><Icon name="menu"/></button><Map route/><div className="nx-bottom-sheet"><div className="nx-handle"/><div className="nx-sheet-title"><div><small>Going to</small><h1>{destination||'Choose destination'}</h1></div><button onClick={()=>onNavigate('destination')}>Edit</button></div><div className="nx-fare-preview"><span><small>Estimated fare</small><strong>{selectedFare===null?'Set location':`${selectedFare} ETB`}</strong></span><span><small>Distance</small><strong>{routeDistanceKm===null?'—':`${routeDistanceKm.toFixed(1)} km`}</strong></span><span><small>Time</small><strong>{routeDurationMin===null?'—':`${routeDurationMin} min`}</strong></span></div><div className="nx-ride-list">{rides.map(r=><button key={r.id} className={`nx-ride-card ${selectedRide.id===r.id?'selected':''}`} onClick={()=>onSelect(r)}><span className="nx-car-icon"><Icon name="car"/></span><span className="nx-ride-info"><strong>{r.name}</strong><small>{r.description} · {r.seats} seats</small></span><span className="nx-ride-time"><strong>{fareFor(r)===null?'Set location':`${fareFor(r)} ETB`}</strong><small>{routeDurationMin===null?r.eta:`${routeDurationMin} min`}</small></span></button>)}</div><button className="nx-primary" onClick={onBook}>Confirm {selectedRide.name} · {selectedFare===null?'Set location':`${selectedFare} ETB`}</button></div></div>;if(screen==='trip')return <div className="nx-mobile-shell nx-map-shell"><button className="nx-floating-menu nx-icon-button" onClick={onMenu} aria-label="Open menu"><Icon name="menu"/></button><Map route driver/><div className="nx-trip-top"><span className="nx-live-dot"/>Driver is on the way<strong>4 min</strong></div><div className="nx-bottom-sheet nx-trip-sheet"><div className="nx-driver-row"><div className="nx-driver-photo">AB</div><div><strong>Abebe M.</strong><small>★ 4.9 · Toyota Corolla</small><small>3-A12345 · 1,240 trips</small></div><div className="nx-actions"><button aria-label="Call"><Icon name="phone"/></button><button aria-label="Chat"><Icon name="chat"/></button></div></div><div className="nx-progress"><span/></div><div className="nx-safety-row"><span><Icon name="shield" size={18}/>Your trip is protected</span><button onClick={onSafety}>Safety</button></div><button className="nx-text-button" onClick={()=>onNavigate('summary')}>View trip details & fare</button></div></div>;if(screen==='summary')return <div className="nx-mobile-shell nx-summary"><div className="nx-summary-head"><button className="nx-icon-button" onClick={()=>onNavigate('trip')} aria-label="Back"><Icon name="arrow" size={18}/></button><strong>Trip details</strong></div><section className="nx-summary-content"><div className="nx-success"><span><Icon name="check" size={27}/></span><small>RIDE DETAILS</small><h1>{selectedFare===null?'—':selectedFare} ETB</h1><p>Estimated total · {selectedRide.name} · {routeDistanceKm===null?'distance unavailable':`${routeDistanceKm.toFixed(1)} km · ${routeDurationMin} min`}</p></div><div className="nx-fare-card"><div><span>Ride</span><b>{selectedRide.name}</b></div><div><span>Pickup</span><b>Current location</b></div><div><span>Destination</span><b>{destination||'Selected destination'}</b></div><div><span>Payment</span><b>Cash</b></div><div className="nx-fare-total"><span>Total</span><strong>{selectedFare===null?'—':`${selectedFare} ETB`}</strong></div></div><button className="nx-primary" onClick={()=>onNavigate('wallet')}>Manage payment</button><button className="nx-secondary" onClick={()=>onNavigate('home')}>Done</button></section></div>;if(screen==='wallet')return <div className="nx-mobile-shell"><Header title="Wallet" onMenu={onMenu}/><section className="nx-page-content"><div className="nx-wallet-hero"><small>Available balance</small><strong>ETB 1,240</strong><button>Add payment method</button></div><h2>Payment methods</h2><div className="nx-list-card"><div><Icon name="wallet"/><span><strong>Cash</strong><small>Default payment</small></span><b>✓</b></div><div><Icon name="money"/><span><strong>Mobile money</strong><small>Add a payment method</small></span><Icon name="arrow" size={17}/></div></div></section><BottomNav active="wallet" onNavigate={onNavigate}/></div>;if(screen==='trips')return <div className="nx-mobile-shell"><Header title="My trips" onMenu={onMenu}/><section className="nx-page-content"><div className="nx-list-card"><button onClick={()=>onNavigate('trip')}><Icon name="clock"/><span><strong>Current trip</strong><small>{destination||'Active NexRide trip'} · {selectedRide.name}</small></span><Icon name="arrow" size={17}/></button><div><Icon name="check"/><span><strong>Trip history</strong><small>Completed trips will appear here.</small></span></div></div></section><BottomNav active="trips" onNavigate={onNavigate}/></div>;if(screen==='profile')return <div className="nx-mobile-shell"><Header title="Profile" onMenu={onMenu}/><section className="nx-page-content"><div className="nx-profile-head"><div className="nx-profile-avatar">MA</div><div><h1>Mahir Aman</h1><p>Rider · 4.9 rating</p></div></div><div className="nx-list-card"><button onClick={()=>onOpenProfilePanel('personal')}><Icon name="user"/><span>Personal information</span><Icon name="arrow" size={17}/></button><button onClick={()=>onNavigate('trips')}><Icon name="clock"/><span>My trips</span><Icon name="arrow" size={17}/></button><button onClick={onSafety}><Icon name="shield"/><span>Safety</span><Icon name="arrow" size={17}/></button><button onClick={()=>onOpenProfilePanel('settings')}><Icon name="settings"/><span>Settings</span><Icon name="arrow" size={17}/></button></div><button className="nx-secondary" onClick={onSwitchDriver}>Become a NexRide driver</button></section><BottomNav active="profile" onNavigate={onNavigate}/></div>;return <div className="nx-mobile-shell nx-home"><Map/><Header title="NexRide" onMenu={onMenu}/><div className="nx-home-overlay"><button className="nx-destination-bar" onClick={()=>onNavigate('destination')}><span className="nx-search-circle"><Icon name="search"/></span><span><small>Where to?</small><strong>Choose your destination</strong></span><Icon name="arrow" size={18}/></button><div className="nx-quick-row"><button onClick={()=>onChoose('Home')}><b>⌂</b><span>Home</span></button><button onClick={()=>onChoose('Work')}><b>▣</b><span>Work</span></button><button onClick={()=>onNavigate('destination')}><b>＋</b><span>Add</span></button></div></div><BottomNav active="home" onNavigate={onNavigate}/></div>}
-function BottomNav({active,onNavigate}:{active:string;onNavigate:(s:RiderScreen)=>void}){return <nav className="nx-bottom-nav"><button className={active==='home'?'active':''} onClick={()=>onNavigate('home')}><Icon name="home" size={19}/>Home</button><button className={active==='trips'?'active':''} onClick={()=>onNavigate('trips')}><Icon name="clock" size={19}/>Trips</button><button className={active==='wallet'?'active':''} onClick={()=>onNavigate('wallet')}><Icon name="wallet" size={19}/>Wallet</button><button className={active==='profile'?'active':''} onClick={()=>onNavigate('profile')}><Icon name="user" size={19}/>Profile</button></nav>}
-function DriverApp({screen,online,requestVisible,tripStarted,onMenu,onToggleOnline,onAccept,onDecline,onStartTrip,onComplete,onNavigate,onSwitchRider,onOpenProfilePanel}:{screen:DriverScreen;online:boolean;requestVisible:boolean;tripStarted:boolean;onMenu:()=>void;onToggleOnline:()=>void;onAccept:()=>void;onDecline:()=>void;onStartTrip:()=>void;onComplete:()=>void;onNavigate:(s:DriverScreen)=>void;onSwitchRider:()=>void;onOpenProfilePanel:(p:'personal'|'settings')=>void}){if(screen==='request'&&requestVisible)return <div className="nx-mobile-shell nx-map-shell"><button className="nx-floating-menu nx-icon-button" onClick={onMenu} aria-label="Open menu"><Icon name="menu"/></button><Map route/><div className="nx-driver-request"><div className="nx-request-handle"/><small>New ride request</small><div className="nx-request-price">ETB 265</div><div className="nx-request-route"><div><span className="nx-dot green"/><strong>Bole Atlas</strong><small>Pickup · 3 min</small></div><div className="nx-route-line"/><div><span className="nx-dot blue"/><strong>Kazanchis</strong><small>Drop-off · 6.2 km</small></div></div><div className="nx-request-meta"><span>★ 4.9 rider</span><span>~18 min</span><span>6.2 km</span></div><div className="nx-request-actions"><button className="nx-secondary" onClick={onDecline}>Decline</button><button className="nx-primary" onClick={onAccept}>Accept ride</button></div></div></div>;if(screen==='navigation')return <div className="nx-mobile-shell nx-map-shell"><Map route driver/><Header title={tripStarted?'On trip':'Pickup'} onMenu={onMenu}/><div className="nx-turn-card"><small>Next turn</small><strong>{tripStarted?'Continue toward Kazanchis':'Head to Bole Atlas'}</strong><span>{tripStarted?'4.1 km · 12 min':'1.8 km · 4 min'}</span></div><div className="nx-driver-trip-sheet"><div><small>{tripStarted?'Passenger on board':'Arriving at pickup'}</small><strong>{tripStarted?'Kazanchis':'Bole Atlas'}</strong></div>{tripStarted?<button className="nx-primary" onClick={onComplete}>Complete trip</button>:<button className="nx-primary" onClick={onStartTrip}>Start trip</button>}</div></div>;if(screen==='earnings')return <div className="nx-mobile-shell"><Header title="Earnings" onMenu={onMenu}/><section className="nx-page-content"><div className="nx-earnings-card"><small>Today</small><strong>ETB 1,845</strong><span>+12% from yesterday</span></div><div className="nx-stat-grid"><div><small>Online time</small><strong>7h 24m</strong></div><div><small>Trips</small><strong>14</strong></div></div><h2>This week</h2><div className="nx-chart"><span style={{height:'48%'}}/><span style={{height:'67%'}}/><span style={{height:'54%'}}/><span style={{height:'82%'}}/><span style={{height:'61%'}}/><span style={{height:'92%'}}/><span style={{height:'70%'}}/></div></section><DriverNav active="earnings" onNavigate={onNavigate}/></div>;if(screen==='history')return <div className="nx-mobile-shell"><Header title="Trip history" onMenu={onMenu}/><section className="nx-page-content"><div className="nx-list-card"><div><Icon name="check"/><span><strong>Recent trips</strong><small>Your completed trips will appear here.</small></span></div></div></section><DriverNav active="history" onNavigate={onNavigate}/></div>;if(screen==='profile')return <div className="nx-mobile-shell"><Header title="Driver profile" onMenu={onMenu}/><section className="nx-page-content"><div className="nx-profile-head"><div className="nx-profile-avatar">MA</div><div><h1>Mahir Aman</h1><p>★ 4.9 · 1,240 trips</p></div></div><div className="nx-list-card"><button onClick={()=>onNavigate('earnings')}><Icon name="money"/><span>Earnings</span><Icon name="arrow" size={17}/></button><button onClick={()=>onNavigate('history')}><Icon name="clock"/><span>Trip history</span><Icon name="arrow" size={17}/></button><button onClick={()=>onOpenProfilePanel('settings')}><Icon name="settings"/><span>Preferences</span><Icon name="arrow" size={17}/></button><button onClick={()=>onOpenProfilePanel('personal')}><Icon name="shield"/><span>Safety & support</span><Icon name="arrow" size={17}/></button></div><button className="nx-secondary" onClick={onSwitchRider}>Switch to rider</button></section><DriverNav active="profile" onNavigate={onNavigate}/></div>;return <div className="nx-mobile-shell nx-driver-home"><Map/><Header title="NexRide Driver" onMenu={onMenu}/><div className="nx-driver-status"><div><small>{online?'You are online':'You are offline'}</small><strong>{online?'Ready for trips':'Take a break'}</strong></div><button className={`nx-online-toggle ${online?'online':''}`} onClick={onToggleOnline}><span/>{online?'ONLINE':'GO ONLINE'}</button></div><div className="nx-driver-summary"><div><small>Today</small><strong>ETB 1,845</strong><span>14 trips</span></div><div><small>Demand</small><strong>Moderate</strong><span>+8% nearby</span></div></div>{online&&requestVisible&&<button className="nx-opportunity" onClick={()=>onNavigate('request')}><span className="nx-opportunity-icon"><Icon name="car"/></span><span><strong>Ride request available</strong><small>Bole Atlas → Kazanchis · ETB 265</small></span><Icon name="arrow" size={18}/></button>}<DriverNav active="home" onNavigate={onNavigate}/></div>}
-function DriverNav({active,onNavigate}:{active:string;onNavigate:(s:DriverScreen)=>void}){return <nav className="nx-bottom-nav"><button className={active==='home'?'active':''} onClick={()=>onNavigate('home')}><Icon name="home" size={19}/>Home</button><button className={active==='request'?'active':''} onClick={()=>onNavigate('request')}><Icon name="car" size={19}/>Requests</button><button className={active==='earnings'?'active':''} onClick={()=>onNavigate('earnings')}><Icon name="money" size={19}/>Earnings</button><button className={active==='profile'?'active':''} onClick={()=>onNavigate('profile')}><Icon name="user" size={19}/>Account</button></nav>}
-
-function SafetyCenter({onClose}:{onClose:()=>void}){return <div className="nx-safety-backdrop" role="dialog" aria-modal="true" aria-label="Safety center"><section className="nx-safety-modal"><div className="nx-safety-head"><div><small>TRIP SAFETY</small><h2>Safety center</h2></div><button className="nx-icon-button" onClick={onClose} aria-label="Close"><Icon name="close"/></button></div><p>Quick access to essential safety tools during your ride.</p><button className="nx-emergency"><span>911</span><div><strong>Emergency assistance</strong><small>Call local emergency services</small></div><Icon name="phone" size={18}/></button><button className="nx-safety-option"><Icon name="share"/><span><strong>Share trip status</strong><small>Send your driver and trip details</small></span><Icon name="arrow" size={17}/></button><button className="nx-safety-option"><Icon name="shield"/><span><strong>Safety information</strong><small>Review rider protection options</small></span><Icon name="arrow" size={17}/></button><button className="nx-secondary" onClick={onClose}>Close</button></section></div>}
-
-function ProfilePanel({type,form,onClose,onLogout,notifications,setNotifications,onToggleTheme}:{type:'personal'|'settings';form:{name:string;phone:string;email:string;password:string};onClose:()=>void;onLogout:()=>void;notifications:boolean;setNotifications:(v:boolean|((x:boolean)=>boolean))=>void;onToggleTheme:()=>void}){return <div className="nx-panel-backdrop" onClick={onClose}><section className="nx-panel" onClick={e=>e.stopPropagation()} role="dialog" aria-modal="true"><div className="nx-panel-head"><div><small>ACCOUNT</small><h2>{type==='personal'?'Personal information':'Settings'}</h2></div><button className="nx-icon-button" onClick={onClose} aria-label="Close"><Icon name="close"/></button></div>{type==='personal'?<div className="nx-panel-list"><label>Full name<input value={form.name} readOnly/></label><label>Phone number<input value={form.phone} readOnly/></label><label>Email<input value={form.email||'Not added'} readOnly/></label><div className="nx-panel-note">Your account details are saved on this device for this NexRide demo.</div></div>:<div className="nx-panel-list"><button className="nx-panel-row" onClick={()=>setNotifications(v=>!v)}><span><strong>Notifications</strong><small>Ride updates and driver messages</small></span><b>{notifications?'On':'Off'}</b></button><button className="nx-panel-row" onClick={onToggleTheme}><span><strong>Appearance</strong><small>Switch between light and dark mode</small></span><b>Change</b></button><button className="nx-panel-row nx-panel-danger" onClick={onLogout}><span><strong>Log out</strong><small>Sign out and clear this device session</small></span><b>›</b></button></div>}<button className="nx-primary" onClick={onClose}>Done</button></section></div>}
+"use client";
+import Image from "next/image";
+import { useCallback, useEffect, useState } from "react";
+import {
+  Brand,
+  Button,
+  Dialog,
+  Icon,
+  InputField,
+  LanguageContext,
+  ListRow,
+  Navigation,
+  Sheet,
+  Skeleton,
+  StatusBanner,
+  useTranslation,
+  type IconName,
+} from "../components/nexride/ui";
+import { RideMap } from "../components/nexride/map";
+import { RiderWorkspace, type RiderScreen } from "../components/nexride/rider";
+import {
+  DriverWorkspace,
+  type DriverScreen,
+} from "../components/nexride/driver";
+import type { Language } from "../lib/nexride-i18n";
+import type { PreviewProfile, PreviewTrip } from "../lib/nexride-preview";
+import "./nexride.css";
+const STORAGE_KEY = "nexride-preview-v2";
+type Mode = "rider" | "driver";
+type Panel =
+  | "menu"
+  | "personal"
+  | "settings"
+  | "safety"
+  | "support"
+  | "unavailable"
+  | "reset"
+  | null;
+const emptyProfile = { name: "", phone: "", email: "" };
+export default function Home() {
+  const [language, setLanguage] = useState<Language>("en");
+  const [mode, setMode] = useState<Mode>("rider");
+  const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [profile, setProfile] = useState<PreviewProfile>(emptyProfile);
+  const [trip, setTrip] = useState<PreviewTrip | null>(null);
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    try {
+      const old = localStorage.getItem("nexride-state");
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const state = JSON.parse(saved);
+        if (state.language === "am") setLanguage("am");
+        if (state.mode === "driver") setMode("driver");
+        if (state.theme === "dark") setTheme("dark");
+        if (state.profile)
+          setProfile({
+            name: String(state.profile.name || ""),
+            phone: String(state.profile.phone || ""),
+            email: String(state.profile.email || ""),
+          });
+        if (
+          state.trip &&
+          typeof state.trip.amount === "number" &&
+          typeof state.trip.destination === "string" &&
+          ["economy", "comfort", "premium", "xl"].includes(state.trip.ride)
+        )
+          setTrip(state.trip);
+      } else if (old) {
+        const state = JSON.parse(old);
+        if (state.form)
+          setProfile({
+            name: String(state.form.name || ""),
+            phone: String(state.form.phone || ""),
+            email: String(state.form.email || ""),
+          });
+        if (state.mode === "driver") setMode("driver");
+      }
+    } catch {
+      /* Storage may be unavailable in private browsing. */
+    } finally {
+      try {
+        localStorage.removeItem("nexride-state");
+      } catch {}
+    }
+    setReady(true);
+  }, []);
+  useEffect(() => {
+    if (!ready) return;
+    try {
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ language, mode, theme, profile, trip }),
+      );
+    } catch {}
+  }, [ready, language, mode, theme, profile, trip]);
+  useEffect(() => {
+    document.documentElement.lang = language;
+  }, [language]);
+  return (
+    <LanguageContext value={language}>
+      <main className="nr-app" data-mode={mode} data-theme={theme}>
+        {ready ? (
+          <AppWorkspace
+            language={language}
+            setLanguage={setLanguage}
+            mode={mode}
+            setMode={setMode}
+            theme={theme}
+            setTheme={setTheme}
+            profile={profile}
+            setProfile={setProfile}
+            trip={trip}
+            setTrip={setTrip}
+            onReset={() => {
+              setProfile(emptyProfile);
+              setTrip(null);
+              setMode("rider");
+            }}
+          />
+        ) : (
+          <Skeleton />
+        )}
+      </main>
+    </LanguageContext>
+  );
+}
+function AppWorkspace({
+  language,
+  setLanguage,
+  mode,
+  setMode,
+  theme,
+  setTheme,
+  profile,
+  setProfile,
+  trip,
+  setTrip,
+  onReset,
+}: {
+  language: Language;
+  setLanguage: (l: Language) => void;
+  mode: Mode;
+  setMode: (m: Mode) => void;
+  theme: "light" | "dark";
+  setTheme: (t: "light" | "dark") => void;
+  profile: PreviewProfile;
+  setProfile: (p: PreviewProfile) => void;
+  trip: PreviewTrip | null;
+  setTrip: (t: PreviewTrip) => void;
+  onReset: () => void;
+}) {
+  const t = useTranslation();
+  const [riderScreen, setRiderScreen] = useState<RiderScreen>("home");
+  const [driverScreen, setDriverScreen] = useState<DriverScreen>("home");
+  const [panel, setPanel] = useState<Panel>(null);
+  const [serviceTitle, setServiceTitle] = useState("");
+  const [offline, setOffline] = useState(false);
+  const [toast, setToast] = useState("");
+  const navigateRider = useCallback((s: RiderScreen) => setRiderScreen(s), []);
+  const navigateDriver = useCallback(
+    (s: DriverScreen) => setDriverScreen(s),
+    [],
+  );
+  useEffect(() => {
+    const update = () => setOffline(!navigator.onLine);
+    update();
+    window.addEventListener("online", update);
+    window.addEventListener("offline", update);
+    return () => {
+      window.removeEventListener("online", update);
+      window.removeEventListener("offline", update);
+    };
+  }, []);
+  useEffect(() => {
+    if (!toast) return;
+    const timer = window.setTimeout(() => setToast(""), 3000);
+    return () => window.clearTimeout(timer);
+  }, [toast]);
+  const screen = mode === "rider" ? riderScreen : driverScreen;
+  const profileView = screen === "profile";
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, [screen, mode]);
+  const navItems: { id: string; label: string; icon: IconName }[] =
+    mode === "rider"
+      ? [
+          { id: "home", label: t("home"), icon: "home" },
+          { id: "trips", label: t("trips"), icon: "clock" },
+          { id: "wallet", label: t("wallet"), icon: "wallet" },
+          { id: "profile", label: t("profile"), icon: "user" },
+        ]
+      : [
+          { id: "home", label: t("home"), icon: "home" },
+          { id: "request", label: t("requests"), icon: "car" },
+          { id: "earnings", label: t("earnings"), icon: "money" },
+          { id: "profile", label: t("profile"), icon: "user" },
+        ];
+  const navigate = (id: string) => {
+    if (mode === "rider") setRiderScreen(id as RiderScreen);
+    else setDriverScreen(id as DriverScreen);
+    setPanel(null);
+  };
+  const unavailable = (title: string) => {
+    setServiceTitle(title);
+    setPanel("unavailable");
+  };
+  const switchMode = (m: Mode) => {
+    setMode(m);
+    setRiderScreen("home");
+    setDriverScreen("home");
+    setPanel(null);
+  };
+  const initials = profile.name
+    ? profile.name
+        .trim()
+        .split(/\s+/)
+        .slice(0, 2)
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+    : "NR";
+  return (
+    <div className="nr-workspace">
+      <aside className="nr-sidebar">
+        <Brand driver={mode === "driver"} />
+        <span className="nr-sidebar-city">
+          <Icon name="pin" size={16} />
+          {t("city")}
+        </span>
+        <div className="nr-mode-control" role="group" aria-label="NexRide">
+          <button
+            className={mode === "rider" ? "selected" : ""}
+            onClick={() => switchMode("rider")}
+          >
+            {t("rider")}
+          </button>
+          <button
+            className={mode === "driver" ? "selected" : ""}
+            onClick={() => switchMode("driver")}
+          >
+            {t("driver")}
+          </button>
+        </div>
+        <Navigation items={navItems} active={screen} onNavigate={navigate} />
+        <div className="nr-sidebar-bottom">
+          <button onClick={() => setPanel("safety")}>
+            <Icon name="shield" />
+            {t("safety")}
+          </button>
+          <button onClick={() => setPanel("settings")}>
+            <Icon name="settings" />
+            {t("settings")}
+          </button>
+          <button onClick={() => setLanguage(language === "en" ? "am" : "en")}>
+            <Icon name="globe" />
+            {language === "en" ? "አማርኛ" : "English"}
+          </button>
+          <p>{t("brandTagline")}</p>
+        </div>
+      </aside>
+      <section className="nr-main">
+        <header className="nr-topbar">
+          <button
+            className="nr-icon-button nr-mobile-menu"
+            onClick={() => setPanel("menu")}
+            aria-label={t("menu")}
+          >
+            <Icon name="menu" />
+          </button>
+          <Brand driver={mode === "driver"} />
+          <div className="nr-topbar-place">
+            <Icon name="pin" size={17} />
+            <span>{t("city")}</span>
+          </div>
+          <div className="nr-topbar-actions">
+            <button
+              className="nr-language-button"
+              onClick={() => setLanguage(language === "en" ? "am" : "en")}
+            >
+              <Icon name="globe" size={17} />
+              <span>{language === "en" ? "አማርኛ" : "EN"}</span>
+            </button>
+            <button
+              className="nr-avatar-button"
+              aria-label={t("profile")}
+              onClick={() => navigate("profile")}
+            >
+              {initials}
+            </button>
+          </div>
+        </header>
+        <div className="nr-preview-banner">
+          <span className="nr-preview-label">{t("preview")}</span>
+          <p>{t("previewInfo")}</p>
+          <button
+            className="nr-icon-button"
+            onClick={() => unavailable(t("preview"))}
+            aria-label={t("details")}
+          >
+            <Icon name="info" size={17} />
+          </button>
+        </div>
+        {offline && (
+          <div className="nr-network-banner" role="status">
+            {t("networkOffline")}
+          </div>
+        )}
+        <div
+          className={`nr-stage ${["home", "destination", "rides", "finding", "trip", "live", "request", "navigation"].includes(screen) ? "with-map" : "content-view"}`}
+        >
+          <RideMap
+            route={["rides", "trip", "live", "request", "navigation"].includes(
+              screen,
+            )}
+            driving={mode === "driver"}
+          />
+          <div className="nr-map-city">
+            <Image
+              src="/images/addis-skyline.webp"
+              alt={t("city")}
+              fill
+              sizes="320px"
+            />
+            <div>
+              <span>{t("city")}</span>
+              <strong>{t("brandTagline")}</strong>
+            </div>
+          </div>
+          <div className="nr-map-wordmark">
+            <Brand driver={mode === "driver"} />
+            <p>{t("brandMessage")}</p>
+          </div>
+          <div className="nr-panel">
+            {profileView ? (
+              <Sheet title={t("profile")}>
+                <div className="nr-profile-header">
+                  <div className="nr-avatar">{initials}</div>
+                  <div>
+                    <h2>{profile.name || t("guest")}</h2>
+                    <p>
+                      {t(mode === "driver" ? "sampleAccount" : "localAccount")}
+                    </p>
+                  </div>
+                </div>
+                <div className="nr-list">
+                  <ListRow
+                    icon="user"
+                    title={t("personal")}
+                    onClick={() => setPanel("personal")}
+                  />
+                  <ListRow
+                    icon="clock"
+                    title={t("trips")}
+                    onClick={() =>
+                      navigate(mode === "rider" ? "trips" : "history")
+                    }
+                  />
+                  <ListRow
+                    icon="wallet"
+                    title={t(mode === "rider" ? "wallet" : "earnings")}
+                    onClick={() =>
+                      navigate(mode === "rider" ? "wallet" : "earnings")
+                    }
+                  />
+                  <ListRow
+                    icon="shield"
+                    title={t("safety")}
+                    onClick={() => setPanel("safety")}
+                  />
+                  <ListRow
+                    icon="chat"
+                    title={t("help")}
+                    onClick={() => setPanel("support")}
+                  />
+                  <ListRow
+                    icon="settings"
+                    title={t("settings")}
+                    onClick={() => setPanel("settings")}
+                  />
+                </div>
+                <div className="nr-profile-language">
+                  <span>{t("language")}</span>
+                  <div className="nr-segmented">
+                    <button
+                      aria-pressed={language === "en"}
+                      onClick={() => setLanguage("en")}
+                    >
+                      English
+                    </button>
+                    <button
+                      aria-pressed={language === "am"}
+                      onClick={() => setLanguage("am")}
+                    >
+                      አማርኛ
+                    </button>
+                  </div>
+                </div>
+                <Button
+                  variant="secondary"
+                  onClick={() =>
+                    switchMode(mode === "rider" ? "driver" : "rider")
+                  }
+                >
+                  <Icon name="car" />
+                  {t(mode === "rider" ? "switchDriver" : "switchRider")}
+                </Button>
+              </Sheet>
+            ) : null}
+            <div hidden={mode !== "rider" || profileView}>
+              <RiderWorkspace
+                screen={riderScreen}
+                navigate={navigateRider}
+                onSafety={() => setPanel("safety")}
+                onUnavailable={unavailable}
+                trip={trip}
+                setTrip={setTrip}
+              />
+            </div>
+            <div hidden={mode !== "driver" || profileView}>
+              <DriverWorkspace
+                screen={driverScreen}
+                navigate={navigateDriver}
+                onSafety={() => setPanel("safety")}
+              />
+            </div>
+          </div>
+        </div>
+        <div className="nr-mobile-nav">
+          <Navigation items={navItems} active={screen} onNavigate={navigate} />
+        </div>
+      </section>
+      {toast && (
+        <div className="nr-toast" role="status">
+          <Icon name="check" />
+          {toast}
+        </div>
+      )}
+      {panel && (
+        <Dialog
+          title={
+            panel === "unavailable"
+              ? serviceTitle
+              : t(
+                  panel === "menu"
+                    ? "profile"
+                    : panel === "personal"
+                      ? "personal"
+                      : panel === "settings"
+                        ? "settings"
+                        : panel === "reset"
+                          ? "clear"
+                          : panel === "safety"
+                            ? "safety"
+                            : "help",
+                )
+          }
+          onClose={() => setPanel(null)}
+        >
+          {panel === "menu" ? (
+            <>
+              <div className="nr-menu-profile">
+                <div className="nr-avatar">{initials}</div>
+                <div>
+                  <strong>{profile.name || t("guest")}</strong>
+                  <small>{t("localAccount")}</small>
+                </div>
+              </div>
+              <div className="nr-list">
+                {navItems.map((i) => (
+                  <ListRow
+                    key={i.id}
+                    icon={i.icon}
+                    title={i.label}
+                    onClick={() => navigate(i.id)}
+                  />
+                ))}
+                <ListRow
+                  icon="shield"
+                  title={t("safety")}
+                  onClick={() => setPanel("safety")}
+                />
+                <ListRow
+                  icon="settings"
+                  title={t("settings")}
+                  onClick={() => setPanel("settings")}
+                />
+              </div>
+              <Button
+                variant="secondary"
+                onClick={() =>
+                  switchMode(mode === "rider" ? "driver" : "rider")
+                }
+              >
+                {t(mode === "rider" ? "switchDriver" : "switchRider")}
+              </Button>
+            </>
+          ) : panel === "personal" ? (
+            <ProfileForm
+              profile={profile}
+              onSave={(p) => {
+                setProfile(p);
+                setPanel(null);
+                setToast(t("saveSuccess"));
+              }}
+            />
+          ) : panel === "settings" ? (
+            <>
+              <div className="nr-settings-row">
+                <strong>{t("language")}</strong>
+                <div className="nr-segmented">
+                  <button
+                    aria-pressed={language === "en"}
+                    onClick={() => setLanguage("en")}
+                  >
+                    English
+                  </button>
+                  <button
+                    aria-pressed={language === "am"}
+                    onClick={() => setLanguage("am")}
+                  >
+                    አማርኛ
+                  </button>
+                </div>
+              </div>
+              {mode === "rider" && (
+                <div className="nr-settings-row">
+                  <strong>{t("appearance")}</strong>
+                  <div className="nr-segmented">
+                    <button
+                      aria-pressed={theme === "light"}
+                      onClick={() => setTheme("light")}
+                    >
+                      {t("light")}
+                    </button>
+                    <button
+                      aria-pressed={theme === "dark"}
+                      onClick={() => setTheme("dark")}
+                    >
+                      {t("dark")}
+                    </button>
+                  </div>
+                </div>
+              )}
+              <StatusBanner>{t("localAccount")}</StatusBanner>
+              <Button variant="secondary" onClick={() => setPanel("reset")}>
+                {t("clear")}
+              </Button>
+            </>
+          ) : panel === "reset" ? (
+            <>
+              <p>{t("clearConfirm")}</p>
+              <Button
+                onClick={() => {
+                  onReset();
+                  setPanel(null);
+                  setRiderScreen("home");
+                  setDriverScreen("home");
+                }}
+              >
+                {t("clear")}
+              </Button>
+            </>
+          ) : panel === "safety" ? (
+            <>
+              <div className="nr-safety-symbol">
+                <Icon name="shield" size={32} />
+              </div>
+              <h3>{t("safetyIntro")}</h3>
+              <p>{t("safetyNote")}</p>
+              <div className="nr-list">
+                <ListRow
+                  icon="share"
+                  title={t("share")}
+                  detail={t("unavailable")}
+                  onClick={() => unavailable(t("share"))}
+                />
+                <ListRow
+                  icon="chat"
+                  title={t("help")}
+                  detail={t("unavailable")}
+                  onClick={() => setPanel("support")}
+                />
+              </div>
+            </>
+          ) : (
+            <>
+              <StatusBanner>{t("unavailable")}</StatusBanner>
+              <p>
+                {t(
+                  panel === "support"
+                    ? "supportNote"
+                    : panel === "unavailable" && serviceTitle === t("preview")
+                      ? "previewInfo"
+                      : "connectNote",
+                )}
+              </p>
+              <Button onClick={() => setPanel(null)}>{t("done")}</Button>
+            </>
+          )}
+        </Dialog>
+      )}
+    </div>
+  );
+}
+function ProfileForm({
+  profile,
+  onSave,
+}: {
+  profile: PreviewProfile;
+  onSave: (p: PreviewProfile) => void;
+}) {
+  const t = useTranslation();
+  const [form, setForm] = useState(profile);
+  return (
+    <form
+      className="nr-profile-form"
+      onSubmit={(e) => {
+        e.preventDefault();
+        onSave({
+          name: form.name.trim(),
+          phone: form.phone.trim(),
+          email: form.email.trim(),
+        });
+      }}
+    >
+      <p className="nr-muted">{t("localAccount")}</p>
+      <InputField
+        label={t("name")}
+        autoFocus
+        required
+        maxLength={80}
+        autoComplete="name"
+        value={form.name}
+        onChange={(e) => setForm({ ...form, name: e.target.value })}
+      />
+      <InputField
+        label={t("phone")}
+        type="tel"
+        autoComplete="tel"
+        placeholder="+251"
+        maxLength={25}
+        value={form.phone}
+        onChange={(e) => setForm({ ...form, phone: e.target.value })}
+      />
+      <InputField
+        label={t("email")}
+        type="email"
+        autoComplete="email"
+        maxLength={254}
+        value={form.email}
+        onChange={(e) => setForm({ ...form, email: e.target.value })}
+      />
+      <Button type="submit">{t("save")}</Button>
+    </form>
+  );
+}

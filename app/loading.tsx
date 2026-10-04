@@ -1,1 +1,9 @@
-export default function Loading(){return <main className="app loading-screen"><div className="loading-card"><div className="loading-mark">N</div><div className="skeleton skeleton-line"/><div className="skeleton skeleton-line short"/></div></main>}
+import { Skeleton } from "../components/nexride/ui";
+import "./nexride.css";
+export default function Loading() {
+  return (
+    <main className="nr-app">
+      <Skeleton />
+    </main>
+  );
+}

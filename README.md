@@ -1,24 +1,35 @@
 # NexRide
 
-NexRide is a mobile-first ride-hailing experience focused on clarity, trust, and calm interaction design.
+**Better Rides. A Brighter Tomorrow.**
 
-## Included
-- Rider booking with pickup/destination, suggestions, ride classes, transparent fare estimate, scheduling entry point and multi-stop toggle.
-- Live-trip experience with driver identity, vehicle/plate, ETA, chat/call/SOS/share actions.
-- Driver workspace with online/offline state, request acceptance, earnings, navigation, documents and safety entry points.
-- Wallet, payment methods, promo/referral UI, trip history and receipts.
-- Safety center and trusted-contact flows.
-- Responsive mobile navigation, dark/light mode and English/Amharic language toggle.
-- Browser geolocation with graceful fallback and a fast vector-style map surface that works without a third-party API key.
-- PWA manifest and production Next.js structure.
+NexRide is a responsive ride-hailing frontend for Ethiopia, built with Next.js App Router and React. The rider interface pairs a light illustrated map with a booking panel; the driver workspace uses deep navy surfaces and emerald actions. English and Amharic share one translation system, with a bundled licensed Ethiopic fallback font.
 
-## Production integrations
-The interaction layer is implemented without fake external network calls. Real fleet matching, authenticated accounts, persistent trip state, production map routing/tiles, SMS/voice, push notifications and payment settlement require service credentials and a backend such as Supabase/Postgres + Realtime, a maps provider, and a payment provider. Those integrations should be wired through server-side adapters rather than exposing credentials in the browser.
+## Frontend experience
 
-## Run
-`npm install && npm run dev`
+- Destination search across Addis Ababa landmarks and optional browser geolocation.
+- Ride-class selection with explicitly labeled illustrative fares.
+- Matching preview, sample driver card, trip progress, completion and locally saved ratings.
+- Wallet preview, local trip details, editable preview profile and appearance settings.
+- Driver availability preview, sample request acceptance/decline, navigation illustration, sample earnings and trip history.
+- Responsive desktop sidebar/map workspace and mobile map/sheet layout with safe-area-aware bottom navigation.
+- Reusable buttons, inputs, cards, sheets, navigation, status banners, skeletons and keyboard-accessible dialogs.
+- Existing authenticated Supabase operations dashboard at `/admin`.
 
-## Build
-`npm run build && npm start`
+## Run and check
 
-This repository uses Next.js 16.3.6, the current Active LTS line at the time of creation.
+```sh
+npm install
+npm run dev
+npm run build
+npm run test
+npx playwright install
+npm run test:e2e
+```
+
+The Playwright configuration also accepts `PLAYWRIGHT_CHROMIUM_PATH` for an installed Chromium executable and `PLAYWRIGHT_SERVER_COMMAND` to test a production server. Safari/WebKit remains a separate test project.
+
+## Integration status
+
+The public rider/driver workspace is a labeled preview, as the prior page did not call authenticated booking, dispatch, messaging or payment services. Sample actions never dispatch drivers or charge users. The illustrated map does not represent live GPS tracking or real navigation. Preview profiles are stored on the device without passwords; they are not authenticated accounts.
+
+Supabase configuration, migrations and admin authentication, role checks, realtime subscriptions and data operations are preserved. See [the frontend integration boundaries](docs/frontend-reference.md) and the existing backend architecture/environment documents before connecting production services.
