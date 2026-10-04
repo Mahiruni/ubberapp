@@ -1,5 +1,36 @@
 export type Language = "en" | "am";
 export const messages = {
+  startupRestoring: ["Restoring your session…", "መለያዎን በመመለስ ላይ…"],
+  startupError: ["We couldn’t open NexRide.", "NexRideን መክፈት አልቻልንም።"],
+  startupSessionError: [
+    "Your session could not be restored. Check your connection and try again.",
+    "መለያዎን መመለስ አልተቻለም። ግንኙነትዎን ያረጋግጡና እንደገና ይሞክሩ።",
+  ],
+  startupPreferencesError: [
+    "Saved preview settings could not be read. Try again or reset only those local settings.",
+    "የተቀመጡ የማሳያ ቅንብሮችን ማንበብ አልተቻለም። እንደገና ይሞክሩ ወይም እነዚያን ቅንብሮች ብቻ ዳግም ያስጀምሩ።",
+  ],
+  startupReset: ["Reset local preview settings", "የማሳያ ቅንብሮችን ዳግም አስጀምር"],
+  welcome: ["Welcome to a better way to move.", "ወደ ተሻለ የጉዞ መንገድ እንኳን ደህና መጡ።"],
+  onboardingIntro: [
+    "Made for Addis Ababa. Choose your destination, explore your ride options, and keep your journey in one place.",
+    "ለአዲስ አበባ የተዘጋጀ። መድረሻዎን ይምረጡ፣ የጉዞ አማራጮችዎን ይመልከቱ፣ ጉዞዎንም በአንድ ቦታ ያስተዳድሩ።",
+  ],
+  continueAuth: ["Continue to sign in", "ለመግባት ቀጥል"],
+  explorePreview: ["Explore the preview", "ማሳያውን ይመልከቱ"],
+  signIn: ["Sign in to NexRide", "ወደ NexRide ይግቡ"],
+  signInIntro: [
+    "Use your existing NexRide account to continue.",
+    "ለመቀጠል ያለዎትን የNexRide መለያ ይጠቀሙ።",
+  ],
+  authEmail: ["Email address", "የኢሜይል አድራሻ"],
+  password: ["Password", "የይለፍ ቃል"],
+  signingIn: ["Signing in…", "በመግባት ላይ…"],
+  authFailure: [
+    "We couldn’t sign you in. Check your details and connection, then try again.",
+    "መግባት አልተቻለም። መረጃዎንና ግንኙነትዎን ያረጋግጡና እንደገና ይሞክሩ።",
+  ],
+
   temporaryError: ["We hit a temporary problem.", "ጊዜያዊ ችግር አጋጥሞናል።"],
   reopen: ["Try again to reopen NexRide.", "NexRideን ለመክፈት እንደገና ይሞክሩ።"],
   tryAgain: ["Try again", "እንደገና ሞክር"],

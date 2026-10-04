@@ -1,0 +1,7 @@
+AddisView.jpg — partial view of the Addis Ababa skyline from Sheger Park.
+Photographer: DaneyWiki. Photographed 30 October 2020.
+Source: https://commons.wikimedia.org/wiki/File:AddisView.jpg
+Original: https://upload.wikimedia.org/wikipedia/commons/6/6e/AddisView.jpg
+License: Creative Commons Attribution-ShareAlike 4.0 International
+https://creativecommons.org/licenses/by-sa/4.0/
+The original JPEG is included unmodified. The interface applies a responsive crop, color grading and navy gradient via CSS; these photographic adaptations are offered under the same CC BY-SA 4.0 license. The photograph's license does not apply to independent app code or branding.

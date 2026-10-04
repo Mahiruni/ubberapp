@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="112" viewBox="0 0 128 112" fill="none">
+  <title>NexRide provisional folded emerald N</title>
+  <desc>Provisional concept mark. Replace with the approved NexRide brand asset when supplied.</desc>
+  <defs>
+    <linearGradient id="left" x1="15" y1="108" x2="58" y2="4" gradientUnits="userSpaceOnUse"><stop stop-color="#00C878"/><stop offset="1" stop-color="#45EEA7"/></linearGradient>
+    <linearGradient id="fold" x1="44" y1="18" x2="91" y2="101" gradientUnits="userSpaceOnUse"><stop stop-color="#31E89A"/><stop offset="1" stop-color="#00A87C"/></linearGradient>
+    <linearGradient id="right" x1="81" y1="104" x2="114" y2="4" gradientUnits="userSpaceOnUse"><stop stop-color="#00A880"/><stop offset="1" stop-color="#00E28B"/></linearGradient>
+  </defs>
+  <path d="M7 104 27 16C29 8 34 4 43 4h15L36 103c-1 5-5 7-10 7H13c-5 0-7-2-6-6Z" fill="url(#left)"/>
+  <path d="M42 4c7 0 12 2 16 9l44 79c6 11 1 18-10 18H78L36 31C29 18 31 4 42 4Z" fill="url(#fold)"/>
+  <path d="m75 97 19-83c2-7 5-10 12-10h13c5 0 7 3 6 7l-20 88c-2 8-6 11-13 11-9 0-19-4-17-13Z" fill="url(#right)"/>
+</svg>

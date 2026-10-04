@@ -1,5 +1,17 @@
 "use client";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { RiderSplash } from "../components/nexride/splash";
+import {
+  completedStartup,
+  initializeRider,
+  retryStartup,
+  StartupError,
+  PREVIEW_STORAGE_KEY,
+  LANGUAGE_KEY,
+  updateStartupPreferences,
+  storedLanguage,
+} from "../lib/nexride-startup";
 import { useCallback, useEffect, useState } from "react";
 import {
   Brand,
@@ -11,7 +23,6 @@ import {
   ListRow,
   Navigation,
   Sheet,
-  Skeleton,
   StatusBanner,
   useTranslation,
   type IconName,
@@ -25,7 +36,7 @@ import {
 import type { Language } from "../lib/nexride-i18n";
 import type { PreviewProfile, PreviewTrip } from "../lib/nexride-preview";
 import "./nexride.css";
-const STORAGE_KEY = "nexride-preview-v2";
+const STORAGE_KEY = PREVIEW_STORAGE_KEY;
 type Mode = "rider" | "driver";
 type Panel =
   | "menu"
@@ -38,56 +49,64 @@ type Panel =
   | null;
 const emptyProfile = { name: "", phone: "", email: "" };
 export default function Home() {
-  const [language, setLanguage] = useState<Language>("en");
-  const [mode, setMode] = useState<Mode>("rider");
-  const [theme, setTheme] = useState<"light" | "dark">("light");
-  const [profile, setProfile] = useState<PreviewProfile>(emptyProfile);
-  const [trip, setTrip] = useState<PreviewTrip | null>(null);
-  const [ready, setReady] = useState(false);
+  const router = useRouter();
+  const cached = completedStartup();
+  const [language, setLanguage] = useState<Language>(
+    cached?.preferences.language || "en",
+  );
+  const [mode, setMode] = useState<Mode>(cached?.preferences.mode || "rider");
+  const [theme, setTheme] = useState<"light" | "dark">(
+    cached?.preferences.theme || "light",
+  );
+  const [profile, setProfile] = useState<PreviewProfile>(
+    cached?.preferences.profile || emptyProfile,
+  );
+  const [trip, setTrip] = useState<PreviewTrip | null>(
+    cached?.preferences.trip || null,
+  );
+  const [ready, setReady] = useState(cached?.destination === "/");
+  const [startupError, setStartupError] = useState<StartupError | null>(null);
+  const [attempt, setAttempt] = useState(0);
   useEffect(() => {
+    let active = true;
     try {
-      const old = localStorage.getItem("nexride-state");
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const state = JSON.parse(saved);
-        if (state.language === "am") setLanguage("am");
-        if (state.mode === "driver") setMode("driver");
-        if (state.theme === "dark") setTheme("dark");
-        if (state.profile)
-          setProfile({
-            name: String(state.profile.name || ""),
-            phone: String(state.profile.phone || ""),
-            email: String(state.profile.email || ""),
-          });
-        if (
-          state.trip &&
-          typeof state.trip.amount === "number" &&
-          typeof state.trip.destination === "string" &&
-          ["economy", "comfort", "premium", "xl"].includes(state.trip.ride)
-        )
-          setTrip(state.trip);
-      } else if (old) {
-        const state = JSON.parse(old);
-        if (state.form)
-          setProfile({
-            name: String(state.form.name || ""),
-            phone: String(state.form.phone || ""),
-            email: String(state.form.email || ""),
-          });
-        if (state.mode === "driver") setMode("driver");
-      }
-    } catch {
-      /* Storage may be unavailable in private browsing. */
-    } finally {
-      try {
-        localStorage.removeItem("nexride-state");
-      } catch {}
-    }
-    setReady(true);
-  }, []);
+      setLanguage(storedLanguage(localStorage));
+    } catch {}
+    initializeRider()
+      .then((result) => {
+        if (!active) return;
+        const p = result.preferences;
+        setLanguage(p.language);
+        setMode(p.mode);
+        setTheme(p.theme);
+        setProfile(p.profile);
+        setTrip(p.trip);
+        if (result.destination !== "/") {
+          router.replace(result.destination);
+          return;
+        }
+        setReady(true);
+      })
+      .catch((error) => {
+        if (active)
+          setStartupError(
+            error instanceof StartupError ? error : new StartupError("session"),
+          );
+      });
+    return () => {
+      active = false;
+    };
+  }, [attempt, router]);
+  const retry = (reset = false) => {
+    retryStartup(reset);
+    setStartupError(null);
+    setAttempt((v) => v + 1);
+  };
   useEffect(() => {
     if (!ready) return;
+    updateStartupPreferences({ language, mode, theme, profile, trip });
     try {
+      localStorage.setItem(LANGUAGE_KEY, language);
       localStorage.setItem(
         STORAGE_KEY,
         JSON.stringify({ language, mode, theme, profile, trip }),
@@ -119,7 +138,12 @@ export default function Home() {
             }}
           />
         ) : (
-          <Skeleton />
+          <RiderSplash
+            error={startupError}
+            onRetry={() => retry()}
+            onReset={() => retry(true)}
+            animate={attempt === 0}
+          />
         )}
       </main>
     </LanguageContext>

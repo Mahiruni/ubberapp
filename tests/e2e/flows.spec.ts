@@ -1,5 +1,11 @@
 import { test, expect } from "@playwright/test";
 
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() =>
+    localStorage.setItem("nexride:preview-enabled", "true"),
+  );
+});
+
 test("rider can complete an explicitly labeled preview and save a rating", async ({
   page,
 }) => {

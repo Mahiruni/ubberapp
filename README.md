@@ -13,6 +13,8 @@ NexRide is a responsive ride-hailing frontend for Ethiopia, built with Next.js A
 - Driver availability preview, sample request acceptance/decline, navigation illustration, sample earnings and trip history.
 - Responsive desktop sidebar/map workspace and mobile map/sheet layout with safe-area-aware bottom navigation.
 - Reusable buttons, inputs, cards, sheets, navigation, status banners, skeletons and keyboard-accessible dialogs.
+- Rider startup splash with a licensed Addis Ababa photograph, a separate provisional folded-N vector, reduced-motion support, bounded session restoration and recovery controls.
+- First-time onboarding at `/onboarding` and existing-account Supabase sign-in at `/auth`.
 - Existing authenticated Supabase operations dashboard at `/admin`.
 
 ## Run and check
@@ -33,3 +35,9 @@ The Playwright configuration also accepts `PLAYWRIGHT_CHROMIUM_PATH` for an inst
 The public rider/driver workspace is a labeled preview, as the prior page did not call authenticated booking, dispatch, messaging or payment services. Sample actions never dispatch drivers or charge users. The illustrated map does not represent live GPS tracking or real navigation. Preview profiles are stored on the device without passwords; they are not authenticated accounts.
 
 Supabase configuration, migrations and admin authentication, role checks, realtime subscriptions and data operations are preserved. See [the frontend integration boundaries](docs/frontend-reference.md) and the existing backend architecture/environment documents before connecting production services.
+
+## Rider startup
+
+The full splash is shown only while the initial device preferences and Supabase session are being restored. It has no minimum display time, caches successful initialization for route transitions, and provides retry after an eight-second service timeout. Corrupted preview preferences can be reset without deleting authentication storage. First visits open onboarding; completed onboarding leads to sign-in; restored sessions and explicitly opted-in or existing preview users open rider home. Signing in does not enable live booking or payments.
+
+The provisional symbol lives separately in `public/brand/provisional/` and must be replaced with the approved brand asset when available. The splash photograph is DaneyWiki’s Addis Ababa skyline from Sheger Park, licensed CC BY-SA 4.0; the source and attribution are included beside the asset and on entry screens.
