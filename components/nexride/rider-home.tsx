@@ -1,5 +1,8 @@
 "use client";
 import { Icon, ListRow, useTranslation } from "./ui";
+import { placeKey, placeName, locality } from "../../lib/nexride-search";
+import { useContext } from "react";
+import { LanguageContext } from "./ui";
 import { places, type Place } from "../../lib/nexride-places";
 import type { HomePlaces } from "../../lib/nexride-home";
 import type { LocationStatus, RiderLocation } from "../../lib/nexride-location";
@@ -56,6 +59,7 @@ export function RiderHomePanel({
   position: RiderLocation | null;
 }) {
   const t = useTranslation();
+  const language = useContext(LanguageContext);
   const rows = data.recent.length
     ? data.recent.slice(0, 2)
     : [
@@ -129,10 +133,16 @@ export function RiderHomePanel({
       <div className="nr-home-destinations">
         {rows.map((p) => (
           <ListRow
-            key={p.name}
+            key={placeKey(p)}
             icon="pin"
-            title={p.name === "Bole Airport" ? p.address : p.name}
-            detail={p.name === "Bole Airport" ? t("city") : p.address}
+            title={
+              language === "en" && p.name === "Bole Airport"
+                ? p.address
+                : placeName(p, language)
+            }
+            detail={
+              p.name === "Bole Airport" ? t("city") : locality(p, language)
+            }
             onClick={() => choose(p)}
           />
         ))}

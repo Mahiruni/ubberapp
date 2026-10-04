@@ -14,6 +14,15 @@ test("rider can complete an explicitly labeled preview and save a rating", async
   await page
     .getByRole("button", { name: /Bole International Airport/ })
     .click();
+  await page.getByLabel("Pickup location", { exact: true }).fill("Bole Atlas");
+  await page
+    .locator(".nr-place-suggestion")
+    .filter({ hasText: "Bole Atlas" })
+    .first()
+    .click();
+  await page
+    .getByRole("button", { name: "Preview ride options", exact: true })
+    .click();
   await expect(
     page.getByRole("heading", { name: "Choose your ride" }),
   ).toBeVisible();
@@ -150,8 +159,11 @@ test("small screens keep map, navigation and sheets within the viewport", async 
     .first()
     .click();
   await expect(
-    page.getByRole("heading", { name: "Choose your ride" }),
+    page.getByLabel("Pickup location", { exact: true }),
   ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Continue to ride options" }),
+  ).toBeDisabled();
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= window.innerWidth,

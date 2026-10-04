@@ -64,7 +64,10 @@ test("a real browser fix creates the blue dot and accuracy circle, and recenter 
   await expect
     .poll(async () => {
       const dot = await page.locator(".nr-user-location-dot").boundingBox();
-      return dot ? Math.abs(dot.x + dot.width / 2 - box.x - box.width / 2) < 4 && Math.abs(dot.y + dot.height / 2 - box.y - box.height / 2) < 4 : false;
+      return dot
+        ? Math.abs(dot.x + dot.width / 2 - box.x - box.width / 2) < 4 &&
+            Math.abs(dot.y + dot.height / 2 - box.y - box.height / 2) < 4
+        : false;
     })
     .toBe(true);
 });
@@ -134,6 +137,15 @@ test("Home and Work shortcuts are explicitly selected and restored, with preview
   await page.getByRole("button", { name: /Meskel Square/ }).click();
   await expect(panel).toBeVisible();
   await panel.getByRole("button", { name: "Home", exact: true }).click();
+  await page.getByLabel("Pickup location", { exact: true }).fill("Bole Atlas");
+  await page
+    .locator(".nr-place-suggestion")
+    .filter({ hasText: "Bole Atlas" })
+    .first()
+    .click();
+  await page
+    .getByRole("button", { name: "Preview ride options", exact: true })
+    .click();
   await expect(
     page.getByRole("heading", { name: "Choose your ride" }),
   ).toBeVisible();

@@ -7,7 +7,8 @@ NexRide is a responsive ride-hailing frontend for Ethiopia, built with Next.js A
 ## Frontend experience
 
 - Map-focused rider home with profile/recenter controls, device-location accuracy, Home/Work/Saved shortcuts and recent preview selections.
-- Clearly labeled preview destination search across Addis Ababa landmarks and optional browser geolocation.
+- English/Amharic destination search with distinct locality details, editable endpoints, saved/recent preview places, browser geolocation and map-pin selection.
+- Route review with confirmed pickup/destination pins, provider road geometry and estimates when configured, and recoverable routing/coverage states.
 - Ride-class selection with explicitly labeled illustrative fares.
 - Matching preview, sample driver card, trip progress, completion and locally saved ratings.
 - Wallet preview, local trip details, editable preview profile and appearance settings.
@@ -33,7 +34,7 @@ The Playwright configuration also accepts `PLAYWRIGHT_CHROMIUM_PATH` for an inst
 
 ## Integration status
 
-The public rider/driver workspace is a labeled preview, as the prior page did not call authenticated booking, dispatch, messaging or payment services. Sample actions never dispatch drivers or charge users. Rider home renders a browser-provided location fix on a geographic map; nearby vehicles remain hidden because availability is not connected. Other ride workflows use an illustration that does not represent live tracking or real navigation. Preview profiles are stored on the device without passwords; they are not authenticated accounts.
+The public rider/driver workspace is a labeled preview, as the prior page did not call authenticated booking, dispatch, messaging or payment services. Sample actions never dispatch drivers or charge users. Rider home renders a browser-provided location fix on a geographic map; nearby vehicles remain hidden because availability is not connected. Destination search and ride selection stay on the geographic map. Later ride workflows use an illustration that does not represent live tracking or real navigation. Preview profiles are stored on the device without passwords; they are not authenticated accounts.
 
 Supabase configuration, migrations and admin authentication, role checks, realtime subscriptions and data operations are preserved. See [the frontend integration boundaries](docs/frontend-reference.md) and the existing backend architecture/environment documents before connecting production services.
 
@@ -42,3 +43,11 @@ Supabase configuration, migrations and admin authentication, role checks, realti
 The full splash is shown only while the initial device preferences and Supabase session are being restored. It has no minimum display time, caches successful initialization for route transitions, and provides retry after an eight-second service timeout. Corrupted preview preferences can be reset without deleting authentication storage. First visits open onboarding; completed onboarding leads to sign-in; restored sessions and explicitly opted-in or existing preview users open rider home. Signing in does not enable live booking or payments.
 
 The provisional symbol lives separately in `public/brand/provisional/` and must be replaced with the approved brand asset when available. The splash photograph is DaneyWiki’s Addis Ababa skyline from Sheger Park, licensed CC BY-SA 4.0; the source and attribution are included beside the asset and on entry screens.
+
+## Destination search and routing
+
+`/api/rider/search` adapts Mapbox v6 forward/reverse geocoding; `/api/rider/route` adapts Mapbox driving directions. Set `MAPBOX_ACCESS_TOKEN` server-side (the existing public token is supported as a fallback). The local preview place catalog supports English and Amharic; remote results retain the provider’s names and addresses. Temporary geocoding results and device/pin coordinates stay in memory and are not written to saved history.
+
+Set `NEXRIDE_SERVICE_BOUNDS` to verified west,south,east,north bounds to enforce service coverage. Without configuration, the geographic restriction is labeled an Addis Ababa **preview area**, not live coverage. Provider outages do not produce fallback routes or journey estimates. With no routing token, valid endpoints can continue only into explicitly labeled preview ride options. Missing/unconfirmed endpoints, routing failures, identical locations and coverage violations block continuation.
+
+The mobile search sheet supports dragging and keyboard resizing, adjusts to the visual viewport, and reserves separate map space. On desktop it is a side panel. Editing or dragging an endpoint invalidates the previous route; confirming a pin reroutes from the exact coordinate while reverse geocoding updates only its label.

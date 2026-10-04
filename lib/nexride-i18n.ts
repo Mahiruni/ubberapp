@@ -1,5 +1,79 @@
 export type Language = "en" | "am";
 export const messages = {
+  destinationSearch: ["Plan your journey", "ጉዞዎን ያቅዱ"],
+  editPickup: ["Pickup location", "መነሻ ቦታ"],
+  selectPickup: ["Choose your pickup", "መነሻ ቦታ ይምረጡ"],
+  clearPickup: ["Clear pickup", "መነሻውን አጽዳ"],
+  clearDestination: ["Clear destination", "መድረሻውን አጽዳ"],
+  currentPickup: ["Device location", "የመሣሪያ ቦታ"],
+  mapPin: ["Map pin", "የካርታ ምልክት"],
+  chooseOnMap: ["Choose on map", "በካርታ ላይ ይምረጡ"],
+  useMapCenter: ["Use map center", "የካርታውን መሃል ተጠቀም"],
+  adjustMapLocation: ["Choose a location", "ቦታ ይምረጡ"],
+  adjustPickup: ["Adjust your pickup pin", "የመነሻ ምልክቱን ያስተካክሉ"],
+  adjustDestination: ["Set your destination pin", "የመድረሻ ምልክቱን ያስቀምጡ"],
+  pinInstructions: [
+    "Tap the map to place a pin. You can drag the green pickup pin to adjust it.",
+    "ምልክት ለማስቀመጥ ካርታውን ይንኩ። አረንጓዴውን የመነሻ ምልክት በመጎተት ያስተካክሉ።",
+  ],
+  mapKeyboardInstructions: [
+    "Keyboard: focus the map, use arrow keys to move, then Enter to place the pin.",
+    "በቁልፍ ሰሌዳ፦ ካርታውን ይምረጡ፣ በቀስት ቁልፎች ያንቀሳቅሱና Enterን ይጫኑ።",
+  ],
+  confirmPickup: ["Confirm pickup pin", "የመነሻ ምልክቱን አረጋግጥ"],
+  confirmDestination: ["Confirm destination pin", "የመድረሻ ምልክቱን አረጋግጥ"],
+  uncertainPickup: [
+    "This location needs your confirmation. Check the pin before continuing.",
+    "ይህ ቦታ ማረጋገጫዎን ይፈልጋል። ከመቀጠልዎ በፊት ምልክቱን ያረጋግጡ።",
+  ],
+  recentSearches: ["Recent searches", "የቅርብ ፍለጋዎች"],
+  noRecentSearches: ["No recent searches yet.", "የቅርብ ፍለጋዎች የሉም።"],
+  notSet: ["Not set", "አልተቀመጠም"],
+  searchingPlaces: ["Searching places…", "ቦታዎችን በመፈለግ ላይ…"],
+  providerResults: ["Address suggestions", "የአድራሻ አማራጮች"],
+  geocodingUnavailable: [
+    "Address search is unavailable. Preview examples and map selection remain available.",
+    "የአድራሻ ፍለጋ አይገኝም። የማሳያ ቦታዎችና የካርታ ምርጫ ይገኛሉ።",
+  ],
+  journeyReview: ["Your journey", "ጉዞዎ"],
+  minutes: ["min", "ደቂቃ"],
+  kilometers: ["km", "ኪሜ"],
+  providerEstimate: [
+    "Mapbox driving estimate. Actual journey time may vary.",
+    "የMapbox የመኪና ጉዞ ግምት። ትክክለኛው የጉዞ ጊዜ ሊለያይ ይችላል።",
+  ],
+  routingLoading: ["Calculating the road route…", "የመንገድ ጉዞውን በማስላት ላይ…"],
+  routingUnavailable: [
+    "Routing is not connected. Journey estimates are unavailable. You may explore ride options in preview.",
+    "የመንገድ ጉዞ አገልግሎት አልተገናኘም። የጉዞ ግምት አይገኝም። የማሳያ ጉዞ አማራጮችን መመልከት ይችላሉ።",
+  ],
+  routingFailed: [
+    "We couldn’t find a road route. Check the pins or try again.",
+    "የመንገድ ጉዞ ማግኘት አልቻልንም። ምልክቶቹን ያረጋግጡ ወይም እንደገና ይሞክሩ።",
+  ],
+  sameLocations: [
+    "Pickup and destination are too close. Choose different locations.",
+    "መነሻውና መድረሻው በጣም ተቀራርበዋል። ሌላ ቦታ ይምረጡ።",
+  ],
+  outsideCoverage: [
+    "A location is outside the configured service area. Choose another location.",
+    "ቦታው ከአገልግሎት ክልሉ ውጭ ነው። ሌላ ቦታ ይምረጡ።",
+  ],
+  outsidePreviewArea: [
+    "A location is outside the Addis Ababa preview area. Choose another location.",
+    "ቦታው ከአዲስ አበባ ማሳያ ክልል ውጭ ነው። ሌላ ቦታ ይምረጡ።",
+  ],
+  previewCoverage: [
+    "Preview area: Addis Ababa. Live service coverage is not connected.",
+    "የማሳያ ክልል፦ አዲስ አበባ። የቀጥታ አገልግሎት ክልል አልተገናኘም።",
+  ],
+  continueRideOptions: ["Continue to ride options", "ወደ ጉዞ አማራጮች ቀጥል"],
+  previewRideOptions: ["Preview ride options", "የጉዞ አማራጮችን ይመልከቱ"],
+  previewBookingBoundary: [
+    "Ride selection is a preview; no driver is dispatched.",
+    "የጉዞ ምርጫ ማሳያ ነው፤ አሽከርካሪ አይላክም።",
+  ],
+  resizeSheet: ["Resize search panel", "የፍለጋ ፓነሉን መጠን ቀይር"],
   whereTo: ["Where to?", "ወዴት?"],
   activity: ["Activity", "እንቅስቃሴ"],
   profileNav: ["Profile", "መለያ"],
@@ -12,8 +86,8 @@ export const messages = {
   ],
   previewDestinations: ["Try a preview destination", "የማሳያ መድረሻ ይሞክሩ"],
   previewSearchNote: [
-    "Preview destinations · Search is limited to sample Addis Ababa places.",
-    "የማሳያ መድረሻዎች። ፍለጋው በአዲስ አበባ ምሳሌ ቦታዎች ብቻ የተወሰነ ነው።",
+    "Sample Addis Ababa places · Preview only.",
+    "የአዲስ አበባ ምሳሌ ቦታዎች · ማሳያ ብቻ።",
   ],
   locationPrompt: [
     "Tap recenter to use your location, or choose a pickup manually.",

@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import type { Journey } from "../../lib/nexride-journey";
 import type * as Leaflet from "leaflet";
 import { Icon, useTranslation } from "./ui";
 import type { LocationStatus, RiderLocation } from "../../lib/nexride-location";
@@ -11,6 +12,7 @@ export function RiderMap({
   recenter,
   initials,
   onProfile,
+  journey,
 }: {
   position: RiderLocation | null;
   status: LocationStatus;
@@ -18,12 +20,17 @@ export function RiderMap({
   recenter: number;
   initials: string;
   onProfile: () => void;
+  journey?: Journey;
 }) {
   const t = useTranslation();
   const container = useRef<HTMLDivElement>(null);
   const map = useRef<Leaflet.Map | null>(null);
   const library = useRef<typeof Leaflet | null>(null);
   const marker = useRef<Leaflet.LayerGroup | null>(null);
+  const planRef = useRef(journey);
+  planRef.current = journey;
+  const planMarkers = useRef<Leaflet.LayerGroup | null>(null);
+  const routeLine = useRef<Leaflet.Polyline | null>(null);
   const [tiles, setTiles] = useState<"loading" | "ready" | "unavailable">(
     "loading",
   );
@@ -33,6 +40,7 @@ export function RiderMap({
     let active = true;
     let timer: ReturnType<typeof setTimeout> | undefined;
     let resize: ResizeObserver | undefined;
+    const keys = new AbortController();
     setTiles("loading");
     import("leaflet")
       .then((L) => {
@@ -49,6 +57,25 @@ export function RiderMap({
           maxZoom: 19,
         }).setView([9.008, 38.775], 14);
         map.current = view;
+        view.on("click", (event: Leaflet.LeafletMouseEvent) => {
+          const plan = planRef.current;
+          if (plan?.pinMode)
+            plan.setPin(plan.pinMode, {
+              lat: event.latlng.lat,
+              lng: event.latlng.lng,
+            });
+        });
+        container.current.addEventListener(
+          "keydown",
+          (event) => {
+            const plan = planRef.current;
+            if (event.key === "Enter" && plan?.pinMode) {
+              const center = view.getCenter();
+              plan.setPin(plan.pinMode, { lat: center.lat, lng: center.lng });
+            }
+          },
+          { signal: keys.signal },
+        );
         let loaded = 0;
         const tileLayer = L.tileLayer(
           process.env.NEXT_PUBLIC_MAP_TILE_URL ||
@@ -88,6 +115,7 @@ export function RiderMap({
       active = false;
       if (timer) clearTimeout(timer);
       resize?.disconnect();
+      keys.abort();
       map.current?.remove();
       map.current = null;
       marker.current = null;
@@ -126,6 +154,103 @@ export function RiderMap({
       animate: !matchMedia("(prefers-reduced-motion: reduce)").matches,
     });
   }, [position, status, recenter, mounted]);
+  const pickup = journey?.pickup,
+    destination = journey?.destination;
+  const geometry =
+    journey?.routeState.status === "ready"
+      ? journey.routeState.route?.geometry
+      : undefined;
+  useEffect(() => {
+    if (!mounted || !map.current || !library.current) return;
+    planMarkers.current?.remove();
+    planMarkers.current = null;
+    if (!journey) return;
+    const L = library.current;
+    const group = L.layerGroup().addTo(map.current);
+    planMarkers.current = group;
+    if (pickup) {
+      const pin = L.marker([pickup.lat, pickup.lng], {
+        draggable: true,
+        keyboard: true,
+        autoPan: true,
+        title: t("pickup"),
+        alt: t("pickup"),
+        icon: L.divIcon({
+          className: "nr-pickup-marker",
+          html: '<span class="nr-pin-core pickup"/>',
+          iconSize: [28, 28],
+          iconAnchor: [14, 14],
+        }),
+      }).addTo(group);
+      pin.on("dragstart", () => planRef.current?.invalidatePickup());
+      pin.on("dragend", () => {
+        const point = pin.getLatLng();
+        planRef.current?.setPin("pickup", { lat: point.lat, lng: point.lng });
+      });
+    }
+    if (destination)
+      L.marker([destination.lat, destination.lng], {
+        keyboard: true,
+        title: t("dropoff"),
+        alt: t("dropoff"),
+        icon: L.divIcon({
+          className: "nr-destination-marker",
+          html: '<span class="nr-pin-core destination"/>',
+          iconSize: [28, 28],
+          iconAnchor: [14, 14],
+        }),
+      }).addTo(group);
+    if (
+      !planRef.current?.pinMode &&
+      pickup?.confirmed &&
+      destination?.confirmed
+    )
+      map.current.fitBounds(
+        [
+          [pickup.lat, pickup.lng],
+          [destination.lat, destination.lng],
+        ],
+        { padding: [48, 70], maxZoom: 16, animate: false },
+      );
+    else if (!planRef.current?.pinMode && (pickup || destination)) {
+      const point = pickup || destination!;
+      map.current.setView([point.lat, point.lng], 16, { animate: false });
+    }
+    return () => {
+      group.remove();
+    };
+    // Confirmation and labels must not recreate a marker during a drag.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    pickup?.lat,
+    pickup?.lng,
+    destination?.lat,
+    destination?.lng,
+    !!journey,
+    mounted,
+  ]);
+  useEffect(() => {
+    routeLine.current?.remove();
+    routeLine.current = null;
+    if (!geometry || !mounted || !map.current || !library.current) return;
+    const line = library.current
+      .polyline(geometry, {
+        color: "#2985e5",
+        weight: 5,
+        opacity: 0.9,
+        className: "nr-provider-route",
+      })
+      .addTo(map.current);
+    routeLine.current = line;
+    map.current.fitBounds(line.getBounds(), {
+      padding: [48, 70],
+      maxZoom: 16,
+      animate: false,
+    });
+    return () => {
+      line.remove();
+    };
+  }, [geometry, mounted]);
   // Availability is not connected. No invented vehicle markers are rendered.
   return (
     <section
@@ -172,6 +297,23 @@ export function RiderMap({
           <Icon name="locate" size={21} />
         </button>
       </div>
+      {journey?.pinMode && (
+        <button
+          className="nr-use-map-center"
+          disabled={tiles !== "ready"}
+          onClick={() => {
+            if (!map.current || !journey.pinMode) return;
+            const center = map.current.getCenter();
+            journey.setPin(journey.pinMode, {
+              lat: center.lat,
+              lng: center.lng,
+            });
+          }}
+        >
+          <Icon name="pin" size={18} />
+          {t("useMapCenter")}
+        </button>
+      )}
       <div className="nr-map-attribution">
         <a
           href="https://www.openstreetmap.org/copyright"

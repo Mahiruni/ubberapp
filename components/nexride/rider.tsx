@@ -1,13 +1,20 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { places, type Place } from "../../lib/nexride-places";
 import {
   previewFare,
   rideOptions,
   type PreviewTrip,
 } from "../../lib/nexride-preview";
-import { Button, Icon, ListRow, Sheet, useTranslation } from "./ui";
-import { RiderHomePanel, LocationMessage } from "./rider-home";
+import {
+  Button,
+  Icon,
+  ListRow,
+  Sheet,
+  useTranslation,
+  LanguageContext,
+} from "./ui";
+import { RiderHomePanel } from "./rider-home";
 import {
   emptyHomePlaces,
   HOME_PLACES_KEY,
@@ -15,6 +22,9 @@ import {
   serializeHomePlaces,
   type HomePlaces,
 } from "../../lib/nexride-home";
+import { DestinationPanel, endpointName } from "./destination";
+import { placeKey } from "../../lib/nexride-search";
+import type { Journey } from "../../lib/nexride-journey";
 import type { RiderLocation, LocationStatus } from "../../lib/nexride-location";
 export type RiderScreen =
   | "home"
@@ -38,6 +48,7 @@ export function RiderWorkspace({
   position,
   locationStatus,
   locate,
+  journey,
 }: {
   screen: RiderScreen;
   navigate: (s: RiderScreen) => void;
@@ -48,14 +59,12 @@ export function RiderWorkspace({
   position: RiderLocation | null;
   locationStatus: LocationStatus;
   locate: () => void;
+  journey: Journey;
 }) {
   const t = useTranslation();
-  const [query, setQuery] = useState("");
-  const [pickup, setPickup] = useState(places[0]);
-  const [destination, setDestination] = useState<Place | null>(null);
+  const language = useContext(LanguageContext);
+  const { pickup, destination } = journey;
   const [rideId, setRideId] = useState("economy");
-  const [useGps, setUseGps] = useState(true);
-  const gps = useGps ? position : null;
   const [homePlaces, setHomePlaces] = useState<HomePlaces>(emptyHomePlaces);
   const [savingShortcut, setSavingShortcut] = useState<"home" | "work" | null>(
     null,
@@ -75,30 +84,10 @@ export function RiderWorkspace({
   const [ratingSaved, setRatingSaved] = useState(false);
   const selectedRide =
     rideOptions.find((r) => r.id === rideId) || rideOptions[0];
-  const results = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    const unique = places.filter(
-      (p, i) => places.findIndex((a) => a.name === p.name) === i,
-    );
-    return (
-      q
-        ? unique.filter((p) =>
-            `${p.name} ${p.address}`.toLowerCase().includes(q),
-          )
-        : [
-            "Bole Airport",
-            "Meskel Square",
-            "Kazanchis",
-            "Edna Mall",
-            "Entoto Park",
-          ]
-            .map((name) => unique.find((p) => p.name === name)!)
-            .filter(Boolean)
-    ).slice(0, 10);
-  }, [query]);
-  const quote = destination
-    ? previewFare(gps || pickup, destination, selectedRide)
-    : null;
+  const quote =
+    pickup && destination
+      ? previewFare(pickup, destination, selectedRide)
+      : null;
   useEffect(() => {
     if (screen !== "finding") return;
     const timer = window.setTimeout(() => navigate("trip"), 1600);
@@ -116,22 +105,28 @@ export function RiderWorkspace({
     }
     savePlaces({
       ...homePlaces,
-      recent: [p, ...homePlaces.recent.filter((a) => a.name !== p.name)].slice(
-        0,
-        5,
-      ),
+      recent: [
+        p,
+        ...homePlaces.recent.filter((a) => placeKey(a) !== placeKey(p)),
+      ].slice(0, 5),
     });
-    setDestination(p);
-    setQuery("");
-    navigate("rides");
+    journey.choosePreview(p);
+    navigate("destination");
   };
   const bookPreview = () => {
-    if (!destination || !quote) return;
+    if (!destination || !pickup || !quote || !journey.canContinue) return;
     setRating(0);
     setRatingSaved(false);
     setTrip({
-      pickup: gps ? t("locationReady") : pickup.name,
-      destination: destination.name,
+      // Temporary geocoder labels must not enter persistent preview trip history.
+      pickup:
+        pickup.source === "preview"
+          ? endpointName(pickup, language, t)
+          : t("pickup"),
+      destination:
+        destination.source === "preview"
+          ? endpointName(destination, language, t)
+          : t("dropoff"),
       ride: selectedRide.id,
       amount: quote.amount,
       completed: false,
@@ -143,31 +138,6 @@ export function RiderWorkspace({
     if (trip) setTrip({ ...trip, completed: true });
     navigate("summary");
   };
-  const locationControl = (
-    <>
-      <button
-        className="nr-location-button"
-        onClick={() => {
-          setUseGps(true);
-          locate();
-        }}
-        disabled={locationStatus === "loading"}
-      >
-        <Icon name="locate" />
-        <span>
-          {t(
-            locationStatus === "loading"
-              ? "locating"
-              : locationStatus === "ready"
-                ? "locationReady"
-                : "current",
-          )}
-        </span>
-        {locationStatus === "ready" && <Icon name="check" size={17} />}
-      </button>
-      <LocationMessage status={locationStatus} position={position} />
-    </>
-  );
   if (screen === "home")
     return (
       <RiderHomePanel
@@ -190,7 +160,6 @@ export function RiderWorkspace({
             return;
           }
           setSavingShortcut(kind);
-          setQuery("");
           navigate("destination");
         }}
       />
@@ -207,7 +176,6 @@ export function RiderWorkspace({
             detail={homePlaces.saved[kind]?.name || t("addShortcut")}
             onClick={() => {
               setSavingShortcut(kind);
-              setQuery("");
               navigate("destination");
             }}
           />
@@ -219,83 +187,22 @@ export function RiderWorkspace({
     );
   if (screen === "destination")
     return (
-      <Sheet
-        title={t(
-          savingShortcut === "home"
-            ? "saveHome"
-            : savingShortcut === "work"
-              ? "saveWork"
-              : "where",
-        )}
-        onBack={() => {
+      <DestinationPanel
+        journey={journey}
+        back={() => {
           setSavingShortcut(null);
           navigate("home");
         }}
-      >
-        <p className="nr-search-preview-note">
-          <Icon name="info" size={16} />
-          {t("previewSearchNote")}
-        </p>
-        <div className="nr-route-input">
-          <span className="nr-route-dot" />
-          <label>
-            {t("pickup")}
-            <select
-              value={gps ? "gps" : pickup.name}
-              onChange={(e) => {
-                setUseGps(false);
-                setPickup(
-                  places.find((p) => p.name === e.target.value) || places[0],
-                );
-              }}
-            >
-              {gps && <option value="gps">{t("locationReady")}</option>}
-              {places
-                .filter(
-                  (p, i) => places.findIndex((a) => a.name === p.name) === i,
-                )
-                .map((p) => (
-                  <option key={p.name} value={p.name}>
-                    {p.name}
-                  </option>
-                ))}
-            </select>
-          </label>
-        </div>
-        <div className="nr-search-input">
-          <Icon name="search" />
-          <input
-            aria-label={t("destination")}
-            autoFocus
-            placeholder={t("destination")}
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-          {query && (
-            <button
-              className="nr-icon-button"
-              onClick={() => setQuery("")}
-              aria-label={t("clear")}
-            >
-              <Icon name="close" size={17} />
-            </button>
-          )}
-        </div>
-        {locationControl}
-        <h2>{t(query ? "results" : "suggested")}</h2>
-        <div className="nr-list">
-          {results.map((p) => (
-            <ListRow
-              key={p.name}
-              icon="pin"
-              title={p.name}
-              detail={p.address}
-              onClick={() => choose(p)}
-            />
-          ))}
-          {!results.length && <p className="nr-empty-text">{t("noResults")}</p>}
-        </div>
-      </Sheet>
+        proceed={() => {
+          if (journey.canContinue) navigate("rides");
+        }}
+        choose={choose}
+        data={homePlaces}
+        shortcut={savingShortcut}
+        status={locationStatus}
+        position={position}
+        locate={locate}
+      />
     );
   if (screen === "rides")
     return (
@@ -305,14 +212,20 @@ export function RiderWorkspace({
             <span className="nr-route-dot" />
             <span>
               <small>{t("pickup")}</small>
-              <strong>{gps ? t("locationReady") : pickup.name}</strong>
+              <strong>
+                {pickup ? endpointName(pickup, language, t) : t("selectPickup")}
+              </strong>
             </span>
           </div>
           <div>
             <span className="nr-route-dot end" />
             <span>
               <small>{t("dropoff")}</small>
-              <strong>{destination?.name || t("destination")}</strong>
+              <strong>
+                {destination
+                  ? endpointName(destination, language, t)
+                  : t("destination")}
+              </strong>
             </span>
             <button
               className="nr-text-button"
@@ -347,7 +260,9 @@ export function RiderWorkspace({
               <span className="nr-ride-price">
                 <strong>
                   {destination
-                    ? previewFare(gps || pickup, destination, r).amount
+                    ? pickup
+                      ? previewFare(pickup, destination, r).amount
+                      : "—"
                     : "—"}
                 </strong>
                 <small>ETB · {t("sample")}</small>
@@ -365,7 +280,7 @@ export function RiderWorkspace({
           <span>{t("cash")}</span>
           <small>{t("sampleFare")}</small>
         </div>
-        <Button onClick={bookPreview} disabled={!destination}>
+        <Button onClick={bookPreview} disabled={!journey.canContinue}>
           {t("previewRide")}
           {quote && <span> · {quote.amount} ETB</span>}
         </Button>

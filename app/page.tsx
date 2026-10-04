@@ -29,6 +29,7 @@ import {
 } from "../components/nexride/ui";
 import { RideMap } from "../components/nexride/map";
 import { RiderMap } from "../components/nexride/rider-map";
+import { useJourney } from "../lib/nexride-journey";
 import { useRiderLocation } from "../lib/nexride-location";
 import { RiderWorkspace, type RiderScreen } from "../components/nexride/rider";
 import {
@@ -39,6 +40,7 @@ import type { Language } from "../lib/nexride-i18n";
 import type { PreviewProfile, PreviewTrip } from "../lib/nexride-preview";
 import "./nexride.css";
 import "./rider-home.css";
+import "./destination.css";
 const STORAGE_KEY = PREVIEW_STORAGE_KEY;
 type Mode = "rider" | "driver";
 type Panel =
@@ -179,6 +181,7 @@ function AppWorkspace({
 }) {
   const t = useTranslation();
   const riderLocation = useRiderLocation();
+  const journey = useJourney(riderLocation.position);
   const [riderScreen, setRiderScreen] = useState<RiderScreen>("home");
   const [driverScreen, setDriverScreen] = useState<DriverScreen>("home");
   const [panel, setPanel] = useState<Panel>(null);
@@ -208,6 +211,13 @@ function AppWorkspace({
   const screen = mode === "rider" ? riderScreen : driverScreen;
   const profileView = screen === "profile";
   const riderHome = mode === "rider" && screen === "home";
+  const riderMapView =
+    mode === "rider" && ["home", "destination", "rides"].includes(screen);
+  const riderSearch = mode === "rider" && screen === "destination";
+  useEffect(() => {
+    if (riderScreen === "rides" && !journey.canContinue)
+      setRiderScreen("destination");
+  }, [riderScreen, journey.canContinue]);
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
   }, [screen, mode]);
@@ -250,7 +260,18 @@ function AppWorkspace({
         .toUpperCase()
     : "NR";
   return (
-    <div className={`nr-workspace ${riderHome ? "rider-home-view" : ""}`}>
+    <div
+      data-keyboard={journey.viewport.keyboard}
+      style={
+        riderSearch
+          ? ({
+              "--nr-search-height": `${Math.max(110, Math.min((journey.viewport.height || 800) * journey.sheetRatio, (journey.viewport.height || 800) - 130))}px`,
+              "--nr-viewport-height": `${journey.viewport.height || 800}px`,
+            } as React.CSSProperties)
+          : undefined
+      }
+      className={`nr-workspace ${riderMapView ? "rider-home-view" : ""} ${riderSearch ? "rider-search-view" : ""}`}
+    >
       <aside className="nr-sidebar">
         <Brand driver={mode === "driver"} />
         <span className="nr-sidebar-city">
@@ -338,7 +359,7 @@ function AppWorkspace({
         <div
           className={`nr-stage ${["home", "destination", "rides", "finding", "trip", "live", "request", "navigation"].includes(screen) ? "with-map" : "content-view"}`}
         >
-          {riderHome ? (
+          {riderMapView ? (
             <RiderMap
               position={riderLocation.position}
               status={riderLocation.status}
@@ -346,6 +367,7 @@ function AppWorkspace({
               recenter={riderLocation.recenter}
               initials={initials}
               onProfile={() => navigate("profile")}
+              journey={riderHome ? undefined : journey}
             />
           ) : (
             <RideMap
@@ -462,6 +484,7 @@ function AppWorkspace({
                 position={riderLocation.position}
                 locationStatus={riderLocation.status}
                 locate={riderLocation.locate}
+                journey={journey}
               />
             </div>
             <div hidden={mode !== "driver" || profileView}>

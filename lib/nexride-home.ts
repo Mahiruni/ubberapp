@@ -1,3 +1,4 @@
+import { placeKey } from "./nexride-search";
 import { places, type Place } from "./nexride-places";
 export const HOME_PLACES_KEY = "nexride:rider-places-v1";
 export type HomePlaces = {
@@ -9,13 +10,14 @@ export const emptyHomePlaces = (): HomePlaces => ({ saved: {}, recent: [] });
 export function restoreHomePlaces(raw: string | null): HomePlaces {
   try {
     const data = JSON.parse(raw || "{}");
-    const find = (value: unknown) => places.find((p) => p.name === value);
+    const find = (value: unknown) =>
+      places.find((p) => placeKey(p) === value || p.name === value);
     const home = find(data.saved?.home),
       work = find(data.saved?.work);
     const recent: Place[] = [];
     for (const name of Array.isArray(data.recent) ? data.recent : []) {
       const p = find(name);
-      if (p && !recent.some((a) => a.name === p.name)) recent.push(p);
+      if (p && !recent.some((a) => placeKey(a) === placeKey(p))) recent.push(p);
       if (recent.length === 5) break;
     }
     return {
@@ -28,7 +30,10 @@ export function restoreHomePlaces(raw: string | null): HomePlaces {
 }
 export function serializeHomePlaces(data: HomePlaces) {
   return JSON.stringify({
-    saved: { home: data.saved.home?.name, work: data.saved.work?.name },
-    recent: data.recent.map((p) => p.name),
+    saved: {
+      home: data.saved.home ? placeKey(data.saved.home) : undefined,
+      work: data.saved.work ? placeKey(data.saved.work) : undefined,
+    },
+    recent: data.recent.map(placeKey),
   });
 }
