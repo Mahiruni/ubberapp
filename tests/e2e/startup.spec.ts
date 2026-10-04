@@ -29,11 +29,11 @@ test("first visit leads to onboarding, then authentication, then explicit previe
   await expect(page.getByLabel("Email address", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Explore the preview" }).click();
   await expect(
-    page.getByRole("heading", { name: "Where are you going?" }),
+    page.getByRole("button", { name: "Search destination", exact: true }),
   ).toBeVisible();
   await expect(page.locator(".nr-rider-splash")).toHaveCount(0);
   await page
-    .getByRole("button", { name: "Account", exact: true })
+    .getByRole("button", { name: "Profile", exact: true })
     .first()
     .click();
   await expect(page.locator(".nr-rider-splash")).toHaveCount(0);
@@ -56,9 +56,9 @@ test("a restored Supabase session opens rider home", async ({ page }) => {
   );
   await page.goto("/");
   await expect(
-    page.getByRole("heading", { name: "Where are you going?" }),
+    page.getByRole("button", { name: "Search destination", exact: true }),
   ).toBeVisible();
-  await expect(page.getByText("Preview mode", { exact: true })).toBeVisible();
+  await expect(page.locator(".nr-map-preview-chip")).toBeVisible();
 });
 
 test("corrupt local preferences present a recoverable error", async ({
@@ -133,7 +133,7 @@ test("the real session wait shows the splash and honors reduced motion", async (
   });
   release();
   await expect(
-    page.getByRole("heading", { name: "Where are you going?" }),
+    page.getByRole("button", { name: "Search destination", exact: true }),
   ).toBeVisible();
   await expect(splash).toHaveCount(0);
 });
@@ -164,7 +164,7 @@ test("a stalled session restoration can be retried", async ({ page }) => {
   release();
   await page.getByRole("button", { name: "Try again" }).click();
   await expect(
-    page.getByRole("heading", { name: "Where are you going?" }),
+    page.getByRole("button", { name: "Search destination", exact: true }),
   ).toBeVisible();
 });
 
@@ -187,7 +187,7 @@ test("authentication uses Supabase and never stores a password in preview prefer
     .getByRole("button", { name: "Sign in to NexRide", exact: true })
     .click();
   await expect(
-    page.getByRole("heading", { name: "Where are you going?" }),
+    page.getByRole("button", { name: "Search destination", exact: true }),
   ).toBeVisible();
   expect(
     await page.evaluate(() => localStorage.getItem("nexride-preview-v2")),

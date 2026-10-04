@@ -2,11 +2,12 @@
 
 **Better Rides. A Brighter Tomorrow.**
 
-NexRide is a responsive ride-hailing frontend for Ethiopia, built with Next.js App Router and React. The rider interface pairs a light illustrated map with a booking panel; the driver workspace uses deep navy surfaces and emerald actions. English and Amharic share one translation system, with a bundled licensed Ethiopic fallback font.
+NexRide is a responsive ride-hailing frontend for Ethiopia, built with Next.js App Router and React. The rider home pairs a light geographic street map with a destination panel; the driver workspace uses deep navy surfaces and emerald actions. English and Amharic share one translation system, with a bundled licensed Ethiopic fallback font.
 
 ## Frontend experience
 
-- Destination search across Addis Ababa landmarks and optional browser geolocation.
+- Map-focused rider home with profile/recenter controls, device-location accuracy, Home/Work/Saved shortcuts and recent preview selections.
+- Clearly labeled preview destination search across Addis Ababa landmarks and optional browser geolocation.
 - Ride-class selection with explicitly labeled illustrative fares.
 - Matching preview, sample driver card, trip progress, completion and locally saved ratings.
 - Wallet preview, local trip details, editable preview profile and appearance settings.
@@ -32,7 +33,7 @@ The Playwright configuration also accepts `PLAYWRIGHT_CHROMIUM_PATH` for an inst
 
 ## Integration status
 
-The public rider/driver workspace is a labeled preview, as the prior page did not call authenticated booking, dispatch, messaging or payment services. Sample actions never dispatch drivers or charge users. The illustrated map does not represent live GPS tracking or real navigation. Preview profiles are stored on the device without passwords; they are not authenticated accounts.
+The public rider/driver workspace is a labeled preview, as the prior page did not call authenticated booking, dispatch, messaging or payment services. Sample actions never dispatch drivers or charge users. Rider home renders a browser-provided location fix on a geographic map; nearby vehicles remain hidden because availability is not connected. Other ride workflows use an illustration that does not represent live tracking or real navigation. Preview profiles are stored on the device without passwords; they are not authenticated accounts.
 
 Supabase configuration, migrations and admin authentication, role checks, realtime subscriptions and data operations are preserved. See [the frontend integration boundaries](docs/frontend-reference.md) and the existing backend architecture/environment documents before connecting production services.
 

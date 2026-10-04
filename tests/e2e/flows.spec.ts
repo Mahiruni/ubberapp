@@ -10,8 +10,10 @@ test("rider can complete an explicitly labeled preview and save a rating", async
   page,
 }) => {
   await page.goto("/");
-  await expect(page.getByText("Preview mode", { exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "Bole Airport", exact: true }).click();
+  await expect(page.locator(".nr-map-preview-chip")).toBeVisible();
+  await page
+    .getByRole("button", { name: /Bole International Airport/ })
+    .click();
   await expect(
     page.getByRole("heading", { name: "Choose your ride" }),
   ).toBeVisible();
@@ -46,7 +48,7 @@ test("driver request, navigation and sample earnings stay available across accou
 }) => {
   await page.goto("/");
   await page
-    .getByRole("button", { name: "Account", exact: true })
+    .getByRole("button", { name: "Profile", exact: true })
     .first()
     .click();
   await page.getByRole("button", { name: "Switch to driver" }).click();
@@ -91,7 +93,7 @@ test("Amharic, profile edits, keyboard dialogs, and local storage migration work
     .poll(() => page.evaluate(() => localStorage.getItem("nexride-state")))
     .toBeNull();
   await page
-    .getByRole("button", { name: "Account", exact: true })
+    .getByRole("button", { name: "Profile", exact: true })
     .first()
     .click();
   await page
@@ -124,7 +126,7 @@ test("small screens keep map, navigation and sheets within the viewport", async 
   await page.setViewportSize({ width: 360, height: 780 });
   await page.goto("/");
   await expect(
-    page.getByRole("heading", { name: "Where are you going?" }),
+    page.getByRole("button", { name: "Search destination", exact: true }),
   ).toBeVisible();
   expect(
     await page.evaluate(

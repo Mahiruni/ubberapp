@@ -7,8 +7,18 @@ import {
   type PreviewTrip,
 } from "../../lib/nexride-preview";
 import { Button, Icon, ListRow, Sheet, useTranslation } from "./ui";
+import { RiderHomePanel, LocationMessage } from "./rider-home";
+import {
+  emptyHomePlaces,
+  HOME_PLACES_KEY,
+  restoreHomePlaces,
+  serializeHomePlaces,
+  type HomePlaces,
+} from "../../lib/nexride-home";
+import type { RiderLocation, LocationStatus } from "../../lib/nexride-location";
 export type RiderScreen =
   | "home"
+  | "saved"
   | "destination"
   | "rides"
   | "finding"
@@ -25,6 +35,9 @@ export function RiderWorkspace({
   onUnavailable,
   trip,
   setTrip,
+  position,
+  locationStatus,
+  locate,
 }: {
   screen: RiderScreen;
   navigate: (s: RiderScreen) => void;
@@ -32,16 +45,32 @@ export function RiderWorkspace({
   onUnavailable: (title: string) => void;
   trip: PreviewTrip | null;
   setTrip: (trip: PreviewTrip) => void;
+  position: RiderLocation | null;
+  locationStatus: LocationStatus;
+  locate: () => void;
 }) {
   const t = useTranslation();
   const [query, setQuery] = useState("");
   const [pickup, setPickup] = useState(places[0]);
   const [destination, setDestination] = useState<Place | null>(null);
   const [rideId, setRideId] = useState("economy");
-  const [gps, setGps] = useState<{ lat: number; lng: number } | null>(null);
-  const [locationStatus, setLocationStatus] = useState<
-    "idle" | "loading" | "ready" | "denied"
-  >("idle");
+  const [useGps, setUseGps] = useState(true);
+  const gps = useGps ? position : null;
+  const [homePlaces, setHomePlaces] = useState<HomePlaces>(emptyHomePlaces);
+  const [savingShortcut, setSavingShortcut] = useState<"home" | "work" | null>(
+    null,
+  );
+  useEffect(() => {
+    try {
+      setHomePlaces(restoreHomePlaces(localStorage.getItem(HOME_PLACES_KEY)));
+    } catch {}
+  }, []);
+  const savePlaces = (next: HomePlaces) => {
+    setHomePlaces(next);
+    try {
+      localStorage.setItem(HOME_PLACES_KEY, serializeHomePlaces(next));
+    } catch {}
+  };
   const [rating, setRating] = useState(0);
   const [ratingSaved, setRatingSaved] = useState(false);
   const selectedRide =
@@ -75,22 +104,23 @@ export function RiderWorkspace({
     const timer = window.setTimeout(() => navigate("trip"), 1600);
     return () => window.clearTimeout(timer);
   }, [screen, navigate]);
-  const locate = () => {
-    if (!navigator.geolocation) {
-      setLocationStatus("denied");
+  const choose = (p: Place) => {
+    if (savingShortcut) {
+      savePlaces({
+        ...homePlaces,
+        saved: { ...homePlaces.saved, [savingShortcut]: p },
+      });
+      setSavingShortcut(null);
+      navigate("home");
       return;
     }
-    setLocationStatus("loading");
-    navigator.geolocation.getCurrentPosition(
-      (p) => {
-        setGps({ lat: p.coords.latitude, lng: p.coords.longitude });
-        setLocationStatus("ready");
-      },
-      () => setLocationStatus("denied"),
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 },
-    );
-  };
-  const choose = (p: Place) => {
+    savePlaces({
+      ...homePlaces,
+      recent: [p, ...homePlaces.recent.filter((a) => a.name !== p.name)].slice(
+        0,
+        5,
+      ),
+    });
     setDestination(p);
     setQuery("");
     navigate("rides");
@@ -117,7 +147,10 @@ export function RiderWorkspace({
     <>
       <button
         className="nr-location-button"
-        onClick={locate}
+        onClick={() => {
+          setUseGps(true);
+          locate();
+        }}
         disabled={locationStatus === "loading"}
       >
         <Icon name="locate" />
@@ -132,59 +165,77 @@ export function RiderWorkspace({
         </span>
         {locationStatus === "ready" && <Icon name="check" size={17} />}
       </button>
-      {locationStatus === "denied" && (
-        <p className="nr-muted" role="status">
-          {t("locationDenied")}
-        </p>
-      )}
+      <LocationMessage status={locationStatus} position={position} />
     </>
   );
   if (screen === "home")
     return (
-      <Sheet title={t("where")} subtitle={t("greeting")}>
-        <button
-          className="nr-search-button"
-          onClick={() => navigate("destination")}
-        >
-          <Icon name="search" />
-          <span>{t("destination")}</span>
-          <Icon name="chevron" size={18} />
-        </button>
-        <div className="nr-quick-places">
-          {["Bole Airport", "Meskel Square", "Edna Mall"].map((name, i) => (
-            <button
-              key={name}
-              onClick={() => choose(places.find((p) => p.name === name)!)}
-            >
-              <Icon name={i === 0 ? "navigation" : i === 1 ? "pin" : "bag"} />
-              <span>{name}</span>
-            </button>
-          ))}
-        </div>
-        <div className="nr-section-heading">
-          <h2>{t("suggested")}</h2>
-          <Icon name="clock" size={17} />
-        </div>
-        <div className="nr-list">
-          {results.slice(0, 2).map((p) => (
-            <ListRow
-              key={p.name}
-              icon="pin"
-              title={p.name}
-              detail={p.address}
-              onClick={() => choose(p)}
-            />
-          ))}
-        </div>
-        <div className="nr-home-footer">
-          <Icon name="shield" size={17} />
-          <span>{t("brandMessage")}</span>
-        </div>
+      <RiderHomePanel
+        navigate={() => {
+          setSavingShortcut(null);
+          navigate("destination");
+        }}
+        choose={choose}
+        data={homePlaces}
+        status={locationStatus}
+        position={position}
+        shortcut={(kind) => {
+          if (kind === "saved") {
+            navigate("saved");
+            return;
+          }
+          const saved = homePlaces.saved[kind];
+          if (saved) {
+            choose(saved);
+            return;
+          }
+          setSavingShortcut(kind);
+          setQuery("");
+          navigate("destination");
+        }}
+      />
+    );
+  if (screen === "saved")
+    return (
+      <Sheet title={t("savedPlaces")} onBack={() => navigate("home")}>
+        <p className="nr-muted">{t("savedPreviewNote")}</p>
+        {(["home", "work"] as const).map((kind) => (
+          <ListRow
+            key={kind}
+            icon={kind === "home" ? "home" : "briefcase"}
+            title={t(kind)}
+            detail={homePlaces.saved[kind]?.name || t("addShortcut")}
+            onClick={() => {
+              setSavingShortcut(kind);
+              setQuery("");
+              navigate("destination");
+            }}
+          />
+        ))}
+        {!homePlaces.saved.home && !homePlaces.saved.work && (
+          <p className="nr-empty-text">{t("noSavedPlaces")}</p>
+        )}
       </Sheet>
     );
   if (screen === "destination")
     return (
-      <Sheet title={t("where")} onBack={() => navigate("home")}>
+      <Sheet
+        title={t(
+          savingShortcut === "home"
+            ? "saveHome"
+            : savingShortcut === "work"
+              ? "saveWork"
+              : "where",
+        )}
+        onBack={() => {
+          setSavingShortcut(null);
+          navigate("home");
+        }}
+      >
+        <p className="nr-search-preview-note">
+          <Icon name="info" size={16} />
+          {t("previewSearchNote")}
+        </p>
         <div className="nr-route-input">
           <span className="nr-route-dot" />
           <label>
@@ -192,7 +243,7 @@ export function RiderWorkspace({
             <select
               value={gps ? "gps" : pickup.name}
               onChange={(e) => {
-                setGps(null);
+                setUseGps(false);
                 setPickup(
                   places.find((p) => p.name === e.target.value) || places[0],
                 );

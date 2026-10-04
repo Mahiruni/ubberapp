@@ -19,6 +19,8 @@ export const useTranslation = () => {
   return (key: MessageKey) => translate(language, key);
 };
 const paths = {
+  arrow: "M4 12h16m-6-6 6 6-6 6",
+  briefcase: "M3 7h18v14H3ZM8 7V3h8v4M3 12c6 3 12 3 18 0M10 12h4v4h-4Z",
   home: "M3 10 12 3l9 7M5 9v12h14V9M9 21v-7h6v7",
   search: "m21 21-5-5M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0",
   clock: "M12 7v5l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0",

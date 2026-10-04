@@ -28,6 +28,8 @@ import {
   type IconName,
 } from "../components/nexride/ui";
 import { RideMap } from "../components/nexride/map";
+import { RiderMap } from "../components/nexride/rider-map";
+import { useRiderLocation } from "../lib/nexride-location";
 import { RiderWorkspace, type RiderScreen } from "../components/nexride/rider";
 import {
   DriverWorkspace,
@@ -36,6 +38,7 @@ import {
 import type { Language } from "../lib/nexride-i18n";
 import type { PreviewProfile, PreviewTrip } from "../lib/nexride-preview";
 import "./nexride.css";
+import "./rider-home.css";
 const STORAGE_KEY = PREVIEW_STORAGE_KEY;
 type Mode = "rider" | "driver";
 type Panel =
@@ -175,6 +178,7 @@ function AppWorkspace({
   onReset: () => void;
 }) {
   const t = useTranslation();
+  const riderLocation = useRiderLocation();
   const [riderScreen, setRiderScreen] = useState<RiderScreen>("home");
   const [driverScreen, setDriverScreen] = useState<DriverScreen>("home");
   const [panel, setPanel] = useState<Panel>(null);
@@ -203,6 +207,7 @@ function AppWorkspace({
   }, [toast]);
   const screen = mode === "rider" ? riderScreen : driverScreen;
   const profileView = screen === "profile";
+  const riderHome = mode === "rider" && screen === "home";
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
   }, [screen, mode]);
@@ -210,9 +215,9 @@ function AppWorkspace({
     mode === "rider"
       ? [
           { id: "home", label: t("home"), icon: "home" },
-          { id: "trips", label: t("trips"), icon: "clock" },
+          { id: "trips", label: t("activity"), icon: "clock" },
           { id: "wallet", label: t("wallet"), icon: "wallet" },
-          { id: "profile", label: t("profile"), icon: "user" },
+          { id: "profile", label: t("profileNav"), icon: "user" },
         ]
       : [
           { id: "home", label: t("home"), icon: "home" },
@@ -245,7 +250,7 @@ function AppWorkspace({
         .toUpperCase()
     : "NR";
   return (
-    <div className="nr-workspace">
+    <div className={`nr-workspace ${riderHome ? "rider-home-view" : ""}`}>
       <aside className="nr-sidebar">
         <Brand driver={mode === "driver"} />
         <span className="nr-sidebar-city">
@@ -307,7 +312,7 @@ function AppWorkspace({
             </button>
             <button
               className="nr-avatar-button"
-              aria-label={t("profile")}
+              aria-label={t(mode === "rider" ? "profileNav" : "profile")}
               onClick={() => navigate("profile")}
             >
               {initials}
@@ -333,12 +338,27 @@ function AppWorkspace({
         <div
           className={`nr-stage ${["home", "destination", "rides", "finding", "trip", "live", "request", "navigation"].includes(screen) ? "with-map" : "content-view"}`}
         >
-          <RideMap
-            route={["rides", "trip", "live", "request", "navigation"].includes(
-              screen,
-            )}
-            driving={mode === "driver"}
-          />
+          {riderHome ? (
+            <RiderMap
+              position={riderLocation.position}
+              status={riderLocation.status}
+              locate={riderLocation.locate}
+              recenter={riderLocation.recenter}
+              initials={initials}
+              onProfile={() => navigate("profile")}
+            />
+          ) : (
+            <RideMap
+              route={[
+                "rides",
+                "trip",
+                "live",
+                "request",
+                "navigation",
+              ].includes(screen)}
+              driving={mode === "driver"}
+            />
+          )}
           <div className="nr-map-city">
             <Image
               src="/images/addis-skyline.webp"
@@ -439,6 +459,9 @@ function AppWorkspace({
                 onUnavailable={unavailable}
                 trip={trip}
                 setTrip={setTrip}
+                position={riderLocation.position}
+                locationStatus={riderLocation.status}
+                locate={riderLocation.locate}
               />
             </div>
             <div hidden={mode !== "driver" || profileView}>

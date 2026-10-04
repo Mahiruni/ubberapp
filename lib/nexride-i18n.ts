@@ -1,5 +1,52 @@
 export type Language = "en" | "am";
 export const messages = {
+  whereTo: ["Where to?", "ወዴት?"],
+  activity: ["Activity", "እንቅስቃሴ"],
+  profileNav: ["Profile", "መለያ"],
+  work: ["Work", "ሥራ"],
+  savedPlaces: ["Saved", "የተቀመጡ"],
+  recentDestinations: ["Recent destinations", "የቅርብ መድረሻዎች"],
+  emptyRecent: [
+    "No recent destinations yet. Your preview searches will appear here.",
+    "የቅርብ መድረሻዎች የሉም። የማሳያ ፍለጋዎችዎ እዚህ ይታያሉ።",
+  ],
+  previewDestinations: ["Try a preview destination", "የማሳያ መድረሻ ይሞክሩ"],
+  previewSearchNote: [
+    "Preview destinations · Search is limited to sample Addis Ababa places.",
+    "የማሳያ መድረሻዎች። ፍለጋው በአዲስ አበባ ምሳሌ ቦታዎች ብቻ የተወሰነ ነው።",
+  ],
+  locationPrompt: [
+    "Tap recenter to use your location, or choose a pickup manually.",
+    "ያሉበትን ቦታ ለመጠቀም የአቀማመጥ አዝራሩን ይንኩ ወይም መነሻ ቦታ ይምረጡ።",
+  ],
+  locationPermissionDenied: [
+    "Location permission is off. Enable it in browser settings, or choose a pickup manually.",
+    "የቦታ ፈቃድ ተዘግቷል። በአሳሹ ቅንብሮች ያብሩት ወይም መነሻ ቦታ ይምረጡ።",
+  ],
+  locationUnavailable: [
+    "We couldn’t find your location. Retry recenter or choose a pickup manually.",
+    "ያሉበትን ቦታ ማግኘት አልቻልንም። እንደገና ይሞክሩ ወይም መነሻ ቦታ ይምረጡ።",
+  ],
+  accuracy: ["Accuracy", "ትክክለኛነት"],
+  recenter: ["Recenter on my location", "ያለሁበትን ቦታ አሳይ"],
+  streetMap: ["Street map", "የመንገድ ካርታ"],
+  mapLoading: ["Loading map…", "ካርታውን በመጫን ላይ…"],
+  mapUnavailable: [
+    "Map unavailable. You can still explore preview destinations below.",
+    "ካርታው አይገኝም። ከታች ያሉትን የማሳያ መድረሻዎች መመልከት ይችላሉ።",
+  ],
+  saveHome: ["Set your Home shortcut", "የቤት አቋራጭ ያስቀምጡ"],
+  saveWork: ["Set your Work shortcut", "የሥራ አቋራጭ ያስቀምጡ"],
+  addShortcut: ["Choose a preview destination", "የማሳያ መድረሻ ይምረጡ"],
+  noSavedPlaces: [
+    "No saved places yet. Set Home or Work to find them here.",
+    "የተቀመጡ ቦታዎች የሉም። ቤት ወይም ሥራ ያስቀምጡ።",
+  ],
+  shortcutSet: ["Shortcut saved", "አቋራጭ ተቀምጧል"],
+  savedPreviewNote: [
+    "Shortcuts are saved on this device. These places are preview examples.",
+    "አቋራጮች በዚህ መሣሪያ ላይ ይቀመጣሉ። እነዚህ ቦታዎች የማሳያ ምሳሌዎች ናቸው።",
+  ],
   startupRestoring: ["Restoring your session…", "መለያዎን በመመለስ ላይ…"],
   startupError: ["We couldn’t open NexRide.", "NexRideን መክፈት አልቻልንም።"],
   startupSessionError: [

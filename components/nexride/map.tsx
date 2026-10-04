@@ -118,18 +118,6 @@ export function RideMap({
               <circle cx="373" cy="306" r="12" className="map-destination" />
             </>
           )}
-          <circle
-            cx={route ? 648 : 590}
-            cy={route ? 462 : 425}
-            r="45"
-            className="map-radius"
-          />
-          <circle
-            cx={route ? 648 : 590}
-            cy={route ? 462 : 425}
-            r="10"
-            className="map-position"
-          />
         </g>
       </svg>
       <div className="nr-map-caption">
