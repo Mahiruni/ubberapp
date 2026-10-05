@@ -162,6 +162,33 @@ export function DriverWorkspace({
         )
         .subscribe();
 
+      const { data: acceptedOffer } = await supabase
+        .from("ride_request_offers")
+        .select("id,request_id")
+        .eq("driver_id", id)
+        .eq("status", "accepted")
+        .order("accepted_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (active && acceptedOffer) {
+        const { data: activeRide } = await supabase
+          .from("ride_requests")
+          .select("status")
+          .eq("id", acceptedOffer.request_id)
+          .maybeSingle();
+
+        if (
+          activeRide &&
+          activeRide.status !== "completed" &&
+          activeRide.status !== "cancelled" &&
+          activeRide.status !== "withdrawn"
+        ) {
+          router.push(`/driver/navigation?offer=${acceptedOffer.id}`);
+          return;
+        }
+      }
+
       const { data: pendingOffer } = await supabase
         .from("ride_request_offers")
         .select("id,expires_at")
