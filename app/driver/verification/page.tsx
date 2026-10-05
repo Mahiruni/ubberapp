@@ -10,6 +10,9 @@ import "../auth/driver-auth.css";
 import "../onboarding/driver-onboarding.css";
 
 const allowedTypes = new Set(["image/jpeg","image/png","image/webp","application/pdf"]);
+const lockedForDraft = (status: DriverReviewStatus, editingApproved: boolean) =>
+  status === "pending" || status === "suspended" || (status === "approved" && !editingApproved);
+
 const extensionFor = (file: File) => {
   const ext = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "");
   if (ext) return ext;
@@ -30,6 +33,7 @@ export default function DriverVerificationPage() {
   const [busy, setBusy] = useState(false);
   const [editingApproved, setEditingApproved] = useState(false);
   const [error, setError] = useState("");
+  const [driverId, setDriverId] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -41,6 +45,7 @@ export default function DriverVerificationPage() {
         router.replace("/driver/auth");
         return;
       }
+      setDriverId(session.user.id);
       if (session.user.user_metadata?.driver_onboarding_complete !== true) {
         router.replace("/driver/onboarding");
         return;
@@ -62,6 +67,18 @@ export default function DriverVerificationPage() {
         setLicenseExpiry(data.license_expiry || "");
         setVehicle(data.vehicle || session.user.user_metadata?.vehicle || "");
         setPlate(data.vehicle_plate || session.user.user_metadata?.vehicle_plate || "");
+        if (!["approved", "pending", "suspended"].includes(next || "draft")) {
+          try {
+            const raw = sessionStorage.getItem("nexride.driver.verification.draft." + session.user.id);
+            if (raw) {
+              const draft = JSON.parse(raw);
+              if (typeof draft.licenseNumber === "string") setLicenseNumber(draft.licenseNumber.slice(0, 120));
+              if (typeof draft.licenseExpiry === "string") setLicenseExpiry(draft.licenseExpiry.slice(0, 20));
+              if (typeof draft.vehicle === "string") setVehicle(draft.vehicle.slice(0, 120));
+              if (typeof draft.plate === "string") setPlate(draft.plate.slice(0, 60));
+            }
+          } catch {}
+        }
       } else {
         setVehicle(session.user.user_metadata?.vehicle || "");
         setPlate(session.user.user_metadata?.vehicle_plate || "");
@@ -70,6 +87,16 @@ export default function DriverVerificationPage() {
     })();
     return () => { active = false; };
   }, [router]);
+
+  useEffect(() => {
+    if (!driverId || loading || lockedForDraft(status, editingApproved)) return;
+    try {
+      sessionStorage.setItem(
+        "nexride.driver.verification.draft." + driverId,
+        JSON.stringify({ licenseNumber, licenseExpiry, vehicle, plate }),
+      );
+    } catch {}
+  }, [driverId, loading, status, editingApproved, licenseNumber, licenseExpiry, vehicle, plate]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -135,12 +162,13 @@ export default function DriverVerificationPage() {
     }
 
     setStatus((data.review_status as DriverReviewStatus) || "pending");
+    try { sessionStorage.removeItem("nexride.driver.verification.draft." + session.user.id); } catch {}
     setBusy(false);
   }
 
   if (loading) return <main className="driver-onboarding-page" aria-busy="true" />;
 
-  const locked = status === "pending" || status === "suspended" || (status === "approved" && !editingApproved);
+  const locked = lockedForDraft(status, editingApproved);
 
   return (
     <main className="driver-onboarding-page">
@@ -170,6 +198,7 @@ export default function DriverVerificationPage() {
             <label>Vehicle plate<input value={plate} onChange={(e) => setPlate(e.target.value)} required /></label>
             <label>Driver license document<input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" onChange={(e) => setLicenseFile(e.target.files?.[0] || null)} required /></label>
             <label>Vehicle registration document<input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" onChange={(e) => setRegistrationFile(e.target.files?.[0] || null)} required /></label>
+            <small className="driver-auth-draft-note">Text fields are kept on this device if you navigate back. For security, browsers require document files to be selected again.</small>
             {error && <div className="driver-auth-error" role="alert">{error}</div>}
             <button className="driver-auth-submit" type="submit" disabled={busy}>{busy ? "Submitting securely…" : "Submit for Verification"}</button>
           </form>
