@@ -280,6 +280,38 @@ export function DriverWorkspace({
       });
   }, [driverId, locationPermission, state.online]);
 
+  useEffect(() => {
+    if (!driverId || !state.online || typeof navigator === "undefined" || !navigator.geolocation) return;
+
+    let lastSent = 0;
+    const watchId = navigator.geolocation.watchPosition(
+      (position) => {
+        const now = Date.now();
+        if (now - lastSent < 12000) return;
+        lastSent = now;
+        void supabase
+          .from("drivers")
+          .update({
+            location: {
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+              accuracy: Number.isFinite(position.coords.accuracy) ? position.coords.accuracy : null,
+              updated_at: new Date(position.timestamp || now).toISOString(),
+            },
+          })
+          .eq("id", driverId);
+      },
+      (positionError) => {
+        if (positionError.code === positionError.PERMISSION_DENIED) {
+          setLocationPermission("denied");
+        }
+      },
+      { enableHighAccuracy: true, maximumAge: 10000, timeout: 12000 },
+    );
+
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, [driverId, state.online]);
+
   const firstName = useMemo(() => state.name.trim().split(/\s+/)[0] || "Driver", [state.name]);
   const initials = useMemo(
     () => state.name.trim().split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "DR",
@@ -327,6 +359,19 @@ export function DriverWorkspace({
     return null;
   }, [locationPermission, state.rejectionReason, state.reviewStatus, verified]);
 
+  const currentPosition = () =>
+    new Promise<GeolocationPosition>((resolve, reject) => {
+      if (!navigator.geolocation) {
+        reject(new Error("unsupported"));
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        resolve,
+        reject,
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 10000 },
+      );
+    });
+
   const requestLocation = () => {
     if (!navigator.geolocation) {
       setLocationPermission("unsupported");
@@ -336,19 +381,17 @@ export function DriverWorkspace({
     setError("");
     setLocationPermission("checking");
 
-    navigator.geolocation.getCurrentPosition(
-      () => setLocationPermission("granted"),
-      (positionError) => {
-        if (positionError.code === positionError.PERMISSION_DENIED) {
+    currentPosition()
+      .then(() => setLocationPermission("granted"))
+      .catch((positionError: GeolocationPositionError | Error) => {
+        if ("code" in positionError && positionError.code === positionError.PERMISSION_DENIED) {
           setLocationPermission("denied");
           setError("Location permission is blocked. Enable it in your browser or device settings, then try again.");
         } else {
           setLocationPermission("prompt");
           setError("NexRide could not get your location. Check GPS and try again.");
         }
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 15000 },
-    );
+      });
   };
 
   const resolveBlock = () => {
@@ -369,9 +412,38 @@ export function DriverWorkspace({
     setError("");
 
     const nextOnline = !state.online;
+    let location: Record<string, unknown> | undefined;
+
+    if (nextOnline) {
+      try {
+        const position = await currentPosition();
+        location = {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          accuracy: Number.isFinite(position.coords.accuracy) ? position.coords.accuracy : null,
+          updated_at: new Date(position.timestamp || Date.now()).toISOString(),
+        };
+        setLocationPermission("granted");
+      } catch (positionError) {
+        if (
+          typeof positionError === "object" &&
+          positionError &&
+          "code" in positionError &&
+          (positionError as GeolocationPositionError).code === 1
+        ) {
+          setLocationPermission("denied");
+          setError("Location permission is blocked. Enable it before going online.");
+        } else {
+          setError("NexRide could not confirm your current location. Check GPS and try again.");
+        }
+        setUpdating(false);
+        return;
+      }
+    }
+
     const { data, error: updateError } = await supabase
       .from("drivers")
-      .update({ is_online: nextOnline })
+      .update({ is_online: nextOnline, ...(location ? { location } : {}) })
       .eq("id", driverId)
       .select("review_status,rejection_reason,is_online,rating")
       .single();
