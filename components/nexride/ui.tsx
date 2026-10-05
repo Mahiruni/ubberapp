@@ -56,6 +56,7 @@ export type IconName = keyof typeof paths;
 export function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
   return (
     <svg
+      className="nr-icon"
       width={size}
       height={size}
       viewBox="0 0 24 24"
