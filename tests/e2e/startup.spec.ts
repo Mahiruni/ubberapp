@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-const sessionKey = "sb-mrbgtdrpscdoxwdgvfcs-auth-token";
+const sessionKey = "sb-eyyvvwecpyctttiueban-auth-token";
 const token = `eyJhbGciOiJIUzI1NiJ9.${Buffer.from(JSON.stringify({ sub: "preview-test-user", exp: 4102444800 })).toString("base64url")}.test-signature`;
 const restoredSession = {
   access_token: token,
@@ -14,7 +14,7 @@ const restoredSession = {
     role: "authenticated",
     email: "test@example.com",
     app_metadata: {},
-    user_metadata: {},
+    user_metadata: { role: "rider" },
     created_at: "2026-01-01T00:00:00Z",
   },
 };
