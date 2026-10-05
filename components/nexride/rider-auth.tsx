@@ -12,6 +12,7 @@ import {
   PREVIEW_ENABLED_KEY,
 } from "../../lib/nexride-startup";
 import { driverResumeDestination } from "../../lib/nexride-driver-verification";
+import { ensureRiderProfile, RiderProfileBootstrapError } from "../../lib/nexride-rider-profile-bootstrap";
 
 export type RiderAuthMode = "signin" | "signup" | "forgot" | "reset";
 
@@ -58,8 +59,14 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
           return;
         }
 
-        enterRider(data.session);
-        router.replace("/");
+        try {
+          await ensureRiderProfile(data.session);
+          if (!active) return;
+          enterRider(data.session);
+          router.replace("/");
+        } catch {
+          if (active) setError("Your Rider account could not be prepared. Please sign in again.");
+        }
       })
       .catch(() => {});
 
@@ -110,12 +117,21 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
         return;
       }
 
+      await ensureRiderProfile(data.session);
       setPassword("");
+      await ensureRiderProfile(data.session);
       markAuthenticated();
       enterRider(data.session);
       router.replace("/");
-    } catch {
-      setError(t("authFailure"));
+    } catch (cause) {
+      if (cause instanceof RiderProfileBootstrapError && cause.code === "role_conflict") {
+        await supabase.auth.signOut();
+        setError(t("riderAuthOnly"));
+      } else if (cause instanceof RiderProfileBootstrapError) {
+        setError("Your Rider profile is not ready. Please try again.");
+      } else {
+        setError(t("authFailure"));
+      }
     } finally {
       setBusy(false);
     }
@@ -175,6 +191,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
       setConfirmPassword("");
 
       if (data.session) {
+        await ensureRiderProfile(data.session, { fullName: name, phone: mobile });
         markAuthenticated();
         enterRider(data.session);
         router.replace("/");

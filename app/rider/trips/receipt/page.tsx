@@ -37,7 +37,7 @@ export default function RiderReceiptPage() {
       if (!active) return;
 
       if (!session) {
-        router.replace("/auth");
+        router.replace("/rider/sign-in");
         return;
       }
 

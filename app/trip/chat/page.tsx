@@ -65,7 +65,7 @@ export default function TripChatPage() {
       if (!active) return;
 
       if (!session) {
-        router.replace(requestedRole === "driver" ? "/driver/auth" : "/auth");
+        router.replace(requestedRole === "driver" ? "/driver/auth" : "/rider/sign-in");
         return;
       }
 

@@ -93,7 +93,7 @@ export default function HelpSupportPage() {
       if (!active) return;
 
       if (!session) {
-        router.replace("/auth");
+        router.replace("/rider/sign-in");
         return;
       }
 
