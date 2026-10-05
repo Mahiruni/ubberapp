@@ -1,5 +1,5 @@
-const DEFAULT_SUPABASE_URL = 'https://mrbgtdrpscdoxwdgvfcs.supabase.co';
-const DEFAULT_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_7iNsTBn4QsGPZPkX2nOULA_awelYkSl';
+const DEFAULT_SUPABASE_URL = 'https://eyyvvwecpyctttiueban.supabase.co';
+const DEFAULT_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_kXFOrtwKkKmrqCtYTTuzdg__CjjABBf';
 
 export function requireEnv(name: string, value: string | undefined, fallback?: string): string {
   const resolved = value?.trim() || fallback?.trim();
