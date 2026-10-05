@@ -19,6 +19,15 @@ export function useRideOffers(
     "loading",
   );
   const [selected, setSelected] = useState<RideCategory>("economy");
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem("nexride.rider.ride-category");
+      if (saved === "economy" || saved === "comfort" || saved === "xl") setSelected(saved);
+    } catch {}
+  }, []);
+  useEffect(() => {
+    try { sessionStorage.setItem("nexride.rider.ride-category", selected); } catch {}
+  }, [selected]);
   const [requestState, setRequestState] = useState<
     "idle" | "pending" | "failed" | "unavailable" | "unknown" | "accepted"
   >("idle");
