@@ -104,6 +104,51 @@ describe("rider initialization", () => {
     expect(JSON.stringify(restored)).not.toContain("password");
     expect(values.has("nexride-state")).toBe(false);
   });
+  it("replaces cached preview identity when an authenticated rider enters", () => {
+    values.set(
+      "nexride-preview-v2",
+      JSON.stringify({
+        language: "am",
+        theme: "dark",
+        profile: { name: "Preview Rider", phone: "000", email: "preview@example.com" },
+        trip: {
+          pickup: "Preview pickup",
+          destination: "Preview destination",
+          ride: "economy",
+          amount: 100,
+          completed: false,
+          rating: 0,
+        },
+      }),
+    );
+    values.set("nexride:preview-enabled", "true");
+
+    const riderSession = {
+      access_token: "rider-session",
+      user: {
+        email: "rider@example.com",
+        user_metadata: {
+          role: "rider",
+          full_name: "Real Rider",
+          phone: "+251911000000",
+        },
+      },
+    } as Session;
+
+    enterRider(riderSession);
+
+    expect(completedStartup()?.preferences.profile).toEqual({
+      name: "Real Rider",
+      phone: "+251911000000",
+      email: "rider@example.com",
+    });
+    expect(completedStartup()?.preferences.trip).toBeNull();
+    expect(completedStartup()?.preferences.language).toBe("am");
+    expect(completedStartup()?.preferences.theme).toBe("dark");
+    expect(values.has("nexride-preview-v2")).toBe(false);
+    expect(values.has("nexride:preview-enabled")).toBe(false);
+  });
+
   it("keeps entry language and updated preferences across route transitions", () => {
     values.set("nexride:language", "am");
     enterRider(null);
