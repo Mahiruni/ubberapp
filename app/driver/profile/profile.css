@@ -31,3 +31,7 @@
 .nr-payout-refresh{min-height:34px;display:flex;align-items:center;gap:6px;padding:0 10px;border:1px solid #2b5269;border-radius:10px;background:#0b3049;color:#dcebf3;font-size:8px;font-weight:850}.nr-payout-refresh:disabled{opacity:.45}
 .nr-payout-status-row>div{display:grid;gap:3px;min-width:0}.nr-payout-status-row>div:last-child{text-align:right;justify-items:end}.nr-payout-status-row small{font-size:8px;color:#67899d;line-height:1.35}.nr-payout-status-row strong{white-space:nowrap}
 .nr-payout-form,.nr-payout-request-form{margin-top:12px}
+
+.nr-driver-profile-signout{width:100%;min-height:50px;margin-top:9px;display:flex;align-items:center;justify-content:center;gap:8px;padding:0 14px;border:1px solid #6b3945;border-radius:15px;background:#2b1d24;color:#f3b9c3;font-size:11px;font-weight:850}.nr-driver-profile-signout:hover{background:#352028}.nr-driver-profile-signout:disabled{opacity:.5}
+.nr-driver-signout-copy{margin:0!important;color:var(--muted);font-size:13px;line-height:1.6}
+.nr-driver-signout-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}.nr-driver-signout-actions button{min-height:46px;border-radius:12px;font-size:12px;font-weight:850}.nr-driver-signout-actions .secondary{border:1px solid var(--line);background:var(--surface-alt);color:var(--text)}.nr-driver-signout-actions .danger{border:1px solid #864653;background:#5a2732;color:#fff}.nr-driver-signout-actions button:disabled{opacity:.5}
