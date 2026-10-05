@@ -241,10 +241,11 @@ export default function DriverNavigationPage() {
       heading_degrees: position.heading,
     };
 
-    void supabase
-      .from("ride_driver_locations")
-      .upsert(payload, { onConflict: "ride_request_id" })
-      .then(({ error: shareError }) => {
+    void (async () => {
+      try {
+        const { error: shareError } = await supabase
+          .from("ride_driver_locations")
+          .upsert(payload, { onConflict: "ride_request_id" });
         if (shareError) {
           setLocationShareError("Live location could not be shared with your rider. Check your connection.");
           return;
@@ -252,10 +253,10 @@ export default function DriverNavigationPage() {
         lastSharedAtRef.current = Date.now();
         lastSharedPositionRef.current = position;
         setLocationShareError("");
-      })
-      .finally(() => {
+      } finally {
         sharingRef.current = false;
-      });
+      }
+    })();
 
     if (now - lastAvailabilityAtRef.current >= 12000) {
       lastAvailabilityAtRef.current = now;
