@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DriverWorkspace, type DriverScreen } from "../../../components/nexride/driver";
 import { supabase } from "../../../lib/supabase";
+import { getDriverReviewStatus } from "../../../lib/nexride-driver-verification";
 import "../../../app/nexride.css";
 import "../../../app/driver/driver-dashboard.css";
 
@@ -14,7 +15,7 @@ export default function DriverHomePage() {
 
   useEffect(() => {
     let active = true;
-    supabase.auth.getSession().then(({ data }) => {
+    supabase.auth.getSession().then(async ({ data }) => {
       if (!active) return;
       const session = data.session;
       const role = session?.user?.user_metadata?.role;
@@ -26,8 +27,20 @@ export default function DriverHomePage() {
         router.replace("/driver/onboarding");
         return;
       }
+
+      try {
+        const status = await getDriverReviewStatus(session.user.id);
+        if (!active) return;
+        if (status === "draft" || status === "rejected") {
+          router.replace("/driver/verification");
+          return;
+        }
+      } catch {
+        // Keep the driver shell reachable if the verification service is temporarily unavailable.
+      }
       setChecking(false);
     }).catch(() => router.replace("/driver/auth"));
+
     return () => { active = false; };
   }, [router]);
 
