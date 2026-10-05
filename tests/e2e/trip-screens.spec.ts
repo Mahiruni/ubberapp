@@ -38,7 +38,7 @@ async function backend(page: Page) {
   await page.addInitScript(
     ({ session }) =>
       localStorage.setItem(
-        "sb-mrbgtdrpscdoxwdgvfcs-auth-token",
+        "sb-eyyvvwecpyctttiueban-auth-token",
         JSON.stringify(session),
       ),
     { session },
