@@ -439,17 +439,19 @@ export default function DriverNavigationPage() {
   const mapsUrl = stage ? navigationUrl(stage.coordinate, stage.destination) : "";
   const canNavigate = trip?.status === "accepted" || trip?.status === "in_trip";
   const invalidTrip = trip?.status === "withdrawn" || trip?.status === "cancelled";
-  const nextGuidance = nativeRoute?.target === stage?.target ? nativeRoute.steps[0] : undefined;
+  const activeRoute =
+    nativeRoute && nativeRoute.target === stage?.target ? nativeRoute : null;
+  const nextGuidance = activeRoute?.steps[0];
   const guidanceTitle = nextGuidance?.instruction || stage?.title || "Navigation";
   const guidanceDistance =
     nextGuidance && nextGuidance.distanceMeters > 0
       ? metersLabel(nextGuidance.distanceMeters)
-      : nativeRoute?.target === stage?.target
-        ? metersLabel(nativeRoute.distanceMeters)
+      : activeRoute
+        ? metersLabel(activeRoute.distanceMeters)
         : distanceLabel(stage?.distance ?? null);
   const routeEtaMinutes =
-    nativeRoute?.target === stage?.target
-      ? Math.max(1, Math.round(nativeRoute.durationSeconds / 60))
+    activeRoute
+      ? Math.max(1, Math.round(activeRoute.durationSeconds / 60))
       : stage?.eta ?? null;
 
   async function transition(next: "arrived_pickup" | "in_trip" | "completed") {
