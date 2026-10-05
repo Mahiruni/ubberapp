@@ -9,12 +9,18 @@ const fallbackVehicle: Point = { x: 760, y: 630 };
 const fallbackPickup: Point = { x: 585, y: 470 };
 const fallbackDestination: Point = { x: 345, y: 270 };
 
-function projectPoints(vehicle: NavigationCoordinate | null, pickup: NavigationCoordinate | null, destination: NavigationCoordinate | null) {
-  const known = [vehicle, pickup, destination].filter(Boolean) as NavigationCoordinate[];
+function projectPoints(
+  vehicle: NavigationCoordinate | null,
+  pickup: NavigationCoordinate | null,
+  destination: NavigationCoordinate | null,
+  route: NavigationCoordinate[] = [],
+) {
+  const known = [vehicle, pickup, destination, ...route].filter(Boolean) as NavigationCoordinate[];
   if (known.length < 2) return {
     vehicle: vehicle ? fallbackVehicle : null,
     pickup: pickup ? fallbackPickup : null,
     destination: destination ? fallbackDestination : null,
+    route: [] as Point[],
   };
 
   const lats = known.map((p) => p.lat);
@@ -31,21 +37,27 @@ function projectPoints(vehicle: NavigationCoordinate | null, pickup: NavigationC
     y: 100 + ((maxLat - p.lat) / (maxLat - minLat)) * 700,
   }) : null;
 
-  return { vehicle: project(vehicle), pickup: project(pickup), destination: project(destination) };
+  return {
+    vehicle: project(vehicle),
+    pickup: project(pickup),
+    destination: project(destination),
+    route: route.map((point) => project(point)).filter(Boolean) as Point[],
+  };
 }
 
 export function DriverNavigationMap({
-  vehicle, pickup, destination, target, view, gpsState, heading,
+  vehicle, pickup, destination, route = [], target, view, gpsState, heading,
 }: {
   vehicle: NavigationCoordinate | null;
   pickup: NavigationCoordinate | null;
   destination: NavigationCoordinate | null;
+  route?: NavigationCoordinate[];
   target: "pickup" | "destination";
   view: MapView;
   gpsState: GpsState;
   heading: number | null;
 }) {
-  const projected = projectPoints(vehicle, pickup, destination);
+  const projected = projectPoints(vehicle, pickup, destination, route);
   const vehiclePoint = projected.vehicle || fallbackVehicle;
   const pickupPoint = projected.pickup || fallbackPickup;
   const destinationPoint = projected.destination || fallbackDestination;
@@ -56,7 +68,12 @@ export function DriverNavigationMap({
   const ty = view === "vehicle" && projected.vehicle ? 450 - zoom * vehiclePoint.y : 0;
   const transform = `matrix(${zoom} 0 0 ${zoom} ${tx} ${ty})`;
   const markerClass = gpsState === "fresh" ? "fresh" : gpsState === "stale" ? "stale" : "lost";
-  const routePath = `M ${routeStart.x} ${routeStart.y} Q ${(routeStart.x + targetPoint.x) / 2 + 52} ${(routeStart.y + targetPoint.y) / 2 - 56} ${targetPoint.x} ${targetPoint.y}`;
+  const routePath =
+    projected.route.length >= 2
+      ? projected.route
+          .map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`)
+          .join(" ")
+      : `M ${routeStart.x} ${routeStart.y} Q ${(routeStart.x + targetPoint.x) / 2 + 52} ${(routeStart.y + targetPoint.y) / 2 - 56} ${targetPoint.x} ${targetPoint.y}`;
 
   return (
     <div className="nr-navigation-map" role="img" aria-label="NexRide route overview. Turn-by-turn directions are provided by the external navigation app.">
@@ -87,7 +104,7 @@ export function DriverNavigationMap({
           )}
         </g>
       </svg>
-      <div className="nr-nav-map-disclaimer">ROUTE OVERVIEW · TURN-BY-TURN OPENS IN MAPS</div>
+      <div className="nr-nav-map-disclaimer">{projected.route.length >= 2 ? "LIVE ROAD ROUTE · NEXRIDE GUIDANCE" : "ROUTE OVERVIEW · MAPS FALLBACK AVAILABLE"}</div>
     </div>
   );
 }
