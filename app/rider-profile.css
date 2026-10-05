@@ -1,0 +1,63 @@
+.rider-profile-view{color:var(--text);--bg:#041c30;--surface:#08253c;--surface-alt:#0b2b43;--text:#f1f7fc;--muted:#aac0d1;--line:#1a3b52;--green-text:#39e69e;--green-wash:#0a3a38}
+.rider-profile-view .nr-stage{background:#041c30}
+.rider-profile-view .nr-map{display:none}
+.rider-profile-view .nr-preview-banner{background:#0a2a40;color:#b3c7d6;border-color:#214057}
+.rider-profile-view .nr-panel{width:min(620px,calc(100% - 56px));top:28px;bottom:28px}
+.nr-account{--surface:#08253c;--surface-alt:#0c2c44;--text:#f2f7fb;--muted:#adc2d2;--line:#234056;--green-text:#52e4ae;--green-wash:#0a3a38;background:#061e32;color:var(--text);border:1px solid #203c50;border-radius:24px;padding:28px 32px;overflow:auto;scrollbar-width:thin;scrollbar-color:#28465b transparent;box-shadow:0 16px 60px #00121f40}
+.nr-account-heading>span{font-size:10px;font-weight:650;letter-spacing:.14em;color:#79a4bd}
+.nr-account-heading h1{margin-top:9px;font-size:25px}
+.nr-account-heading>p{color:var(--muted);margin:6px 0 26px;font-size:13px}
+.nr-account-person{display:flex;align-items:center;gap:14px;padding:0 0 24px;border-bottom:1px solid var(--line)}
+.nr-account-person>div:nth-child(2){flex:1;min-width:0}
+.nr-account-person h2{margin:0 0 4px;font-size:18px;overflow-wrap:anywhere}
+.nr-account-person p{margin:0;font-size:12px;color:var(--muted)}
+.nr-account-person p span{color:#75b8d5}
+.nr-account-avatar{flex:none;width:64px;height:64px;border:1px solid #376055;border-radius:50%;display:grid;place-items:center;background:#153e42;font-size:20px;font-weight:650;color:#8af2c5;overflow:hidden}
+.nr-account-avatar img{object-fit:cover;width:100%;height:100%}
+.nr-account-edit{border:1px solid #315345;border-radius:12px;padding:0 12px;display:flex;align-items:center;gap:6px;color:#65e7b3!important;background:#0a3536;font-size:12px!important}
+.nr-account-menu{margin-top:8px}
+.nr-account .nr-list-row{padding:15px 0;min-height:62px;border-bottom:1px solid #1c374b;border-radius:0;background:transparent;color:var(--text)}
+.nr-account .nr-list-row:hover{background:#0b2b43}
+.nr-account .nr-list-row strong{font-size:14px;font-weight:500}
+.nr-account .nr-list-icon{width:32px;background:transparent;color:#b4cad9}
+.nr-account .nr-list-row>svg{color:#89a5b8}
+.nr-account-language{padding:18px;background:#0a2940;border:1px solid #183b52;border-radius:16px;margin-top:22px}
+.nr-account-language>div:first-child{display:flex;gap:9px;align-items:center;margin-bottom:13px;font-size:13px}
+.nr-account .nr-segmented{background:#061e32;border:1px solid #24475e;padding:4px;border-radius:12px;display:flex}
+.nr-account .nr-segmented button{flex:1;background:transparent;color:#c0d0dc;border:0;border-radius:8px;font-size:13px}
+.nr-account .nr-segmented button[aria-pressed=true]{background:#00c878;color:#032b20;box-shadow:none;font-weight:650}
+.nr-account-notice{font-size:12px;color:#71e9b6}
+.nr-account-notice:empty{display:none}
+.nr-account-secondary{margin-top:20px}
+.nr-account-secondary .nr-list-row{min-height:51px;border-bottom:0}
+.nr-account-secondary .nr-list-row strong{font-size:12px;color:#b1c6d5}
+.nr-account-signout{border-top:1px solid var(--line);margin-top:20px;padding-top:12px}
+.nr-account-signout>button{display:flex;align-items:center;gap:12px;border:0;background:transparent;color:#ffb1b6;padding:0 6px;font-size:13px}
+.nr-account-signout small{display:block;color:#8cabbf;font-size:10px;margin:14px 0 0}
+.nr-account .nr-dialog{background:var(--surface);color:var(--text);border-color:var(--line)}
+.nr-account .nr-dialog h2{font-size:20px}
+.nr-account .nr-dialog h3,.nr-account-settings h3{font-size:15px;margin:20px 0 10px}
+.nr-account .nr-dialog p{font-size:13px;line-height:1.7}
+.nr-account .nr-dialog .nr-muted{color:var(--muted)}
+.nr-account .nr-dialog input{color:var(--text);background:#061e32;border-color:#3b576b}
+.nr-account .nr-dialog input[readonly]{color:#adc2d2}
+.nr-account .nr-primary{background:#00c878;color:#032b20}
+.nr-account .nr-secondary{background:#10344c;color:#e4f0f8;border-color:#36586e}
+.nr-account .nr-ghost{color:#c6d6e1}
+.nr-account .nr-icon-button{color:#b4c8d6}
+.nr-account .nr-profile-form fieldset{border:0;margin:0;padding:0;min-width:0}
+.nr-account .nr-account-error{color:#ffd08e}
+.nr-account .nr-account-danger{background:#ffb1b6;color:#451019}
+.nr-account-toggle{display:flex;align-items:center;gap:20px;justify-content:space-between;cursor:pointer;padding:14px 0;border-block:1px solid var(--line)}
+.nr-account-toggle strong{font-size:13px;display:block}
+.nr-account-toggle small{display:block;color:var(--muted);line-height:1.5;font-size:12px;margin-top:5px}
+.nr-account-toggle input{width:40px;height:24px;accent-color:#00c878;flex:none;cursor:pointer}
+.nr-account-settings .nr-settings-row{gap:15px;flex-wrap:wrap}
+.nr-account-settings .nr-muted{font-size:12px;line-height:1.6}
+.nr-account-info>svg{color:#66eab6}
+@media(max-width:700px){.rider-profile-view .nr-panel{width:100%;top:0;bottom:0}.nr-account{border:0;border-radius:0;box-shadow:none;padding:24px 22px 30px;min-height:100%;}.nr-account-heading h1{font-size:23px}.nr-account-person{gap:12px}.nr-account-person h2{font-size:16px}.nr-account-avatar{width:54px;height:54px}.nr-account-edit{padding:0 10px}.nr-account .nr-dialog{padding:22px}.nr-account .nr-settings-row{align-items:flex-start;gap:12px}}
+
+.rider-profile-view .nr-stage{padding-top:0}
+.rider-profile-view .nr-navigation button:hover{background:#0b2b43}
+.rider-profile-view .nr-mode-control button.selected{background:#0a3a38;color:#5be4ac}
+@media(max-width:800px){.rider-profile-view .nr-panel{width:100%;top:0;bottom:auto}.nr-account{border:0;border-radius:0;box-shadow:none;max-height:none;overflow:visible;padding:24px 22px 30px}.rider-profile-view .nr-stage{min-height:calc(100dvh - 70px);padding-bottom:calc(85px + env(safe-area-inset-bottom))}}

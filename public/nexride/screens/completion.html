@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#05352f">
+<title>NexRide · Trip completed</title><meta name="description" content="View your NexRide receipt and rate your completed ride.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2305352f'/%3E%3Cpath d='M8 24V8l16 16V8' stroke='%2316db95' stroke-width='5' fill='none'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css"><link rel="stylesheet" href="completion.css">
+<link rel="stylesheet" href="embedded.css"><link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+<script>if(new URLSearchParams(location.search).has('embedded')){document.documentElement.classList.add('nexride-embedded','nexride-awaiting');if(new URLSearchParams(location.search).has('live'))document.documentElement.classList.add('nexride-live');}</script>
+</head>
+<body class="completion-page">
+<svg class="sprites" xmlns="http://www.w3.org/2000/svg"><defs>
+<symbol id="phone" viewBox="0 0 24 24"><path d="M5 3h4l2 5-3 2a15 15 0 0 0 6 6l2-3 5 2v4c0 2-2 3-4 2C9 19 5 15 3 7c-1-2 0-4 2-4Z"/></symbol>
+<symbol id="chat" viewBox="0 0 24 24"><path d="M21 11a9 9 0 0 1-9 9H4l-2 2 1-7A9 9 0 1 1 21 11Z"/><path d="M7 10h10M7 14h6"/></symbol>
+<symbol id="share" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="5" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8 10 7-4M8 14l7 4"/></symbol>
+<symbol id="shield" viewBox="0 0 24 24"><path d="m12 2 9 4v6c0 5-5 9-9 10-4-1-9-5-9-10V6l9-4Z"/><path d="m8 12 3 3 5-6"/></symbol>
+<symbol id="pin" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></symbol>
+<symbol id="arrow" viewBox="0 0 24 24"><path d="m15 5-7 7 7 7M8 12h14"/></symbol>
+<symbol id="car" viewBox="0 0 24 24"><path d="m5 8 2-5h10l2 5M3 8h18v10H3V8ZM5 18v3M19 18v3M6 12h2M16 12h2"/></symbol>
+<symbol id="target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/></symbol>
+<symbol id="check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+<symbol id="star" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.9L12 17.8l-6.2 3.3L7 14.2 2 9.3l6.9-1L12 2Z"/></symbol></defs></svg>
+<header class="app-header"><a class="brand" href="./" aria-label="NexRide"><span class="brandmark">N</span>NexRide</a><a class="screen-link" href="trip.html">Active trip</a></header>
+<div id="demoBar" class="demo-bar"><span><b>Design preview</b><span class="demo-note"> · Sample receipt & driver</span></span><label>Preview state <select id="scenario"><option value="normal">Ready to rate</option><option value="pending">Payment pending</option><option value="failed">Payment failed</option><option value="unknown">Payment unavailable</option><option value="retry">Submission failure</option><option value="already">Already rated</option></select></label></div>
+<main class="completion-shell">
+<section class="completion-header" aria-labelledby="completionTitle"><span id="successIcon" class="success-icon" aria-hidden="true"><svg><use href="#check"/></svg></span><h1 id="completionTitle">Trip completed!</h1><p id="completionMessage">Thank you for riding with NexRide.</p></section>
+<section class="receipt-card" aria-label="Trip receipt"><div class="receipt-driver"><img id="driverPhoto" src="assets/driver.png" alt="Fictional sample driver portrait"><div><h2 id="driverName">Tesfaye Alemu</h2><p id="vehicleDetails">Silver Toyota Corolla</p><p id="vehiclePlate">ET 74235</p></div><span id="rideCategory" class="receipt-category">Economy</span></div><div class="receipt-total"><div><span class="amount-label">Final amount</span><strong id="finalAmount">145 <span>ETB</span></strong></div><button id="viewDetails" class="view-details">View details</button></div><div class="payment-row" role="status" aria-live="polite"><span id="paymentStatus" class="payment-status paid">Paid</span><span id="paymentMethod">Cash</span></div><p id="paymentNotice" class="payment-notice" hidden></p></section>
+<section id="ratingSection" class="rating-section" aria-label="Ride feedback">
+<form id="ratingForm"><fieldset id="starFieldset"><legend>How was your ride?</legend><div class="stars">
+<label class="star-control"><input type="radio" name="rating" value="1" aria-label="1 star"><span><svg aria-hidden="true"><use href="#star"/></svg></span></label><label class="star-control"><input type="radio" name="rating" value="2" aria-label="2 stars"><span><svg aria-hidden="true"><use href="#star"/></svg></span></label><label class="star-control"><input type="radio" name="rating" value="3" aria-label="3 stars"><span><svg aria-hidden="true"><use href="#star"/></svg></span></label><label class="star-control"><input type="radio" name="rating" value="4" aria-label="4 stars"><span><svg aria-hidden="true"><use href="#star"/></svg></span></label><label class="star-control"><input type="radio" name="rating" value="5" aria-label="5 stars"><span><svg aria-hidden="true"><use href="#star"/></svg></span></label>
+</div><p id="ratingDescription" class="rating-description" aria-live="polite">Select a star to rate your ride.</p></fieldset>
+<details class="optional-feedback"><summary>Add optional feedback <span aria-hidden="true">+</span></summary><fieldset id="feedbackFieldset" class="feedback-fieldset"><legend class="sr-only">Optional feedback</legend><div class="feedback-tags" aria-label="Optional feedback tags"><label><input type="checkbox" name="tag" value="friendly"><span>Friendly driver</span></label><label><input type="checkbox" name="tag" value="clean"><span>Clean vehicle</span></label><label><input type="checkbox" name="tag" value="smooth"><span>Smooth ride</span></label><label><input type="checkbox" name="tag" value="on_time"><span>On time</span></label></div><label class="feedback-label" for="feedback">Anything else? <span>Optional</span></label><textarea id="feedback" maxlength="1000" rows="2" placeholder="Tell us what went well or could be better."></textarea><div class="text-meta"><span>Optional · up to 1,000 characters</span><span id="characterCount">0/1000</span></div></fieldset></details>
+<p id="ratingError" class="rating-error" role="alert" hidden></p><button id="submitRating" type="submit" class="submit-rating" disabled><span id="submitLabel">Submit</span><span id="submitSpinner" class="submit-spinner" aria-hidden="true" hidden></span></button><button id="skipRating" type="button" class="skip-rating">Skip</button></form>
+<div id="ratingResult" class="rating-result" tabindex="-1" hidden><span class="result-check" aria-hidden="true"><svg><use href="#check"/></svg></span><h2 id="resultTitle">Thank you for your feedback.</h2><p id="resultMessage">Your rating has been saved.</p><div id="savedStars" class="saved-stars" aria-label="Submitted rating" hidden></div><button id="rateLater" class="rate-later" hidden>Rate this ride</button></div>
+</section>
+<div class="receipt-access"><p>Your receipt is always available here.</p><button id="support" class="support-action"><svg aria-hidden="true"><use href="#chat"/></svg>Trip support</button></div>
+</main>
+<dialog id="receiptDialog" aria-labelledby="dialogTitle"><div class="dialog-head"><h2 id="dialogTitle">Trip details</h2><button id="closeDialog" aria-label="Close dialog">×</button></div><div id="dialogBody"></div></dialog>
+<script src="completion.js"></script><script src="vendor/leaflet/leaflet.js"></script><script src="embedded.js"></script>
+</body></html>

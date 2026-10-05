@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#05352f">
+<title>NexRide · On trip</title><meta name="description" content="Follow your NexRide trip, share trip details, and reach safety controls.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2305352f'/%3E%3Cpath d='M8 24V8l16 16V8' stroke='%2316db95' stroke-width='5' fill='none'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css"><link rel="stylesheet" href="trip.css">
+<link rel="stylesheet" href="embedded.css"><link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+<script>if(new URLSearchParams(location.search).has('embedded')){document.documentElement.classList.add('nexride-embedded','nexride-awaiting');if(new URLSearchParams(location.search).has('live'))document.documentElement.classList.add('nexride-live');}</script>
+</head>
+<body class="trip-page">
+<svg class="sprites" xmlns="http://www.w3.org/2000/svg"><defs>
+<symbol id="phone" viewBox="0 0 24 24"><path d="M5 3h4l2 5-3 2a15 15 0 0 0 6 6l2-3 5 2v4c0 2-2 3-4 2C9 19 5 15 3 7c-1-2 0-4 2-4Z"/></symbol>
+<symbol id="chat" viewBox="0 0 24 24"><path d="M21 11a9 9 0 0 1-9 9H4l-2 2 1-7A9 9 0 1 1 21 11Z"/><path d="M7 10h10M7 14h6"/></symbol>
+<symbol id="share" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="5" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8 10 7-4M8 14l7 4"/></symbol>
+<symbol id="shield" viewBox="0 0 24 24"><path d="m12 2 9 4v6c0 5-5 9-9 10-4-1-9-5-9-10V6l9-4Z"/><path d="m8 12 3 3 5-6"/></symbol>
+<symbol id="pin" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></symbol>
+<symbol id="arrow" viewBox="0 0 24 24"><path d="m15 5-7 7 7 7M8 12h14"/></symbol>
+<symbol id="car" viewBox="0 0 24 24"><path d="m5 8 2-5h10l2 5M3 8h18v10H3V8ZM5 18v3M19 18v3M6 12h2M16 12h2"/></symbol>
+<symbol id="target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/></symbol>
+<symbol id="check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+</defs></svg>
+<header class="app-header"><a class="brand" href="./" aria-label="NexRide"><span class="brandmark">N</span>NexRide</a><span class="header-label">Your journey, in view.</span><a class="screen-link" href="completion.html" data-preview-link>Completion preview</a><a class="screen-link" href="./">Pickup</a><span class="ride-badge">Rider</span></header>
+<div id="demoBar" class="demo-bar"><span><b>Design preview</b><span class="demo-note"> · Sample trip & map</span></span><div class="preview-controls"><button id="sampleUpdate" class="sample-update">Receive sample location</button><label>State <select id="scenario"><option value="normal">On trip</option><option value="route">Route change</option><option value="delay">Delayed arrival</option><option value="stale">Stale location</option><option value="offline">Connection lost</option><option value="eta">No ETA or distance</option><option value="completed">Trip completed</option></select></label></div></div>
+<main class="workspace">
+<section class="map-section" aria-label="Active trip map">
+<div class="status-banner" role="status" aria-live="polite" aria-atomic="true"><span class="status-icon"><svg><use href="#car"/></svg></span><div class="status-copy"><h1 id="statusTitle">On trip</h1><p id="statusDetail">Bole International Airport</p></div><div class="trip-metrics"><div><span>Estimated arrival</span><b id="arrivalTime">—</b></div><div id="distanceMetric"><span>Remaining</span><b id="remainingDistance">4.2 km</b></div></div></div>
+<div id="stateNotice" class="trip-notice" role="status" aria-live="polite" hidden></div>
+<div class="map-wrap">
+<div id="mapSurface" class="map-surface"><svg id="map" class="map" viewBox="0 0 900 700" role="img" aria-labelledby="mapTitle mapDesc"><title id="mapTitle">Vehicle position and trip route</title><desc id="mapDesc">Illustrative sample trip map of Addis Ababa. Pickup is emerald, destination is navy, and the vehicle is shown at its last received sample position.</desc>
+<defs><pattern id="blocks" width="145" height="120" patternUnits="userSpaceOnUse" patternTransform="rotate(-18)"><rect width="145" height="120" fill="#edf1ee"/><rect x="12" y="12" width="116" height="91" rx="6" fill="#e7ebe8" stroke="#dfe5e1"/><path d="M0 0H145M0 0V120" stroke="#fff" stroke-width="13"/></pattern><filter id="shadow"><feDropShadow dx="0" dy="3" stdDeviation="5" flood-opacity=".15"/></filter></defs>
+<rect width="900" height="700" fill="url(#blocks)"/>
+<path d="M580 0 560 96 610 156 560 242 618 290 589 368 659 411 699 526 758 579 782 700" fill="none" stroke="#d4e5d7" stroke-width="45"/>
+<path d="M-50 190Q240 310 400 303T950 190M60-30 202 263 322 435 401 740M-20 570 327 449 492 380 956 491" fill="none" stroke="#dce2dd" stroke-width="30"/>
+<path d="M-50 190Q240 310 400 303T950 190M60-30 202 263 322 435 401 740M-20 570 327 449 492 380 956 491" fill="none" stroke="#fff" stroke-width="22"/>
+<path d="M-50 190Q240 310 400 303T950 190" fill="none" stroke="#f5e9c7" stroke-width="5"/>
+<g fill="#94a39b" font-family="system-ui" font-size="14"><text x="210" y="160">KAZANCHIS</text><text x="665" y="335">BOLE</text><text x="115" y="490">KIRKOS</text><text x="600" y="610">Bole International Airport</text><text x="302" y="337" transform="rotate(-7 302 337)">Africa Avenue</text></g>
+<g id="tripRoute"><path id="destinationLine" d="M397 304 495 286 525 369 649 408 699 526 735 556" stroke="#083b58" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/><g id="destinationMarker" transform="translate(735 556)"><circle r="13" fill="#073950" stroke="white" stroke-width="5"/><circle r="3" fill="white"/></g></g>
+<g id="pickupMarker" transform="translate(397 304)"><circle class="pickup-ring" r="27" fill="#00b77a" opacity=".12"/><circle r="11" fill="#00a875" stroke="white" stroke-width="5"/><g transform="translate(-78 -69)" filter="url(#shadow)"><rect width="156" height="37" rx="11" fill="white"/><text x="78" y="24" text-anchor="middle" fill="#06392d" font-family="system-ui" font-size="14" font-weight="600">Your pickup</text></g></g>
+<g id="driverMarker" transform="translate(525 369)" filter="url(#shadow)"><circle r="25" fill="white"/><g fill="none" stroke="#06382f" stroke-width="2.4" stroke-linecap="round" transform="translate(-12 -12)"><use href="#car" width="24" height="24"/></g></g>
+</svg></div>
+<div id="trackingLabel" class="tracking-label"><span class="dot"></span><span id="trackingText">Sample location · updated just now</span></div>
+<button id="recenter" class="recenter" aria-label="Fit trip route"><svg><use href="#target"/></svg></button>
+<div class="map-legend"><span><i class="key emerald"></i>Pickup</span><span><i class="key navy"></i>Destination</span></div><span id="mapAttribution" class="map-attribution">Illustrative map · not for navigation</span>
+</div>
+</section>
+<aside class="ride-panel" aria-label="Driver, vehicle, and trip controls">
+<div class="sheet-handle"></div>
+<div class="driver-row"><img id="driverPhoto" class="driver-photo" src="assets/driver.png" alt="Fictional sample driver portrait"><div class="driver-identity"><h2 id="driverName">Tesfaye Alemu</h2><p id="driverStats" class="driver-stats"><span class="star">★</span> 4.9 <span>· 256 trips</span></p></div><span id="category" class="category">Economy</span></div>
+<div class="trip-vehicle"><div><b id="vehicleModel">Toyota Corolla</b><span id="vehicleColor">Silver</span></div><strong id="vehiclePlate" aria-label="License plate">ET 74235</strong></div>
+<div class="actions" aria-label="Trip actions"><button data-action="call"><span><svg><use href="#phone"/></svg></span>Call</button><button data-action="chat"><span><svg><use href="#chat"/></svg></span>Chat</button><button data-action="safety"><span><svg><use href="#shield"/></svg></span>Safety</button></div>
+<button id="shareTrip" class="share-trip" aria-label="Share trip" aria-describedby="shareHint"><span class="share-icon"><svg><use href="#share"/></svg></span><span><b>Share trip</b><small id="shareHint">Share a snapshot of your trip details</small></span><span class="share-plus" aria-hidden="true">+</span></button>
+<details id="tripDetails" class="trip-details"><summary>Trip details <span aria-hidden="true">⌃</span></summary><div class="details-content"><div class="detail-place"><i class="pickup-dot"></i><div><span>Pickup</span><b id="pickupName">Meskel Square</b></div></div><div class="detail-place"><i class="destination-dot"></i><div><span>Destination</span><b id="destinationName">Bole International Airport</b></div></div><div class="detail-value"><span>Estimated fare</span><b id="fare">145 ETB</b></div><div class="detail-value"><span>Booking</span><b id="bookingReference">NR-2048</b></div><p id="accuracyNote" class="accuracy-note">Positions reflect received updates.</p></div></details>
+</aside>
+</main>
+<dialog id="actionDialog" aria-labelledby="dialogTitle"><div class="dialog-head"><h2 id="dialogTitle"></h2><button id="closeDialog" aria-label="Close dialog">×</button></div><div id="dialogBody"></div></dialog>
+<div id="toast" role="status" class="toast" hidden></div>
+<script src="trip.js"></script>
+<script src="vendor/leaflet/leaflet.js"></script><script src="embedded.js"></script>
+</body></html>

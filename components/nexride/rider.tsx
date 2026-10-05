@@ -10,6 +10,9 @@ import {
   useTranslation,
   LanguageContext,
 } from "./ui";
+import { TripExperience } from "./trip-experience";
+import { useRiderTrips } from "../../lib/nexride-use-trips";
+import { tripStatus } from "../../lib/nexride-trip-data";
 import { RiderHomePanel } from "./rider-home";
 import {
   emptyHomePlaces,
@@ -51,6 +54,7 @@ export function RiderWorkspace({
   journey,
   onBookingPending,
   matching,
+  onTripSource,
 }: {
   screen: RiderScreen;
   navigate: (s: RiderScreen) => void;
@@ -64,6 +68,7 @@ export function RiderWorkspace({
   journey: Journey;
   onBookingPending: (pending: boolean) => void;
   matching: Matching;
+  onTripSource: (live: boolean) => void;
 }) {
   const t = useTranslation();
   const language = useContext(LanguageContext);
@@ -83,8 +88,15 @@ export function RiderWorkspace({
       localStorage.setItem(HOME_PLACES_KEY, serializeHomePlaces(next));
     } catch {}
   };
-  const [rating, setRating] = useState(0);
-  const [ratingSaved, setRatingSaved] = useState(false);
+  const realTrips = useRiderTrips();
+  const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
+  const openRealTrip = (id: string, state: unknown) => {
+    setSelectedTripId(id);
+    const status = tripStatus(state);
+    navigate(status === "completed" ? "summary" : status === "in_trip" ? "live" : "trip");
+  };
+  useEffect(() => { setSelectedTripId(null); }, [realTrips.userId]);
+  useEffect(() => { onTripSource(!!selectedTripId && !!realTrips.userId && ["trip","live","summary"].includes(screen)); }, [selectedTripId, realTrips.userId, screen, onTripSource]);
   const choose = (p: Place) => {
     if (savingShortcut) {
       savePlaces({
@@ -113,8 +125,7 @@ export function RiderWorkspace({
       !Number.isFinite(amount)
     )
       return;
-    setRating(0);
-    setRatingSaved(false);
+    setSelectedTripId(null);
     setTrip({
       // Temporary geocoder labels must not enter persistent preview trip history.
       pickup:
@@ -134,12 +145,10 @@ export function RiderWorkspace({
       fare: { id: 'preview', category, seats: category === 'xl' ? 6 : 4, availability: 'preview', pickupMinutes: null, amount, currency: 'ETB', priceType: 'sample', charges: [] } });
     navigate("finding");
   };
-  const finish = () => {
-    if (trip) setTrip({ ...trip, completed: true });
-    navigate("summary");
-  };
   if (screen === "home")
     return (
+      <>
+      {realTrips.active && <button className="nr-resume-trip" onClick={() => openRealTrip(String(realTrips.active!.id), realTrips.active!.state)}>Resume your trip <Icon name="arrow" /></button>}
       <RiderHomePanel
         navigate={() => {
           setSavingShortcut(null);
@@ -163,6 +172,7 @@ export function RiderWorkspace({
           navigate("destination");
         }}
       />
+      </>
     );
   if (screen === "saved")
     return (
@@ -221,103 +231,10 @@ export function RiderWorkspace({
     return <DriverMatching model={matching}
       home={() => { matching.clear(); navigate('home'); }}
       changeCategory={() => { matching.clear(); navigate('rides'); }}
-      previewAssigned={() => { matching.clear(); navigate('trip'); }} />;
-  if (screen === "trip" || screen === "live")
-    return (
-      <Sheet
-        title={t(screen === "live" ? "onTrip" : "assigned")}
-        subtitle={t(screen === "live" ? "tripNote" : "sampleDriver")}
-      >
-        <DriverCard />
-        <div className="nr-contact-actions">
-          {(
-            [
-              { icon: "phone", key: "call" },
-              { icon: "chat", key: "chat" },
-              { icon: "share", key: "share" },
-              { icon: "shield", key: "safety" },
-            ] as const
-          ).map((a) => (
-            <button
-              key={a.key}
-              onClick={() =>
-                a.key === "safety" ? onSafety() : onUnavailable(t(a.key))
-              }
-            >
-              <span>
-                <Icon name={a.icon} />
-              </span>
-              {t(a.key)}
-            </button>
-          ))}
-        </div>
-        <div className="nr-trip-destination">
-          <Icon name="pin" />
-          <span>
-            <small>{t("dropoff")}</small>
-            <strong>{trip?.destination}</strong>
-          </span>
-        </div>
-        <Button onClick={screen === "live" ? finish : () => navigate("live")}>
-          {t(screen === "live" ? "complete" : "startPreview")}
-        </Button>
-        <Button variant="ghost" onClick={() => navigate("home")}>
-          {t("cancel")}
-        </Button>
-      </Sheet>
-    );
-  if (screen === "summary")
-    return (
-      <Sheet>
-        <div className="nr-completion">
-          <span className="nr-completion-check">
-            <Icon name="check" size={30} />
-          </span>
-          <h1>{t("completed")}</h1>
-          <p>{t("thanks")}</p>
-        </div>
-        <DriverCard compact />
-        <div className="nr-receipt">
-          <span>{t("sampleFare")}</span>
-          <strong>{trip?.amount || 0} ETB</strong>
-        </div>
-        <h2 className="nr-center">{t("howRide")}</h2>
-        <div className="nr-stars" role="group" aria-label={t("howRide")}>
-          {[1, 2, 3, 4, 5].map((n) => (
-            <button
-              key={n}
-              aria-label={`${n} / 5`}
-              aria-pressed={rating === n}
-              className={n <= rating ? "filled" : ""}
-              onClick={() => {
-                setRating(n);
-                setRatingSaved(false);
-              }}
-            >
-              <Icon name="star" size={28} />
-            </button>
-          ))}
-        </div>
-        {ratingSaved && (
-          <p className="nr-center nr-muted" role="status">
-            {t("ratingSaved")}
-          </p>
-        )}
-        <Button
-          disabled={!rating || ratingSaved}
-          onClick={() => {
-            if (trip) setTrip({ ...trip, rating });
-            setRatingSaved(true);
-          }}
-        >
-          {t("submit")}
-        </Button>
-        <Button variant="ghost" onClick={() => navigate("home")}>
-          {t("skip")}
-        </Button>
-        <p className="nr-fine-print">{t("walletNote")}</p>
-      </Sheet>
-    );
+      previewAssigned={() => { setSelectedTripId(null); matching.clear(); navigate('trip'); }} />;
+  if (screen === "trip" || screen === "live" || screen === "summary")
+    return <TripExperience screen={screen} tripId={selectedTripId} userId={realTrips.userId} preview={trip}
+      navigate={navigate} setPreview={setTrip} safety={onSafety} />;
   if (screen === "wallet")
     return (
       <Sheet title={t("wallet")}>
@@ -345,6 +262,15 @@ export function RiderWorkspace({
     );
   return (
     <Sheet title={t("trips")}>
+      {realTrips.userId && <section className="nr-real-trip-history" aria-label="Your booked trips">
+        {realTrips.loading && <p role="status">Loading your trips…</p>}
+        {realTrips.error && <div role="alert"><p>Trip history could not be refreshed. Previously received details may be out of date.</p><Button variant="secondary" onClick={() => void realTrips.refresh()}>Retry</Button></div>}
+        {realTrips.rows.map(row => <ListRow key={String(row.id)} icon={row.state === 'completed' ? 'check' : 'car'}
+          title={String(row.destination_address || 'Destination unavailable')}
+          detail={`${String(row.state).replaceAll('_', ' ')} · ${String(row.id).slice(0, 8)}`}
+          onClick={() => openRealTrip(String(row.id), row.state)} />)}
+        {!realTrips.loading && !realTrips.error && !realTrips.rows.length && <p>No booked trips yet.</p>}
+      </section>}
       {trip ? (
         <>
           <p className="nr-muted">{t("recent")}</p>
@@ -353,7 +279,7 @@ export function RiderWorkspace({
               icon={trip.completed ? "check" : "car"}
               title={trip.destination}
               detail={`${t(trip.ride)} · ${trip.amount} ETB · ${t("sample")}`}
-              onClick={() => navigate(trip.completed ? "summary" : "trip")}
+              onClick={() => { setSelectedTripId(null); navigate(trip.completed ? "summary" : "trip"); }}
             />
           </div>
           <p className="nr-fine-print">{t("previewInfo")}</p>

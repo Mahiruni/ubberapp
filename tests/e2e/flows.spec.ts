@@ -33,20 +33,20 @@ test("rider can complete an explicitly labeled preview and save a rating", async
   ).toBeVisible();
   await page.getByText("Preview matching states", {exact:true}).click();
   await page.getByRole("button", { name: "Preview assigned driver" }).click();
-  await expect(
-    page.getByRole("heading", { name: "Meet your driver" }),
-  ).toBeVisible();
-  await page.getByRole("button", { name: "Chat", exact: true }).click();
-  await expect(page.getByRole("dialog")).toContainText("not connected");
-  await page.keyboard.press("Escape");
-  await page.getByRole("button", { name: "Preview trip in progress" }).click();
-  await page.getByRole("button", { name: "Finish preview trip" }).click();
-  await expect(
-    page.getByRole("heading", { name: "You’ve arrived." }),
-  ).toBeVisible();
-  await page.getByRole("button", { name: "5 / 5" }).click();
-  await page.getByRole("button", { name: "Save preview rating" }).click();
-  await expect(page.getByRole("status")).toContainText("Rating saved");
+  const assigned = page.frameLocator('iframe[title="NexRide assigned driver"]');
+  await expect(assigned.getByText('Driver on the way', {exact:true})).toBeVisible();
+  await assigned.getByRole('button', {name:'Chat',exact:true}).click();
+  await expect(assigned.getByRole('dialog')).toContainText('not delivered');
+  await assigned.getByRole('button', {name:'Close dialog'}).click();
+  await page.getByRole('button', {name:'Start preview trip',exact:true}).click();
+  const active = page.frameLocator('iframe[title="NexRide active trip"]');
+  await expect(active.getByRole('heading', {name:'On trip',exact:true})).toBeVisible();
+  await page.getByRole('button', {name:'Complete preview trip',exact:true}).click();
+  const receipt = page.frameLocator('iframe[title="NexRide trip receipt and rating"]');
+  await expect(receipt.getByRole('heading', {name:'Trip completed!',exact:true})).toBeVisible();
+  await receipt.getByRole('radio', {name:/5 star/}).check();
+  await receipt.getByRole('button', {name:'Submit',exact:true}).click();
+  await expect(receipt.getByText('Thank you for your feedback.',{exact:true})).toBeVisible();
   await page.reload();
   const trip = await page.evaluate(
     () => JSON.parse(localStorage.getItem("nexride-preview-v2")!).trip,
@@ -108,7 +108,7 @@ test("Amharic, profile edits, keyboard dialogs, and local storage migration work
     .first()
     .click();
   await page
-    .getByRole("button", { name: "Personal information", exact: true })
+    .getByRole("button", { name: "Edit profile", exact: true })
     .click();
   await page.getByLabel("Full name", { exact: true }).fill("NexRide Test");
   await page.getByRole("button", { name: "Save details" }).click();

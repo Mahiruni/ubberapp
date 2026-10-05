@@ -1,5 +1,6 @@
 "use client";
 import Image from "next/image";
+import { RiderProfile, RiderSettings } from "../components/nexride/rider-profile";
 import { useRouter } from "next/navigation";
 import { RiderSplash } from "../components/nexride/splash";
 import {
@@ -44,6 +45,7 @@ import "./rider-home.css";
 import "./destination.css";
 import "./ride-selection.css";
 import "./matching.css";
+import "./rider-profile.css";
 const STORAGE_KEY = PREVIEW_STORAGE_KEY;
 type Mode = "rider" | "driver";
 type Panel =
@@ -220,11 +222,18 @@ function AppWorkspace({
     const timer = window.setTimeout(() => setToast(""), 3000);
     return () => window.clearTimeout(timer);
   }, [toast]);
+  useEffect(() => {
+    const announce = () => setToast(language === "am" ? "የጉዞዎ ሁኔታ ተዘምኗል። በጉዞዎቼ ውስጥ ይመልከቱ።" : "Your trip status changed. View it in My Rides.");
+    window.addEventListener("nexride:trip-alert", announce);
+    return () => window.removeEventListener("nexride:trip-alert", announce);
+  }, [language]);
   const screen = mode === "rider" ? riderScreen : driverScreen;
   const profileView = screen === "profile";
   const riderHome = mode === "rider" && screen === "home";
+  const [liveTripShown, setLiveTripShown] = useState(false);
+  const riderTripView = mode === "rider" && ["trip", "live", "summary"].includes(screen);
   const riderMapView =
-    mode === "rider" && ["home", "destination", "rides", "finding", "trip", "live"].includes(screen);
+    mode === "rider" && ["home", "destination", "rides", "finding"].includes(screen);
   const riderSearch = mode === "rider" && screen === "destination";
   useEffect(() => {
     if (riderScreen === "rides" && !journey.canContinue)
@@ -285,7 +294,7 @@ function AppWorkspace({
             } as React.CSSProperties)
           : undefined
       }
-      className={`nr-workspace ${riderMapView ? "rider-home-view" : ""} ${riderSearch ? "rider-search-view" : ""} ${mode === "rider" && screen === "rides" ? "rider-ride-view" : ""} ${mode === "rider" && ["finding", "trip", "live"].includes(screen) ? "rider-matching-view" : ""}`}
+      className={`nr-workspace ${profileView && mode === "rider" ? "rider-profile-view" : ""} ${riderTripView ? "rider-trip-view" : ""} ${riderMapView ? "rider-home-view" : ""} ${riderSearch ? "rider-search-view" : ""} ${mode === "rider" && screen === "rides" ? "rider-ride-view" : ""} ${mode === "rider" && ["finding", "trip", "live"].includes(screen) ? "rider-matching-view" : ""}`}
     >
       <aside className="nr-sidebar" inert={requestPending || matching.active}>
         <Brand driver={mode === "driver"} />
@@ -355,7 +364,7 @@ function AppWorkspace({
             </button>
           </div>
         </header>
-        <div className="nr-preview-banner">
+        {!liveTripShown && !profileView && <div className="nr-preview-banner">
           <span className="nr-preview-label">{t("preview")}</span>
           <p>{t("previewInfo")}</p>
           <button
@@ -365,7 +374,7 @@ function AppWorkspace({
           >
             <Icon name="info" size={17} />
           </button>
-        </div>
+        </div>}
         {offline && (
           <div className="nr-network-banner" role="status">
             {t("networkOffline")}
@@ -374,7 +383,7 @@ function AppWorkspace({
         <div
           className={`nr-stage ${["home", "destination", "rides", "finding", "trip", "live", "request", "navigation"].includes(screen) ? "with-map" : "content-view"}`}
         >
-          {riderMapView ? (
+          {riderTripView ? null : riderMapView ? (
             <RiderMap
               position={riderLocation.position}
               status={riderLocation.status}
@@ -418,7 +427,7 @@ function AppWorkspace({
             <p>{t("brandMessage")}</p>
           </div>
           <div className="nr-panel">
-            {profileView ? (
+            {profileView && mode === "rider" ? <RiderProfile language={language} setLanguage={setLanguage} theme={theme} setTheme={setTheme} profile={profile} setProfile={setProfile} rides={() => navigate("trips")} safety={() => setPanel("safety")} support={() => setPanel("support")} switchDriver={() => switchMode("driver")} /> : profileView ? (
               <Sheet title={t("profile")}>
                 <div className="nr-profile-header">
                   <div className="nr-avatar">{initials}</div>
@@ -507,6 +516,7 @@ function AppWorkspace({
                 journey={journey}
                 onBookingPending={onBookingPending}
                 matching={matching}
+                onTripSource={setLiveTripShown}
               />
             </div>
             <div hidden={mode !== "driver" || profileView}>
@@ -596,7 +606,7 @@ function AppWorkspace({
                 setToast(t("saveSuccess"));
               }}
             />
-          ) : panel === "settings" ? (
+          ) : panel === "settings" && mode === "rider" ? <RiderSettings language={language} setLanguage={setLanguage} theme={theme} setTheme={setTheme}/> : panel === "settings" ? (
             <>
               <div className="nr-settings-row">
                 <strong>{t("language")}</strong>

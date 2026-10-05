@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import "./polish.css";
 import "./premium-overrides.css";
+import "./trip-experience.css";
 
 export const metadata: Metadata = {
   title: "NexRide",
