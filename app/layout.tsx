@@ -3,6 +3,7 @@ import "./globals.css";
 import "./polish.css";
 import "./premium-overrides.css";
 import "./trip-experience.css";
+import "./final-polish.css";
 
 export const metadata: Metadata = {
   title: "NexRide",
