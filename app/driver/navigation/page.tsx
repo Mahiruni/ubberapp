@@ -282,6 +282,7 @@ export default function DriverNavigationPage() {
       <div className="nr-nav-map-controls" aria-label="Map controls">
         <button onClick={() => setMapView("vehicle")} className={mapView === "vehicle" ? "active" : ""} disabled={!position} aria-label="Recenter on vehicle" aria-pressed={mapView === "vehicle"}><Icon name="locate" size={20} /></button>
         <button onClick={() => setMapView("overview")} className={mapView === "overview" ? "active" : ""} aria-label="Show route overview" aria-pressed={mapView === "overview"}><Icon name="globe" size={20} /></button>
+        <button onClick={() => router.push(`/safety?role=driver&ride=${trip.requestId}`)} aria-label="Open Safety Center"><Icon name="shield" size={20} /></button>
       </div>
 
       {(gpsState !== "fresh" || routeNotice) && (
