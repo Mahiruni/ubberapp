@@ -29,7 +29,7 @@ export function RiderProfile(props:Props) {
  const [panel,setPanel]=useState<'edit'|'settings'|'privacy'|'payments'|'signout'|null>(null),[form,setForm]=useState(profile),[busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState(''),[photoFailed,setPhotoFailed]=useState(false),[signedOutLocally,setSignedOutLocally]=useState(false);
  const lock=useRef(false);
  useEffect(()=>{let active=true;setLoading(true);setLoadError(false);setAccount(null);setPhotoFailed(false);void readAccount().then(value=>{if(active)setAccount(value)}).catch(()=>{if(active)setLoadError(true)}).finally(()=>{if(active)setLoading(false)});return()=>{active=false}},[attempt]);
- useEffect(()=>{const {data}=supabase.auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT'||event==='SIGNED_IN'){if(!lock.current)setPanel(null);setAccount(null);setLoading(true);setAttempt(v=>v+1)}});return()=>data.subscription.unsubscribe()},[]);
+ useEffect(()=>{const {data}=supabase.auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT'){if(!lock.current)setPanel(null);setAccount(null);setLoading(false)}});return()=>data.subscription.unsubscribe()},[]);
  const shown=account?.profile || (!loading&&!loadError?profile:{name:'',phone:'',email:''});
  const initials=shown.name.trim().split(/\s+/).slice(0,2).map(v=>v[0]).join('').toUpperCase()||'NR';
  const open=(next:typeof panel)=>{setError('');setPanel(next)};
