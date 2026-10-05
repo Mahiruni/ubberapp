@@ -77,6 +77,8 @@ export default function Home() {
   const [ready, setReady] = useState(cached?.destination === "/");
   const [startupError, setStartupError] = useState<StartupError | null>(null);
   const [attempt, setAttempt] = useState(0);
+  const startupRouter = useRef(router);
+  startupRouter.current = router;
   useEffect(() => {
     let active = true;
     try {
@@ -92,7 +94,7 @@ export default function Home() {
         setProfile(p.profile);
         setTrip(p.trip);
         if (result.destination !== "/") {
-          router.replace(result.destination);
+          startupRouter.current.replace(result.destination);
           return;
         }
         setReady(true);
@@ -106,7 +108,7 @@ export default function Home() {
     return () => {
       active = false;
     };
-  }, [attempt, router]);
+  }, [attempt]);
   const retry = (reset = false) => {
     retryStartup(reset);
     setStartupError(null);
