@@ -54,7 +54,7 @@ export default function OpenGraphImage() {
                 marginTop: "34px",
                 display: "flex",
                 alignItems: "center",
-                width: "fit-content",
+                
                 padding: "13px 24px",
                 borderRadius: "999px",
                 background: "#00C878",
