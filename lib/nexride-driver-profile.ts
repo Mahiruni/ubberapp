@@ -9,6 +9,7 @@ export type DriverProfileData = {
   phone: string;
   email: string;
   avatarUrl: string;
+  role: string;
   accountStatus: "active" | "suspended" | "disabled" | string;
   rating: number | null;
   completedTrips: number | null;
@@ -38,7 +39,7 @@ export async function loadDriverProfileData(userId: string): Promise<DriverProfi
     supabase.auth.getSession(),
     supabase
       .from("profiles")
-      .select("full_name,phone,account_status")
+      .select("full_name,phone,role,account_status")
       .eq("id", userId)
       .maybeSingle(),
     supabase
@@ -67,6 +68,7 @@ export async function loadDriverProfileData(userId: string): Promise<DriverProfi
     phone: text(profile?.phone) || text(metadata.phone),
     email: text(session?.user.email),
     avatarUrl: text(metadata.avatar_url) || text(metadata.avatarUrl),
+    role: text(profile?.role),
     accountStatus: text(profile?.account_status) || "active",
     rating: number(driver?.rating),
     completedTrips: tripsResult.error ? null : tripsResult.count ?? 0,
