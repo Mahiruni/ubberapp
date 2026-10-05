@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "./ui";
 import { DriverEarningsScreen } from "./driver-earnings";
+import { DriverProfileScreen } from "./driver-profile";
 import { supabase } from "../../lib/supabase";
 import "../../app/driver/driver-dashboard.css";
 
@@ -414,16 +415,11 @@ export function DriverWorkspace({
   if (screen === "profile") {
     return (
       <div className="nr-driver-page">
-        <PageHead title="Profile" navigate={navigate} back={false} />
-        <section className="nr-driver-profile-card">
-          <div className="nr-driver-avatar large">{state.avatarUrl ? <img src={state.avatarUrl} alt="" /> : initials}</div>
-          <div>
-            <strong>{state.name}</strong>
-            <span>{verified ? "Verified driver" : block?.title || "Verification required"}</span>
-          </div>
-        </section>
-        <button className="nr-driver-action-row" onClick={() => router.push("/driver/verification")}><Icon name="shield" /><span>Verification</span><Icon name="chevron" /></button>
-        <button className="nr-driver-action-row" onClick={onSafety}><Icon name="shield" /><span>Safety & support</span><Icon name="chevron" /></button>
+        <DriverProfileScreen
+          driverId={driverId}
+          onBack={() => navigate("home")}
+          onSafety={onSafety}
+        />
         <DriverBottomNav screen={screen} navigate={navigate} />
       </div>
     );
