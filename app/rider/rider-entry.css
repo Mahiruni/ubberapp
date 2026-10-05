@@ -1,0 +1,139 @@
+.nr-rider-entry-kicker {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  margin: 0 0 14px;
+  padding: 5px 9px;
+  border: 1px solid rgba(76, 229, 165, 0.26);
+  border-radius: 999px;
+  background: rgba(0, 200, 120, 0.09);
+  color: #68e7b2;
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: 0.12em;
+}
+
+.nr-rider-welcome > h1 {
+  margin-bottom: 8px;
+  font-size: clamp(30px, 8vw, 40px);
+  letter-spacing: -0.05em;
+}
+
+.nr-rider-welcome > p {
+  color: #b4c8d7;
+}
+
+.nr-rider-entry-benefits {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 4px 0 22px;
+}
+
+.nr-rider-entry-benefits span {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 12px 8px;
+  border: 1px solid #1b4058;
+  border-radius: 14px;
+  background: #08253c;
+  color: #c8dae5;
+  font-size: 10px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.nr-rider-entry-benefits svg {
+  color: #45dda0;
+}
+
+.nr-rider-entry-actions {
+  display: grid;
+  gap: 8px;
+  margin: 20px 0 12px;
+}
+
+.nr-rider-entry-actions .nr-button {
+  margin-top: 0;
+  text-decoration: none;
+}
+
+.nr-rider-driver-link {
+  margin: 12px 0 0 !important;
+  text-align: center;
+  font-size: 12px;
+}
+
+.nr-rider-driver-link a,
+.nr-auth-switch a,
+.nr-auth-inline-link {
+  color: #62e5ae;
+  font-weight: 750;
+  text-underline-offset: 3px;
+}
+
+.nr-rider-auth-nav {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+  margin: 0 0 28px;
+  padding: 4px;
+  border: 1px solid #1f4057;
+  border-radius: 14px;
+  background: #062139;
+}
+
+.nr-rider-auth-nav a {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  color: #9eb8c9;
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.nr-rider-auth-nav a[aria-current="page"] {
+  background: #0d314b;
+  color: #ecf7fb;
+  box-shadow: inset 0 0 0 1px rgba(98, 229, 174, 0.18);
+}
+
+.nr-rider-auth-nav a:focus-visible,
+.nr-rider-driver-link a:focus-visible,
+.nr-auth-switch a:focus-visible,
+.nr-auth-inline-link:focus-visible {
+  outline: 3px solid #4be3a3;
+  outline-offset: 3px;
+}
+
+.nr-entry-card .nr-profile-form fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+@media (max-width: 390px) {
+  .nr-rider-entry-benefits {
+    grid-template-columns: 1fr;
+  }
+
+  .nr-rider-entry-benefits span {
+    grid-template-columns: auto 1fr;
+    justify-items: start;
+    align-items: center;
+    text-align: left;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nr-rider-auth-nav a,
+  .nr-rider-entry-actions .nr-button {
+    transition: none;
+  }
+}

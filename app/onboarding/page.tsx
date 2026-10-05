@@ -14,7 +14,7 @@ import {
 import "../nexride.css";
 export default function Onboarding() {
   return (
-    <EntryShell>
+    <EntryShell photoCredit>
       <Welcome />
     </EntryShell>
   );
@@ -28,7 +28,7 @@ function Welcome() {
       if (preview) localStorage.setItem(PREVIEW_ENABLED_KEY, "true");
     } catch {}
     if (preview) enterRider(null);
-    router.replace(preview ? "/" : "/auth");
+    router.replace(preview ? "/" : "/rider/sign-in");
   };
   return (
     <>

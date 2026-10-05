@@ -25,7 +25,7 @@ test("first visit leads to onboarding, then authentication, then explicit previe
   await page.goto("/");
   await expect(page).toHaveURL(/\/onboarding$/);
   await page.getByRole("button", { name: "Continue to sign in" }).click();
-  await expect(page).toHaveURL(/\/auth$/);
+  await expect(page).toHaveURL(/\/rider\/sign-in$/);
   await expect(page.getByLabel("Email address", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Explore the preview" }).click();
   await expect(
@@ -46,7 +46,7 @@ test("completed onboarding sends a signed-out user to authentication", async ({
     localStorage.setItem("nexride:onboarding-complete", "true"),
   );
   await page.goto("/");
-  await expect(page).toHaveURL(/\/auth$/);
+  await expect(page).toHaveURL(/\/rider\/sign-in$/);
 });
 
 test("a restored Supabase session opens rider home", async ({ page }) => {
@@ -174,7 +174,7 @@ test("authentication uses Supabase and never stores a password in preview prefer
       body: JSON.stringify(restoredSession),
     }),
   );
-  await page.goto("/auth");
+  await page.goto("/rider/sign-in");
   await page
     .getByLabel("Email address", { exact: true })
     .fill("test@example.com");

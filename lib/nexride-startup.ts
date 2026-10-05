@@ -5,7 +5,7 @@ export const PREVIEW_STORAGE_KEY = "nexride-preview-v2";
 export const ONBOARDING_KEY = "nexride:onboarding-complete";
 export const PREVIEW_ENABLED_KEY = "nexride:preview-enabled";
 export const LANGUAGE_KEY = "nexride:language";
-export type StartupDestination = "/" | "/onboarding" | "/auth" | "/driver/onboarding" | "/driver/home";
+export type StartupDestination = "/" | "/onboarding" | "/rider/sign-in" | "/driver/onboarding" | "/driver/home";
 export type RestoredPreferences = { language: Language; mode: "rider" | "driver"; theme: "light" | "dark"; profile: PreviewProfile; trip: PreviewTrip | null };
 export type StartupResult = { preferences: RestoredPreferences; destination: StartupDestination; session: Session | null };
 export class StartupError extends Error { constructor(public readonly kind: "preferences" | "session") { super(kind === "preferences" ? "Unable to restore saved preferences." : "Unable to restore the session."); this.name = "StartupError"; } }
@@ -16,7 +16,7 @@ export function restorePreferences(storage: Pick<Storage, "getItem" | "removeIte
   try { saved = storage.getItem(PREVIEW_STORAGE_KEY); legacy = storage.getItem("nexride-state"); onboardingComplete = storage.getItem(ONBOARDING_KEY) === "true"; previewEnabled = storage.getItem(PREVIEW_ENABLED_KEY) === "true"; locale = storage.getItem(LANGUAGE_KEY); } catch { return { preferences: defaults(), returningPreview: false, onboardingComplete: false, previewEnabled: false }; }
   let state: Record<string, unknown>;
   try { state = JSON.parse(saved || legacy || "{}"); if (!state || typeof state !== "object" || Array.isArray(state)) throw new Error("Invalid preferences"); } catch { throw new StartupError("preferences"); }
-  const preferences = defaults(); preferences.language = (locale || state.language) === "am" ? "am" : "en"; preferences.mode = state.mode === "driver" ? "driver" : "rider"; preferences.theme = state.theme === "dark" ? "dark" : "light";
+  const preferences = defaults(); preferences.language = (locale || state.language) === "am" ? "am" : "en"; preferences.mode = "rider"; preferences.theme = state.theme === "dark" ? "dark" : "light";
   const profile = (saved ? state.profile : state.form) as Partial<PreviewProfile> | undefined;
   if (profile && typeof profile === "object") preferences.profile = { name: typeof profile.name === "string" ? profile.name : "", phone: typeof profile.phone === "string" ? profile.phone : "", email: typeof profile.email === "string" ? profile.email : "" };
   const trip = state.trip as PreviewTrip | undefined;
@@ -27,7 +27,7 @@ export function startupDestination({ session, returningPreview, previewEnabled, 
   const role = session?.user?.user_metadata?.role;
   if (role === "driver") return session?.user?.user_metadata?.driver_onboarding_complete === true ? "/driver/home" : "/driver/onboarding";
   if (session || returningPreview || previewEnabled) return "/";
-  return onboardingComplete ? "/auth" : "/onboarding";
+  return onboardingComplete ? "/rider/sign-in" : "/onboarding";
 }
 let pending: Promise<StartupResult> | null = null; let completed: StartupResult | null = null;
 export function completedStartup() { return typeof window === "undefined" ? null : completed; }

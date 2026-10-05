@@ -87,5 +87,33 @@
       "type": "image/png",
       "purpose": "maskable"
     }
+  ],
+  "shortcuts": [
+    {
+      "name": "Book a ride",
+      "short_name": "Book ride",
+      "description": "Open NexRide to request a ride.",
+      "url": "/",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "My rides",
+      "short_name": "My rides",
+      "description": "Open your NexRide trip history.",
+      "url": "/rider/trips",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
   ]
 }

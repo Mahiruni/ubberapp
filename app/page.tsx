@@ -284,7 +284,11 @@ function AppWorkspace({
   };
   const switchMode = (m: Mode) => {
     if (bookingLock.current) return;
-    setMode(m);
+    if (m === "driver") {
+      window.location.assign("/driver");
+      return;
+    }
+    setMode("rider");
     setRiderScreen("home");
     setDriverScreen("home");
     setPanel(null);

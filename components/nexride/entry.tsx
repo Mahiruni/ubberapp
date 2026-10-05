@@ -5,7 +5,7 @@ import { Brand, Button, LanguageContext } from "./ui";
 import type { Language } from "../../lib/nexride-i18n";
 import { LANGUAGE_KEY, storedLanguage } from "../../lib/nexride-startup";
 import "./splash.css";
-export function EntryShell({ children }: { children: ReactNode }) {
+export function EntryShell({ children, photoCredit = false }: { children: ReactNode; photoCredit?: boolean }) {
   const [language, setLanguage] = useState<Language>("en");
   useEffect(() => {
     try {
@@ -36,7 +36,7 @@ export function EntryShell({ children }: { children: ReactNode }) {
             </div>
             <Brand />
             {children}
-            <PhotoCredit />
+            {photoCredit && <PhotoCredit />}
           </section>
         </div>
       </main>

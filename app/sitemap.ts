@@ -10,6 +10,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1,
     },
     {
+      url: NEXRIDE_SITE_URL + "/rider",
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    {
       url: NEXRIDE_SITE_URL + "/discover",
       lastModified: new Date(),
       changeFrequency: "weekly",

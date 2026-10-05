@@ -49,7 +49,7 @@ describe("rider initialization", () => {
     };
     expect(startupDestination(state)).toBe("/onboarding");
     expect(startupDestination({ ...state, onboardingComplete: true })).toBe(
-      "/auth",
+      "/rider/sign-in",
     );
     expect(startupDestination({ ...state, session })).toBe("/");
     expect(startupDestination({ ...state, previewEnabled: true })).toBe("/");

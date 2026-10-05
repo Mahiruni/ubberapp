@@ -44,7 +44,7 @@ export function RiderProfile(props:Props) {
    setPanel(null);setNotice(account?say('Profile saved.','መገለጫው ተቀምጧል።'):say('Preview details saved on this device.','የማሳያ ዝርዝሮች በዚህ መሣሪያ ተቀምጠዋል።'));
   }catch{setError(say('Could not save your profile. Your changes are still here; please retry.','መገለጫዎን ማስቀመጥ አልተቻለም። ለውጦችዎ አልጠፉም፤ እንደገና ይሞክሩ።'))}finally{lock.current=false;setBusy(false)}
  };
- const leaveAccount=()=>{try{localStorage.removeItem(PREVIEW_ENABLED_KEY);localStorage.removeItem(PREVIEW_STORAGE_KEY);localStorage.removeItem('nexride-state')}catch{}retryStartup();window.location.replace('/auth')};
+ const leaveAccount=()=>{try{localStorage.removeItem(PREVIEW_ENABLED_KEY);localStorage.removeItem(PREVIEW_STORAGE_KEY);localStorage.removeItem('nexride-state')}catch{}retryStartup();window.location.replace('/rider/sign-in')};
  const signout=async()=>{if(lock.current)return;if(signedOutLocally){leaveAccount();return}lock.current=true;setBusy(true);setError('');try{const result=await supabase.auth.signOut({scope:'local'});if(result.error)throw result.error;leaveAccount()}catch{const current=await supabase.auth.getSession();const cleared=!current.error&&!current.data.session;setSignedOutLocally(cleared);setError(cleared?say('Signed out on this device. Server sign-out could not be confirmed.','በዚህ መሣሪያ ከመለያዎ ወጥተዋል። በአገልጋዩ ላይ መውጣት አልተረጋገጠም።'):say('Sign-out could not be confirmed. Please retry.','ከመለያ መውጣት አልተረጋገጠም። እንደገና ይሞክሩ።'));lock.current=false;setBusy(false)}};
 
  return <section className="nr-account" aria-labelledby="nr-account-title">

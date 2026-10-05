@@ -39,7 +39,7 @@ export default function RiderTripsPage() {
       const { data } = await supabase.auth.getSession();
       if (!active) return;
       if (!data.session) {
-        router.replace("/auth");
+        router.replace("/rider/sign-in");
         return;
       }
       await load(data.session.user.id);
