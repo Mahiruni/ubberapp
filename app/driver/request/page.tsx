@@ -232,7 +232,7 @@ export default function DriverRideRequestPage() {
     }
 
     setOffer((current) => current ? { ...current, status: "accepted" } : current);
-    router.replace(`/driver/pickup?offer=${offer.id}`);
+    router.replace(`/driver/navigation?offer=${offer.id}`);
   }
 
   async function declineRide() {
@@ -297,7 +297,7 @@ export default function DriverRideRequestPage() {
             title="Ride accepted"
             body="The ride is assigned to you. Continue to pickup navigation."
             action="Navigate to pickup"
-            onAction={() => router.replace(`/driver/pickup?offer=${offer.id}`)}
+            onAction={() => router.replace(`/driver/navigation?offer=${offer.id}`)}
           />
         ) : visibleStatus === "expired" ? (
           <RequestState
