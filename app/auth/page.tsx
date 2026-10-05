@@ -359,7 +359,7 @@ function RiderAuth() {
               {notice}
             </p>
           )}
-          <Button type="submit" disabled={busy}>
+          <Button type="submit" disabled={busy} loading={busy}>
             {t(busy ? "creatingAccount" : "createAccount")}
           </Button>
         </form>
@@ -400,7 +400,7 @@ function RiderAuth() {
               {notice}
             </p>
           )}
-          <Button type="submit" disabled={busy}>
+          <Button type="submit" disabled={busy} loading={busy}>
             {t(busy ? "sendingRecovery" : "sendRecovery")}
           </Button>
         </form>
@@ -444,7 +444,7 @@ function RiderAuth() {
               {error}
             </p>
           )}
-          <Button type="submit" disabled={busy}>
+          <Button type="submit" disabled={busy} loading={busy}>
             {t(busy ? "updatingPassword" : "updatePassword")}
           </Button>
         </form>
@@ -483,7 +483,7 @@ function RiderAuth() {
             {notice}
           </p>
         )}
-        <Button type="submit" disabled={busy}>
+        <Button type="submit" disabled={busy} loading={busy}>
           {t(busy ? "signingIn" : "signIn")}
         </Button>
       </form>

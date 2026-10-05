@@ -210,8 +210,10 @@ export default function RiderWalletPage() {
                         type="button"
                         className="nr-payment-pay-button"
                         disabled={payingRide === ride.id}
+                        aria-busy={payingRide === ride.id || undefined}
                         onClick={() => void payOnline(ride)}
                       >
+                        {payingRide === ride.id && <span className="nr-spinner" aria-hidden="true" />}
                         {payingRide === ride.id ? "Opening…" : "Pay online"}
                       </button>
                     )}

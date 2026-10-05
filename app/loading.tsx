@@ -1,9 +1,5 @@
-import { Skeleton } from "../components/nexride/ui";
-import "./nexride.css";
+import { BrandedLoader } from "../components/nexride/loading";
+
 export default function Loading() {
-  return (
-    <main className="nr-app">
-      <Skeleton />
-    </main>
-  );
+  return <BrandedLoader label="Opening NexRide" />;
 }

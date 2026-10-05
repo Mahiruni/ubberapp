@@ -1,0 +1,231 @@
+:root {
+  --nexride-navy: #041c30;
+  --nexride-emerald: #00c878;
+  --nexride-emerald-bright: #42e9a4;
+}
+
+html,
+body {
+  min-height: 100%;
+  background: var(--nexride-navy);
+}
+
+.nr-brand-symbol {
+  display: block;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  object-fit: contain;
+}
+
+.nr-map-wordmark .nr-brand-symbol {
+  width: 42px;
+  height: 42px;
+  flex-basis: 42px;
+}
+
+.nr-spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 999px;
+  opacity: 0.72;
+  animation: nr-brand-spin 0.72s linear infinite;
+}
+
+.nr-button[aria-busy="true"],
+.nr-payment-pay-button[aria-busy="true"] {
+  cursor: progress;
+}
+
+.nr-inline-skeleton {
+  width: min(420px, calc(100vw - 48px));
+  display: grid;
+  gap: 12px;
+  padding: 24px;
+}
+
+.nr-inline-skeleton > span {
+  height: 14px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #e5ebef 25%, #f6f8f9 40%, #e5ebef 65%);
+  background-size: 300% 100%;
+  animation: nr-brand-shimmer 1.2s ease-in-out infinite;
+}
+
+.nr-inline-skeleton > span:first-child {
+  width: 68%;
+  height: 22px;
+}
+
+.nr-inline-skeleton > span:last-child {
+  width: 82%;
+}
+
+.nr-branded-loader {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: calc(24px + env(safe-area-inset-top)) 24px
+    calc(24px + env(safe-area-inset-bottom));
+  background:
+    radial-gradient(circle at 50% 44%, rgba(0, 200, 120, 0.11), transparent 28%),
+    var(--nexride-navy);
+  color: white;
+}
+
+.nr-loader-lockup {
+  width: min(280px, 80vw);
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  text-align: center;
+}
+
+.nr-loader-mark {
+  width: 78px;
+  height: 78px;
+  object-fit: contain;
+  animation: nr-brand-reveal 0.32s ease both;
+}
+
+.nr-loader-lockup strong {
+  font: 800 30px/1.1 Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  letter-spacing: -0.04em;
+}
+
+.nr-loader-line {
+  width: 148px;
+  height: 3px;
+  margin-top: 4px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.nr-loader-line > span {
+  display: block;
+  width: 52%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--nexride-emerald);
+  animation: nr-brand-progress 0.9s ease-in-out infinite alternate;
+}
+
+.nr-sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+.nr-rider-splash {
+  align-items: center !important;
+  justify-content: center !important;
+  padding: calc(24px + env(safe-area-inset-top)) 24px
+    calc(24px + env(safe-area-inset-bottom)) !important;
+  overflow: hidden !important;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(0, 200, 120, 0.12), transparent 30%),
+    #041c30 !important;
+}
+
+.nr-splash-city,
+.nr-splash-blend {
+  display: none !important;
+}
+
+.nr-splash-ambient {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 12% 84%, rgba(37, 99, 235, 0.09), transparent 24%),
+    radial-gradient(circle at 88% 18%, rgba(66, 233, 164, 0.08), transparent 22%);
+}
+
+.nr-splash-identity {
+  position: relative;
+  z-index: 1;
+}
+
+.nr-splash-mark {
+  width: 92px !important;
+  height: 92px !important;
+  margin-bottom: 14px !important;
+  object-fit: contain;
+}
+
+.nr-splash-progress {
+  width: 148px;
+  height: 3px;
+  margin: 28px auto 0;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.nr-splash-progress > span {
+  display: block;
+  width: 52%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--nexride-emerald);
+  animation: nr-brand-progress 0.9s ease-in-out infinite alternate;
+}
+
+.nr-splash-status {
+  margin-top: 14px !important;
+}
+
+@keyframes nr-brand-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes nr-brand-shimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: 0 0; }
+}
+
+@keyframes nr-brand-reveal {
+  from { opacity: 0; transform: translateY(4px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes nr-brand-progress {
+  from { transform: translateX(-45%); opacity: 0.65; }
+  to { transform: translateX(92%); opacity: 1; }
+}
+
+@media (prefers-contrast: more) {
+  .nr-spinner {
+    opacity: 1;
+    border-width: 3px;
+  }
+  .nr-loader-line,
+  .nr-splash-progress {
+    outline: 1px solid rgba(255, 255, 255, 0.55);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nr-spinner,
+  .nr-inline-skeleton > span,
+  .nr-loader-mark,
+  .nr-loader-line > span,
+  .nr-splash-progress > span {
+    animation: none !important;
+  }
+  .nr-loader-line > span,
+  .nr-splash-progress > span {
+    transform: none !important;
+  }
+}

@@ -25,3 +25,11 @@ test-results/
 
 # TypeScript incremental cache
 *.tsbuildinfo
+
+# NexRide generated brand raster assets (created by predev/prebuild)
+public/favicon.ico
+public/favicon-16x16.png
+public/favicon-32x32.png
+public/favicon-48x48.png
+public/apple-touch-icon.png
+public/icons/icon-*.png

@@ -3,6 +3,7 @@ import Image from "next/image";
 import { Button, Icon, useTranslation } from "./ui";
 import type { StartupError } from "../../lib/nexride-startup";
 import "./splash.css";
+
 export function RiderSplash({
   error,
   onRetry,
@@ -21,26 +22,17 @@ export function RiderSplash({
       aria-label="NexRide"
       aria-busy={!error}
     >
-      <div className="nr-splash-city">
-        <Image
-          src="/images/addis-splash-city.jpg"
-          alt="Addis Ababa skyline from Sheger Park"
-          fill
-          preload
-          sizes="100vw"
-          quality={85}
-        />
-      </div>
-      <div className="nr-splash-blend" />
+      <div className="nr-splash-ambient" aria-hidden="true" />
       <div className="nr-splash-identity">
         <Image
           className="nr-splash-mark"
-          src="/brand/provisional/nexride-folded-n.svg"
-          alt="NexRide provisional symbol"
+          src="/brand/nexride-mark.svg"
+          alt=""
           width={104}
-          height={91}
+          height={104}
           preload
           unoptimized
+          aria-hidden="true"
         />
         <h1 className="nr-splash-wordmark">NexRide</h1>
         <p className="nr-splash-tagline">{t("brandTagline")}</p>
@@ -63,9 +55,14 @@ export function RiderSplash({
             )}
           </div>
         ) : (
-          <p className="nr-splash-status" role="status">
-            {t("startupRestoring")}
-          </p>
+          <>
+            <div className="nr-splash-progress" aria-hidden="true">
+              <span />
+            </div>
+            <p className="nr-splash-status" role="status" aria-live="polite">
+              {t("startupRestoring")}
+            </p>
+          </>
         )}
       </div>
     </section>

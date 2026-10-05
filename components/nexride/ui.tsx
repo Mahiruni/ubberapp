@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import {
   createContext,
   useContext,
@@ -76,9 +77,15 @@ export function Brand({ driver = false }: { driver?: boolean }) {
   const t = useTranslation();
   return (
     <div className="nr-brand">
-      <span className="nr-mark" aria-hidden="true">
-        N
-      </span>
+      <Image
+        className="nr-brand-symbol"
+        src="/brand/nexride-mark.svg"
+        alt=""
+        width={34}
+        height={34}
+        aria-hidden="true"
+        unoptimized
+      />
       <div>
         <strong>NexRide</strong>
         {driver && <small>{t("driver")}</small>}
@@ -86,21 +93,37 @@ export function Brand({ driver = false }: { driver?: boolean }) {
     </div>
   );
 }
+export function Spinner({ label }: { label?: string }) {
+  return (
+    <span
+      className="nr-spinner"
+      role={label ? "status" : undefined}
+      aria-label={label}
+      aria-hidden={label ? undefined : true}
+    />
+  );
+}
 export function Button({
   children,
   variant = "primary",
   className = "",
+  loading = false,
+  disabled,
   ...props
 }: ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: "primary" | "secondary" | "ghost";
   children: ReactNode;
+  loading?: boolean;
 }) {
   return (
     <button
       type="button"
       className={`nr-button nr-${variant} ${className}`}
+      aria-busy={loading || undefined}
+      disabled={disabled || loading}
       {...props}
     >
+      {loading && <Spinner />}
       {children}
     </button>
   );
@@ -229,11 +252,15 @@ export function Dialog({
 }
 export function Skeleton() {
   return (
-    <div className="nr-skeleton" aria-busy="true" aria-label="NexRide">
-      <span className="nr-mark">N</span>
-      <div />
-      <div />
-      <div />
+    <div
+      className="nr-inline-skeleton"
+      role="status"
+      aria-busy="true"
+      aria-label="Loading NexRide content"
+    >
+      <span />
+      <span />
+      <span />
     </div>
   );
 }

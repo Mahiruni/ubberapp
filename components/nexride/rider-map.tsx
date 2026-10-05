@@ -2,7 +2,7 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import type { Journey } from "../../lib/nexride-journey";
 import type * as Leaflet from "leaflet";
-import { Icon, LanguageContext, useTranslation } from "./ui";
+import { Icon, LanguageContext, Spinner, useTranslation } from "./ui";
 import { endpointName } from "./destination";
 import type { LocationStatus, RiderLocation } from "../../lib/nexride-location";
 import "leaflet/dist/leaflet.css";
@@ -331,7 +331,7 @@ export function RiderMap({
       )}
       {tiles === "loading" && (
         <div className="nr-map-loading" role="status">
-          <span className="nr-map-spinner" />
+          <Spinner />
           {t("mapLoading")}
         </div>
       )}

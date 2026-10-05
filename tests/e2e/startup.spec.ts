@@ -114,15 +114,11 @@ test("the real session wait shows the splash and honors reduced motion", async (
     "animation-name",
     "none",
   );
-  await expect
-    .poll(() =>
-      page
-        .locator(".nr-splash-city img")
-        .evaluate(
-          (img: HTMLImageElement) => img.complete && img.naturalWidth > 0,
-        ),
-    )
-    .toBe(true);
+  await expect(splash.locator(".nr-splash-mark")).toHaveAttribute(
+    "src",
+    /\/brand\/nexride-mark\.svg$/,
+  );
+  await expect(splash.locator(".nr-splash-progress")).toBeVisible();
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,

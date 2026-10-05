@@ -60,8 +60,8 @@ export function DriverMatching({ model, changeCategory, previewAssigned, home }:
       </details>}
     </div>
     <footer>
-      {connectionLost && <Button disabled={busy} onClick={model.reconnect}>{t('matchingReconnect')}</Button>}
-      {!connectionLost && snapshot?.canRetry && <Button disabled={busy} onClick={() => void model.action('retry')}>{t(busy ? 'matchingUpdating' : 'matchingRetry')}</Button>}
+      {connectionLost && <Button disabled={busy} loading={busy} onClick={model.reconnect}>{t('matchingReconnect')}</Button>}
+      {!connectionLost && snapshot?.canRetry && <Button disabled={busy} loading={busy} onClick={() => void model.action('retry')}>{t(busy ? 'matchingUpdating' : 'matchingRetry')}</Button>}
       {['cancelled', 'no_drivers'].includes(status) && <Button variant="ghost" disabled={busy} onClick={home}>{t('home')}</Button>}
       {snapshot?.canChangeCategory && <Button variant="secondary" disabled={busy} onClick={changeCategory}>{t('matchingChangeCategory')}</Button>}
       {!['cancelled', 'no_drivers'].includes(status) && <Button variant="ghost" disabled={busy || connectionLost || !terms?.allowed} onClick={cancel}>{t(busy ? 'matchingUpdating' : preview ? 'cancel' : 'matchingCancel')}</Button>}
