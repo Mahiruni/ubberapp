@@ -21,8 +21,8 @@ export type FareSet = {
   offers: RideFare[];
 };
 export type BookingJourney = {
-  pickup: { lat: number; lng: number };
-  destination: { lat: number; lng: number };
+  pickup: { lat: number; lng: number; name?: string; address?: string };
+  destination: { lat: number; lng: number; name?: string; address?: string };
 };
 export const fareTotal = (fare: RideFare) =>
   fare.amount === null
@@ -132,11 +132,12 @@ export type BookingResult =
 // The server must authenticate, reprice and deduplicate before creating a real trip.
 export const bookingAdapter = {
   async fares(journey: BookingJourney, signal: AbortSignal): Promise<FareSet> {
+    const { nexrideApiHeaders } = await import("./nexride-api-auth");
     const response = await fetch("/api/rider/fares", {
       method: "POST",
       cache: "no-store",
       signal,
-      headers: { "Content-Type": "application/json" },
+      headers: await nexrideApiHeaders(true),
       body: JSON.stringify(journey),
     });
     const data = await response.json();
@@ -154,14 +155,14 @@ export const bookingAdapter = {
     revision: string,
     idempotencyKey: string,
   ): Promise<BookingResult> {
+    const { nexrideApiHeaders } = await import("./nexride-api-auth");
+    const headers = await nexrideApiHeaders(true);
+    headers["Idempotency-Key"] = idempotencyKey;
     const response = await fetch("/api/rider/requests", {
       method: "POST",
       cache: "no-store",
       signal: AbortSignal.timeout(15000),
-      headers: {
-        "Content-Type": "application/json",
-        "Idempotency-Key": idempotencyKey,
-      },
+      headers,
       body: JSON.stringify({
         ...journey,
         quoteId: fare.id,
