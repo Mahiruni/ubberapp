@@ -33,5 +33,5 @@ export default function DriverHomePage() {
 
   if (checking) return <main className="nr-app nr-driver-shell"><div className="nr-driver-page"><div className="nr-driver-card nr-driver-loading"><span className="nr-driver-skeleton wide" /><span className="nr-driver-skeleton" /><span className="nr-driver-skeleton" /></div></div></main>;
 
-  return <main className="nr-app nr-driver-shell" data-mode="driver" data-theme="dark"><DriverWorkspace screen={screen} navigate={setScreen} onSafety={() => router.push("/driver/profile")} /></main>;
+  return <main className="nr-app nr-driver-shell" data-mode="driver" data-theme="dark"><DriverWorkspace screen={screen} navigate={setScreen} onSafety={() => setScreen("profile")} /></main>;
 }
