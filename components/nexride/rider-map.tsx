@@ -33,6 +33,8 @@ export function RiderMap({
   rideLabel = false,
   back,
   locked = false,
+  searching = false,
+  readOnly = false,
 }: {
   position: RiderLocation | null;
   status: LocationStatus;
@@ -44,6 +46,8 @@ export function RiderMap({
   rideLabel?: boolean;
   back?: () => void;
   locked?: boolean;
+  searching?: boolean;
+  readOnly?: boolean;
 }) {
   const t = useTranslation();
   const language = useContext(LanguageContext);
@@ -214,7 +218,7 @@ export function RiderMap({
     planMarkers.current = group;
     if (pickup) {
       const pin = L.marker([pickup.lat, pickup.lng], {
-        draggable: true,
+        draggable: !readOnly,
         keyboard: true,
         autoPan: true,
         title: t("pickup"),
@@ -273,6 +277,7 @@ export function RiderMap({
     destination?.lng,
     !!journey,
     mounted,
+    readOnly,
   ]);
   useEffect(() => {
     routeLine.current?.remove();
@@ -292,6 +297,15 @@ export function RiderMap({
       line.remove();
     };
   }, [geometry, mounted]);
+  useEffect(() => {
+    if (!searching || !pickup || !mounted || !map.current || !library.current) return;
+    // Screen-space indicator anchored to the confirmed pickup; no geographic coverage claim.
+    const area = library.current.marker([pickup.lat, pickup.lng], {
+      interactive: false, keyboard: false, zIndexOffset: -100,
+      icon: library.current.divIcon({ className: 'nr-pickup-search-area', html: '<span class="nr-search-area-fill"/><span class="nr-search-area-pulse"/>', iconSize: [180, 180], iconAnchor: [90, 90] }),
+    }).addTo(map.current);
+    return () => { area.remove(); };
+  }, [searching, pickup?.lat, pickup?.lng, mounted]);
   // Availability is not connected. No invented vehicle markers are rendered.
   return (
     <section
@@ -323,14 +337,14 @@ export function RiderMap({
       )}
       {rideLabel && (
         <div className="nr-map-ride-label">
-          <button
+          {back && <button
             className="nr-icon-button"
             aria-label={t("back")}
             onClick={back}
             disabled={locked}
           >
             <Icon name="back" />
-          </button>
+          </button>}
           <div>
             <small>
               {t(

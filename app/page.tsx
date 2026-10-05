@@ -29,6 +29,7 @@ import {
 } from "../components/nexride/ui";
 import { RideMap } from "../components/nexride/map";
 import { RiderMap } from "../components/nexride/rider-map";
+import { useMatching } from "../lib/nexride-use-matching";
 import { useJourney } from "../lib/nexride-journey";
 import { useRiderLocation } from "../lib/nexride-location";
 import { RiderWorkspace, type RiderScreen } from "../components/nexride/rider";
@@ -42,6 +43,7 @@ import "./nexride.css";
 import "./rider-home.css";
 import "./destination.css";
 import "./ride-selection.css";
+import "./matching.css";
 const STORAGE_KEY = PREVIEW_STORAGE_KEY;
 type Mode = "rider" | "driver";
 type Panel =
@@ -183,6 +185,7 @@ function AppWorkspace({
   const t = useTranslation();
   const riderLocation = useRiderLocation();
   const journey = useJourney(riderLocation.position);
+  const matching = useMatching();
   const bookingLock = useRef(false);
   const [requestPending, setRequestPending] = useState(false);
   const onBookingPending = useCallback((pending: boolean) => {
@@ -221,7 +224,7 @@ function AppWorkspace({
   const profileView = screen === "profile";
   const riderHome = mode === "rider" && screen === "home";
   const riderMapView =
-    mode === "rider" && ["home", "destination", "rides"].includes(screen);
+    mode === "rider" && ["home", "destination", "rides", "finding", "trip", "live"].includes(screen);
   const riderSearch = mode === "rider" && screen === "destination";
   useEffect(() => {
     if (riderScreen === "rides" && !journey.canContinue)
@@ -282,9 +285,9 @@ function AppWorkspace({
             } as React.CSSProperties)
           : undefined
       }
-      className={`nr-workspace ${riderMapView ? "rider-home-view" : ""} ${riderSearch ? "rider-search-view" : ""} ${mode === "rider" && screen === "rides" ? "rider-ride-view" : ""}`}
+      className={`nr-workspace ${riderMapView ? "rider-home-view" : ""} ${riderSearch ? "rider-search-view" : ""} ${mode === "rider" && screen === "rides" ? "rider-ride-view" : ""} ${mode === "rider" && ["finding", "trip", "live"].includes(screen) ? "rider-matching-view" : ""}`}
     >
-      <aside className="nr-sidebar" inert={requestPending}>
+      <aside className="nr-sidebar" inert={requestPending || matching.active}>
         <Brand driver={mode === "driver"} />
         <span className="nr-sidebar-city">
           <Icon name="pin" size={16} />
@@ -379,9 +382,11 @@ function AppWorkspace({
               recenter={riderLocation.recenter}
               initials={initials}
               onProfile={() => navigate("profile")}
-              journey={riderHome ? undefined : journey}
-              rideLabel={screen === "rides"}
-              back={() => navigate("destination")}
+              journey={riderHome ? undefined : screen === 'finding' && matching.request ? { ...journey, ...matching.request.journey, pinMode: null } : journey}
+              readOnly={["finding", "trip", "live"].includes(screen)}
+              searching={screen === 'finding' && !matching.connectionLost && ['searching', 'delayed'].includes(matching.snapshot?.status || 'searching')}
+              rideLabel={["rides", "finding", "trip", "live"].includes(screen)}
+              back={screen === "rides" ? () => navigate("destination") : undefined}
               locked={requestPending}
             />
           ) : (
@@ -501,6 +506,7 @@ function AppWorkspace({
                 locate={riderLocation.locate}
                 journey={journey}
                 onBookingPending={onBookingPending}
+                matching={matching}
               />
             </div>
             <div hidden={mode !== "driver" || profileView}>

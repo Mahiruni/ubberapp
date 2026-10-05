@@ -18,15 +18,17 @@ export function RideSelection({
   back,
   preview,
   onPending,
+  onCreated,
 }: {
   journey: Journey;
   back: () => void;
   preview: (category: RideCategory, amount: number) => void;
   onPending: (pending: boolean) => void;
+  onCreated: (requestId: string, fare: RideFare) => void;
 }) {
   const t = useTranslation(),
     language = useContext(LanguageContext);
-  const model = useRideOffers(journey, onPending);
+  const model = useRideOffers(journey, onPending, onCreated);
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   useEffect(() => {

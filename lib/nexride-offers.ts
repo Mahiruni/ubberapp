@@ -6,11 +6,13 @@ import {
   pricingFingerprint,
   type FareSet,
   type RideCategory,
+  type RideFare,
 } from "./nexride-booking";
 import type { Journey } from "./nexride-journey";
 export function useRideOffers(
   journey: Journey,
   onPending: (pending: boolean) => void,
+  onCreated: (requestId: string, fare: RideFare) => void,
 ) {
   const [fares, setFares] = useState<FareSet | null>(null);
   const [loadState, setLoadState] = useState<"loading" | "ready" | "error">(
@@ -165,6 +167,8 @@ export function useRideOffers(
       } else if (result.status === "accepted") {
         setRequestId(result.requestId);
         setRequestState("accepted");
+        onPending(false);
+        onCreated(result.requestId, chosen);
       } else setRequestState(result.status);
     } catch {
       if (mounted.current) setRequestState("unknown");

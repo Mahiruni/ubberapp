@@ -31,6 +31,8 @@ test("rider can complete an explicitly labeled preview and save a rating", async
   await expect(
     page.getByRole("heading", { name: "Finding your driver…" }),
   ).toBeVisible();
+  await page.getByText("Preview matching states", {exact:true}).click();
+  await page.getByRole("button", { name: "Preview assigned driver" }).click();
   await expect(
     page.getByRole("heading", { name: "Meet your driver" }),
   ).toBeVisible();

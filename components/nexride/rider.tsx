@@ -20,7 +20,9 @@ import {
 } from "../../lib/nexride-home";
 import { DestinationPanel, endpointName } from "./destination";
 import { RideSelection } from "./ride-selection";
-import type { RideCategory } from "../../lib/nexride-booking";
+import { DriverMatching } from "./matching";
+import type { Matching } from "../../lib/nexride-use-matching";
+import type { RideCategory, RideFare } from "../../lib/nexride-booking";
 import { placeKey } from "../../lib/nexride-search";
 import type { Journey } from "../../lib/nexride-journey";
 import type { RiderLocation, LocationStatus } from "../../lib/nexride-location";
@@ -48,6 +50,7 @@ export function RiderWorkspace({
   locate,
   journey,
   onBookingPending,
+  matching,
 }: {
   screen: RiderScreen;
   navigate: (s: RiderScreen) => void;
@@ -60,6 +63,7 @@ export function RiderWorkspace({
   locate: () => void;
   journey: Journey;
   onBookingPending: (pending: boolean) => void;
+  matching: Matching;
 }) {
   const t = useTranslation();
   const language = useContext(LanguageContext);
@@ -81,11 +85,6 @@ export function RiderWorkspace({
   };
   const [rating, setRating] = useState(0);
   const [ratingSaved, setRatingSaved] = useState(false);
-  useEffect(() => {
-    if (screen !== "finding") return;
-    const timer = window.setTimeout(() => navigate("trip"), 1600);
-    return () => window.clearTimeout(timer);
-  }, [screen, navigate]);
   const choose = (p: Place) => {
     if (savingShortcut) {
       savePlaces({
@@ -131,6 +130,8 @@ export function RiderWorkspace({
       completed: false,
       rating: 0,
     });
+    matching.start({ requestId: crypto.randomUUID(), source: "preview", journey: { pickup, destination, routeState: journey.routeState },
+      fare: { id: 'preview', category, seats: category === 'xl' ? 6 : 4, availability: 'preview', pickupMinutes: null, amount, currency: 'ETB', priceType: 'sample', charges: [] } });
     navigate("finding");
   };
   const finish = () => {
@@ -210,23 +211,17 @@ export function RiderWorkspace({
         back={() => navigate("destination")}
         preview={bookPreview}
         onPending={onBookingPending}
+        onCreated={(requestId: string, fare: RideFare) => {
+          matching.start({ requestId, source: 'service', fare, journey: { pickup, destination, routeState: journey.routeState } });
+          navigate('finding');
+        }}
       />
     );
   if (screen === "finding")
-    return (
-      <Sheet>
-        <div className="nr-matching">
-          <div className="nr-match-ring">
-            <Icon name="car" size={30} />
-          </div>
-          <h1>{t("finding")}</h1>
-          <p>{t("findingNote")}</p>
-          <Button variant="secondary" onClick={() => navigate("rides")}>
-            {t("cancel")}
-          </Button>
-        </div>
-      </Sheet>
-    );
+    return <DriverMatching model={matching}
+      home={() => { matching.clear(); navigate('home'); }}
+      changeCategory={() => { matching.clear(); navigate('rides'); }}
+      previewAssigned={() => { matching.clear(); navigate('trip'); }} />;
   if (screen === "trip" || screen === "live")
     return (
       <Sheet
