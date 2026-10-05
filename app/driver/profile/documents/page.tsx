@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, useEffect, useRef, useState } from "react";
+import { ChangeEvent, useEffect, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "../../../../components/nexride/ui";
 import { supabase } from "../../../../lib/supabase";
@@ -80,7 +80,8 @@ export default function DriverDocumentsPage() {
 
   async function openDocument(path: string) {
     if (!path || busy) return;
-    const popup = window.open("", "_blank", "noopener,noreferrer");
+    const popup = window.open("about:blank", "_blank");
+    if (popup) popup.opener = null;
     setBusy("view");
     setMessage("");
     const { data, error } = await supabase.storage
@@ -320,7 +321,7 @@ function DocumentCard({
   actionLabel: string;
   onAction: () => void;
   disabled: boolean;
-  children?: React.ReactNode;
+  children?: ReactNode;
 }) {
   return (
     <article className="nr-document-card">
