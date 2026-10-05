@@ -124,6 +124,7 @@ export default function DriverDocumentsPage() {
 
     if (
       !profile.licenseNumber ||
+      !profile.vehicle ||
       !profile.vehiclePlate ||
       !profile.licenseDocumentPath ||
       !profile.vehicleRegistrationPath
@@ -197,7 +198,7 @@ export default function DriverDocumentsPage() {
   const licenseStatus = profile ? documentStatus(profile, "license") : "Missing";
   const registrationStatus = profile ? documentStatus(profile, "registration") : "Missing";
   const incomplete = profile
-    ? !profile.licenseDocumentPath || !profile.vehicleRegistrationPath || !profile.licenseNumber || !profile.vehiclePlate
+    ? !profile.licenseDocumentPath || !profile.vehicleRegistrationPath || !profile.licenseNumber || !profile.vehicle || !profile.vehiclePlate
     : true;
 
   return (
