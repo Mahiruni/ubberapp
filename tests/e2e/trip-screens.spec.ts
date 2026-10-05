@@ -13,7 +13,7 @@ const user = {
   role: "authenticated",
   email: "rider@example.test",
   app_metadata: {},
-  user_metadata: {},
+  user_metadata: { role: "rider" },
   created_at: "2026-01-01T00:00:00Z",
 };
 const session = {
@@ -25,6 +25,14 @@ const session = {
   user,
 };
 
+async function authenticate(page: Page) {
+  await page.goto("/auth");
+  await page.getByLabel("Email address", { exact: true }).fill("rider@example.test");
+  await page.getByLabel("Password", { exact: true }).fill("test-password");
+  await page.getByRole("button", { name: "Sign in to NexRide", exact: true }).click();
+  await expect(page).toHaveURL(/\/$/);
+}
+
 async function backend(page: Page) {
   let status = "accepted";
   let driverId: string | null = driver;
@@ -35,13 +43,8 @@ async function backend(page: Page) {
   const requestedAt = new Date(Date.now() - 600_000).toISOString();
   const locationStamp = new Date().toISOString();
 
-  await page.addInitScript(
-    ({ session }) =>
-      localStorage.setItem(
-        "sb-eyyvvwecpyctttiueban-auth-token",
-        JSON.stringify(session),
-      ),
-    { session },
+  await page.route("**/auth/v1/token?grant_type=password", (route) =>
+    route.fulfill({ json: session }),
   );
   await page.route("**/auth/v1/user", (route) => route.fulfill({ json: user }));
   await page.route("**/rest/v1/**", (route) => {
@@ -164,7 +167,7 @@ test("live rider sees assignment, real trip transition and receipt, then retries
   page,
 }) => {
   const api = await backend(page);
-  await page.goto("/");
+  await authenticate(page);
   await page.getByRole("button", { name: "Resume your trip" }).click();
 
   const assigned = page.frameLocator('iframe[title="NexRide assigned driver"]');
@@ -245,7 +248,7 @@ test("reassignment clears the old vehicle position and never displays an unsuppo
   page,
 }) => {
   const api = await backend(page);
-  await page.goto("/");
+  await authenticate(page);
   await page.getByRole("button", { name: "Resume your trip" }).click();
 
   const assigned = page.frameLocator('iframe[title="NexRide assigned driver"]');
