@@ -266,6 +266,10 @@ function AppWorkspace({
     setServiceTitle(title);
     setPanel("unavailable");
   };
+  const openSafety = (safetyRole: Mode = mode) => {
+    setPanel(null);
+    window.location.assign(`/safety?role=${safetyRole}`);
+  };
   const switchMode = (m: Mode) => {
     if (bookingLock.current) return;
     setMode(m);
@@ -318,7 +322,7 @@ function AppWorkspace({
         </div>
         <Navigation items={navItems} active={screen} onNavigate={navigate} />
         <div className="nr-sidebar-bottom">
-          <button onClick={() => setPanel("safety")}>
+          <button onClick={() => openSafety(mode)}>
             <Icon name="shield" />
             {t("safety")}
           </button>
@@ -427,7 +431,7 @@ function AppWorkspace({
             <p>{t("brandMessage")}</p>
           </div>
           <div className="nr-panel">
-            {profileView && mode === "rider" ? <RiderProfile language={language} setLanguage={setLanguage} theme={theme} setTheme={setTheme} profile={profile} setProfile={setProfile} rides={() => navigate("trips")} safety={() => setPanel("safety")} support={() => setPanel("support")} switchDriver={() => switchMode("driver")} /> : profileView ? (
+            {profileView && mode === "rider" ? <RiderProfile language={language} setLanguage={setLanguage} theme={theme} setTheme={setTheme} profile={profile} setProfile={setProfile} rides={() => navigate("trips")} safety={() => openSafety(mode)} support={() => setPanel("support")} switchDriver={() => switchMode("driver")} /> : profileView ? (
               <Sheet title={t("profile")}>
                 <div className="nr-profile-header">
                   <div className="nr-avatar">{initials}</div>
@@ -461,7 +465,7 @@ function AppWorkspace({
                   <ListRow
                     icon="shield"
                     title={t("safety")}
-                    onClick={() => setPanel("safety")}
+                    onClick={() => openSafety(mode)}
                   />
                   <ListRow
                     icon="chat"
@@ -506,7 +510,7 @@ function AppWorkspace({
               <RiderWorkspace
                 screen={riderScreen}
                 navigate={navigateRider}
-                onSafety={() => setPanel("safety")}
+                onSafety={() => openSafety("rider")}
                 onUnavailable={unavailable}
                 trip={trip}
                 setTrip={setTrip}
@@ -523,7 +527,7 @@ function AppWorkspace({
               <DriverWorkspace
                 screen={driverScreen}
                 navigate={navigateDriver}
-                onSafety={() => setPanel("safety")}
+                onSafety={() => openSafety("driver")}
               />
             </div>
           </div>
@@ -580,7 +584,7 @@ function AppWorkspace({
                 <ListRow
                   icon="shield"
                   title={t("safety")}
-                  onClick={() => setPanel("safety")}
+                  onClick={() => openSafety(mode)}
                 />
                 <ListRow
                   icon="settings"
