@@ -135,6 +135,9 @@ test("dragging pickup updates its label and requires confirmation before rerouti
 test("map selection keeps exact coordinates synchronized without a geocoder", async ({
   page,
 }) => {
+  await page.route("**/api/rider/route", (r) =>
+    r.fulfill({ status: 503, json: { status: "unavailable", coverage: { kind: "preview" } } }),
+  );
   await openSearch(page);
   await select(page, "destination", "Meskel Square");
   await page.getByLabel("Pickup location", { exact: true }).focus();
