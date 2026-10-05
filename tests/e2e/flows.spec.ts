@@ -54,7 +54,7 @@ test("rider can complete an explicitly labeled preview and save a rating", async
   expect(trip).toMatchObject({ completed: true, rating: 5, ride: "comfort" });
 });
 
-test("driver request, navigation and sample earnings stay available across account navigation", async ({
+test("driver mode never simulates availability without an authenticated eligible driver", async ({
   page,
 }) => {
   await page.goto("/");
@@ -64,23 +64,15 @@ test("driver request, navigation and sample earnings stay available across accou
     .click();
   await page.getByRole("button", { name: "Switch to driver" }).click();
   await expect(page.locator(".nr-app")).toHaveAttribute("data-mode", "driver");
-  await page
-    .getByRole("button", { name: "Preview going online", exact: true })
-    .click();
-  await page.getByRole("button", { name: "View sample request" }).click();
-  await page.getByRole("button", { name: "Accept preview" }).click();
-  await page.getByRole("button", { name: "Start preview trip" }).click();
-  await page.getByRole("button", { name: "Finish preview trip" }).click();
-  await expect(page.getByText("1,397")).toBeVisible();
-  await page
-    .getByRole("button", { name: "Account", exact: true })
-    .first()
-    .click();
-  await page
-    .getByRole("button", { name: "Earnings", exact: true })
-    .last()
-    .click();
-  await expect(page.getByText("1,397")).toBeVisible();
+  await expect(
+    page.getByText("Your driver session could not be restored.", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Go Online", exact: true }),
+  ).toBeDisabled();
+  await expect(
+    page.getByRole("button", { name: /Preview going online/i }),
+  ).toHaveCount(0);
 });
 
 test("Amharic, profile edits, keyboard dialogs, and local storage migration work", async ({
