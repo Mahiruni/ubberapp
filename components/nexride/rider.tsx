@@ -240,23 +240,11 @@ export function RiderWorkspace({
       <Sheet title={t("wallet")}>
         <div className="nr-balance-card">
           <small>{t("balance")}</small>
-          <strong>
-            1,240 <span>ETB</span>
-          </strong>
-          <p>{t("walletNote")}</p>
-          <Button onClick={() => onUnavailable(t("addPayment"))}>
-            {t("addPayment")}
+          <strong>—</strong>
+          <p>NexRide does not currently maintain a stored rider wallet balance. Cash is the only supported rider payment method.</p>
+          <Button onClick={() => window.location.assign("/rider/wallet")}>
+            Open Wallet & payments
           </Button>
-        </div>
-        <h2>{t("paymentMethods")}</h2>
-        <div className="nr-list">
-          <ListRow icon="wallet" title={t("cash")} detail={t("default")} />
-          <ListRow
-            icon="money"
-            title={t("mobileMoney")}
-            detail={t("unavailable")}
-            onClick={() => onUnavailable(t("mobileMoney"))}
-          />
         </div>
       </Sheet>
     );
