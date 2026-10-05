@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Brand } from "../../../components/nexride/ui";
 import { supabase } from "../../../lib/supabase";
 import { enterDriver } from "../../../lib/nexride-startup";
+import { driverResumeDestination } from "../../../lib/nexride-driver-verification";
 import "../driver-welcome.css";
 import "./driver-auth.css";
 
@@ -18,12 +19,12 @@ export default function DriverAuth() {
 
   useEffect(() => {
     let active = true;
-    supabase.auth.getSession().then(({ data }) => {
+    supabase.auth.getSession().then(async ({ data }) => {
       if (!active || !data.session) return;
-      const role = data.session.user.user_metadata?.role;
-      if (role === "driver") {
+      if (data.session.user.user_metadata?.role === "driver") {
         enterDriver(data.session);
-        router.replace(data.session.user.user_metadata?.driver_onboarding_complete === true ? "/" : "/driver/onboarding");
+        const destination = await driverResumeDestination(data.session);
+        if (active) router.replace(destination);
       }
     });
     return () => { active = false; };
@@ -34,23 +35,28 @@ export default function DriverAuth() {
     if (busy) return;
     setBusy(true);
     setError("");
+
     const { data, error: authError } = await supabase.auth.signInWithPassword({
       email: email.trim(),
       password,
     });
+
     if (authError || !data.session) {
       setError(authError?.message || "Unable to sign in.");
       setBusy(false);
       return;
     }
+
     if (data.session.user.user_metadata?.role !== "driver") {
       await supabase.auth.signOut();
       setError("This account is registered as a rider. Please use the driver registration flow.");
       setBusy(false);
       return;
     }
+
     enterDriver(data.session);
-    router.replace(data.session.user.user_metadata?.driver_onboarding_complete === true ? "/" : "/driver/onboarding");
+    const destination = await driverResumeDestination(data.session);
+    router.replace(destination);
   }
 
   return (
