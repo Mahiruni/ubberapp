@@ -6,3 +6,5 @@
 .driver-auth-notice { display: grid; gap: 9px; border: 1px solid rgba(0,200,120,.22); background: rgba(0,200,120,.07); color: #b8f5d8; border-radius: 12px; padding: 13px; font-size: 13px; line-height: 1.45; }
 .driver-auth-notice a { color: #8fe9bf; font-weight: 800; }
 @media (max-width: 520px) { .driver-form-grid { grid-template-columns: 1fr; } }
+
+.driver-auth-secondary{width:100%;min-height:48px;margin-top:9px;border:1px solid #31556d;border-radius:13px;background:#0a3049;color:#e8f2f7;font-weight:800}
