@@ -4,7 +4,7 @@ const token=`eyJhbGciOiJIUzI1NiJ9.${Buffer.from(JSON.stringify({sub:id,exp:41024
 async function accountBackend(page:Page){
  const user={id,aud:'authenticated',role:'authenticated',email:'rider@example.test',app_metadata:{},user_metadata:{},created_at:'2026-01-01T00:00:00Z'};
  let name='Connected Rider',failSave=true,failSignout=true;
- await page.addInitScript(session=>{if(!sessionStorage.getItem('fixture-ready')){localStorage.setItem('sb-mrbgtdrpscdoxwdgvfcs-auth-token',JSON.stringify(session));sessionStorage.setItem('fixture-ready','true')}},{access_token:token,refresh_token:'test',expires_at:4102444800,expires_in:3600,token_type:'bearer',user});
+ await page.addInitScript(session=>{if(!sessionStorage.getItem('fixture-ready')){localStorage.setItem('sb-eyyvvwecpyctttiueban-auth-token',JSON.stringify(session));sessionStorage.setItem('fixture-ready','true')}},{access_token:token,refresh_token:'test',expires_at:4102444800,expires_in:3600,token_type:'bearer',user});
  await page.route('**/auth/v1/user',r=>r.fulfill({json:user}));
  await page.route('**/auth/v1/logout*',r=>{if(failSignout){failSignout=false;return r.fulfill({status:500,json:{message:'try again'}})}return r.fulfill({status:204})});
  await page.route('**/rest/v1/**',r=>{
