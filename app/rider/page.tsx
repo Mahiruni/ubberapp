@@ -12,6 +12,7 @@ import {
 import { useRouter } from "next/navigation";
 import { supabase } from "../../lib/supabase";
 import { driverResumeDestination } from "../../lib/nexride-driver-verification";
+import { ensureRiderProfile } from "../../lib/nexride-rider-profile-bootstrap";
 import "../nexride.css";
 import "./rider-entry.css";
 
@@ -41,8 +42,14 @@ function RiderWelcome() {
         if (active) router.replace(destination);
         return;
       }
-      enterRider(data.session);
-      router.replace("/");
+      try {
+        await ensureRiderProfile(data.session);
+        if (!active) return;
+        enterRider(data.session);
+        router.replace("/");
+      } catch {
+        if (active) setCheckingSession(false);
+      }
     }).catch(() => {
       if (active) setCheckingSession(false);
     });

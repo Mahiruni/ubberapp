@@ -119,7 +119,6 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
 
       await ensureRiderProfile(data.session);
       setPassword("");
-      await ensureRiderProfile(data.session);
       markAuthenticated();
       enterRider(data.session);
       router.replace("/");
@@ -271,11 +270,19 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
         return;
       }
 
+      await ensureRiderProfile(data.session);
       markAuthenticated();
       enterRider(data.session);
       router.replace("/");
-    } catch {
-      setError("Your password could not be updated. Request a new recovery link and try again.");
+    } catch (cause) {
+      if (cause instanceof RiderProfileBootstrapError && cause.code === "role_conflict") {
+        await supabase.auth.signOut();
+        setError(t("riderAuthOnly"));
+      } else if (cause instanceof RiderProfileBootstrapError) {
+        setError("Your Rider profile is not ready. Please try again.");
+      } else {
+        setError("Your password could not be updated. Request a new recovery link and try again.");
+      }
     } finally {
       setBusy(false);
     }
