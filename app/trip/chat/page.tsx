@@ -33,6 +33,7 @@ export default function TripChatPage() {
   const [role, setRole] = useState<"rider" | "driver">("rider");
   const [offerId, setOfferId] = useState("");
   const [text, setText] = useState("");
+  const [draftKey, setDraftKey] = useState("");
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [online, setOnline] = useState(true);
@@ -40,6 +41,11 @@ export default function TripChatPage() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const rideId = params.get("ride") || "";
+    const nextDraftKey = rideId ? "nexride.trip.chat.draft." + rideId : "";
+    setDraftKey(nextDraftKey);
+    if (nextDraftKey) {
+      try { setText(sessionStorage.getItem(nextDraftKey) || ""); } catch {}
+    }
     const requestedRole = params.get("role") === "driver" ? "driver" : "rider";
     setRole(requestedRole);
     setOfferId(params.get("offer") || "");
@@ -132,6 +138,14 @@ export default function TripChatPage() {
     threadRef.current?.scrollTo({ top: threadRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, pending]);
 
+  useEffect(() => {
+    if (!draftKey) return;
+    try {
+      if (text) sessionStorage.setItem(draftKey, text);
+      else sessionStorage.removeItem(draftKey);
+    } catch {}
+  }, [draftKey, text]);
+
   const back = () => {
     if (role === "driver" && offerId) {
       router.replace("/driver/navigation?offer=" + encodeURIComponent(offerId));
@@ -183,6 +197,9 @@ export default function TripChatPage() {
     const clean = text.trim();
     if (!clean) return;
     setText("");
+    if (draftKey) {
+      try { sessionStorage.removeItem(draftKey); } catch {}
+    }
     void send(clean);
   }
 
