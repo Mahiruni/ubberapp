@@ -31,7 +31,7 @@ export function useRiderTrips() {
     };
     const load = async () => { if (stopped || pending) return; pending = true; try { const next = await riderTripList(userId); if (!stopped) accept(next); } catch { if (!stopped) setError(true); } finally { pending = false; if (!stopped) setLoading(false); } };
     void load();
-    const channel = supabase.channel(`rider-trips:${userId}`).on('postgres_changes', { event: '*', schema: 'public', table: 'trips', filter: `customer_id=eq.${userId}` }, () => void load()).subscribe();
+    const channel = supabase.channel(`rider-trips:${userId}`).on('postgres_changes', { event: '*', schema: 'public', table: 'ride_requests', filter: `rider_id=eq.${userId}` }, () => void load()).subscribe();
     const interval = setInterval(() => void load(), 15000);
     return () => { stopped = true; clearInterval(interval); void supabase.removeChannel(channel); };
   }, [userId]);
