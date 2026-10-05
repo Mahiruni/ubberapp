@@ -205,7 +205,7 @@ export default function RiderWalletPage() {
                       </span>
                       <strong>{ride.payment_status}</strong>
                     </button>
-                    {onlinePayments && ride.status === "completed" && ride.payment_status !== "paid" && (
+                    {onlinePayments && ride.status === "completed" && (
                       <button
                         type="button"
                         className="nr-payment-pay-button"
