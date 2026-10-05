@@ -7,28 +7,32 @@ import { useRouter } from "next/navigation";
 import { Brand } from "../../components/nexride/ui";
 import { supabase } from "../../lib/supabase";
 import { enterDriver } from "../../lib/nexride-startup";
+import { driverResumeDestination } from "../../lib/nexride-driver-verification";
 import "./driver-welcome.css";
 
 export default function DriverWelcome() {
   const router = useRouter();
   const [checking, setChecking] = useState(true);
+
   useEffect(() => {
     let active = true;
-    supabase.auth.getSession().then(({ data }) => {
+    supabase.auth.getSession().then(async ({ data }) => {
       if (!active) return;
       const session = data.session;
       const role = session?.user?.user_metadata?.role;
       if (session && role === "driver") {
         enterDriver(session);
-        const complete = session.user.user_metadata?.driver_onboarding_complete === true;
-        router.replace(complete ? "/driver/home" : "/driver/onboarding");
+        const destination = await driverResumeDestination(session);
+        if (active) router.replace(destination);
         return;
       }
       setChecking(false);
     }).catch(() => active && setChecking(false));
     return () => { active = false; };
   }, [router]);
+
   if (checking) return <div className="driver-welcome driver-welcome-loading" aria-busy="true" />;
+
   return (
     <main className="driver-welcome">
       <div className="driver-welcome-media" aria-hidden="true"><Image src="/images/addis-skyline.webp" alt="" fill priority sizes="100vw" className="driver-city" /><div className="driver-car-photo" /><div className="driver-welcome-gradient" /></div>
