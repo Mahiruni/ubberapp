@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Icon } from "./ui";
+import { Dialog, Icon } from "./ui";
+import { supabase } from "../../lib/supabase";
+import { retryStartup } from "../../lib/nexride-startup";
 import {
   initialsFor,
   loadDriverProfileData,
@@ -24,6 +26,9 @@ export function DriverProfileScreen({
   const [profile, setProfile] = useState<DriverProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [signOutOpen, setSignOutOpen] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
+  const [signOutError, setSignOutError] = useState("");
 
   useEffect(() => {
     if (!driverId) return;
@@ -65,6 +70,63 @@ export function DriverProfileScreen({
 
   const verification = verificationSummary(profile);
   const initials = initialsFor(profile.fullName);
+
+  async function signOutDriver() {
+    if (signingOut) return;
+    setSigningOut(true);
+    setSignOutError("");
+
+    try {
+      const activeRide = await supabase
+        .from("ride_requests")
+        .select("id,status")
+        .eq("assigned_driver_id", driverId)
+        .in("status", ["accepted", "arrived_pickup", "in_trip"])
+        .limit(1)
+        .maybeSingle();
+
+      if (activeRide.error) {
+        setSignOutError(
+          "NexRide could not verify your active-trip status. Try again before signing out.",
+        );
+        return;
+      }
+
+      if (activeRide.data) {
+        setSignOutError(
+          "Finish or cancel your active trip before signing out of the driver app.",
+        );
+        return;
+      }
+
+      const offline = await supabase
+        .from("drivers")
+        .update({ is_online: false })
+        .eq("id", driverId);
+
+      if (offline.error) {
+        setSignOutError(
+          "NexRide could not take your driver account offline. Try again before signing out.",
+        );
+        return;
+      }
+
+      const { error: authError } = await supabase.auth.signOut();
+      if (authError) {
+        setSignOutError("Sign out could not be completed. Please try again.");
+        return;
+      }
+
+      retryStartup(false);
+      setSignOutOpen(false);
+      router.replace("/driver/auth");
+      router.refresh();
+    } catch {
+      setSignOutError("Sign out could not be completed. Please try again.");
+    } finally {
+      setSigningOut(false);
+    }
+  }
 
   return (
     <>
@@ -174,6 +236,61 @@ export function DriverProfileScreen({
         <span>Safety Center</span>
         <Icon name="chevron" size={16} />
       </button>
+
+      <button
+        className="nr-driver-profile-signout"
+        onClick={() => {
+          setSignOutError("");
+          setSignOutOpen(true);
+        }}
+        disabled={signingOut}
+      >
+        <Icon name="power" size={18} />
+        <span>Sign out</span>
+      </button>
+
+      {signOutOpen && (
+        <Dialog
+          title="Sign out of Driver?"
+          onClose={() => {
+            if (!signingOut) {
+              setSignOutOpen(false);
+              setSignOutError("");
+            }
+          }}
+        >
+          <p className="nr-driver-signout-copy">
+            NexRide will take you offline first so you stop receiving new ride requests.
+          </p>
+          {signOutError && (
+            <div className="nr-profile-alert" role="alert">
+              <Icon name="info" size={17} />
+              <span>{signOutError}</span>
+            </div>
+          )}
+          <div className="nr-driver-signout-actions">
+            <button
+              type="button"
+              className="secondary"
+              disabled={signingOut}
+              onClick={() => {
+                setSignOutOpen(false);
+                setSignOutError("");
+              }}
+            >
+              Stay signed in
+            </button>
+            <button
+              type="button"
+              className="danger"
+              disabled={signingOut}
+              onClick={() => void signOutDriver()}
+            >
+              {signingOut ? "Signing out…" : "Sign out"}
+            </button>
+          </div>
+        </Dialog>
+      )}
 
       <p className="nr-driver-profile-privacy">
         Verified identity, document, vehicle, and financial information stays inside authenticated driver surfaces and is not added to trip sharing, public previews, or notification text.
