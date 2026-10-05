@@ -4,7 +4,8 @@ export type RiderAccount = { id: string; profile: PreviewProfile; avatar: string
 export const ALERTS_KEY = 'nexride:trip-alerts';
 export function validateProfile(profile: PreviewProfile): 'name' | 'phone' | 'email' | null {
   if (profile.name.trim().length < 2 || profile.name.trim().length > 80) return 'name';
-  if (profile.phone.trim() && !/^\+?[\d\s()-]{7,25}$/.test(profile.phone.trim())) return 'phone';
+  const phone = profile.phone.trim(), digits = phone.replace(/\D/g, '');
+  if (phone && (!/^\+?[\d\s()-]{7,25}$/.test(phone) || digits.length < 7 || digits.length > 15)) return 'phone';
   if (profile.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(profile.email.trim())) return 'email';
   return null;
 }
