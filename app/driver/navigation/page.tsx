@@ -318,7 +318,10 @@ export default function DriverNavigationPage() {
             <button className="nr-nav-stage-secondary complete" disabled={busy} onClick={() => transition("completed")}>{busy ? "Completing…" : "Complete trip"}</button>
           </div>
         ) : (
-          <button className="nr-nav-stage-primary" onClick={() => router.replace("/driver/home")}><Icon name="check" size={19} /> Back to Driver Home</button>
+          <div className="nr-nav-stage-actions">
+            <button className="nr-nav-stage-primary" onClick={() => router.replace("/driver/home?screen=earnings")}><Icon name="money" size={19} /> View earnings</button>
+            <button className="nr-nav-stage-secondary" onClick={() => router.replace("/driver/home")}><Icon name="home" size={18} /> Driver Home</button>
+          </div>
         )}
 
         {canNavigate && <div className="nr-nav-handoff"><Icon name="info" size={15} /><span>NexRide shows trip context and GPS status here. Road-level turn instructions and route recalculation are handled by Google Maps.</span></div>}
