@@ -344,6 +344,10 @@ function AppWorkspace({
             <Icon name="globe" />
             {language === "en" ? "አማርኛ" : "English"}
           </button>
+          <button onClick={() => window.location.assign("/discover")}>
+            <Icon name="star" />
+            Discover NexRide
+          </button>
           <p>{t("brandTagline")}</p>
         </div>
       </aside>
@@ -600,6 +604,11 @@ function AppWorkspace({
                   icon="settings"
                   title={t("settings")}
                   onClick={() => setPanel("settings")}
+                />
+                <ListRow
+                  icon="star"
+                  title="Discover NexRide"
+                  onClick={() => window.location.assign("/discover")}
                 />
               </div>
               <Button
