@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Brand } from "../../../components/nexride/ui";
 import { supabase } from "../../../lib/supabase";
-import { enterDriver } from "../../../lib/nexride-startup";
 import "../auth/driver-auth.css";
 import "./driver-onboarding.css";
 
@@ -27,8 +26,7 @@ export default function DriverOnboarding() {
       if (!active || !data.session) return;
       if (data.session.user.user_metadata?.role !== "driver") return;
       if (data.session.user.user_metadata?.driver_onboarding_complete === true) {
-        enterDriver(data.session);
-        router.replace("/");
+        router.replace("/driver/verification");
       }
     });
     return () => { active = false; };
@@ -45,7 +43,7 @@ export default function DriverOnboarding() {
     const existing = sessionData.session;
 
     if (existing && existing.user.user_metadata?.role === "driver") {
-      const { data, error: updateError } = await supabase.auth.updateUser({
+      const { error: updateError } = await supabase.auth.updateUser({
         data: {
           role: "driver",
           full_name: name.trim(),
@@ -55,13 +53,15 @@ export default function DriverOnboarding() {
           driver_onboarding_complete: true,
         },
       });
-      if (updateError || !data.user) {
-        setError(updateError?.message || "Unable to save driver profile.");
+
+      if (updateError) {
+        setError(updateError.message || "Unable to save driver profile.");
         setBusy(false);
         return;
       }
-      enterDriver(existing);
-      router.replace("/");
+
+      await supabase.from("profiles").update({ full_name: name.trim(), phone: phone.trim() }).eq("id", existing.user.id);
+      router.replace("/driver/verification");
       return;
     }
 
@@ -87,12 +87,11 @@ export default function DriverOnboarding() {
     }
 
     if (data.session) {
-      enterDriver(data.session);
-      router.replace("/");
+      router.replace("/driver/verification");
       return;
     }
 
-    setNotice("Your driver account was created. Check your email to confirm the account, then sign in as a driver.");
+    setNotice("Your driver account was created. Confirm your email, then sign in to continue verification.");
     setBusy(false);
   }
 
@@ -101,9 +100,9 @@ export default function DriverOnboarding() {
       <section className="driver-onboarding-card">
         <Link href="/driver" className="driver-auth-back">← Back</Link>
         <Brand driver />
-        <span className="driver-auth-role">DRIVER ONBOARDING · STEP 1</span>
+        <span className="driver-auth-role">DRIVER ONBOARDING · STEP 1 OF 2</span>
         <h1>Start driving.</h1>
-        <p>Create your driver account and add the basic vehicle details NexRide needs to get you on the road.</p>
+        <p>Create your driver account and add the basic vehicle details NexRide needs before verification.</p>
 
         <form onSubmit={submit}>
           <div className="driver-form-grid">
@@ -118,7 +117,7 @@ export default function DriverOnboarding() {
           </div>
           {error && <div className="driver-auth-error" role="alert">{error}</div>}
           {notice && <div className="driver-auth-notice" role="status">{notice}<Link href="/driver/auth">Sign in as Driver</Link></div>}
-          <button className="driver-auth-submit" type="submit" disabled={busy}>{busy ? "Creating account…" : "Create Driver Account"}</button>
+          <button className="driver-auth-submit" type="submit" disabled={busy}>{busy ? "Creating account…" : "Continue to Verification"}</button>
         </form>
 
         <p className="driver-auth-footer">Already registered? <Link href="/driver/auth">Sign in as Driver</Link></p>
