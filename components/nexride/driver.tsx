@@ -479,7 +479,7 @@ export function DriverWorkspace({
       ) : state.activeTrip ? (
         <section className="nr-driver-card nr-active-trip">
           <div><span className="nr-driver-kicker">ACTIVE TRIP</span><strong>{state.activeTrip.status}</strong></div>
-          <div className="nr-trip-route"><span>{state.activeTrip.pickup}</span><Icon name="back" /><span>{state.activeTrip.destination}</span></div>
+          <div className="nr-trip-route"><span>{state.activeTrip.pickup}</span><Icon name="chevron" /><span>{state.activeTrip.destination}</span></div>
           <button onClick={() => navigate("map")}>Open trip</button>
         </section>
       ) : (
@@ -499,7 +499,7 @@ export function DriverWorkspace({
 }
 
 function PageHead({ title, navigate, back = true }: { title: string; navigate: (screen: DriverScreen) => void; back?: boolean }) {
-  return <div className="nr-driver-page-head"><div><span className="nr-driver-kicker">NEXRIDE DRIVER</span><h1>{title}</h1></div>{back && <button className="nr-driver-icon-btn" onClick={() => navigate("home")} aria-label="Back to driver home"><Icon name="chevron" /></button>}</div>;
+  return <div className="nr-driver-page-head"><div><span className="nr-driver-kicker">NEXRIDE DRIVER</span><h1>{title}</h1></div>{back && <button className="nr-driver-icon-btn" onClick={() => navigate("home")} aria-label="Back to driver home"><Icon name="back" /></button>}</div>;
 }
 
 function Metric({ label, value, suffix, hint, loading }: { label: string; value: string; suffix?: string; hint: string; loading: boolean }) {
