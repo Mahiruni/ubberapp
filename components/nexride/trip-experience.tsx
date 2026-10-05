@@ -58,6 +58,10 @@ export function TripExperience({ screen, tripId, userId, preview, navigate, setP
         send({ type: 'nexride:initialize', live, tripId, preview: live ? null : callbacks.current.preview }); return;
       }
       if (message.type === 'nexride:subscribed') { ready.current = true; publish(); if (live) send({ type: 'nexride:connection', connected }); return; }
+      if (message.type === 'nexride:open-chat' && live && tripId) {
+        window.location.assign('/trip/chat?ride=' + encodeURIComponent(tripId) + '&role=rider');
+        return;
+      }
       if (message.type === 'nexride:preview-rating' && !live && callbacks.current.preview && Number.isInteger(message.score) && message.score >= 1 && message.score <= 5) {
         callbacks.current.setPreview({ ...callbacks.current.preview, rating: message.score }); return;
       }
