@@ -190,32 +190,32 @@ export default function RiderWalletPage() {
               {issues.length ? issues.map((ride) => {
                 const amount = money(ride.final_fare_etb) ?? money(ride.estimated_trip_fare_etb);
                 return (
-                  <button
+                  <article
                     key={ride.id}
                     className={"nr-payment-issue-row " + ride.payment_status}
-                    onClick={() => router.push("/rider/trips/receipt?ride=" + encodeURIComponent(ride.id))}
                   >
-                    <span>
-                      {ride.pickup_location} → {ride.destination_location}<br />
-                      <small>{new Date(ride.created_at).toLocaleDateString("en-ET")}{amount !== null ? " · " + amount.toLocaleString("en-ET") + " ETB" : ""}</small>
-                    </span>
-                    <span className="nr-payment-issue-actions">
+                    <button
+                      type="button"
+                      className="nr-payment-issue-main"
+                      onClick={() => router.push("/rider/trips/receipt?ride=" + encodeURIComponent(ride.id))}
+                    >
+                      <span>
+                        {ride.pickup_location} → {ride.destination_location}<br />
+                        <small>{new Date(ride.created_at).toLocaleDateString("en-ET")}{amount !== null ? " · " + amount.toLocaleString("en-ET") + " ETB" : ""}</small>
+                      </span>
                       <strong>{ride.payment_status}</strong>
-                      {onlinePayments && ride.status === "completed" && ride.payment_status !== "paid" && (
-                        <button
-                          type="button"
-                          className="nr-payment-pay-button"
-                          disabled={payingRide === ride.id}
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            void payOnline(ride);
-                          }}
-                        >
-                          {payingRide === ride.id ? "Opening…" : "Pay online"}
-                        </button>
-                      )}
-                    </span>
-                  </button>
+                    </button>
+                    {onlinePayments && ride.status === "completed" && ride.payment_status !== "paid" && (
+                      <button
+                        type="button"
+                        className="nr-payment-pay-button"
+                        disabled={payingRide === ride.id}
+                        onClick={() => void payOnline(ride)}
+                      >
+                        {payingRide === ride.id ? "Opening…" : "Pay online"}
+                      </button>
+                    )}
+                  </article>
                 );
               }) : (
                 <div className="nr-support-state" style={{ border: 0, borderRadius: 0, background: "transparent" }}>
