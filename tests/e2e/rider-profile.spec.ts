@@ -2,9 +2,10 @@ import { test, expect, type Page } from '@playwright/test';
 const id='11111111-1111-4111-8111-111111111111';
 const token=`eyJhbGciOiJIUzI1NiJ9.${Buffer.from(JSON.stringify({sub:id,exp:4102444800})).toString('base64url')}.test`;
 async function accountBackend(page:Page){
- const user={id,aud:'authenticated',role:'authenticated',email:'rider@example.test',app_metadata:{},user_metadata:{},created_at:'2026-01-01T00:00:00Z'};
+ const user={id,aud:'authenticated',role:'authenticated',email:'rider@example.test',app_metadata:{},user_metadata:{role:'rider'},created_at:'2026-01-01T00:00:00Z'};
  let name='Connected Rider',failSave=true,failSignout=true;
- await page.addInitScript(session=>{if(!sessionStorage.getItem('fixture-ready')){localStorage.setItem('sb-eyyvvwecpyctttiueban-auth-token',JSON.stringify(session));sessionStorage.setItem('fixture-ready','true')}},{access_token:token,refresh_token:'test',expires_at:4102444800,expires_in:3600,token_type:'bearer',user});
+ const session={access_token:token,refresh_token:'test',expires_at:4102444800,expires_in:3600,token_type:'bearer',user};
+ await page.route('**/auth/v1/token?grant_type=password',r=>r.fulfill({json:session}));
  await page.route('**/auth/v1/user',r=>r.fulfill({json:user}));
  await page.route('**/auth/v1/logout*',r=>{if(failSignout){failSignout=false;return r.fulfill({status:500,json:{message:'try again'}})}return r.fulfill({status:204})});
  await page.route('**/rest/v1/**',r=>{
@@ -22,9 +23,17 @@ async function accountBackend(page:Page){
  });
  await page.routeWebSocket('**/realtime/v1/**',ws=>ws.close());
 }
-async function profile(page:Page){await page.goto('/');await page.getByRole('button',{name:'Profile',exact:true}).first().click();}
+async function connectedProfile(page:Page){
+ await page.goto('/auth');
+ await page.getByLabel('Email address',{exact:true}).fill('rider@example.test');
+ await page.getByLabel('Password',{exact:true}).fill('test-password');
+ await page.getByRole('button',{name:'Sign in to NexRide',exact:true}).click();
+ await expect(page).toHaveURL(/\/$/);
+ await page.getByRole('button',{name:'Profile',exact:true}).first().click();
+}
+async function previewProfile(page:Page){await page.goto('/');await page.getByRole('button',{name:'Profile',exact:true}).first().click();}
 test('connected profile validates, preserves failed edits, saves confirmed fields and signs out with retry',async({page})=>{
- await accountBackend(page);await profile(page);
+ await accountBackend(page);await connectedProfile(page);
  await expect(page.getByRole('heading',{name:'Connected Rider'})).toBeVisible();
  await page.getByRole('button',{name:'Edit profile',exact:true}).click();
  await expect(page.getByLabel('Email (optional)',{exact:true})).toHaveAttribute('readonly','');
@@ -35,7 +44,7 @@ test('connected profile validates, preserves failed edits, saves confirmed field
  await page.getByRole('button',{name:'Sign out',exact:true}).click();await expect(page.getByRole('dialog')).toContainText('does not cancel');await page.getByRole('button',{name:'Confirm sign out'}).click();await expect(page.getByRole('dialog').getByRole('alert')).toContainText('could not be confirmed');await page.getByRole('button',{name:'Continue to sign in'}).click();await expect(page).toHaveURL(/\/auth$/);
 });
 test('profile menus, bilingual preferences, actual appearance and local preview persistence work',async({page})=>{
- await page.addInitScript(()=>{if(!localStorage.getItem('nexride:preview-enabled'))localStorage.setItem('nexride:preview-enabled','true')});await profile(page);
+ await page.addInitScript(()=>{if(!localStorage.getItem('nexride:preview-enabled'))localStorage.setItem('nexride:preview-enabled','true')});await previewProfile(page);
  await page.getByRole('button',{name:'Edit profile',exact:true}).click();await page.getByLabel('Full name',{exact:true}).fill('Preview Rider');await page.getByRole('button',{name:'Save details'}).click();await expect(page.getByRole('heading',{name:'Preview Rider'})).toBeVisible();
  await page.getByRole('button',{name:'Payment methods',exact:true}).click();await expect(page.getByRole('heading',{name:'Wallet',exact:true})).toBeVisible();await page.getByRole('button',{name:'Profile',exact:true}).first().click();
  await page.getByRole('button',{name:'Privacy & your data',exact:true}).click();await expect(page.getByRole('dialog')).toBeVisible();await page.keyboard.press('Escape');
