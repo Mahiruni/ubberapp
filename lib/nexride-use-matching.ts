@@ -1,6 +1,7 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { matchingAdapter, newerMatch, type MatchRequest, type MatchSnapshot, type MatchStatus } from './nexride-matching';
+import { supabase } from './supabase';
 const previewSnapshot = (id: string, status: MatchStatus, version: number): MatchSnapshot => ({
   requestId: id, version, status,
   cancellation: { allowed: status === 'searching' || status === 'delayed' || status === 'assigned', requiresConfirmation: false, fee: 0, reason: null },
@@ -59,6 +60,19 @@ export function useMatching() {
     document.addEventListener('visibilitychange', visible);
     return () => { active = false; clearTimeout(timer); controller?.abort(); window.removeEventListener('online', reconnect); window.removeEventListener('offline', offline); document.removeEventListener('visibilitychange', visible); };
   }, [request, terminal, refresh, merge]);
+  useEffect(() => {
+    if (!request || request.source === 'preview' || terminal) return;
+    const channel = supabase
+      .channel(`rider-match-live:${request.requestId}`)
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'ride_requests', filter: `id=eq.${request.requestId}` },
+        () => setRefresh(n => n + 1),
+      )
+      .subscribe();
+    return () => { void supabase.removeChannel(channel); };
+  }, [request, terminal]);
+
   useEffect(() => () => actionController.current?.abort(), []);
   const action = async (kind: 'cancel' | 'retry', expectedVersion?: number) => {
     const current = snapshotRef.current, selected = requestRef.current;
