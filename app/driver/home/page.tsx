@@ -14,6 +14,11 @@ export default function DriverHomePage() {
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
+    const requestedScreen = new URLSearchParams(window.location.search).get("screen");
+    if (requestedScreen === "earnings" || requestedScreen === "map" || requestedScreen === "profile") {
+      setScreen(requestedScreen);
+    }
+
     let active = true;
     supabase.auth.getSession().then(async ({ data }) => {
       if (!active) return;
