@@ -258,6 +258,16 @@ function AppWorkspace({
         ];
   const navigate = (id: string) => {
     if (bookingLock.current) return;
+    if (mode === "rider" && id === "trips") {
+      setPanel(null);
+      window.location.assign("/rider/trips");
+      return;
+    }
+    if (mode === "rider" && id === "wallet") {
+      setPanel(null);
+      window.location.assign("/rider/wallet");
+      return;
+    }
     if (mode === "rider") setRiderScreen(id as RiderScreen);
     else setDriverScreen(id as DriverScreen);
     setPanel(null);
@@ -431,7 +441,7 @@ function AppWorkspace({
             <p>{t("brandMessage")}</p>
           </div>
           <div className="nr-panel">
-            {profileView && mode === "rider" ? <RiderProfile language={language} setLanguage={setLanguage} theme={theme} setTheme={setTheme} profile={profile} setProfile={setProfile} rides={() => navigate("trips")} safety={() => openSafety(mode)} support={() => setPanel("support")} switchDriver={() => switchMode("driver")} /> : profileView ? (
+            {profileView && mode === "rider" ? <RiderProfile language={language} setLanguage={setLanguage} theme={theme} setTheme={setTheme} profile={profile} setProfile={setProfile} rides={() => navigate("trips")} payments={() => navigate("wallet")} safety={() => openSafety(mode)} support={() => window.location.assign("/support")} switchDriver={() => switchMode("driver")} /> : profileView ? (
               <Sheet title={t("profile")}>
                 <div className="nr-profile-header">
                   <div className="nr-avatar">{initials}</div>
