@@ -32,7 +32,38 @@ export function startupDestination({ session, returningPreview, previewEnabled, 
 let pending: Promise<StartupResult> | null = null; let completed: StartupResult | null = null;
 export function completedStartup() { return typeof window === "undefined" ? null : completed; }
 export function initializeRider(): Promise<StartupResult> { if (completed) return Promise.resolve(completed); if (pending) return pending; pending = (async () => { let restored = { preferences: defaults(), returningPreview: false, onboardingComplete: false, previewEnabled: false }; try { restored = restorePreferences(window.localStorage); } catch (error) { if (error instanceof StartupError) throw error; } let timer: ReturnType<typeof setTimeout> | undefined; try { const result = await Promise.race([import("./supabase").then(({ supabase }) => supabase.auth.getSession()), new Promise<never>((_, reject) => { timer = setTimeout(() => reject(new StartupError("session")), 8000); })]); if (result.error) throw new StartupError("session"); const session = result.data.session; if (session?.user?.user_metadata?.role === "driver") restored.preferences.mode = "driver"; const destination = startupDestination({ ...restored, session }); completed = { preferences: restored.preferences, destination, session }; return completed; } catch (error) { throw error instanceof StartupError ? error : new StartupError("session"); } finally { if (timer) clearTimeout(timer); } })().catch((error) => { pending = null; throw error; }); return pending; }
-export function enterRider(session: Session | null) { let preferences = defaults(); try { preferences = restorePreferences(window.localStorage).preferences; } catch {} preferences.mode = "rider"; completed = { preferences, destination: "/", session }; pending = null; }
+export function enterRider(session: Session | null) {
+  let preferences = defaults();
+  try {
+    preferences = restorePreferences(window.localStorage).preferences;
+  } catch {}
+
+  preferences.mode = "rider";
+
+  if (session) {
+    const metadata = session.user.user_metadata;
+    const metadataName =
+      typeof metadata?.full_name === "string" ? metadata.full_name.trim() : "";
+    const metadataPhone =
+      typeof metadata?.phone === "string" ? metadata.phone.trim() : "";
+
+    preferences.profile = {
+      name: metadataName || session.user.email?.split("@")[0] || "",
+      phone: metadataPhone,
+      email: session.user.email || "",
+    };
+    preferences.trip = null;
+
+    try {
+      localStorage.removeItem(PREVIEW_ENABLED_KEY);
+      localStorage.removeItem(PREVIEW_STORAGE_KEY);
+      localStorage.removeItem("nexride-state");
+    } catch {}
+  }
+
+  completed = { preferences, destination: "/", session };
+  pending = null;
+}
 export function enterDriver(session: Session) { let preferences = defaults(); try { preferences = restorePreferences(window.localStorage).preferences; } catch {} preferences.mode = "driver"; if (session.user.user_metadata?.full_name) preferences.profile.name = String(session.user.user_metadata.full_name); if (session.user.email) preferences.profile.email = session.user.email; if (session.user.user_metadata?.phone) preferences.profile.phone = String(session.user.user_metadata.phone); completed = { preferences, destination: "/driver/home", session }; pending = null; }
 export function updateStartupPreferences(preferences: RestoredPreferences) { if (completed) completed = { ...completed, preferences }; }
 export function retryStartup(resetPreferences = false) { pending = null; completed = null; if (resetPreferences) try { localStorage.removeItem(PREVIEW_STORAGE_KEY); localStorage.removeItem("nexride-state"); } catch {} }
