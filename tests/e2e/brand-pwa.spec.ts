@@ -12,6 +12,10 @@ test("NexRide serves one coherent PWA and search identity", async ({ page, reque
     "href",
     "/apple-touch-icon.png",
   );
+  await expect(page.locator('link[rel="mask-icon"]')).toHaveAttribute(
+    "href",
+    "/safari-pinned-tab.svg",
+  );
 
   const manifestResponse = await request.get("/manifest.webmanifest");
   expect(manifestResponse.ok()).toBeTruthy();
@@ -30,6 +34,7 @@ test("NexRide serves one coherent PWA and search identity", async ({ page, reque
     "/favicon-32x32.png",
     "/favicon-48x48.png",
     "/apple-touch-icon.png",
+    "/safari-pinned-tab.svg",
     "/icons/icon-192.png",
     "/icons/icon-maskable-512.png",
   ]) {
@@ -47,5 +52,5 @@ test("NexRide serves one coherent PWA and search identity", async ({ page, reque
 
   const sitemap = await request.get("/sitemap.xml");
   expect(sitemap.ok()).toBeTruthy();
-  expect(await sitemap.text()).toContain("NexRide");
+  expect(await sitemap.text()).toContain("/discover");
 });

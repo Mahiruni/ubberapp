@@ -37,7 +37,7 @@ jobs:
       - name: Production build
         run: npm run build
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium webkit
+        run: npx playwright install --with-deps chromium webkit firefox
       - name: E2E tests
         run: npm run test:e2e
       - name: Upload Playwright report
