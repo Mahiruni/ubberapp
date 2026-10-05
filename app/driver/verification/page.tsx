@@ -22,11 +22,13 @@ export default function DriverVerificationPage() {
   const [reason, setReason] = useState("");
   const [licenseNumber, setLicenseNumber] = useState("");
   const [licenseExpiry, setLicenseExpiry] = useState("");
+  const [vehicle, setVehicle] = useState("");
   const [plate, setPlate] = useState("");
   const [licenseFile, setLicenseFile] = useState<File | null>(null);
   const [registrationFile, setRegistrationFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [editingApproved, setEditingApproved] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -46,7 +48,7 @@ export default function DriverVerificationPage() {
 
       const { data, error: loadError } = await supabase
         .from("drivers")
-        .select("license_number,license_expiry,vehicle_plate,review_status,rejection_reason")
+        .select("license_number,license_expiry,vehicle,vehicle_plate,review_status,rejection_reason")
         .eq("id", session.user.id)
         .maybeSingle();
 
@@ -58,8 +60,10 @@ export default function DriverVerificationPage() {
         setReason(data.rejection_reason || "");
         setLicenseNumber(data.license_number || "");
         setLicenseExpiry(data.license_expiry || "");
+        setVehicle(data.vehicle || session.user.user_metadata?.vehicle || "");
         setPlate(data.vehicle_plate || session.user.user_metadata?.vehicle_plate || "");
       } else {
+        setVehicle(session.user.user_metadata?.vehicle || "");
         setPlate(session.user.user_metadata?.vehicle_plate || "");
       }
       setLoading(false);
@@ -115,6 +119,7 @@ export default function DriverVerificationPage() {
       .update({
         license_number: licenseNumber.trim(),
         license_expiry: licenseExpiry,
+        vehicle: vehicle.trim(),
         vehicle_plate: plate.trim(),
         license_document_path: licensePath,
         vehicle_registration_path: registrationPath,
@@ -135,7 +140,7 @@ export default function DriverVerificationPage() {
 
   if (loading) return <main className="driver-onboarding-page" aria-busy="true" />;
 
-  const locked = status === "pending" || status === "approved" || status === "suspended";
+  const locked = status === "pending" || status === "suspended" || (status === "approved" && !editingApproved);
 
   return (
     <main className="driver-onboarding-page">
@@ -161,6 +166,7 @@ export default function DriverVerificationPage() {
               <label>Driver license number<input value={licenseNumber} onChange={(e) => setLicenseNumber(e.target.value)} required /></label>
               <label>License expiry<input type="date" value={licenseExpiry} onChange={(e) => setLicenseExpiry(e.target.value)} required /></label>
             </div>
+            <label>Vehicle model<input value={vehicle} onChange={(e) => setVehicle(e.target.value)} placeholder="e.g. Toyota Corolla" required /></label>
             <label>Vehicle plate<input value={plate} onChange={(e) => setPlate(e.target.value)} required /></label>
             <label>Driver license document<input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" onChange={(e) => setLicenseFile(e.target.files?.[0] || null)} required /></label>
             <label>Vehicle registration document<input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" onChange={(e) => setRegistrationFile(e.target.files?.[0] || null)} required /></label>
@@ -169,7 +175,9 @@ export default function DriverVerificationPage() {
           </form>
         )}
 
-        {locked && <button className="driver-auth-submit" type="button" onClick={() => router.replace("/driver/home")}>Continue to Driver Home</button>}
+        {status === "approved" && !editingApproved && <button className="driver-auth-submit" type="button" onClick={() => setEditingApproved(true)}>Update verified driver details</button>}
+        {locked && status !== "approved" && <button className="driver-auth-submit" type="button" onClick={() => router.replace("/driver/home")}>Continue to Driver Home</button>}
+        {status === "approved" && !editingApproved && <button className="driver-auth-secondary" type="button" onClick={() => router.replace("/driver/home?screen=profile")}>Back to Profile</button>}
       </section>
     </main>
   );
