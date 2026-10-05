@@ -75,6 +75,7 @@ export default function Home() {
     cached?.preferences.trip || null,
   );
   const [ready, setReady] = useState(cached?.destination === "/");
+  const [authenticated, setAuthenticated] = useState(Boolean(cached?.session));
   const [startupError, setStartupError] = useState<StartupError | null>(null);
   const [attempt, setAttempt] = useState(0);
   const startupRouter = useRef(router);
@@ -88,6 +89,7 @@ export default function Home() {
       .then((result) => {
         if (!active) return;
         const p = result.preferences;
+        setAuthenticated(Boolean(result.session));
         setLanguage(p.language);
         setMode(p.mode);
         setTheme(p.theme);
@@ -143,6 +145,7 @@ export default function Home() {
             setProfile={setProfile}
             trip={trip}
             setTrip={setTrip}
+            authenticated={authenticated}
             onReset={() => {
               setProfile(emptyProfile);
               setTrip(null);
@@ -172,6 +175,7 @@ function AppWorkspace({
   setProfile,
   trip,
   setTrip,
+  authenticated,
   onReset,
 }: {
   language: Language;
@@ -184,6 +188,7 @@ function AppWorkspace({
   setProfile: (p: PreviewProfile) => void;
   trip: PreviewTrip | null;
   setTrip: (t: PreviewTrip) => void;
+  authenticated: boolean;
   onReset: () => void;
 }) {
   const t = useTranslation();
@@ -388,7 +393,7 @@ function AppWorkspace({
             </button>
           </div>
         </header>
-        {!liveTripShown && !profileView && <div className="nr-preview-banner">
+        {!authenticated && !liveTripShown && !profileView && <div className="nr-preview-banner">
           <span className="nr-preview-label">{t("preview")}</span>
           <p>{t("previewInfo")}</p>
           <button
