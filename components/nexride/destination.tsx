@@ -56,6 +56,29 @@ export function DestinationPanel({
   const local = searchPreviewPlaces(query[field]);
   const firstResult = useRef<HTMLButtonElement>(null);
   const drag = useRef<{ start: number; ratio: number } | null>(null);
+  const draftRestored = useRef(false);
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem("nexride.rider.destination.draft");
+      if (raw) {
+        const saved = JSON.parse(raw);
+        if (saved?.field === "pickup" || saved?.field === "destination") setField(saved.field);
+        if (saved?.query && typeof saved.query.pickup === "string" && typeof saved.query.destination === "string") {
+          setQuery({
+            pickup: saved.query.pickup.slice(0, 120),
+            destination: saved.query.destination.slice(0, 120),
+          });
+        }
+      }
+    } catch {}
+    draftRestored.current = true;
+  }, []);
+  useEffect(() => {
+    if (!draftRestored.current) return;
+    try {
+      sessionStorage.setItem("nexride.rider.destination.draft", JSON.stringify({ field, query }));
+    } catch {}
+  }, [field, query]);
   useEffect(() => {
     const q = query[field].trim();
     setRemote({ status: q.length >= 3 ? "loading" : "idle", results: [] });
