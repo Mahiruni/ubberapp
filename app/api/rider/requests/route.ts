@@ -67,40 +67,26 @@ export async function POST(request: Request) {
       return reply({ status: "price_changed", fares }, 409);
     }
 
-    const { data, error } = await authorized.client.rpc(
-      "rider_create_ride_request",
+    const { data, error } = await authorized.client.functions.invoke(
+      "nexride-rider-booking",
       {
-        p_pickup_location: label(pickup, "Pickup"),
-        p_destination_location: label(destination, "Destination"),
-        p_pickup_lat: pickup.lat,
-        p_pickup_lng: pickup.lng,
-        p_destination_lat: destination.lat,
-        p_destination_lng: destination.lng,
-        p_category: category,
-        p_payment_method: paymentMethod,
-        p_client_request_key: idempotencyKey,
-        p_pricing_revision: revision,
+        body: {
+          operation: "create",
+          pickupLocation: label(pickup, "Pickup"),
+          destinationLocation: label(destination, "Destination"),
+          pickupLat: pickup.lat,
+          pickupLng: pickup.lng,
+          destinationLat: destination.lat,
+          destinationLng: destination.lng,
+          category,
+          paymentMethod,
+          clientRequestKey: idempotencyKey,
+          pricingRevision: revision,
+        },
       },
     );
 
-    if (error) {
-      const message = error.message || "";
-      if (
-        message.includes("CATEGORY_UNAVAILABLE") ||
-        message.includes("OUTSIDE_SERVICE_AREA") ||
-        message.includes("JOURNEY_TOO_SHORT")
-      ) {
-        return reply({ status: "price_changed", fares }, 409);
-      }
-      if (
-        message.includes("ACTIVE_RIDE_EXISTS") ||
-        message.includes("RIDER_NOT_ELIGIBLE") ||
-        message.includes("PAYMENT_METHOD_UNAVAILABLE")
-      ) {
-        return reply({ status: "failed" }, 409);
-      }
-      return reply({ status: "failed" }, 500);
-    }
+    if (error) return reply({ status: "failed" }, 500);
 
     const result = data as { requestId?: unknown; status?: unknown } | null;
     if (
