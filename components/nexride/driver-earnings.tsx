@@ -7,7 +7,6 @@ import {
   earningsPeriodLabel,
   formatEtb,
   formatOnlineTime,
-  getEarningsPeriodWindow,
   loadDriverEarningsReport,
   type DriverEarningsReport,
   type EarningsLedgerEntry,
@@ -68,6 +67,7 @@ export function DriverEarningsScreen({
   const [report, setReport] = useState<DriverEarningsReport | null>(null);
   const [loading, setLoading] = useState(true);
   const [failedMessage, setFailedMessage] = useState("");
+  const [retryNonce, setRetryNonce] = useState(0);
 
   useEffect(() => {
     const saved = window.localStorage.getItem(EARNINGS_PERIOD_STORAGE_KEY);
@@ -96,7 +96,7 @@ export function DriverEarningsScreen({
     return () => {
       active = false;
     };
-  }, [driverId, period]);
+  }, [driverId, period, retryNonce]);
 
   const changePeriod = (next: EarningsPeriod) => {
     setPeriod(next);
@@ -148,7 +148,7 @@ export function DriverEarningsScreen({
           <div>
             <strong>Report unavailable</strong>
             <p>{failedMessage}</p>
-            <button onClick={() => setPeriod((current) => current)}>Try again</button>
+            <button onClick={() => setRetryNonce((value) => value + 1)}>Try again</button>
           </div>
         </section>
       ) : report ? (
