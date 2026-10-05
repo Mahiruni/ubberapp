@@ -38,7 +38,7 @@ export function geography(v: unknown): Point | undefined {
 }
 const amount = (v: unknown, currency: string) => { const n = typeof v === 'string' && /^\d+$/.test(v) ? Number(v) : numberValue(v); return n != null && Number.isSafeInteger(n) && n >= 0 ? { amount: n / 100, currency } : undefined; };
 export function tripStatus(state: unknown): TripSnapshot['status'] {
-  return ({ accepted: 'approaching', arriving: 'arrived', arrived: 'arrived', in_progress: 'in_trip', completed: 'completed', cancelled: 'cancelled' } as Record<string, TripSnapshot['status']>)[String(state)] || 'reassigning';
+  return ({ accepted: 'approaching', arrived_pickup: 'arrived', arriving: 'arrived', arrived: 'arrived', in_trip: 'in_trip', in_progress: 'in_trip', completed: 'completed', cancelled: 'cancelled', withdrawn: 'cancelled' } as Record<string, TripSnapshot['status']>)[String(state)] || 'reassigning';
 }
 export function normalizeTrip(trip: Row, parts: { profile?: Row | null; driver?: Row | null; vehicle?: Row | null; location?: Row | null; payment?: Row | null; rating?: Row | null; update?: Row | null }, revision: number): TripSnapshot {
   const p = parts.profile || {}, d = parts.driver || {}, v = parts.vehicle || {}, fix = parts.location || {}, pay = parts.payment || {}, rating = parts.rating || {};
