@@ -1,0 +1,26 @@
+.driver-auth-page {
+  min-height: 100svh;
+  background: #06131d;
+  color: #f8fbfa;
+  padding: max(24px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(28px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
+  display: grid;
+  place-items: center;
+}
+.driver-auth-card { width: min(100%, 440px); }
+.driver-auth-back { color: rgba(255,255,255,.58); text-decoration: none; font-size: 14px; display: inline-block; margin-bottom: 28px; }
+.driver-auth-card .nr-brand { margin-bottom: 34px; }
+.driver-auth-card .nr-mark { background: #00c878; color: #032015; }
+.driver-auth-card .nr-brand strong { color: #fff; }
+.driver-auth-card .nr-brand small { color: rgba(255,255,255,.65); }
+.driver-auth-role { display: inline-block; color: #8fe9bf; font-size: 10px; font-weight: 800; letter-spacing: .16em; margin-bottom: 12px; }
+.driver-auth-card h1 { font-size: clamp(38px, 10vw, 52px); letter-spacing: -.05em; margin: 0; }
+.driver-auth-card > p { color: rgba(255,255,255,.62); line-height: 1.55; margin: 13px 0 30px; }
+.driver-auth-card form { display: grid; gap: 16px; }
+.driver-auth-card label { display: grid; gap: 8px; color: rgba(255,255,255,.78); font-size: 13px; font-weight: 700; }
+.driver-auth-card input { width: 100%; min-height: 54px; box-sizing: border-box; border: 1px solid rgba(255,255,255,.12); border-radius: 14px; background: rgba(255,255,255,.06); color: #fff; padding: 0 15px; outline: none; font: inherit; }
+.driver-auth-card input:focus { border-color: rgba(0,200,120,.7); box-shadow: 0 0 0 3px rgba(0,200,120,.1); }
+.driver-auth-error { border: 1px solid rgba(255,100,100,.22); background: rgba(255,80,80,.08); color: #ffb7b7; border-radius: 12px; padding: 12px; font-size: 13px; line-height: 1.4; }
+.driver-auth-submit { min-height: 56px; border: 0; border-radius: 16px; background: #00c878; color: #032015; font: inherit; font-weight: 800; cursor: pointer; margin-top: 2px; }
+.driver-auth-submit:disabled { opacity: .6; cursor: wait; }
+.driver-auth-footer { text-align: center; font-size: 13px !important; margin-top: 22px !important; }
+.driver-auth-footer a { color: #8fe9bf; font-weight: 800; }
