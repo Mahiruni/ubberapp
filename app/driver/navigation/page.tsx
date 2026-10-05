@@ -50,6 +50,17 @@ function distanceLabel(value: number | null) {
   return value < 1 ? `${Math.max(1, Math.round(value * 1000))} m` : `${value.toFixed(1)} km`;
 }
 
+function positionDistanceMeters(a: VehiclePosition | null, b: VehiclePosition | null) {
+  if (!a || !b) return Number.POSITIVE_INFINITY;
+  const rad = Math.PI / 180;
+  const dLat = (b.lat - a.lat) * rad;
+  const dLng = (b.lng - a.lng) * rad;
+  const x =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(a.lat * rad) * Math.cos(b.lat * rad) * Math.sin(dLng / 2) ** 2;
+  return 6371000 * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
+}
+
 export default function DriverNavigationPage() {
   const router = useRouter();
   const [driverId, setDriverId] = useState("");
@@ -64,6 +75,11 @@ export default function DriverNavigationPage() {
   const [mapView, setMapView] = useState<MapView>("overview");
   const lastFixRef = useRef<number | null>(null);
   const previousGpsRef = useRef<GpsState>("acquiring");
+  const lastSharedAtRef = useRef(0);
+  const lastSharedPositionRef = useRef<VehiclePosition | null>(null);
+  const lastAvailabilityAtRef = useRef(0);
+  const sharingRef = useRef(false);
+  const [locationShareError, setLocationShareError] = useState("");
 
   const loadTrip = useCallback(async (userId: string, offerId: string) => {
     const { data: offer, error: offerError } = await supabase
@@ -203,6 +219,61 @@ export default function DriverNavigationPage() {
   }, []);
 
   useEffect(() => {
+    if (
+      !position ||
+      !trip ||
+      !driverId ||
+      !["accepted", "arrived_pickup", "in_trip"].includes(trip.status) ||
+      sharingRef.current
+    ) return;
+
+    const now = Date.now();
+    const moved = positionDistanceMeters(lastSharedPositionRef.current, position);
+    if (now - lastSharedAtRef.current < 4000 && moved < 8) return;
+
+    sharingRef.current = true;
+    const payload = {
+      ride_request_id: trip.requestId,
+      driver_id: driverId,
+      latitude: position.lat,
+      longitude: position.lng,
+      accuracy_meters: position.accuracy,
+      heading_degrees: position.heading,
+    };
+
+    void supabase
+      .from("ride_driver_locations")
+      .upsert(payload, { onConflict: "ride_request_id" })
+      .then(({ error: shareError }) => {
+        if (shareError) {
+          setLocationShareError("Live location could not be shared with your rider. Check your connection.");
+          return;
+        }
+        lastSharedAtRef.current = Date.now();
+        lastSharedPositionRef.current = position;
+        setLocationShareError("");
+      })
+      .finally(() => {
+        sharingRef.current = false;
+      });
+
+    if (now - lastAvailabilityAtRef.current >= 12000) {
+      lastAvailabilityAtRef.current = now;
+      void supabase
+        .from("drivers")
+        .update({
+          location: {
+            latitude: position.lat,
+            longitude: position.lng,
+            accuracy: position.accuracy,
+            updated_at: new Date().toISOString(),
+          },
+        })
+        .eq("id", driverId);
+    }
+  }, [driverId, position, trip]);
+
+  useEffect(() => {
     if (!routeNotice) return;
     const timer = window.setTimeout(() => setRouteNotice(""), 6500);
     return () => window.clearTimeout(timer);
@@ -286,10 +357,10 @@ export default function DriverNavigationPage() {
         <button onClick={() => router.push(`/safety?role=driver&ride=${trip.requestId}`)} aria-label="Open Safety Center"><Icon name="shield" size={20} /></button>
       </div>
 
-      {(gpsState !== "fresh" || routeNotice) && (
-        <div className={`nr-nav-status ${gpsState === "lost" ? "danger" : gpsState === "stale" ? "warning" : ""}`}>
-          <Icon name={gpsState === "fresh" ? "check" : "info"} size={16} />
-          <span>{routeNotice || gpsMessage || "Acquiring GPS location…"}</span>
+      {(gpsState !== "fresh" || routeNotice || locationShareError) && (
+        <div className={`nr-nav-status ${gpsState === "lost" || locationShareError ? "danger" : gpsState === "stale" ? "warning" : ""}`}>
+          <Icon name={gpsState === "fresh" && !locationShareError ? "check" : "info"} size={16} />
+          <span>{locationShareError || routeNotice || gpsMessage || "Acquiring GPS location…"}</span>
         </div>
       )}
 
