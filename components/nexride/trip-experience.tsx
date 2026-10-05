@@ -85,6 +85,7 @@ export function TripExperience({ screen, tripId, userId, preview, navigate, setP
       channel = supabase
         .channel(`rider-trip:${tripId}`)
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'ride_requests', filter: `id=eq.${tripId}` }, () => void refresh())
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'ride_driver_locations', filter: `ride_request_id=eq.${tripId}` }, () => void refresh())
         .subscribe(status => {
           if (['CHANNEL_ERROR','TIMED_OUT','CLOSED'].includes(status)) announce(false);
           if (status === 'SUBSCRIBED') void refresh();
