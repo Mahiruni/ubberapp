@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Icon } from "./ui";
 import { DriverEarningsScreen } from "./driver-earnings";
 import { DriverProfileScreen } from "./driver-profile";
+import { loadDriverEarningsReport } from "../../lib/nexride-driver-earnings";
 import { supabase } from "../../lib/supabase";
 import "../../app/driver/driver-dashboard.css";
 
@@ -114,6 +115,8 @@ export function DriverWorkspace({
     let active = true;
     let driverChannel: ReturnType<typeof supabase.channel> | null = null;
     let offerChannel: ReturnType<typeof supabase.channel> | null = null;
+    let earningsChannel: ReturnType<typeof supabase.channel> | null = null;
+    let tripsChannel: ReturnType<typeof supabase.channel> | null = null;
 
     (async () => {
       const { data, error: sessionError } = await supabase.auth.getSession();
@@ -154,6 +157,23 @@ export function DriverWorkspace({
 
       setState(mergeDriverState(base, driver as Record<string, unknown> | null));
       setLoading(false);
+
+      const refreshTodaySummary = async () => {
+        try {
+          const report = await loadDriverEarningsReport(id, "today");
+          if (!active) return;
+          setState((current) => ({
+            ...current,
+            earnings: report.netDriverEarningsEtb,
+            trips: report.completedTrips,
+          }));
+        } catch {
+          if (!active) return;
+          setState((current) => ({ ...current, earnings: null, trips: null }));
+        }
+      };
+
+      void refreshTodaySummary();
 
       driverChannel = supabase
         .channel(`driver-dashboard-${id}`)
@@ -208,6 +228,24 @@ export function DriverWorkspace({
         router.push(`/driver/request?offer=${pendingOffer.id}`);
       }
 
+      earningsChannel = supabase
+        .channel(`driver-home-earnings-${id}`)
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "driver_earnings_ledger", filter: `driver_id=eq.${id}` },
+          () => { void refreshTodaySummary(); },
+        )
+        .subscribe();
+
+      tripsChannel = supabase
+        .channel(`driver-home-trips-${id}`)
+        .on(
+          "postgres_changes",
+          { event: "UPDATE", schema: "public", table: "ride_requests", filter: `assigned_driver_id=eq.${id}` },
+          () => { void refreshTodaySummary(); },
+        )
+        .subscribe();
+
       offerChannel = supabase
         .channel(`driver-ride-offers-${id}`)
         .on(
@@ -233,6 +271,8 @@ export function DriverWorkspace({
       active = false;
       if (driverChannel) supabase.removeChannel(driverChannel);
       if (offerChannel) supabase.removeChannel(offerChannel);
+      if (earningsChannel) supabase.removeChannel(earningsChannel);
+      if (tripsChannel) supabase.removeChannel(tripsChannel);
     };
   }, [router]);
 
@@ -477,7 +517,7 @@ export function DriverWorkspace({
         <div className="nr-driver-map-placeholder">
           <Icon name="navigation" size={34} />
           <strong>Driver map</strong>
-          <span>Live trip navigation will appear here when dispatch and driver positioning are connected.</span>
+          <span>Live navigation opens automatically when you accept a ride. Go online from Home to receive dispatch offers.</span>
         </div>
         <DriverBottomNav screen={screen} navigate={navigate} />
       </div>
@@ -559,7 +599,7 @@ export function DriverWorkspace({
           <div className="nr-empty-trip-icon"><Icon name="car" size={23} /></div>
           <div>
             <strong>No trips yet</strong>
-            <span>{state.online ? "Trip activity will appear here when dispatch data is connected." : "Go online when eligible to start receiving ride requests."}</span>
+            <span>{state.online ? "You’re available. New dispatch offers will open automatically when they arrive." : "Go online when eligible to start receiving ride requests."}</span>
           </div>
         </section>
       )}
