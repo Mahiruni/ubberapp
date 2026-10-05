@@ -5,12 +5,30 @@ import { useRouter } from "next/navigation";
 import { DriverNavigationMap, type NavigationCoordinate } from "../../../components/nexride/driver-navigation-map";
 import { Icon } from "../../../components/nexride/ui";
 import { supabase } from "../../../lib/supabase";
+import { nexrideApiHeaders } from "../../../lib/nexride-api-auth";
 import "../../nexride.css";
 import "./navigation.css";
 
 type TripStatus = "accepted" | "arrived_pickup" | "in_trip" | "completed" | "withdrawn" | "cancelled";
 type GpsState = "acquiring" | "fresh" | "stale" | "lost" | "unsupported";
 type MapView = "overview" | "vehicle";
+type GuidanceStep = {
+  instruction: string;
+  distanceMeters: number;
+  durationSeconds: number;
+  maneuver: NavigationCoordinate;
+  type?: string;
+  modifier?: string;
+  roadName?: string;
+};
+type NativeRoute = {
+  target: "pickup" | "destination";
+  geometry: NavigationCoordinate[];
+  distanceMeters: number;
+  durationSeconds: number;
+  steps: GuidanceStep[];
+  generatedAt: number;
+};
 
 type NavigationData = {
   offerId: string;
@@ -49,6 +67,12 @@ function distanceLabel(value: number | null) {
   if (value === null) return "Distance unavailable";
   return value < 1 ? `${Math.max(1, Math.round(value * 1000))} m` : `${value.toFixed(1)} km`;
 }
+function metersLabel(value: number | null) {
+  if (value === null || !Number.isFinite(value)) return "Distance unavailable";
+  return value < 1000
+    ? `${Math.max(10, Math.round(value / 10) * 10)} m`
+    : `${(value / 1000).toFixed(1)} km`;
+}
 
 function positionDistanceMeters(a: VehiclePosition | null, b: VehiclePosition | null) {
   if (!a || !b) return Number.POSITIVE_INFINITY;
@@ -79,7 +103,14 @@ export default function DriverNavigationPage() {
   const lastSharedPositionRef = useRef<VehiclePosition | null>(null);
   const lastAvailabilityAtRef = useRef(0);
   const sharingRef = useRef(false);
+  const routePendingRef = useRef(false);
+  const lastRouteAtRef = useRef(0);
+  const lastRoutePositionRef = useRef<VehiclePosition | null>(null);
+  const lastRouteTargetRef = useRef<"pickup" | "destination" | null>(null);
+  const routeBackoffUntilRef = useRef(0);
   const [locationShareError, setLocationShareError] = useState("");
+  const [nativeRoute, setNativeRoute] = useState<NativeRoute | null>(null);
+  const [nativeRouteNotice, setNativeRouteNotice] = useState("");
 
   const loadTrip = useCallback(async (userId: string, offerId: string) => {
     const { data: offer, error: offerError } = await supabase
@@ -275,6 +306,123 @@ export default function DriverNavigationPage() {
   }, [driverId, position, trip]);
 
   useEffect(() => {
+    if (!position || !trip || !driverId || routePendingRef.current) return;
+
+    const target: "pickup" | "destination" | null =
+      trip.status === "accepted" || trip.status === "arrived_pickup"
+        ? "pickup"
+        : trip.status === "in_trip"
+          ? "destination"
+          : null;
+
+    if (!target) {
+      setNativeRoute(null);
+      setNativeRouteNotice("");
+      return;
+    }
+
+    const now = Date.now();
+    const targetChanged = lastRouteTargetRef.current !== target;
+    const moved = positionDistanceMeters(lastRoutePositionRef.current, position);
+    if (
+      !targetChanged &&
+      now < routeBackoffUntilRef.current
+    ) return;
+    if (
+      !targetChanged &&
+      now - lastRouteAtRef.current < 12000 &&
+      moved < 25
+    ) return;
+
+    routePendingRef.current = true;
+    void (async () => {
+      try {
+        const response = await fetch("/api/driver/route", {
+          method: "POST",
+          cache: "no-store",
+          headers: await nexrideApiHeaders(true),
+          body: JSON.stringify({
+            rideRequestId: trip.requestId,
+            position: { lat: position.lat, lng: position.lng },
+            target,
+          }),
+          signal: AbortSignal.timeout(9000),
+        });
+
+        const body = await response.json().catch(() => null);
+        if (!response.ok || body?.status !== "ready") {
+          if (response.status === 503 || body?.status === "provider_unavailable") {
+            routeBackoffUntilRef.current = Date.now() + 60000;
+            setNativeRouteNotice("NexRide road guidance is temporarily unavailable. Google Maps remains available.");
+          } else if (response.status !== 409) {
+            setNativeRouteNotice("Road guidance could not refresh. The last route and Google Maps remain available.");
+          }
+          return;
+        }
+
+        const geometry = Array.isArray(body.route?.geometry)
+          ? body.route.geometry
+              .map((point: unknown) =>
+                Array.isArray(point) && Number.isFinite(Number(point[0])) && Number.isFinite(Number(point[1]))
+                  ? { lat: Number(point[0]), lng: Number(point[1]) }
+                  : null,
+              )
+              .filter(Boolean) as NavigationCoordinate[]
+          : [];
+
+        const steps = Array.isArray(body.route?.steps)
+          ? body.route.steps
+              .map((step: Record<string, unknown>) => {
+                const maneuver =
+                  step.maneuver && typeof step.maneuver === "object"
+                    ? step.maneuver as Record<string, unknown>
+                    : {};
+                const lat = Number(maneuver.lat);
+                const lng = Number(maneuver.lng);
+                if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+                return {
+                  instruction: typeof step.instruction === "string" && step.instruction ? step.instruction : "Continue",
+                  distanceMeters: Number.isFinite(Number(step.distanceMeters)) ? Number(step.distanceMeters) : 0,
+                  durationSeconds: Number.isFinite(Number(step.durationSeconds)) ? Number(step.durationSeconds) : 0,
+                  maneuver: { lat, lng },
+                  type: typeof step.type === "string" ? step.type : undefined,
+                  modifier: typeof step.modifier === "string" ? step.modifier : undefined,
+                  roadName: typeof step.roadName === "string" ? step.roadName : undefined,
+                } satisfies GuidanceStep;
+              })
+              .filter(Boolean) as GuidanceStep[]
+          : [];
+
+        const distanceMeters = Number(body.route?.distanceMeters);
+        const durationSeconds = Number(body.route?.durationSeconds);
+        if (
+          geometry.length < 2 ||
+          !Number.isFinite(distanceMeters) ||
+          !Number.isFinite(durationSeconds)
+        ) return;
+
+        setNativeRoute({
+          target,
+          geometry,
+          steps,
+          distanceMeters,
+          durationSeconds,
+          generatedAt: Number(body.generatedAt) || Date.now(),
+        });
+        lastRouteAtRef.current = Date.now();
+        lastRoutePositionRef.current = position;
+        lastRouteTargetRef.current = target;
+        routeBackoffUntilRef.current = 0;
+        setNativeRouteNotice("");
+      } catch {
+        setNativeRouteNotice("Road guidance could not refresh. Google Maps remains available.");
+      } finally {
+        routePendingRef.current = false;
+      }
+    })();
+  }, [driverId, position, trip]);
+
+  useEffect(() => {
     if (!routeNotice) return;
     const timer = window.setTimeout(() => setRouteNotice(""), 6500);
     return () => window.clearTimeout(timer);
@@ -291,6 +439,18 @@ export default function DriverNavigationPage() {
   const mapsUrl = stage ? navigationUrl(stage.coordinate, stage.destination) : "";
   const canNavigate = trip?.status === "accepted" || trip?.status === "in_trip";
   const invalidTrip = trip?.status === "withdrawn" || trip?.status === "cancelled";
+  const nextGuidance = nativeRoute?.target === stage?.target ? nativeRoute.steps[0] : undefined;
+  const guidanceTitle = nextGuidance?.instruction || stage?.title || "Navigation";
+  const guidanceDistance =
+    nextGuidance && nextGuidance.distanceMeters > 0
+      ? metersLabel(nextGuidance.distanceMeters)
+      : nativeRoute?.target === stage?.target
+        ? metersLabel(nativeRoute.distanceMeters)
+        : distanceLabel(stage?.distance ?? null);
+  const routeEtaMinutes =
+    nativeRoute?.target === stage?.target
+      ? Math.max(1, Math.round(nativeRoute.durationSeconds / 60))
+      : stage?.eta ?? null;
 
   async function transition(next: "arrived_pickup" | "in_trip" | "completed") {
     if (!trip || !driverId || busy) return;
@@ -341,14 +501,14 @@ export default function DriverNavigationPage() {
 
   return (
     <main className="nr-app nr-driver-navigation-page" data-mode="driver" data-theme="dark">
-      <DriverNavigationMap vehicle={position} pickup={trip.pickupCoordinate} destination={trip.destinationCoordinate} target={stage.target} view={mapView} gpsState={gpsState} heading={position?.heading ?? null} />
+      <DriverNavigationMap vehicle={position} pickup={trip.pickupCoordinate} destination={trip.destinationCoordinate} route={nativeRoute?.target === stage.target ? nativeRoute.geometry : []} target={stage.target} view={mapView} gpsState={gpsState} heading={position?.heading ?? null} />
 
       <button className="nr-nav-home" onClick={() => router.replace("/driver/home")} aria-label="Driver home"><Icon name="home" size={19} /></button>
 
       <section className="nr-nav-guidance" aria-live="polite">
         <span className="nr-nav-guidance-icon"><Icon name="navigation" size={30} /></span>
-        <div><small>{stage.badge}</small><strong>{stage.title}</strong>{canNavigate && <em>Turn-by-turn opens in Google Maps</em>}</div>
-        <span className="nr-nav-guidance-distance">{distanceLabel(stage.distance)}</span>
+        <div><small>{stage.badge}</small><strong>{guidanceTitle}</strong>{canNavigate && <em>{nativeRoute?.target === stage.target ? "Live NexRide road guidance" : "Google Maps fallback available"}</em>}</div>
+        <span className="nr-nav-guidance-distance">{guidanceDistance}</span>
       </section>
 
       <div className="nr-nav-map-controls" aria-label="Map controls">
@@ -358,10 +518,10 @@ export default function DriverNavigationPage() {
         <button onClick={() => router.push(`/safety?role=driver&ride=${trip.requestId}`)} aria-label="Open Safety Center"><Icon name="shield" size={20} /></button>
       </div>
 
-      {(gpsState !== "fresh" || routeNotice || locationShareError) && (
-        <div className={`nr-nav-status ${gpsState === "lost" || locationShareError ? "danger" : gpsState === "stale" ? "warning" : ""}`}>
-          <Icon name={gpsState === "fresh" && !locationShareError ? "check" : "info"} size={16} />
-          <span>{locationShareError || routeNotice || gpsMessage || "Acquiring GPS location…"}</span>
+      {(gpsState !== "fresh" || routeNotice || locationShareError || nativeRouteNotice) && (
+        <div className={`nr-nav-status ${gpsState === "lost" || locationShareError ? "danger" : gpsState === "stale" || nativeRouteNotice ? "warning" : ""}`}>
+          <Icon name={gpsState === "fresh" && !locationShareError && !nativeRouteNotice ? "check" : "info"} size={16} />
+          <span>{locationShareError || routeNotice || nativeRouteNotice || gpsMessage || "Acquiring GPS location…"}</span>
         </div>
       )}
 
@@ -370,7 +530,7 @@ export default function DriverNavigationPage() {
         <div className="nr-nav-current-destination">
           <small>{stage.target === "pickup" ? "CURRENT PICKUP" : "CURRENT DESTINATION"}</small>
           <h1>{stage.destination}</h1>
-          <p>{stage.eta === null ? "Arrival estimate unavailable" : stage.eta === 0 ? "You are at this stop" : `Estimated arrival in ~${stage.eta} min`}</p>
+          <p>{routeEtaMinutes === null ? "Arrival estimate unavailable" : routeEtaMinutes === 0 ? "You are at this stop" : `Estimated arrival in ~${routeEtaMinutes} min`}</p>
         </div>
 
         {message && <div className="nr-nav-action-error" role="alert"><Icon name="info" size={16} /><span>{message}</span></div>}
@@ -379,14 +539,14 @@ export default function DriverNavigationPage() {
           <button className="nr-nav-stage-primary" onClick={() => router.replace("/driver/home")}>Back to Driver Home</button>
         ) : trip.status === "accepted" ? (
           <div className="nr-nav-stage-actions">
-            <a className="nr-nav-stage-primary" href={mapsUrl} target="_blank" rel="noreferrer"><Icon name="navigation" size={19} /> Navigate to pickup</a>
+            <a className="nr-nav-stage-primary" href={mapsUrl} target="_blank" rel="noreferrer"><Icon name="navigation" size={19} /> Open Google Maps</a>
             <button className="nr-nav-stage-secondary" disabled={busy} onClick={() => transition("arrived_pickup")}>{busy ? "Updating…" : "Arrived at pickup"}</button>
           </div>
         ) : trip.status === "arrived_pickup" ? (
           <button className="nr-nav-stage-primary" disabled={busy} onClick={() => transition("in_trip")}><Icon name="car" size={19} /> {busy ? "Starting…" : "Start trip"}</button>
         ) : trip.status === "in_trip" ? (
           <div className="nr-nav-stage-actions">
-            <a className="nr-nav-stage-primary" href={mapsUrl} target="_blank" rel="noreferrer"><Icon name="navigation" size={19} /> Navigate to destination</a>
+            <a className="nr-nav-stage-primary" href={mapsUrl} target="_blank" rel="noreferrer"><Icon name="navigation" size={19} /> Open Google Maps</a>
             <button className="nr-nav-stage-secondary complete" disabled={busy} onClick={() => transition("completed")}>{busy ? "Completing…" : "Complete trip"}</button>
           </div>
         ) : (
@@ -396,7 +556,7 @@ export default function DriverNavigationPage() {
           </div>
         )}
 
-        {canNavigate && <div className="nr-nav-handoff"><Icon name="info" size={15} /><span>NexRide shows trip context and GPS status here. Road-level turn instructions and route recalculation are handled by Google Maps.</span></div>}
+        {canNavigate && <div className="nr-nav-handoff"><Icon name="info" size={15} /><span>{nativeRoute?.target === stage.target ? "NexRide refreshes the road route and next maneuver from your live GPS. Google Maps remains available for voice, lane guidance, and external navigation." : "NexRide road guidance is unavailable right now. Use Google Maps for turn-by-turn navigation."}</span></div>}
       </section>
     </main>
   );
