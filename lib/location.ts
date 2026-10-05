@@ -1,8 +1,18 @@
 export type LatLng = { lat: number; lng: number };
+export type RouteStep = {
+  instruction: string;
+  distanceMeters: number;
+  durationSeconds: number;
+  maneuver: LatLng;
+  type?: string;
+  modifier?: string;
+  roadName?: string;
+};
 export type RouteResult = {
   distanceMeters: number;
   durationSeconds: number;
   geometry?: [number, number][];
+  steps?: RouteStep[];
   provider: "mapbox" | "fallback";
 };
 const MAPBOX = "https://api.mapbox.com";
@@ -30,6 +40,7 @@ export async function routeBetween(
     profile?: "driving" | "driving-traffic";
     requireProvider?: boolean;
     signal?: AbortSignal;
+    steps?: boolean;
   } = {},
 ): Promise<RouteResult> {
   if (points.length < 2) throw new Error("route requires at least two points");
@@ -53,7 +64,9 @@ export async function routeBetween(
       profile +
       "/" +
       coords +
-      "?alternatives=false&geometries=geojson&overview=full&steps=false&radiuses=" +
+      "?alternatives=false&geometries=geojson&overview=full&steps=" +
+      (options.steps ? "true" : "false") +
+      "&language=en&radiuses=" +
       points.map(() => 100).join(";") +
       "&access_token=" +
       encodeURIComponent(t),
@@ -90,6 +103,35 @@ export async function routeBetween(
       c[1],
       c[0],
     ]),
+    steps: options.steps
+      ? (r.legs || [])
+          .flatMap((leg: { steps?: unknown[] }) => Array.isArray(leg.steps) ? leg.steps : [])
+          .map((step: {
+            distance?: unknown;
+            duration?: unknown;
+            name?: unknown;
+            maneuver?: {
+              instruction?: unknown;
+              location?: unknown;
+              type?: unknown;
+              modifier?: unknown;
+            };
+          }) => {
+            const location = Array.isArray(step.maneuver?.location) ? step.maneuver!.location as unknown[] : [];
+            const lng = Number(location[0]);
+            const lat = Number(location[1]);
+            return {
+              instruction: typeof step.maneuver?.instruction === "string" ? step.maneuver.instruction : "Continue",
+              distanceMeters: Number.isFinite(Number(step.distance)) ? Number(step.distance) : 0,
+              durationSeconds: Number.isFinite(Number(step.duration)) ? Number(step.duration) : 0,
+              maneuver: { lat, lng },
+              type: typeof step.maneuver?.type === "string" ? step.maneuver.type : undefined,
+              modifier: typeof step.maneuver?.modifier === "string" ? step.maneuver.modifier : undefined,
+              roadName: typeof step.name === "string" && step.name ? step.name : undefined,
+            };
+          })
+          .filter((step: RouteStep) => Number.isFinite(step.maneuver.lat) && Number.isFinite(step.maneuver.lng))
+      : undefined,
     provider: "mapbox",
   };
 }
