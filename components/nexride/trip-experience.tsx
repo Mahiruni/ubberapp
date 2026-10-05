@@ -14,6 +14,26 @@ export function TripExperience({ screen, tripId, userId, preview, navigate, setP
   const [connection, setConnection] = useState('Loading trip…');
   const file = screen === 'summary' ? 'completion.html' : screen === 'live' ? 'trip.html' : 'index.html';
   const live = !!tripId && !!userId;
+  const openSafety = () => {
+    try {
+      const snapshot = latest.current;
+      const context = snapshot ? {
+        id: snapshot.id,
+        status: snapshot.status,
+        pickup: snapshot.pickup.name || "",
+        destination: snapshot.destination.name || "",
+        category: snapshot.category || "",
+      } : preview ? {
+        id: tripId || "preview",
+        status: screen === "live" ? "in_trip" : "approaching",
+        pickup: preview.pickup,
+        destination: preview.destination,
+        category: preview.ride,
+      } : null;
+      if (context) sessionStorage.setItem("nexride.safety.trip", JSON.stringify(context));
+    } catch {}
+    callbacks.current.safety();
+  };
   useEffect(() => {
     let stopped = false, pending = false, revision = 0, connected = false;
     ready.current = false; latest.current = null;
@@ -71,7 +91,7 @@ export function TripExperience({ screen, tripId, userId, preview, navigate, setP
     <div className="nr-trip-toolbar">
       <button onClick={() => navigate('trips')}>All trips</button>
       <span role="status">{live ? connection : 'Design preview · sample ride'}</span>
-      {screen !== 'summary' && <button onClick={safety}>Safety</button>}
+      {screen !== 'summary' && <button onClick={openSafety}>Safety</button>}
       {!live && screen !== 'summary' && <button onClick={() => { if (screen === 'live' && preview) setPreview({ ...preview, completed: true }); navigate(screen === 'trip' ? 'live' : 'summary'); }}>{screen === 'trip' ? 'Start preview trip' : 'Complete preview trip'}</button>}
     </div>
     <iframe ref={frame} key={`${file}:${tripId || 'preview'}`} className="nr-trip-frame" title={screen === 'summary' ? 'NexRide trip receipt and rating' : screen === 'live' ? 'NexRide active trip' : 'NexRide assigned driver'}
