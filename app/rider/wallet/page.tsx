@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "../../../components/nexride/ui";
 import { supabase } from "../../../lib/supabase";
+import { nexrideApiHeaders } from "../../../lib/nexride-api-auth";
 import "../../nexride.css";
 import "../supporting.css";
 
@@ -12,6 +13,8 @@ type PaymentIssue = {
   pickup_location: string;
   destination_location: string;
   payment_status: "pending" | "failed" | "unknown";
+  payment_method: "cash" | "chapa";
+  status: string;
   final_fare_etb: number | string | null;
   estimated_trip_fare_etb: number | string | null;
   created_at: string;
@@ -28,6 +31,8 @@ export default function RiderWalletPage() {
   const [issues, setIssues] = useState<PaymentIssue[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [onlinePayments, setOnlinePayments] = useState(false);
+  const [payingRide, setPayingRide] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -42,15 +47,22 @@ export default function RiderWalletPage() {
         return;
       }
 
-      const { data: rows, error: queryError } = await supabase
-        .from("ride_requests")
-        .select("id,pickup_location,destination_location,payment_status,final_fare_etb,estimated_trip_fare_etb,created_at")
+      const [{ data: rows, error: queryError }, capabilityResponse] = await Promise.all([
+        supabase
+          .from("ride_requests")
+          .select("id,pickup_location,destination_location,payment_status,payment_method,status,final_fare_etb,estimated_trip_fare_etb,created_at")
         .eq("rider_id", session.user.id)
         .in("payment_status", ["pending", "failed", "unknown"])
-        .order("created_at", { ascending: false })
-        .limit(20);
+          .order("created_at", { ascending: false })
+          .limit(20),
+        fetch("/api/payments/config", { cache: "no-store" }).catch(() => null),
+      ]);
 
       if (!active) return;
+      if (capabilityResponse?.ok) {
+        const capability = await capabilityResponse.json().catch(() => null);
+        if (active) setOnlinePayments(capability?.enabled === true && capability?.provider === "chapa");
+      }
       if (queryError) setError("Payment status could not be loaded.");
       else setIssues((rows || []) as PaymentIssue[]);
       setLoading(false);
@@ -65,6 +77,56 @@ export default function RiderWalletPage() {
       active = false;
     };
   }, [router]);
+
+  async function payOnline(ride: PaymentIssue) {
+    if (!onlinePayments || payingRide) return;
+    setError("");
+    setPayingRide(ride.id);
+
+    let key = "";
+    try {
+      key = sessionStorage.getItem("nexride.payment.key." + ride.id) || "";
+      if (!key) {
+        key = crypto.randomUUID();
+        sessionStorage.setItem("nexride.payment.key." + ride.id, key);
+      }
+
+      const headers = await nexrideApiHeaders(true);
+      headers["Idempotency-Key"] = key;
+      const response = await fetch("/api/payments/chapa/initialize", {
+        method: "POST",
+        cache: "no-store",
+        headers,
+        body: JSON.stringify({ rideRequestId: ride.id }),
+      });
+      const body = await response.json().catch(() => null);
+
+      if (
+        response.ok &&
+        body?.status === "ready" &&
+        typeof body.checkoutUrl === "string" &&
+        /^https:\/\//i.test(body.checkoutUrl)
+      ) {
+        window.location.assign(body.checkoutUrl);
+        return;
+      }
+
+      if (body?.status === "already_paid") {
+        router.push("/rider/trips/receipt?ride=" + encodeURIComponent(ride.id));
+        return;
+      }
+
+      setError(
+        body?.status === "not_configured"
+          ? "Online payment is not configured yet. Cash remains available."
+          : "Online payment could not be started. Your ride remains unchanged.",
+      );
+    } catch {
+      setError("Online payment could not be started. Check your connection and try again.");
+    } finally {
+      setPayingRide("");
+    }
+  }
 
   return (
     <main className="nr-app nr-support-page" data-theme="dark" data-mode="rider">
@@ -102,8 +164,20 @@ export default function RiderWalletPage() {
                 </span>
                 <span className="nr-payment-selected">SUPPORTED</span>
               </div>
+              {onlinePayments && (
+                <div className="nr-payment-method">
+                  <span className="nr-payment-method-icon"><Icon name="card" size={19} /></span>
+                  <span>
+                    <strong>Online payment · Chapa</strong>
+                    <small>Available for completed rides with an unpaid balance. Checkout is hosted by Chapa.</small>
+                  </span>
+                  <span className="nr-payment-selected">AVAILABLE</span>
+                </div>
+              )}
               <div className="nr-payment-notice">
-                Cash is currently the only connected rider payment method. NexRide does not collect or store raw card details, and card/mobile-money setup is not shown until a real payment provider is integrated.
+                {onlinePayments
+                  ? "NexRide never collects or stores raw card details. Online checkout opens on Chapa and payment is marked paid only after server-side verification."
+                  : "Cash is currently the only enabled rider payment method. Online payment stays hidden until a real payment provider and webhook secret are configured."}
               </div>
             </section>
 
@@ -125,7 +199,22 @@ export default function RiderWalletPage() {
                       {ride.pickup_location} → {ride.destination_location}<br />
                       <small>{new Date(ride.created_at).toLocaleDateString("en-ET")}{amount !== null ? " · " + amount.toLocaleString("en-ET") + " ETB" : ""}</small>
                     </span>
-                    <strong>{ride.payment_status}</strong>
+                    <span className="nr-payment-issue-actions">
+                      <strong>{ride.payment_status}</strong>
+                      {onlinePayments && ride.status === "completed" && ride.payment_status !== "paid" && (
+                        <button
+                          type="button"
+                          className="nr-payment-pay-button"
+                          disabled={payingRide === ride.id}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            void payOnline(ride);
+                          }}
+                        >
+                          {payingRide === ride.id ? "Opening…" : "Pay online"}
+                        </button>
+                      )}
+                    </span>
                   </button>
                 );
               }) : (
