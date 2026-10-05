@@ -16,6 +16,22 @@ import { ensureRiderProfile, RiderProfileBootstrapError } from "../../lib/nexrid
 
 export type RiderAuthMode = "signin" | "signup" | "forgot" | "reset";
 
+function authRedirectUrl(path: string) {
+  const configuredAppUrl = process.env.NEXT_PUBLIC_APP_URL?.trim();
+  const browserOrigin = typeof window !== "undefined" ? window.location.origin : "";
+
+  const origin =
+    process.env.NODE_ENV === "production" && configuredAppUrl
+      ? configuredAppUrl
+      : browserOrigin || configuredAppUrl;
+
+  if (!origin) {
+    throw new Error("Unable to resolve the NexRide application URL.");
+  }
+
+  return new URL(path, origin.endsWith("/") ? origin : `${origin}/`).toString();
+}
+
 export function RiderAuthScreen({ mode }: { mode: RiderAuthMode }) {
   return (
     <EntryShell>
@@ -39,6 +55,13 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
   useEffect(() => {
     let active = true;
     const params = new URLSearchParams(window.location.search);
+    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+    const confirmationLanding = mode === "signin" && params.get("confirmed") === "1";
+    const authErrorDescription = hashParams.get("error_description");
+
+    if (authErrorDescription) {
+      setError(authErrorDescription);
+    }
 
     if (mode === "signin") {
       if (params.get("created") === "1") {
@@ -51,7 +74,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
     supabase.auth
       .getSession()
       .then(async ({ data, error: sessionError }) => {
-        if (!active || sessionError || !data.session || mode === "reset") return;
+        if (!active || sessionError || !data.session || mode === "reset" || confirmationLanding) return;
 
         if (data.session.user.user_metadata?.role === "driver") {
           const destination = await driverResumeDestination(data.session);
@@ -173,6 +196,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
         email: email.trim(),
         password,
         options: {
+          emailRedirectTo: authRedirectUrl("/rider/sign-in?confirmed=1"),
           data: {
             role: "rider",
             full_name: name,
@@ -216,7 +240,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
     try {
       const { error: recoveryError } = await supabase.auth.resetPasswordForEmail(
         email.trim(),
-        { redirectTo: window.location.origin + "/rider/reset-password" },
+        { redirectTo: authRedirectUrl("/rider/reset-password") },
       );
 
       if (recoveryError) {
