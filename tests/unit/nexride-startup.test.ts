@@ -13,7 +13,17 @@ import {
 
 const { getSession } = vi.hoisted(() => ({ getSession: vi.fn() }));
 vi.mock("../../lib/supabase", () => ({ supabase: { auth: { getSession } } }));
-const session = { access_token: "test-session" } as Session;
+const session = {
+  access_token: "test-session",
+  user: {
+    email: "rider@example.com",
+    user_metadata: {
+      role: "rider",
+      full_name: "Test Rider",
+      phone: "+251911000000",
+    },
+  },
+} as Session;
 let values: Map<string, string>;
 let storage: Storage;
 beforeEach(() => {
@@ -55,6 +65,37 @@ describe("rider initialization", () => {
     expect(startupDestination({ ...state, previewEnabled: true })).toBe("/");
     expect(startupDestination({ ...state, returningPreview: true })).toBe("/");
   });
+  it("discards stale preview state when a persisted rider session is restored", async () => {
+    values.set(
+      "nexride-preview-v2",
+      JSON.stringify({
+        language: "am",
+        theme: "dark",
+        profile: { name: "Preview Rider", phone: "000", email: "preview@example.com" },
+        trip: {
+          pickup: "Preview pickup",
+          destination: "Preview destination",
+          ride: "economy",
+          amount: 100,
+          completed: false,
+          rating: 0,
+        },
+      }),
+    );
+    values.set("nexride:preview-enabled", "true");
+    getSession.mockResolvedValue({ data: { session }, error: null });
+
+    const result = await initializeRider();
+
+    expect(result.preferences.profile.name).toBe("Test Rider");
+    expect(result.preferences.profile.email).toBe("rider@example.com");
+    expect(result.preferences.trip).toBeNull();
+    expect(result.preferences.language).toBe("am");
+    expect(result.preferences.theme).toBe("dark");
+    expect(values.has("nexride-preview-v2")).toBe(false);
+    expect(values.has("nexride:preview-enabled")).toBe(false);
+  });
+
   it("deduplicates session restoration and completes without a minimum display delay", async () => {
     getSession.mockResolvedValue({ data: { session }, error: null });
     const first = initializeRider();
