@@ -13,7 +13,7 @@ import {
   type RiderRide,
 } from "../../../lib/nexride-rider-support";
 import "../../nexride.css";
-import "../supporting.css";
+import "../../rider/supporting.css";
 
 type PendingMessage = {
   clientId: string;
