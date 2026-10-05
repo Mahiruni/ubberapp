@@ -42,14 +42,22 @@ export function newerMatch(current: MatchSnapshot | null, next: MatchSnapshot) {
 }
 export const matchingAdapter = {
   async read(requestId: string, signal: AbortSignal): Promise<MatchSnapshot> {
-    const response = await fetch(`/api/rider/requests/${encodeURIComponent(requestId)}`, { cache: 'no-store', signal });
+    const { nexrideApiHeaders } = await import('./nexride-api-auth');
+    const response = await fetch(`/api/rider/requests/${encodeURIComponent(requestId)}`, {
+      cache: 'no-store',
+      signal,
+      headers: await nexrideApiHeaders(),
+    });
     const value = await response.json();
     if (!response.ok || !validMatch(value, requestId)) throw new Error('matching_unavailable');
     return value;
   },
   async action(snapshot: MatchSnapshot, action: 'cancel' | 'retry', signal: AbortSignal): Promise<MatchSnapshot> {
+    const { nexrideApiHeaders } = await import('./nexride-api-auth');
+    const headers = await nexrideApiHeaders(true);
+    headers['Idempotency-Key'] = `${snapshot.requestId}:${snapshot.version}:${action}`;
     const response = await fetch(`/api/rider/requests/${encodeURIComponent(snapshot.requestId)}`, {
-      method: 'POST', cache: 'no-store', signal, headers: { 'Content-Type': 'application/json', 'Idempotency-Key': `${snapshot.requestId}:${snapshot.version}:${action}` },
+      method: 'POST', cache: 'no-store', signal, headers,
       body: JSON.stringify({ action, expectedVersion: snapshot.version }),
     });
     const value = await response.json();
