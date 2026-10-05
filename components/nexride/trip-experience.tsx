@@ -82,9 +82,13 @@ export function TripExperience({ screen, tripId, userId, preview, navigate, setP
     window.addEventListener('offline', offline); window.addEventListener('online', online);
     let channel: ReturnType<typeof supabase.channel> | null = null;
     if (live && tripId) {
-      channel = supabase.channel(`rider-trip:${tripId}`);
-      for (const table of ['trips','ride_locations','ride_events','payments','ratings']) channel.on('postgres_changes', { event: '*', schema: 'public', table, filter: `${table === 'trips' ? 'id' : 'trip_id'}=eq.${tripId}` }, () => void refresh());
-      channel.subscribe(status => { if (['CHANNEL_ERROR','TIMED_OUT','CLOSED'].includes(status)) announce(false); if (status === 'SUBSCRIBED') void refresh(); });
+      channel = supabase
+        .channel(`rider-trip:${tripId}`)
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'ride_requests', filter: `id=eq.${tripId}` }, () => void refresh())
+        .subscribe(status => {
+          if (['CHANNEL_ERROR','TIMED_OUT','CLOSED'].includes(status)) announce(false);
+          if (status === 'SUBSCRIBED') void refresh();
+        });
       void refresh();
     }
     const interval = live ? setInterval(() => void refresh(), 5000) : null;
@@ -93,7 +97,7 @@ export function TripExperience({ screen, tripId, userId, preview, navigate, setP
   if (tripId && !userId) return <section className="nr-trip-experience"><p role="status">Sign in to view this trip.</p><button onClick={() => navigate("home")}>Back to home</button></section>;
   return <section className="nr-trip-experience" aria-label={screen === 'summary' ? 'Trip receipt and rating' : 'Your trip'}>
     <div className="nr-trip-toolbar">
-      <button onClick={() => navigate('trips')}>All trips</button>
+      <button onClick={() => window.location.assign('/rider/trips')}>All trips</button>
       <span role="status">{live ? connection : 'Design preview · sample ride'}</span>
       {screen !== 'summary' && <button onClick={openSafety}>Safety</button>}
       {!live && screen !== 'summary' && <button onClick={() => { if (screen === 'live' && preview) setPreview({ ...preview, completed: true }); navigate(screen === 'trip' ? 'live' : 'summary'); }}>{screen === 'trip' ? 'Start preview trip' : 'Complete preview trip'}</button>}
