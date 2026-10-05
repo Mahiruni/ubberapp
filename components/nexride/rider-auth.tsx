@@ -76,7 +76,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
       active = false;
       subscription.unsubscribe();
     };
-  }, [mode, router, t]);
+  }, [mode, router]);
 
   function markAuthenticated() {
     try {

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { EntryPhoto, EntryShell } from "../../components/nexride/entry";
 import { Button, Icon, StatusBanner, useTranslation } from "../../components/nexride/ui";
 import {
@@ -9,6 +10,8 @@ import {
   PREVIEW_ENABLED_KEY,
 } from "../../lib/nexride-startup";
 import { useRouter } from "next/navigation";
+import { supabase } from "../../lib/supabase";
+import { driverResumeDestination } from "../../lib/nexride-driver-verification";
 import "../nexride.css";
 import "./rider-entry.css";
 
@@ -23,6 +26,30 @@ export default function RiderWelcomePage() {
 function RiderWelcome() {
   const t = useTranslation();
   const router = useRouter();
+  const [checkingSession, setCheckingSession] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    supabase.auth.getSession().then(async ({ data, error }) => {
+      if (!active) return;
+      if (error || !data.session) {
+        setCheckingSession(false);
+        return;
+      }
+      if (data.session.user.user_metadata?.role === "driver") {
+        const destination = await driverResumeDestination(data.session);
+        if (active) router.replace(destination);
+        return;
+      }
+      enterRider(data.session);
+      router.replace("/");
+    }).catch(() => {
+      if (active) setCheckingSession(false);
+    });
+    return () => {
+      active = false;
+    };
+  }, [router]);
 
   const preview = () => {
     try {
@@ -32,6 +59,10 @@ function RiderWelcome() {
     enterRider(null);
     router.replace("/");
   };
+
+  if (checkingSession) {
+    return <div className="nr-rider-entry-restoring" role="status" aria-live="polite">{t("startupRestoring")}</div>;
+  }
 
   return (
     <div className="nr-rider-welcome">
