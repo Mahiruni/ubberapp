@@ -1,5 +1,104 @@
 export type Language = "en" | "am";
 export const messages = {
+  pinsOnly: ["Pins only · route unavailable", "ምልክቶች ብቻ · መንገድ አይገኝም"],
+  reviewRequest: ["Review your request", "ጥያቄዎን ይመልከቱ"],
+  confirmRequest: ["Confirm ride request", "የጉዞ ጥያቄውን አረጋግጥ"],
+  requestRide: ["Request Ride", "ጉዞ ጠይቅ"],
+  editJourney: ["Edit pickup or destination", "መነሻና መድረሻ ቀይር"],
+  noRoadRoute: [
+    "Road routing is unavailable. Only your chosen pins are shown.",
+    "የመንገድ ጉዞ አይገኝም። የመረጡት ምልክቶች ብቻ ይታያሉ።",
+  ],
+  loadingFares: ["Loading fares…", "ዋጋዎችን በማምጣት ላይ…"],
+  faresFailed: [
+    "Fares couldn’t be loaded. Try again to compare rides.",
+    "ዋጋዎቹን ማምጣት አልቻልንም። ጉዞዎችን ለማነጻጸር እንደገና ይሞክሩ።",
+  ],
+  previewCategories: [
+    "Preview categories · sample fares and capacities",
+    "የማሳያ አይነቶች · ምሳሌ ዋጋዎችና መቀመጫዎች",
+  ],
+  servicePrices: [
+    "Current quotes · availability may change",
+    "ወቅታዊ ዋጋዎች · ዝግጁነት ሊለወጥ ይችላል",
+  ],
+  pickupEstimateUnavailable: [
+    "Pickup estimate unavailable",
+    "የመነሻ ጊዜ ግምት አይገኝም",
+  ],
+  categoryUnavailable: [
+    "This category is unavailable. Choose another ride.",
+    "ይህ አይነት አይገኝም። ሌላ ጉዞ ይምረጡ።",
+  ],
+  categoryUnavailableShort: ["Currently unavailable", "አሁን አይገኝም"],
+  estimated: ["Estimate", "ግምት"],
+  confirmed: ["Confirmed", "የተረጋገጠ"],
+  estimatedFare: ["Estimated fare", "የዋጋ ግምት"],
+  confirmedFare: ["Confirmed quote", "የተረጋገጠ ዋጋ"],
+  samplePriceNote: [
+    "Sample calculation, not a live quote or confirmed fare.",
+    "ምሳሌ ስሌት ነው። የቀጥታ ወይም የተረጋገጠ ዋጋ አይደለም።",
+  ],
+  estimatePriceNote: [
+    "An estimate including the listed charges. The final fare may vary.",
+    "የተዘረዘሩትን ክፍያዎች የሚያካትት ግምት ነው። የመጨረሻው ዋጋ ሊለወጥ ይችላል።",
+  ],
+  confirmedPriceNote: [
+    "Confirmed by the pricing service, including the listed charges. Quotes are refreshed when they expire.",
+    "በዋጋ አገልግሎቱ የተረጋገጠና የተዘረዘሩትን ክፍያዎች የሚያካትት ዋጋ ነው። ጊዜው ሲያበቃ ይታደሳል።",
+  ],
+  chargesUnavailable: [
+    "Additional charges are not connected or confirmed. Live requests remain unavailable.",
+    "ተጨማሪ ክፍያዎች አልተገናኙም ወይም አልተረጋገጡም። የቀጥታ ጥያቄ አይገኝም።",
+  ],
+  noQuotedCharges: [
+    "No additional charges in this quote.",
+    "በዚህ ዋጋ ተጨማሪ ክፍያዎች የሉም።",
+  ],
+  rideFare: ["Ride fare", "የጉዞ ዋጋ"],
+  totalQuote: ["Total quote", "ጠቅላላ ዋጋ"],
+  pricingChanged: ["The price has changed", "ዋጋው ተለውጧል"],
+  reviewPricing: [
+    "Review the updated fare and charges before requesting.",
+    "ከመጠየቅዎ በፊት የተለወጠውን ዋጋና ክፍያ ይመልከቱ።",
+  ],
+  acceptPricing: ["Accept updated price", "የተለወጠውን ዋጋ ተቀበል"],
+  editPayment: ["Edit payment method", "የክፍያ መንገድ ቀይር"],
+  cardPayment: ["Card", "ካርድ"],
+  previewPaymentNote: [
+    "Cash is a preview choice. No payment will be processed.",
+    "ጥሬ ገንዘብ የማሳያ ምርጫ ነው። ክፍያ አይፈጸምም።",
+  ],
+  cashPaymentNote: [
+    "Cash is selected. Digital payment methods are not connected.",
+    "ጥሬ ገንዘብ ተመርጧል። የዲጂታል ክፍያ መንገዶች አልተገናኙም።",
+  ],
+  requestingRide: ["Requesting ride…", "ጉዞ በመጠየቅ ላይ…"],
+  requestPendingNote: [
+    "Submitting your request. Please wait.",
+    "ጥያቄዎ በመላክ ላይ ነው። እባክዎ ይጠብቁ።",
+  ],
+  rideRequestFailed: [
+    "Ride request couldn’t be completed",
+    "የጉዞ ጥያቄውን ማጠናቀቅ አልቻልንም",
+  ],
+  requestUnavailable: [
+    "Booking is not connected. No driver can be requested here.",
+    "ጉዞ ማዘዣ አልተገናኘም። እዚህ አሽከርካሪ መጠየቅ አይቻልም።",
+  ],
+  requestFailedNote: [
+    "The service declined this request. You may try again.",
+    "አገልግሎቱ ጥያቄውን አልተቀበለም። እንደገና መሞከር ይችላሉ።",
+  ],
+  requestUnknown: [
+    "We couldn’t confirm the request status. Check Activity before starting another request.",
+    "የጥያቄውን ሁኔታ ማረጋገጥ አልቻልንም። ሌላ ጥያቄ ከመጀመርዎ በፊት እንቅስቃሴን ይመልከቱ።",
+  ],
+  requestReceived: ["Request received", "ጥያቄው ደርሷል"],
+  requestReceivedNote: [
+    "The booking service received your request. Driver assignment is not shown by this integration.",
+    "የጉዞ ማዘዣ አገልግሎቱ ጥያቄዎን ተቀብሏል። በዚህ ግንኙነት የአሽከርካሪ ምደባ አይታይም።",
+  ],
   destinationSearch: ["Plan your journey", "ጉዞዎን ያቅዱ"],
   editPickup: ["Pickup location", "መነሻ ቦታ"],
   selectPickup: ["Choose your pickup", "መነሻ ቦታ ይምረጡ"],
@@ -192,7 +291,7 @@ export const messages = {
     "No places found. Try a nearby landmark.",
     "ቦታ አልተገኘም። በአቅራቢያ ያለ ታዋቂ ቦታ ይሞክሩ።",
   ],
-  chooseRide: ["Choose your ride", "የጉዞ አይነት ይምረጡ"],
+  chooseRide: ["Choose a ride", "የጉዞ አይነት ይምረጡ"],
   economy: ["Economy", "ኢኮኖሚ"],
   comfort: ["Comfort", "ኮምፎርት"],
   premium: ["Premium", "ፕሪሚየም"],

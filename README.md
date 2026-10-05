@@ -9,7 +9,7 @@ NexRide is a responsive ride-hailing frontend for Ethiopia, built with Next.js A
 - Map-focused rider home with profile/recenter controls, device-location accuracy, Home/Work/Saved shortcuts and recent preview selections.
 - English/Amharic destination search with distinct locality details, editable endpoints, saved/recent preview places, browser geolocation and map-pin selection.
 - Route review with confirmed pickup/destination pins, provider road geometry and estimates when configured, and recoverable routing/coverage states.
-- Ride-class selection with explicitly labeled illustrative fares.
+- Economy, Comfort and XL ride selection with original vehicle illustrations, aligned ETB prices, payment editing, and explicit sample/estimated/confirmed pricing states.
 - Matching preview, sample driver card, trip progress, completion and locally saved ratings.
 - Wallet preview, local trip details, editable preview profile and appearance settings.
 - Driver availability preview, sample request acceptance/decline, navigation illustration, sample earnings and trip history.
@@ -51,3 +51,11 @@ The provisional symbol lives separately in `public/brand/provisional/` and must 
 Set `NEXRIDE_SERVICE_BOUNDS` to verified west,south,east,north bounds to enforce service coverage. Without configuration, the geographic restriction is labeled an Addis Ababa **preview area**, not live coverage. Provider outages do not produce fallback routes or journey estimates. With no routing token, valid endpoints can continue only into explicitly labeled preview ride options. Missing/unconfirmed endpoints, routing failures, identical locations and coverage violations block continuation.
 
 The mobile search sheet supports dragging and keyboard resizing, adjusts to the visual viewport, and reserves separate map space. On desktop it is a side panel. Editing or dragging an endpoint invalidates the previous route; confirming a pin reroutes from the exact coordinate while reverse geocoding updates only its label.
+
+## Ride selection and booking boundary
+
+`/api/rider/fares` currently returns validated **sample** quotes for Economy, Comfort and XL. Passenger capacities are examples, pickup arrival estimates are unavailable, and additional charges are not connected. The disabled “Request Ride” action explains that booking is unavailable; “Preview this ride” preserves the existing local demonstration without dispatching a driver or taking payment.
+
+`lib/nexride-booking.ts` defines the fare and request adapter contracts. Future service quotes must identify availability, pickup estimates when known, pricing type, all additional charges, revision and expiry. The frontend totals the listed charges, rejects malformed or expired quotes, refreshes expired quotes, and requires explicit review when prices change. A confirmation dialog presents the full total and payment method before a connected request. Requests use a synchronous submission lock and a stable idempotency key for retrying the same attempt. Pending submission locks map editing and navigation.
+
+`/api/rider/requests` deliberately returns an unavailable response. Replacing that boundary requires authenticated server pricing, quote/coverage validation and durable server-side idempotency before creating a trip. Existing Supabase admin operations are unchanged. Failed requests remain on ride selection with a recovery message; an uncertain response never claims a successful match. Accepted adapter responses show a receipt only and never launch the sample driver-assignment flow.

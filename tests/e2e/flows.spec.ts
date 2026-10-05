@@ -24,7 +24,7 @@ test("rider can complete an explicitly labeled preview and save a rating", async
     .getByRole("button", { name: "Preview ride options", exact: true })
     .click();
   await expect(
-    page.getByRole("heading", { name: "Choose your ride" }),
+    page.getByRole("heading", { name: "Choose a ride" }),
   ).toBeVisible();
   await page.getByRole("radio", { name: /Comfort/ }).click();
   await page.getByRole("button", { name: /Preview this ride/ }).click();

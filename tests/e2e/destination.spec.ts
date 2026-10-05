@@ -80,7 +80,7 @@ test("search requires selected endpoints, finds both scripts and distinguishes l
     .getByRole("button", { name: "Preview ride options", exact: true })
     .click();
   await expect(
-    page.getByRole("heading", { name: "Choose your ride" }),
+    page.getByRole("heading", { name: "Choose a ride" }),
   ).toBeVisible();
 });
 test("provider route is rendered and editing pickup invalidates it immediately", async ({

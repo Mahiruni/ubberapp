@@ -147,12 +147,10 @@ test("Home and Work shortcuts are explicitly selected and restored, with preview
     .getByRole("button", { name: "Preview ride options", exact: true })
     .click();
   await expect(
-    page.getByRole("heading", { name: "Choose your ride" }),
+    page.getByRole("heading", { name: "Choose a ride" }),
   ).toBeVisible();
-  await page
-    .locator(".nr-navigation:visible")
-    .getByRole("button", { name: "Home", exact: true })
-    .click();
+  await page.getByRole("button", { name: "Back", exact: true }).click();
+  await page.getByRole("button", { name: "Back", exact: true }).click();
   await expect(panel.getByText("Meskel Square", { exact: true })).toBeVisible();
   await page.reload();
   await expect(panel.getByText("Meskel Square", { exact: true })).toBeVisible();

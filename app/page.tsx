@@ -12,7 +12,7 @@ import {
   updateStartupPreferences,
   storedLanguage,
 } from "../lib/nexride-startup";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Brand,
   Button,
@@ -41,6 +41,7 @@ import type { PreviewProfile, PreviewTrip } from "../lib/nexride-preview";
 import "./nexride.css";
 import "./rider-home.css";
 import "./destination.css";
+import "./ride-selection.css";
 const STORAGE_KEY = PREVIEW_STORAGE_KEY;
 type Mode = "rider" | "driver";
 type Panel =
@@ -182,13 +183,21 @@ function AppWorkspace({
   const t = useTranslation();
   const riderLocation = useRiderLocation();
   const journey = useJourney(riderLocation.position);
+  const bookingLock = useRef(false);
+  const [requestPending, setRequestPending] = useState(false);
+  const onBookingPending = useCallback((pending: boolean) => {
+    bookingLock.current = pending;
+    setRequestPending(pending);
+  }, []);
   const [riderScreen, setRiderScreen] = useState<RiderScreen>("home");
   const [driverScreen, setDriverScreen] = useState<DriverScreen>("home");
   const [panel, setPanel] = useState<Panel>(null);
   const [serviceTitle, setServiceTitle] = useState("");
   const [offline, setOffline] = useState(false);
   const [toast, setToast] = useState("");
-  const navigateRider = useCallback((s: RiderScreen) => setRiderScreen(s), []);
+  const navigateRider = useCallback((s: RiderScreen) => {
+    if (!bookingLock.current) setRiderScreen(s);
+  }, []);
   const navigateDriver = useCallback(
     (s: DriverScreen) => setDriverScreen(s),
     [],
@@ -236,6 +245,7 @@ function AppWorkspace({
           { id: "profile", label: t("profile"), icon: "user" },
         ];
   const navigate = (id: string) => {
+    if (bookingLock.current) return;
     if (mode === "rider") setRiderScreen(id as RiderScreen);
     else setDriverScreen(id as DriverScreen);
     setPanel(null);
@@ -245,6 +255,7 @@ function AppWorkspace({
     setPanel("unavailable");
   };
   const switchMode = (m: Mode) => {
+    if (bookingLock.current) return;
     setMode(m);
     setRiderScreen("home");
     setDriverScreen("home");
@@ -262,6 +273,7 @@ function AppWorkspace({
   return (
     <div
       data-keyboard={journey.viewport.keyboard}
+      data-request-pending={requestPending}
       style={
         riderSearch
           ? ({
@@ -270,9 +282,9 @@ function AppWorkspace({
             } as React.CSSProperties)
           : undefined
       }
-      className={`nr-workspace ${riderMapView ? "rider-home-view" : ""} ${riderSearch ? "rider-search-view" : ""}`}
+      className={`nr-workspace ${riderMapView ? "rider-home-view" : ""} ${riderSearch ? "rider-search-view" : ""} ${mode === "rider" && screen === "rides" ? "rider-ride-view" : ""}`}
     >
-      <aside className="nr-sidebar">
+      <aside className="nr-sidebar" inert={requestPending}>
         <Brand driver={mode === "driver"} />
         <span className="nr-sidebar-city">
           <Icon name="pin" size={16} />
@@ -368,6 +380,9 @@ function AppWorkspace({
               initials={initials}
               onProfile={() => navigate("profile")}
               journey={riderHome ? undefined : journey}
+              rideLabel={screen === "rides"}
+              back={() => navigate("destination")}
+              locked={requestPending}
             />
           ) : (
             <RideMap
@@ -485,6 +500,7 @@ function AppWorkspace({
                 locationStatus={riderLocation.status}
                 locate={riderLocation.locate}
                 journey={journey}
+                onBookingPending={onBookingPending}
               />
             </div>
             <div hidden={mode !== "driver" || profileView}>

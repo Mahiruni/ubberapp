@@ -1,10 +1,27 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import type { Journey } from "../../lib/nexride-journey";
 import type * as Leaflet from "leaflet";
-import { Icon, useTranslation } from "./ui";
+import { Icon, LanguageContext, useTranslation } from "./ui";
+import { endpointName } from "./destination";
 import type { LocationStatus, RiderLocation } from "../../lib/nexride-location";
 import "leaflet/dist/leaflet.css";
+function fitPlan(
+  view: Leaflet.Map,
+  bounds: Leaflet.LatLngBoundsExpression,
+  ride: boolean,
+) {
+  const height = view.getSize().y;
+  view.fitBounds(bounds, {
+    paddingTopLeft: [
+      ride ? 76 : 48,
+      Math.min(ride ? 94 : 70, Math.max(20, height - 50)),
+    ],
+    paddingBottomRight: [48, Math.min(36, height * 0.15)],
+    maxZoom: 16,
+    animate: false,
+  });
+}
 export function RiderMap({
   position,
   status,
@@ -13,6 +30,9 @@ export function RiderMap({
   initials,
   onProfile,
   journey,
+  rideLabel = false,
+  back,
+  locked = false,
 }: {
   position: RiderLocation | null;
   status: LocationStatus;
@@ -21,14 +41,20 @@ export function RiderMap({
   initials: string;
   onProfile: () => void;
   journey?: Journey;
+  rideLabel?: boolean;
+  back?: () => void;
+  locked?: boolean;
 }) {
   const t = useTranslation();
+  const language = useContext(LanguageContext);
   const container = useRef<HTMLDivElement>(null);
   const map = useRef<Leaflet.Map | null>(null);
   const library = useRef<typeof Leaflet | null>(null);
   const marker = useRef<Leaflet.LayerGroup | null>(null);
   const planRef = useRef(journey);
   planRef.current = journey;
+  const rideLabelRef = useRef(rideLabel);
+  rideLabelRef.current = rideLabel;
   const planMarkers = useRef<Leaflet.LayerGroup | null>(null);
   const routeLine = useRef<Leaflet.Polyline | null>(null);
   const [tiles, setTiles] = useState<"loading" | "ready" | "unavailable">(
@@ -104,7 +130,25 @@ export function RiderMap({
         timer = setTimeout(() => {
           if (active && !loaded) setTiles("unavailable");
         }, 10000);
-        resize = new ResizeObserver(() => view.invalidateSize());
+        resize = new ResizeObserver(() => {
+          view.invalidateSize();
+          const plan = planRef.current;
+          if (
+            !plan?.pinMode &&
+            plan?.pickup?.confirmed &&
+            plan.destination?.confirmed
+          ) {
+            const bounds =
+              plan.routeState.status === "ready" &&
+              plan.routeState.route?.geometry
+                ? plan.routeState.route.geometry
+                : ([
+                    [plan.pickup.lat, plan.pickup.lng],
+                    [plan.destination.lat, plan.destination.lng],
+                  ] as [number, number][]);
+            fitPlan(view, bounds, rideLabelRef.current);
+          }
+        });
         resize.observe(container.current);
         setMounted(true);
       })
@@ -205,12 +249,13 @@ export function RiderMap({
       pickup?.confirmed &&
       destination?.confirmed
     )
-      map.current.fitBounds(
+      fitPlan(
+        map.current,
         [
           [pickup.lat, pickup.lng],
           [destination.lat, destination.lng],
         ],
-        { padding: [48, 70], maxZoom: 16, animate: false },
+        rideLabelRef.current,
       );
     else if (!planRef.current?.pinMode && (pickup || destination)) {
       const point = pickup || destination!;
@@ -242,11 +287,7 @@ export function RiderMap({
       })
       .addTo(map.current);
     routeLine.current = line;
-    map.current.fitBounds(line.getBounds(), {
-      padding: [48, 70],
-      maxZoom: 16,
-      animate: false,
-    });
+    fitPlan(map.current, line.getBounds(), rideLabelRef.current);
     return () => {
       line.remove();
     };
@@ -255,6 +296,7 @@ export function RiderMap({
   return (
     <section
       className="nr-rider-map-surface"
+      inert={locked}
       aria-label={t("streetMap")}
       data-map-status={tiles}
     >
@@ -277,6 +319,32 @@ export function RiderMap({
         <div className="nr-map-loading" role="status">
           <span className="nr-map-spinner" />
           {t("mapLoading")}
+        </div>
+      )}
+      {rideLabel && (
+        <div className="nr-map-ride-label">
+          <button
+            className="nr-icon-button"
+            aria-label={t("back")}
+            onClick={back}
+            disabled={locked}
+          >
+            <Icon name="back" />
+          </button>
+          <div>
+            <small>
+              {t(
+                journey?.routeState.status === "unavailable"
+                  ? "pinsOnly"
+                  : "dropoff",
+              )}
+            </small>
+            <strong>
+              {journey?.destination
+                ? endpointName(journey.destination, language, t)
+                : t("destination")}
+            </strong>
+          </div>
         </div>
       )}
       <div className="nr-rider-map-top">

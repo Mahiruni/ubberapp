@@ -1,11 +1,7 @@
 "use client";
 import { useContext, useEffect, useState } from "react";
 import { places, type Place } from "../../lib/nexride-places";
-import {
-  previewFare,
-  rideOptions,
-  type PreviewTrip,
-} from "../../lib/nexride-preview";
+import { type PreviewTrip } from "../../lib/nexride-preview";
 import {
   Button,
   Icon,
@@ -23,6 +19,8 @@ import {
   type HomePlaces,
 } from "../../lib/nexride-home";
 import { DestinationPanel, endpointName } from "./destination";
+import { RideSelection } from "./ride-selection";
+import type { RideCategory } from "../../lib/nexride-booking";
 import { placeKey } from "../../lib/nexride-search";
 import type { Journey } from "../../lib/nexride-journey";
 import type { RiderLocation, LocationStatus } from "../../lib/nexride-location";
@@ -49,6 +47,7 @@ export function RiderWorkspace({
   locationStatus,
   locate,
   journey,
+  onBookingPending,
 }: {
   screen: RiderScreen;
   navigate: (s: RiderScreen) => void;
@@ -60,11 +59,11 @@ export function RiderWorkspace({
   locationStatus: LocationStatus;
   locate: () => void;
   journey: Journey;
+  onBookingPending: (pending: boolean) => void;
 }) {
   const t = useTranslation();
   const language = useContext(LanguageContext);
   const { pickup, destination } = journey;
-  const [rideId, setRideId] = useState("economy");
   const [homePlaces, setHomePlaces] = useState<HomePlaces>(emptyHomePlaces);
   const [savingShortcut, setSavingShortcut] = useState<"home" | "work" | null>(
     null,
@@ -82,12 +81,6 @@ export function RiderWorkspace({
   };
   const [rating, setRating] = useState(0);
   const [ratingSaved, setRatingSaved] = useState(false);
-  const selectedRide =
-    rideOptions.find((r) => r.id === rideId) || rideOptions[0];
-  const quote =
-    pickup && destination
-      ? previewFare(pickup, destination, selectedRide)
-      : null;
   useEffect(() => {
     if (screen !== "finding") return;
     const timer = window.setTimeout(() => navigate("trip"), 1600);
@@ -113,8 +106,14 @@ export function RiderWorkspace({
     journey.choosePreview(p);
     navigate("destination");
   };
-  const bookPreview = () => {
-    if (!destination || !pickup || !quote || !journey.canContinue) return;
+  const bookPreview = (category: RideCategory, amount: number) => {
+    if (
+      !destination ||
+      !pickup ||
+      !journey.canContinue ||
+      !Number.isFinite(amount)
+    )
+      return;
     setRating(0);
     setRatingSaved(false);
     setTrip({
@@ -127,8 +126,8 @@ export function RiderWorkspace({
         destination.source === "preview"
           ? endpointName(destination, language, t)
           : t("dropoff"),
-      ride: selectedRide.id,
-      amount: quote.amount,
+      ride: category,
+      amount,
       completed: false,
       rating: 0,
     });
@@ -206,86 +205,12 @@ export function RiderWorkspace({
     );
   if (screen === "rides")
     return (
-      <Sheet title={t("chooseRide")} onBack={() => navigate("destination")}>
-        <div className="nr-route-summary">
-          <div>
-            <span className="nr-route-dot" />
-            <span>
-              <small>{t("pickup")}</small>
-              <strong>
-                {pickup ? endpointName(pickup, language, t) : t("selectPickup")}
-              </strong>
-            </span>
-          </div>
-          <div>
-            <span className="nr-route-dot end" />
-            <span>
-              <small>{t("dropoff")}</small>
-              <strong>
-                {destination
-                  ? endpointName(destination, language, t)
-                  : t("destination")}
-              </strong>
-            </span>
-            <button
-              className="nr-text-button"
-              onClick={() => navigate("destination")}
-            >
-              {t("edit")}
-            </button>
-          </div>
-        </div>
-        <div
-          className="nr-ride-options"
-          role="radiogroup"
-          aria-label={t("chooseRide")}
-        >
-          {rideOptions.map((r) => (
-            <button
-              role="radio"
-              aria-checked={rideId === r.id}
-              key={r.id}
-              className={`nr-ride-card ${rideId === r.id ? "selected" : ""}`}
-              onClick={() => setRideId(r.id)}
-            >
-              <span className="nr-vehicle">
-                <Icon name="car" size={32} />
-              </span>
-              <span className="nr-ride-copy">
-                <strong>{t(r.id)}</strong>
-                <small>
-                  {r.seats} {t("seats")} · {t(r.description)}
-                </small>
-              </span>
-              <span className="nr-ride-price">
-                <strong>
-                  {destination
-                    ? pickup
-                      ? previewFare(pickup, destination, r).amount
-                      : "—"
-                    : "—"}
-                </strong>
-                <small>ETB · {t("sample")}</small>
-              </span>
-              {rideId === r.id && (
-                <span className="nr-selection">
-                  <Icon name="check" size={12} />
-                </span>
-              )}
-            </button>
-          ))}
-        </div>
-        <div className="nr-payment-line">
-          <Icon name="wallet" size={17} />
-          <span>{t("cash")}</span>
-          <small>{t("sampleFare")}</small>
-        </div>
-        <Button onClick={bookPreview} disabled={!journey.canContinue}>
-          {t("previewRide")}
-          {quote && <span> · {quote.amount} ETB</span>}
-        </Button>
-        <p className="nr-fine-print">{t("fareNote")}</p>
-      </Sheet>
+      <RideSelection
+        journey={journey}
+        back={() => navigate("destination")}
+        preview={bookPreview}
+        onPending={onBookingPending}
+      />
     );
   if (screen === "finding")
     return (
