@@ -57,9 +57,15 @@ describe("ride quotes and request integration", () => {
       (await fares(request({ ...journey, pickup: { lat: 0, lng: 0 } }))).status,
     ).toBe(422);
   });
-  it("never creates a simulated request or payment", async () => {
-    const response = await requestRide();
-    expect(response.status).toBe(503);
+  it("rejects unauthenticated ride creation instead of simulating a request", async () => {
+    const response = await requestRide(
+      new Request("http://localhost/api/rider/requests", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({}),
+      }),
+    );
+    expect(response.status).toBe(401);
     expect(await response.json()).toEqual({ status: "unavailable" });
   });
   it("totals every supplied charge once and rejects malformed or misleading quotes", () => {
