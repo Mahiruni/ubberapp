@@ -110,7 +110,8 @@ export function DriverWorkspace({
 
   useEffect(() => {
     let active = true;
-    let channel: ReturnType<typeof supabase.channel> | null = null;
+    let driverChannel: ReturnType<typeof supabase.channel> | null = null;
+    let offerChannel: ReturnType<typeof supabase.channel> | null = null;
 
     (async () => {
       const { data, error: sessionError } = await supabase.auth.getSession();
@@ -152,12 +153,44 @@ export function DriverWorkspace({
       setState(mergeDriverState(base, driver as Record<string, unknown> | null));
       setLoading(false);
 
-      channel = supabase
+      driverChannel = supabase
         .channel(`driver-dashboard-${id}`)
         .on(
           "postgres_changes",
           { event: "UPDATE", schema: "public", table: "drivers", filter: `id=eq.${id}` },
           (payload) => setState((current) => mergeDriverState(current, payload.new as Record<string, unknown>)),
+        )
+        .subscribe();
+
+      const { data: pendingOffer } = await supabase
+        .from("ride_request_offers")
+        .select("id,expires_at")
+        .eq("driver_id", id)
+        .eq("status", "pending")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (
+        active &&
+        pendingOffer &&
+        (!pendingOffer.expires_at || new Date(pendingOffer.expires_at).getTime() > Date.now())
+      ) {
+        router.push(`/driver/request?offer=${pendingOffer.id}`);
+      }
+
+      offerChannel = supabase
+        .channel(`driver-ride-offers-${id}`)
+        .on(
+          "postgres_changes",
+          { event: "INSERT", schema: "public", table: "ride_request_offers", filter: `driver_id=eq.${id}` },
+          (payload) => {
+            const next = payload.new as Record<string, unknown>;
+            if (next.status !== "pending" || typeof next.id !== "string") return;
+            const expiresAt = typeof next.expires_at === "string" ? new Date(next.expires_at).getTime() : null;
+            if (expiresAt !== null && expiresAt <= Date.now()) return;
+            router.push(`/driver/request?offer=${next.id}`);
+          },
         )
         .subscribe();
     })().catch(() => {
@@ -169,7 +202,8 @@ export function DriverWorkspace({
 
     return () => {
       active = false;
-      if (channel) supabase.removeChannel(channel);
+      if (driverChannel) supabase.removeChannel(driverChannel);
+      if (offerChannel) supabase.removeChannel(offerChannel);
     };
   }, [router]);
 
