@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "./ui";
+import { DriverEarningsScreen } from "./driver-earnings";
 import { supabase } from "../../lib/supabase";
 import "../../app/driver/driver-dashboard.css";
 
@@ -386,16 +387,11 @@ export function DriverWorkspace({
   if (screen === "earnings") {
     return (
       <div className="nr-driver-page">
-        <PageHead title="Earnings" navigate={navigate} />
-        <section className="nr-driver-card nr-driver-earnings-card">
-          <span>Today</span>
-          <strong>{formatEarnings(state.earnings)} <small>ETB</small></strong>
-          <p>{state.earnings === null ? "Live earnings data is not connected yet." : "Today’s completed-trip earnings."}</p>
-        </section>
-        <section className="nr-driver-card nr-driver-list-card">
-          <div><span>Completed trips</span><strong>{state.trips ?? "—"}</strong></div>
-          <div><span>Rating</span><strong>{state.rating === null ? "—" : state.rating.toFixed(1)} <small>{state.rating === null ? "" : "★"}</small></strong></div>
-        </section>
+        <DriverEarningsScreen
+          driverId={driverId}
+          onBack={() => navigate("home")}
+          onOpenReport={() => router.push("/driver/earnings/report")}
+        />
         <DriverBottomNav screen={screen} navigate={navigate} />
       </div>
     );
