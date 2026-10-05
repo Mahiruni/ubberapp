@@ -479,7 +479,7 @@ export function DriverWorkspace({
       ) : state.activeTrip ? (
         <section className="nr-driver-card nr-active-trip">
           <div><span className="nr-driver-kicker">ACTIVE TRIP</span><strong>{state.activeTrip.status}</strong></div>
-          <div className="nr-trip-route"><span>{state.activeTrip.pickup}</span><Icon name="chevron" /><span>{state.activeTrip.destination}</span></div>
+          <div className="nr-trip-route"><span>{state.activeTrip.pickup}</span><Icon name="back" /><span>{state.activeTrip.destination}</span></div>
           <button onClick={() => navigate("map")}>Open trip</button>
         </section>
       ) : (
