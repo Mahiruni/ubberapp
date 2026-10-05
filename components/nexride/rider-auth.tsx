@@ -51,54 +51,93 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [checkingSession, setCheckingSession] = useState(mode === "signin");
 
   useEffect(() => {
     let active = true;
+    let restoringSession = false;
     const params = new URLSearchParams(window.location.search);
     const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
     const confirmationLanding = mode === "signin" && params.get("confirmed") === "1";
     const authErrorDescription = hashParams.get("error_description");
 
+    if (mode === "signin") {
+      router.prefetch("/");
+      if (params.get("created") === "1") {
+        setNotice(t("accountCreatedConfirm"));
+      } else if (confirmationLanding) {
+        setNotice("Email confirmed. Opening NexRide…");
+      }
+    }
+
     if (authErrorDescription) {
       setError(authErrorDescription);
     }
 
-    if (mode === "signin") {
-      if (params.get("created") === "1") {
-        setNotice(t("accountCreatedConfirm"));
-      } else if (params.get("confirmed") === "1") {
-        setNotice("Email confirmed. Sign in to continue.");
-      }
-    }
+    const restoreSession = async (session: NonNullable<Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"]>) => {
+      if (!active || restoringSession) return;
+      restoringSession = true;
 
-    supabase.auth
-      .getSession()
-      .then(async ({ data, error: sessionError }) => {
-        if (!active || sessionError || !data.session || mode === "reset" || confirmationLanding) return;
-
-        if (data.session.user.user_metadata?.role === "driver") {
-          const destination = await driverResumeDestination(data.session);
+      try {
+        if (session.user.user_metadata?.role === "driver") {
+          const destination = await driverResumeDestination(session);
           if (active) router.replace(destination);
           return;
         }
 
-        try {
-          await ensureRiderProfile(data.session);
-          if (!active) return;
-          enterRider(data.session);
-          router.replace("/");
-        } catch {
-          if (active) setError("Your Rider account could not be prepared. Please sign in again.");
+        await ensureRiderProfile(session);
+        if (!active) return;
+        markAuthenticated();
+        enterRider(session);
+        router.replace("/");
+      } catch (cause) {
+        if (!active) return;
+
+        if (cause instanceof RiderProfileBootstrapError && cause.code === "role_conflict") {
+          await supabase.auth.signOut();
+          if (active) {
+            setError(t("riderAuthOnly"));
+            setCheckingSession(false);
+          }
+          return;
         }
+
+        setError("Your Rider account could not be prepared. Please sign in again.");
+        setCheckingSession(false);
+      } finally {
+        restoringSession = false;
+      }
+    };
+
+    supabase.auth
+      .getSession()
+      .then(({ data, error: sessionError }) => {
+        if (!active || mode === "reset") return;
+
+        if (sessionError || !data.session) {
+          if (mode === "signin") setCheckingSession(false);
+          return;
+        }
+
+        void restoreSession(data.session);
       })
-      .catch(() => {});
+      .catch(() => {
+        if (active && mode === "signin") setCheckingSession(false);
+      });
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       if (!active) return;
+
       if (event === "PASSWORD_RECOVERY" && mode !== "reset") {
         router.replace("/rider/reset-password");
+        return;
+      }
+
+      if (event === "SIGNED_IN" && confirmationLanding && session) {
+        setCheckingSession(true);
+        void restoreSession(session);
       }
     });
 
@@ -123,6 +162,8 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
     setError("");
     setNotice("");
 
+    let navigating = false;
+
     try {
       const { data, error: authError } = await supabase.auth.signInWithPassword({
         email: email.trim(),
@@ -144,6 +185,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
       setPassword("");
       markAuthenticated();
       enterRider(data.session);
+      navigating = true;
       router.replace("/");
     } catch (cause) {
       if (cause instanceof RiderProfileBootstrapError && cause.code === "role_conflict") {
@@ -155,7 +197,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
         setError(t("authFailure"));
       }
     } finally {
-      setBusy(false);
+      if (!navigating) setBusy(false);
     }
   }
 
@@ -191,6 +233,8 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
     setError("");
     setNotice("");
 
+    let navigating = false;
+
     try {
       const { data, error: signUpError } = await supabase.auth.signUp({
         email: email.trim(),
@@ -217,15 +261,17 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
         await ensureRiderProfile(data.session, { fullName: name, phone: mobile });
         markAuthenticated();
         enterRider(data.session);
+        navigating = true;
         router.replace("/");
         return;
       }
 
+      navigating = true;
       router.replace("/rider/sign-in?created=1");
     } catch {
       setError("Unable to create your account. Check your connection and try again.");
     } finally {
-      setBusy(false);
+      if (!navigating) setBusy(false);
     }
   }
 
@@ -274,6 +320,8 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
     setError("");
     setNotice("");
 
+    let navigating = false;
+
     try {
       const { error: updateError } = await supabase.auth.updateUser({ password });
 
@@ -284,6 +332,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
 
       const { data } = await supabase.auth.getSession();
       if (!data.session) {
+        navigating = true;
         router.replace("/rider/sign-in");
         return;
       }
@@ -297,6 +346,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
       await ensureRiderProfile(data.session);
       markAuthenticated();
       enterRider(data.session);
+      navigating = true;
       router.replace("/");
     } catch (cause) {
       if (cause instanceof RiderProfileBootstrapError && cause.code === "role_conflict") {
@@ -308,7 +358,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
         setError("Your password could not be updated. Request a new recovery link and try again.");
       }
     } finally {
-      setBusy(false);
+      if (!navigating) setBusy(false);
     }
   }
 
@@ -321,6 +371,19 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
     enterRider(null);
     router.replace("/");
   };
+
+  if (mode === "signin" && checkingSession) {
+    return (
+      <>
+        <span className="nr-rider-entry-kicker">NEXRIDE · RIDER</span>
+        <h1>{t("signIn")}</h1>
+        <p>Preparing your Rider session…</p>
+        {notice && <p className="nr-auth-notice" role="status">{notice}</p>}
+        {error && <p className="nr-auth-error" role="alert">{error}</p>}
+        <StatusBanner>Securely restoring your account. You will continue automatically.</StatusBanner>
+      </>
+    );
+  }
 
   const nav = mode !== "reset" ? (
     <nav className="nr-rider-auth-nav" aria-label="Rider account">
