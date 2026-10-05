@@ -16,16 +16,12 @@ export async function GET(request: Request, context: RouteContext) {
   const authorized = await authorizedRequestSupabase(request);
   if (!authorized) return reply({ status: "unavailable" }, 401);
 
-  const { data, error } = await authorized.client.rpc("rider_match_snapshot", {
-    p_request_id: requestId,
-  });
+  const { data, error } = await authorized.client.functions.invoke(
+    "nexride-rider-booking",
+    { body: { operation: "snapshot", requestId } },
+  );
 
-  if (error) {
-    if ((error.message || "").includes("REQUEST_NOT_FOUND"))
-      return reply({ status: "not_found" }, 404);
-    return reply({ status: "unavailable" }, 500);
-  }
-
+  if (error || !data) return reply({ status: "unavailable" }, 500);
   return reply(data);
 }
 
@@ -49,20 +45,19 @@ export async function POST(request: Request, context: RouteContext) {
       return reply({ status: "invalid" }, 400);
     }
 
-    const { data, error } = await authorized.client.rpc(
-      "rider_request_action",
+    const { data, error } = await authorized.client.functions.invoke(
+      "nexride-rider-booking",
       {
-        p_request_id: requestId,
-        p_expected_version: expectedVersion,
-        p_action: action,
+        body: {
+          operation: "action",
+          requestId,
+          expectedVersion,
+          action,
+        },
       },
     );
 
-    if (error) {
-      if ((error.message || "").includes("REQUEST_NOT_FOUND"))
-        return reply({ status: "not_found" }, 404);
-      return reply({ status: "unavailable" }, 500);
-    }
+    if (error || !data) return reply({ status: "unavailable" }, 500);
 
     const result = data as { conflict?: unknown; snapshot?: unknown } | null;
     if (!result?.snapshot) return reply({ status: "unavailable" }, 500);
