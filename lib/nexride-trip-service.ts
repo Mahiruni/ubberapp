@@ -73,7 +73,7 @@ export async function readRiderTrip(
   const driverId = textValue(ride.assigned_driver_id);
   const active = activeStates.includes(String(ride.status));
 
-  const [profileResult, driverResult, ratingResult] = await Promise.all([
+  const [profileResult, driverResult, ratingResult, locationResult] = await Promise.all([
     driverId && active
       ? supabase.from('profiles').select('full_name,phone').eq('id', driverId).maybeSingle()
       : null,
@@ -81,11 +81,20 @@ export async function readRiderTrip(
       ? supabase.from('drivers').select('vehicle,vehicle_plate,rating,review_status,reviewed_at').eq('id', driverId).maybeSingle()
       : null,
     supabase.from('ride_ratings').select('score').eq('ride_request_id', tripId).eq('rater_id', userId).maybeSingle(),
+    driverId && active
+      ? supabase
+          .from('ride_driver_locations')
+          .select('driver_id,latitude,longitude,accuracy_meters,heading_degrees,recorded_at')
+          .eq('ride_request_id', tripId)
+          .eq('driver_id', driverId)
+          .maybeSingle()
+      : null,
   ]);
 
   const profile = profileResult && !profileResult.error ? profileResult.data : null;
   const driver = driverResult && !driverResult.error ? driverResult.data : null;
   const rating = !ratingResult.error ? ratingResult.data : null;
+  const location = locationResult && !locationResult.error ? locationResult.data : null;
 
   const estimatedFare = numeric(ride.estimated_trip_fare_etb);
   const finalFare = numeric(ride.final_fare_etb);
@@ -121,7 +130,20 @@ export async function readRiderTrip(
       ...point(ride.destination_lat, ride.destination_lng),
       name: textValue(ride.destination_location),
     },
-    tracking: null,
+    tracking:
+      location &&
+      driverId &&
+      numeric(location.latitude) != null &&
+      numeric(location.longitude) != null &&
+      timestamp(location.recorded_at) != null
+        ? {
+            driverId,
+            lat: numeric(location.latitude)!,
+            lng: numeric(location.longitude)!,
+            updatedAt: timestamp(location.recorded_at)!,
+            accuracyMeters: numeric(location.accuracy_meters),
+          }
+        : null,
     fare: estimatedFare != null ? { amount: estimatedFare, currency: 'ETB' } : undefined,
     finalAmount:
       ride.status === 'completed' && finalFare != null
