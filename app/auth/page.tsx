@@ -16,6 +16,7 @@ import {
   ONBOARDING_KEY,
   PREVIEW_ENABLED_KEY,
 } from "../../lib/nexride-startup";
+import { driverResumeDestination } from "../../lib/nexride-driver-verification";
 import "../nexride.css";
 
 type AuthView = "signin" | "signup" | "forgot" | "reset";
@@ -50,7 +51,7 @@ function RiderAuth() {
 
     supabase.auth
       .getSession()
-      .then(({ data, error: sessionError }) => {
+      .then(async ({ data, error: sessionError }) => {
         if (!active || sessionError || !data.session) return;
         if (
           new URLSearchParams(window.location.search).get("recovery") === "1"
@@ -59,11 +60,8 @@ function RiderAuth() {
           return;
         }
         if (data.session.user.user_metadata?.role === "driver") {
-          router.replace(
-            data.session.user.user_metadata?.driver_onboarding_complete === true
-              ? "/driver/home"
-              : "/driver/onboarding",
-          );
+          const destination = await driverResumeDestination(data.session);
+          if (active) router.replace(destination);
           return;
         }
         enterRider(data.session);
@@ -269,8 +267,11 @@ function RiderAuth() {
 
       const { data } = await supabase.auth.getSession();
       if (!data.session) {
+        setView("signin");
+        setError("");
+        setPassword("");
+        setConfirmPassword("");
         setNotice("Password updated. Sign in with your new password.");
-        clearFeedback("signin");
         return;
       }
 
