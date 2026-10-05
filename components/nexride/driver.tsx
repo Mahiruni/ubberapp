@@ -1,249 +1,90 @@
 "use client";
-import { useState } from "react";
-import {
-  Button,
-  Icon,
-  ListRow,
-  Sheet,
-  StatusBanner,
-  useTranslation,
-} from "./ui";
-export type DriverScreen =
-  "home" | "request" | "navigation" | "earnings" | "history" | "profile";
-export function DriverWorkspace({
-  screen,
-  navigate,
-  onSafety,
-}: {
-  screen: DriverScreen;
-  navigate: (s: DriverScreen) => void;
-  onSafety: () => void;
-}) {
-  const t = useTranslation();
-  const [online, setOnline] = useState(false);
-  const [request, setRequest] = useState(true);
-  const [started, setStarted] = useState(false);
-  const [completed, setCompleted] = useState(false);
-  if (screen === "home")
-    return (
-      <Sheet title={t("ready")} subtitle={t("driverMessage")}>
-        <div className="nr-availability">
-          <Icon name="power" />
-          <span>
-            <strong>{t(online ? "online" : "offline")}</strong>
-            <small>{t("sampleAccount")}</small>
-          </span>
-          <button
-            role="switch"
-            aria-checked={online}
-            aria-label={t("goOnline")}
-            className={`nr-switch ${online ? "on" : ""}`}
-            onClick={() => setOnline((v) => !v)}
-          >
-            <span />
-          </button>
-        </div>
-        <div className="nr-driver-metrics">
-          <div>
-            <small>{t("today")}</small>
-            <strong>
-              1,245 <span>ETB</span>
-            </strong>
-          </div>
-          <div>
-            <small>{t("sampleTrips")}</small>
-            <strong>12</strong>
-          </div>
-        </div>
-        <div className="nr-demand">
-          <span>
-            <Icon name="navigation" />
-            {t("demand")}
-          </span>
-          <small>{t("demandNote")}</small>
-        </div>
-        <Button onClick={() => setOnline((v) => !v)}>
-          {t(online ? "goOffline" : "goOnline")}
-        </Button>
-        {online && (
-          <button
-            className="nr-request-teaser"
-            onClick={() => navigate("request")}
-          >
-            <span className="nr-list-icon">
-              <Icon name="car" />
-            </span>
-            <span>
-              <strong>{t("viewRequest")}</strong>
-              <small>Meskel Square · Bole Airport</small>
-            </span>
-            <Icon name="chevron" />
-          </button>
-        )}
-        <button className="nr-driver-safety" onClick={onSafety}>
-          <Icon name="shield" />
-          <span>{t("safety")}</span>
-          <Icon name="chevron" size={16} />
-        </button>
-      </Sheet>
-    );
-  if (screen === "request")
-    return (
-      <Sheet title={t("newRequest")} onBack={() => navigate("home")}>
-        {request ? (
-          <>
-            <div className="nr-request-fare">
-              <small>{t("sampleFare")}</small>
-              <strong>
-                152 <span>ETB</span>
-              </strong>
-            </div>
-            <div className="nr-route-summary">
-              <div>
-                <span className="nr-route-dot" />
-                <span>
-                  <small>{t("pickup")}</small>
-                  <strong>Meskel Square</strong>
-                </span>
-              </div>
-              <div>
-                <span className="nr-route-dot end" />
-                <span>
-                  <small>{t("dropoff")}</small>
-                  <strong>Bole Airport</strong>
-                </span>
-              </div>
-            </div>
-            <div className="nr-request-facts">
-              <span>6.2 km</span>
-              <span>18 min</span>
-              <span>★ 4.9</span>
-            </div>
-            <StatusBanner>{t("requestNote")}</StatusBanner>
-            <Button
-              onClick={() => {
-                setRequest(false);
-                setStarted(false);
-                setCompleted(false);
-                navigate("navigation");
-              }}
-            >
-              {t("accept")}
-            </Button>
-            <Button variant="secondary" onClick={() => setRequest(false)}>
-              {t("decline")}
-            </Button>
-          </>
-        ) : (
-          <div className="nr-empty-state">
-            <span>
-              <Icon name="car" size={28} />
-            </span>
-            <h2>{t("noRequests")}</h2>
-            <Button onClick={() => setRequest(true)}>{t("loadRequest")}</Button>
-          </div>
-        )}
-      </Sheet>
-    );
-  if (screen === "navigation")
-    return (
-      <Sheet
-        title={t(started ? "onTrip" : "headPickup")}
-        subtitle={t("sample")}
-      >
-        <div className="nr-navigation-cue">
-          <span>
-            <Icon name="navigation" size={32} />
-          </span>
-          <div>
-            <small>{t(started ? "dropoff" : "pickup")}</small>
-            <strong>{started ? "Bole Airport" : "Meskel Square"}</strong>
-          </div>
-        </div>
-        <p className="nr-muted">{t("navigationNote")}</p>
-        <ListRow icon="user" title="NexRide rider" detail={t("sample")} />
-        <Button
-          onClick={() => {
-            if (started) {
-              setCompleted(true);
-              navigate("earnings");
-            } else setStarted(true);
-          }}
-        >
-          {t(started ? "complete" : "startTrip")}
-        </Button>
-        <Button variant="ghost" onClick={() => navigate("home")}>
-          {t("cancel")}
-        </Button>
-      </Sheet>
-    );
-  if (screen === "earnings")
-    return (
-      <Sheet title={t("earnings")}>
-        <div className="nr-earnings-total">
-          <small>{t("today")}</small>
-          <strong>
-            {completed ? "1,397" : "1,245"} <span>ETB</span>
-          </strong>
-        </div>
-        <div className="nr-earnings-chart" role="img" aria-label={t("week")}>
-          <svg viewBox="0 0 320 110" fill="none" aria-hidden="true">
-            <defs>
-              <linearGradient id="earningsFill" x1="0" y1="0" x2="0" y2="1">
-                <stop stopColor="#00C878" stopOpacity=".28" />
-                <stop offset="1" stopColor="#00C878" stopOpacity="0" />
-              </linearGradient>
-            </defs>
-            <path
-              d="M0 89 25 70 50 80 75 40 100 68 125 55 150 16 175 52 200 30 225 65 250 18 275 40 300 5 320 25V110H0Z"
-              fill="url(#earningsFill)"
-            />
-            <path
-              d="M0 89 25 70 50 80 75 40 100 68 125 55 150 16 175 52 200 30 225 65 250 18 275 40 300 5 320 25"
-              stroke="#00C878"
-              strokeWidth="2"
-            />
-          </svg>
-          <small>{t("week")}</small>
-        </div>
-        <div className="nr-list">
-          <ListRow
-            icon="car"
-            title={t("sampleTrips")}
-            detail={completed ? "13" : "12"}
-          />
-          <ListRow icon="clock" title={t("onlineTime")} detail="6h 23m" />
-          <ListRow icon="money" title={t("sampleFare")} detail="104 ETB" />
-        </div>
-        <p className="nr-fine-print">{t("earningsNote")}</p>
-        <Button variant="secondary" onClick={() => navigate("history")}>
-          {t("history")}
-        </Button>
-      </Sheet>
-    );
-  return (
-    <Sheet title={t("history")}>
-      {completed ? (
-        <>
-          <ListRow
-            icon="check"
-            title="Bole Airport"
-            detail={`152 ETB · ${t("sample")}`}
-          />
-          <p className="nr-fine-print">{t("earningsNote")}</p>
-        </>
-      ) : (
-        <div className="nr-empty-state">
-          <span>
-            <Icon name="clock" size={28} />
-          </span>
-          <h2>{t("emptyTrips")}</h2>
-          <p>{t("emptyNote")}</p>
-          <Button onClick={() => navigate("request")}>
-            {t("viewRequest")}
-          </Button>
-        </div>
-      )}
-    </Sheet>
-  );
+
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Icon } from "./ui";
+import { supabase } from "../../lib/supabase";
+import "../../app/driver/driver-dashboard.css";
+
+export type DriverScreen = "home" | "earnings" | "map" | "profile";
+
+type DriverState = {
+  name: string;
+  avatarUrl: string;
+  online: boolean;
+  verified: boolean;
+  canGoOnline: boolean;
+  permissionIssue: string;
+  permissionAction: string;
+  earnings: number | null;
+  trips: number | null;
+  rating: number | null;
+  activeTrip: { pickup: string; destination: string; status: string } | null;
+};
+
+const emptyState: DriverState = { name: "Driver", avatarUrl: "", online: false, verified: false, canGoOnline: false, permissionIssue: "Driver verification is still pending.", permissionAction: "Complete verification", earnings: null, trips: null, rating: null, activeTrip: null };
+const num = (v: unknown) => typeof v === "number" && Number.isFinite(v) ? v : null;
+const str = (v: unknown) => typeof v === "string" ? v : "";
+
+function parseDriverState(metadata: Record<string, unknown>): DriverState {
+  const verified = metadata.driver_verified === true || metadata.verification_status === "approved";
+  const permissions = Array.isArray(metadata.required_permissions) ? metadata.required_permissions.filter((v): v is string => typeof v === "string") : [];
+  const issue = str(metadata.online_block_reason) || (permissions.length ? `Required permission: ${permissions[0]}` : "");
+  const canGoOnline = metadata.can_go_online === true || (verified && permissions.length === 0 && !issue);
+  const active = metadata.active_trip;
+  const activeTrip = active && typeof active === "object" ? { pickup: str((active as Record<string, unknown>).pickup) || "Pickup", destination: str((active as Record<string, unknown>).destination) || "Destination", status: str((active as Record<string, unknown>).status) || "Active trip" } : null;
+  return { name: str(metadata.full_name) || str(metadata.name) || "Driver", avatarUrl: str(metadata.avatar_url) || str(metadata.avatarUrl), online: metadata.driver_online === true || metadata.online === true, verified, canGoOnline, permissionIssue: issue, permissionAction: str(metadata.online_block_action) || (verified ? "Resolve issue" : "Complete verification"), earnings: num(metadata.today_earnings), trips: num(metadata.completed_trips_today), rating: num(metadata.rating), activeTrip };
 }
+
+function formatEarnings(value: number | null) { return value === null ? "—" : new Intl.NumberFormat("en-ET", { maximumFractionDigits: 0 }).format(value); }
+
+export function DriverWorkspace({ screen, navigate, onSafety }: { screen: DriverScreen; navigate: (s: DriverScreen) => void; onSafety: () => void }) {
+  const router = useRouter();
+  const [state, setState] = useState<DriverState>(emptyState);
+  const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    supabase.auth.getSession().then(({ data, error: sessionError }) => {
+      if (!active) return;
+      if (sessionError || !data.session) { setError("Your driver session could not be restored."); setLoading(false); return; }
+      if (data.session.user.user_metadata?.role !== "driver") { router.replace("/auth"); return; }
+      setState(parseDriverState(data.session.user.user_metadata || {}));
+      setLoading(false);
+    }).catch(() => { if (active) { setError("Unable to load driver data."); setLoading(false); } });
+    return () => { active = false; };
+  }, [router]);
+
+  const firstName = useMemo(() => state.name.trim().split(/\s+/)[0] || "Driver", [state.name]);
+  const initials = useMemo(() => state.name.trim().split(/\s+/).slice(0, 2).map((v) => v[0]).join("").toUpperCase() || "DR", [state.name]);
+
+  const toggleAvailability = async () => {
+    if (updating || (!state.canGoOnline && !state.online)) return;
+    setUpdating(true); setError("");
+    const nextOnline = !state.online;
+    const { error: updateError } = await supabase.auth.updateUser({ data: { driver_online: nextOnline } });
+    if (updateError) setError("Availability could not be updated. Please try again.");
+    else setState((current) => ({ ...current, online: nextOnline }));
+    setUpdating(false);
+  };
+
+  if (screen === "earnings") return <div className="nr-driver-page"><PageHead title="Earnings" navigate={navigate} /><section className="nr-driver-card nr-driver-earnings-card"><span>Today</span><strong>{formatEarnings(state.earnings)} <small>ETB</small></strong><p>Actual earnings appear here when connected to driver earnings data.</p></section><section className="nr-driver-card nr-driver-list-card"><div><span>Completed trips</span><strong>{state.trips ?? "—"}</strong></div><div><span>Rating</span><strong>{state.rating === null ? "—" : state.rating.toFixed(1)} <small>★</small></strong></div></section><DriverBottomNav screen={screen} navigate={navigate} /></div>;
+  if (screen === "map") return <div className="nr-driver-page"><PageHead title="Map" navigate={navigate} back={false} /><div className="nr-driver-map-placeholder"><Icon name="navigation" size={34} /><strong>Driver map</strong><span>Live driver positioning and trip navigation will appear here.</span></div><DriverBottomNav screen={screen} navigate={navigate} /></div>;
+  if (screen === "profile") return <div className="nr-driver-page"><PageHead title="Profile" navigate={navigate} back={false} /><section className="nr-driver-profile-card"><div className="nr-driver-avatar large">{state.avatarUrl ? <img src={state.avatarUrl} alt="" /> : initials}</div><div><strong>{state.name}</strong><span>{state.verified ? "Verified driver" : "Verification pending"}</span></div></section><button className="nr-driver-action-row" onClick={onSafety}><Icon name="shield" /><span>Safety & support</span><Icon name="chevron" /></button><DriverBottomNav screen={screen} navigate={navigate} /></div>;
+
+  return <div className="nr-driver-page">
+    <header className="nr-driver-header"><div className="nr-driver-avatar">{state.avatarUrl ? <img src={state.avatarUrl} alt="" /> : initials}</div><div><span className="nr-driver-kicker">DRIVER HOME</span><h1>Good day, {firstName}</h1><p>Ready when you are.</p></div><button className="nr-driver-icon-btn" onClick={() => navigate("profile")} aria-label="Profile"><Icon name="user" /></button></header>
+    {loading ? <div className="nr-driver-card nr-driver-loading"><span className="nr-driver-skeleton wide" /><span className="nr-driver-skeleton" /><span className="nr-driver-skeleton" /></div> : error ? <div className="nr-driver-notice error"><Icon name="info" /><span>{error}</span></div> : !state.verified ? <div className="nr-driver-notice pending"><Icon name="clock" /><div><strong>Verification pending</strong><span>Your driver account must be verified before you can go online.</span></div><button onClick={() => router.push("/driver/onboarding")}>Complete</button></div> : null}
+    {!loading && state.verified && state.permissionIssue && !state.online && <div className="nr-driver-notice blocked"><Icon name="shield" /><div><strong>Can’t go online</strong><span>{state.permissionIssue}</span></div><button onClick={() => router.push("/driver/onboarding")}>{state.permissionAction}</button></div>}
+    <section className={`nr-driver-card nr-availability-card ${state.online ? "is-online" : ""}`}><div className="nr-availability-copy"><span className={`nr-status-dot ${state.online ? "online" : "offline"}`} /><div><strong>{state.online ? "Online" : "Offline"}</strong><span>{state.online ? "You can receive trip requests." : "You are not receiving trip requests."}</span></div></div><button className={`nr-driver-primary ${state.online ? "secondary-state" : ""}`} disabled={loading || updating || (!state.canGoOnline && !state.online)} onClick={toggleAvailability}>{updating ? "Updating…" : state.online ? "Go Offline" : "Go Online"}</button></section>
+    <div className="nr-driver-metric-grid"><Metric label="Today’s earnings" value={state.earnings === null ? "—" : formatEarnings(state.earnings)} suffix="ETB" loading={loading} /><Metric label="Completed trips" value={state.trips === null ? "—" : String(state.trips)} loading={loading} /><Metric label="Rating" value={state.rating === null ? "—" : state.rating.toFixed(1)} suffix={state.rating === null ? "" : "★"} loading={loading} /></div>
+    {state.activeTrip ? <section className="nr-driver-card nr-active-trip"><div><span className="nr-driver-kicker">ACTIVE TRIP</span><strong>{state.activeTrip.status}</strong></div><div className="nr-trip-route"><span>{state.activeTrip.pickup}</span><Icon name="chevron" /><span>{state.activeTrip.destination}</span></div><button onClick={() => navigate("map")}>Open trip</button></section> : <section className="nr-driver-card nr-empty-trip"><Icon name="car" size={25} /><div><strong>{state.online ? "Waiting for your next trip" : "No active trip"}</strong><span>{state.online ? "Stay online to receive new requests." : "Your active trip will appear here."}</span></div></section>}
+    <button className="nr-driver-action-row" onClick={onSafety}><Icon name="shield" /><span>Safety & support</span><Icon name="chevron" /></button><DriverBottomNav screen={screen} navigate={navigate} />
+  </div>;
+}
+
+function PageHead({ title, navigate, back = true }: { title: string; navigate: (s: DriverScreen) => void; back?: boolean }) { return <div className="nr-driver-page-head"><div><span className="nr-driver-kicker">NEXRIDE DRIVER</span><h1>{title}</h1></div>{back && <button className="nr-driver-icon-btn" onClick={() => navigate("home")} aria-label="Back"><Icon name="chevron" /></button>}</div>; }
+function Metric({ label, value, suffix, loading }: { label: string; value: string; suffix?: string; loading: boolean }) { return <section className="nr-driver-card nr-metric">{loading ? <><span className="nr-driver-skeleton" /><span className="nr-driver-skeleton wide" /></> : <><span>{label}</span><strong>{value} {suffix && <small>{suffix}</small>}</strong></>}</section>; }
+function DriverBottomNav({ screen, navigate }: { screen: DriverScreen; navigate: (s: DriverScreen) => void }) { const items: { id: DriverScreen; label: string; icon: "home" | "money" | "navigation" | "user" }[] = [{ id: "home", label: "Home", icon: "home" }, { id: "earnings", label: "Earnings", icon: "money" }, { id: "map", label: "Map", icon: "navigation" }, { id: "profile", label: "Profile", icon: "user" }]; return <nav className="nr-driver-bottom-nav" aria-label="Driver navigation">{items.map((item) => <button key={item.id} className={screen === item.id ? "active" : ""} onClick={() => navigate(item.id)}><Icon name={item.icon} size={19} /><span>{item.label}</span></button>)}</nav>; }
