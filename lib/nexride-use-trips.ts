@@ -6,11 +6,29 @@ import { ALERTS_KEY } from './nexride-account';
 import type { Row } from './nexride-trip-data';
 export function useRiderTrips() {
   const [userId, setUserId] = useState<string | null>(null), [rows, setRows] = useState<Row[]>([]), [loading, setLoading] = useState(true), [error, setError] = useState(false);
-  const identity = useRef(userId); identity.current = userId;
+  const identity = useRef<string | null>(null);
   useEffect(() => {
     let alive = true;
-    void supabase.auth.getSession().then(({ data }) => { if (alive) { setUserId(data.session?.user.id || null); if (!data.session) setLoading(false); } });
-    const { data } = supabase.auth.onAuthStateChange((_event, session) => { if (alive) { setRows([]); setUserId(session?.user.id || null); setLoading(!!session); setError(false); } });
+    const acceptIdentity = (nextId: string | null) => {
+      if (!alive || identity.current === nextId) return;
+      identity.current = nextId;
+      setRows([]);
+      setUserId(nextId);
+      setLoading(!!nextId);
+      setError(false);
+    };
+    void supabase.auth.getSession().then(({ data }) => {
+      if (!alive) return;
+      const nextId = data.session?.user.id || null;
+      if (identity.current === null && nextId === null) {
+        setLoading(false);
+        return;
+      }
+      acceptIdentity(nextId);
+    });
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      acceptIdentity(session?.user.id || null);
+    });
     return () => { alive = false; data.subscription.unsubscribe(); };
   }, []);
   const refresh = useCallback(async () => {
