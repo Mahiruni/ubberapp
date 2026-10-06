@@ -59,15 +59,6 @@
 }
 .nr-auth-hero-copy span{font-size:9px;font-weight:900;letter-spacing:.14em}
 .nr-auth-hero-copy strong{font-size:30px;line-height:1.02;letter-spacing:-.045em}
-.nr-auth-hero-vehicle{
-  position:absolute;z-index:3;right:18px;bottom:18px;width:220px;height:130px;
-  display:grid;place-items:end center;
-  filter:drop-shadow(0 18px 18px rgba(4,28,48,.20));
-  transform:scale(1.35);
-  transform-origin:bottom right;
-}
-.nr-auth-hero-vehicle.driver{transform:scale(1.45)}
-.nr-auth-hero-vehicle .nr-vehicle-art{width:190px;height:112px}
 .nr-auth-content{
   position:relative;
   padding:34px 48px 40px;
@@ -191,7 +182,7 @@
   }
   .nr-auth-hero{min-height:680px}
   .nr-auth-content{margin:0;border-radius:0;padding:54px 54px 46px;align-self:stretch;display:flex;flex-direction:column;justify-content:center}
-  .nr-auth-hero-copy{bottom:44px}.nr-auth-hero-vehicle{right:22px;bottom:18px;transform:scale(1.55)}
+  .nr-auth-hero-copy{bottom:44px}
 }
 @media(max-width:700px){
   .nr-auth-page{padding:0;background:#fff;place-items:stretch}
@@ -199,8 +190,8 @@
   .nr-auth-hero{min-height:295px}
   .nr-auth-hero-top{left:20px;right:20px;top:max(18px,env(safe-area-inset-top))}
   .nr-auth-hero-copy{left:20px;bottom:24px}.nr-auth-hero-copy strong{font-size:25px}
-  .nr-auth-hero-vehicle{right:8px;bottom:14px;transform:scale(1.15)}
-  .nr-auth-hero-vehicle.driver{transform:scale(1.2)}
+  
+  
   .nr-auth-content{margin-top:-24px;padding:30px 20px calc(28px + env(safe-area-inset-bottom));border-radius:26px 26px 0 0;min-height:calc(100svh - 271px)}
   .nr-auth-content>.nr-entry-language{top:10px;right:14px}
   .nr-auth-content>h1{font-size:34px!important}
@@ -209,7 +200,7 @@
   .driver-form-grid{grid-template-columns:1fr!important}
   .nr-auth-hero{min-height:270px}
   .nr-auth-hero-copy{display:none}
-  .nr-auth-hero-vehicle{width:180px;transform:scale(1.05)}
+  
   .nr-auth-content{margin-top:-20px;padding-inline:18px}
   .nr-profile-form,.nr-auth-form{gap:10px}
 }
@@ -341,8 +332,7 @@
   .nr-auth-experience[data-auth-mode="signup"] .nr-auth-shell{
     grid-template-rows:86px minmax(0,1fr);
   }
-  .nr-auth-experience[data-auth-mode="signup"] .nr-auth-hero-copy,
-  .nr-auth-experience[data-auth-mode="signup"] .nr-auth-hero-vehicle{
+  .nr-auth-experience[data-auth-mode="signup"] .nr-auth-hero-copy{
     display:none;
   }
   .nr-auth-experience[data-auth-mode="signup"] .nr-auth-hero-top{
@@ -418,7 +408,6 @@
     grid-template-rows:94px minmax(0,1fr);
   }
   .nr-auth-experience[data-auth-mode] .nr-auth-hero-copy,
-  .nr-auth-experience[data-auth-mode] .nr-auth-hero-vehicle,
   .nr-auth-experience[data-auth-mode] .nr-auth-role-note,
   .nr-auth-experience[data-auth-mode] .nr-auth-preview{
     display:none!important;
