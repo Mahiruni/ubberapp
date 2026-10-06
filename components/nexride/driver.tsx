@@ -10,6 +10,7 @@ import { DriverProfileScreen } from "./driver-profile";
 import { loadDriverEarningsReport } from "../../lib/nexride-driver-earnings";
 import { supabase } from "../../lib/supabase";
 import { resolveSessionRole } from "../../lib/nexride-account-role";
+import { nexrideApiHeaders } from "../../lib/nexride-api-auth";
 import "../../app/driver/driver-dashboard.css";
 import "../../app/rider-home.css";
 
@@ -71,7 +72,7 @@ function verificationCopy(status: ReviewStatus, rejectionReason: string) {
       tone: "pending",
       title: "Verification pending",
       body: "Your driver documents are being reviewed. You can go online after approval.",
-      action: "View verification",
+      action: "Refresh status",
     };
   }
   if (status === "rejected") {
@@ -115,6 +116,19 @@ export function DriverWorkspace({
   const [error, setError] = useState("");
   const [locationPermission, setLocationPermission] = useState<LocationPermission>("checking");
   const mapLocation = useRiderLocation();
+
+  const refreshDriverStatus = async (id = driverId) => {
+    if (!id) return null;
+    const { data, error: refreshError } = await supabase
+      .from("drivers")
+      .select("review_status,rejection_reason,is_online,rating")
+      .eq("id", id)
+      .maybeSingle();
+
+    if (refreshError || !data) return null;
+    setState((current) => mergeDriverState(current, data as Record<string, unknown>));
+    return data;
+  };
 
   useEffect(() => {
     let active = true;
@@ -285,6 +299,30 @@ export function DriverWorkspace({
   }, [router]);
 
   useEffect(() => {
+    if (!driverId) return;
+
+    const refresh = () => {
+      void refreshDriverStatus(driverId);
+    };
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") refresh();
+    };
+
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", onVisibility);
+    const timer =
+      state.reviewStatus === "approved"
+        ? undefined
+        : window.setInterval(refresh, 12000);
+
+    return () => {
+      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", onVisibility);
+      if (timer) window.clearInterval(timer);
+    };
+  }, [driverId, state.reviewStatus]);
+
+  useEffect(() => {
     let permission: PermissionStatus | null = null;
     let active = true;
 
@@ -318,14 +356,24 @@ export function DriverWorkspace({
   useEffect(() => {
     if (!driverId || !state.online || (locationPermission !== "denied" && locationPermission !== "unsupported")) return;
 
-    supabase
-      .from("drivers")
-      .update({ is_online: false })
-      .eq("id", driverId)
-      .then(({ error: updateError }) => {
-        if (updateError) setError("Location access was lost. Go offline and restore location access.");
-        else setState((current) => ({ ...current, online: false }));
-      });
+    void (async () => {
+      try {
+        const response = await fetch("/api/driver/availability", {
+          method: "PATCH",
+          headers: await nexrideApiHeaders(true),
+          body: JSON.stringify({ online: false }),
+        });
+        if (!response.ok) throw new Error("offline_failed");
+        const payload = await response.json();
+        if (payload?.driver) {
+          setState((current) => mergeDriverState(current, payload.driver as Record<string, unknown>));
+        } else {
+          setState((current) => ({ ...current, online: false }));
+        }
+      } catch {
+        setError("Location access was lost. Go offline and restore location access.");
+      }
+    })();
   }, [driverId, locationPermission, state.online]);
 
   useEffect(() => {
@@ -337,17 +385,21 @@ export function DriverWorkspace({
         const now = Date.now();
         if (now - lastSent < 12000) return;
         lastSent = now;
-        void supabase
-          .from("drivers")
-          .update({
-            location: {
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude,
-              accuracy: Number.isFinite(position.coords.accuracy) ? position.coords.accuracy : null,
-              updated_at: new Date(position.timestamp || now).toISOString(),
-            },
-          })
-          .eq("id", driverId);
+        void (async () => {
+          try {
+            await fetch("/api/driver/availability", {
+              method: "PATCH",
+              headers: await nexrideApiHeaders(true),
+              body: JSON.stringify({
+                location: {
+                  latitude: position.coords.latitude,
+                  longitude: position.coords.longitude,
+                  accuracy: Number.isFinite(position.coords.accuracy) ? position.coords.accuracy : null,
+                },
+              }),
+            });
+          } catch {}
+        })();
       },
       (positionError) => {
         if (positionError.code === positionError.PERMISSION_DENIED) {
@@ -446,6 +498,18 @@ export function DriverWorkspace({
   };
 
   const resolveBlock = () => {
+    if (state.reviewStatus === "pending") {
+      setUpdating(true);
+      setError("");
+      void refreshDriverStatus()
+        .then((fresh) => {
+          if (fresh?.review_status === "approved") {
+            setError("");
+          }
+        })
+        .finally(() => setUpdating(false));
+      return;
+    }
     if (!verified) {
       router.push("/driver/verification");
       return;
@@ -493,20 +557,36 @@ export function DriverWorkspace({
       }
     }
 
-    const { data, error: updateError } = await supabase
-      .from("drivers")
-      .update({ is_online: nextOnline, ...(location ? { location } : {}) })
-      .eq("id", driverId)
-      .select("review_status,rejection_reason,is_online,rating")
-      .single();
+    try {
+      const response = await fetch("/api/driver/availability", {
+        method: "PATCH",
+        headers: await nexrideApiHeaders(true),
+        body: JSON.stringify({
+          online: nextOnline,
+          ...(location ? { location } : {}),
+        }),
+      });
+      const payload = await response.json().catch(() => ({}));
 
-    if (updateError) {
-      setError(updateError.message || "Availability could not be updated. Please try again.");
-    } else {
-      setState((current) => mergeDriverState(current, data as Record<string, unknown>));
+      if (!response.ok) {
+        if (payload?.status === "driver_not_approved") {
+          await refreshDriverStatus();
+          setError("Your latest verification status was refreshed. You can go online as soon as approval is active.");
+        } else if (payload?.status === "account_inactive") {
+          setError("This driver account is not active. Contact NexRide support.");
+        } else if (payload?.status === "location_required") {
+          setError("NexRide needs your current location before you can go online.");
+        } else {
+          setError("Availability could not be updated. Please try again.");
+        }
+      } else if (payload?.driver) {
+        setState((current) => mergeDriverState(current, payload.driver as Record<string, unknown>));
+      }
+    } catch {
+      setError("Availability could not be updated. Check your connection and try again.");
+    } finally {
+      setUpdating(false);
     }
-
-    setUpdating(false);
   };
 
   if (screen === "earnings") {

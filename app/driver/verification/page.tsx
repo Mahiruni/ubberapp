@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { Brand } from "../../../components/nexride/ui";
 import { supabase } from "../../../lib/supabase";
 import type { DriverReviewStatus } from "../../../lib/nexride-driver-verification";
+import { resolveSessionRole } from "../../../lib/nexride-account-role";
+import { nexrideApiHeaders } from "../../../lib/nexride-api-auth";
 import "../auth/driver-auth.css";
 import "../onboarding/driver-onboarding.css";
 
@@ -41,8 +43,14 @@ export default function DriverVerificationPage() {
       const { data: sessionData } = await supabase.auth.getSession();
       const session = sessionData.session;
       if (!active) return;
-      if (!session || session.user.user_metadata?.role !== "driver") {
+      if (!session) {
         router.replace("/driver/auth");
+        return;
+      }
+      const role = await resolveSessionRole(session);
+      if (!active) return;
+      if (role !== "driver") {
+        router.replace(role === "admin" ? "/admin" : "/");
         return;
       }
       setDriverId(session.user.id);
@@ -141,27 +149,33 @@ export default function DriverVerificationPage() {
       return;
     }
 
-    const { data, error: saveError } = await supabase
-      .from("drivers")
-      .update({
-        license_number: licenseNumber.trim(),
-        license_expiry: licenseExpiry,
+    const response = await fetch("/api/driver/verification", {
+      method: "POST",
+      headers: await nexrideApiHeaders(true),
+      body: JSON.stringify({
+        licenseNumber: licenseNumber.trim(),
+        licenseExpiry,
         vehicle: vehicle.trim(),
-        vehicle_plate: plate.trim(),
-        license_document_path: licensePath,
-        vehicle_registration_path: registrationPath,
-      })
-      .eq("id", session.user.id)
-      .select("review_status")
-      .single();
+        vehiclePlate: plate.trim(),
+        licenseDocumentPath: licensePath,
+        vehicleRegistrationPath: registrationPath,
+      }),
+    });
+    const payload = await response.json().catch(() => ({}));
 
-    if (saveError) {
-      setError(saveError.message || "Unable to submit verification.");
+    if (!response.ok) {
+      const message =
+        payload?.status === "license_expired"
+          ? "Your driver license must have a future expiry date."
+          : payload?.status === "verification_locked"
+            ? "Approved or suspended verification cannot be replaced from this screen."
+            : "Unable to submit verification. Please try again.";
+      setError(message);
       setBusy(false);
       return;
     }
 
-    setStatus((data.review_status as DriverReviewStatus) || "pending");
+    setStatus((payload.reviewStatus as DriverReviewStatus) || "pending");
     try { sessionStorage.removeItem("nexride.driver.verification.draft." + session.user.id); } catch {}
     setBusy(false);
   }
