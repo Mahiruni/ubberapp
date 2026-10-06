@@ -364,7 +364,8 @@
     margin:3px 0 8px!important;
     font-size:11px!important;
   }
-  .nr-auth-experience[data-auth-mode="signup"] .nr-profile-form{
+  .nr-auth-experience[data-auth-mode="signup"] .nr-profile-form,
+  .nr-auth-experience[data-auth-mode="signup"] .nr-auth-form{
     gap:5px;
   }
   .nr-auth-experience[data-auth-mode="signup"] .nr-profile-form .nr-input-field{
@@ -373,6 +374,23 @@
   }
   .nr-auth-experience[data-auth-mode="signup"] .nr-profile-form .nr-input-field input{
     min-height:44px;
+  }
+  .nr-auth-experience[data-auth-mode="signup"] .nr-auth-input{
+    min-height:44px;
+  }
+  .nr-auth-experience[data-auth-mode="signup"] .nr-auth-input input{
+    min-height:42px;
+  }
+  .nr-auth-experience[data-auth-mode="signup"] .nr-auth-subsection{
+    margin-top:0;
+    padding:8px 9px;
+    border-radius:12px;
+  }
+  .nr-auth-experience[data-auth-mode="signup"] .nr-auth-subsection>div:first-child{
+    margin-bottom:5px;
+  }
+  .nr-auth-experience[data-auth-mode="signup"] .nr-auth-subsection>div:first-child small{
+    display:none;
   }
   .nr-auth-experience[data-auth-mode="signup"] .nr-profile-form .nr-button{
     min-height:46px!important;
