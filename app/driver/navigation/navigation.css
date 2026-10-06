@@ -40,3 +40,76 @@
 .nr-live-map-status.route{top:calc(env(safe-area-inset-top) + 136px);color:#c6d6df}
 .nr-live-map-recenter{position:absolute;z-index:450;right:14px;bottom:170px;width:44px;height:44px;min-height:44px;border:1px solid rgba(117,162,188,.25);border-radius:50%;background:rgba(4,28,48,.88);color:#fff;display:grid;place-items:center;font-size:24px;line-height:1;backdrop-filter:blur(14px)}
 .nr-live-map-recenter:focus-visible{outline:3px solid #00c878;outline-offset:2px}
+
+
+/* Driver stage progress refinement */
+.nr-nav-trip-progress{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:4px;
+  margin:0 0 12px;
+  padding-bottom:11px;
+  border-bottom:1px solid rgba(125,163,184,.14);
+}
+.nr-nav-trip-progress>span{
+  position:relative;
+  min-width:0;
+  display:grid;
+  justify-items:center;
+  gap:4px;
+  color:#688798;
+}
+.nr-nav-trip-progress>span:not(:last-child)::after{
+  content:"";
+  position:absolute;
+  top:13px;
+  left:calc(50% + 15px);
+  right:calc(-50% + 15px);
+  height:1px;
+  background:rgba(135,166,183,.22);
+}
+.nr-nav-trip-progress i{
+  position:relative;
+  z-index:1;
+  width:27px;
+  height:27px;
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+  border:1px solid rgba(126,162,183,.22);
+  background:#082a42;
+  color:#7695a7;
+  font-style:normal;
+}
+.nr-nav-trip-progress small{
+  max-width:100%;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:8px;
+  font-weight:800;
+  letter-spacing:.02em;
+}
+.nr-nav-trip-progress>span.done{color:#62dca9}
+.nr-nav-trip-progress>span.done i{
+  border-color:rgba(0,200,120,.32);
+  background:rgba(0,200,120,.12);
+  color:#62dca9;
+}
+.nr-nav-trip-progress>span.done:not(:last-child)::after{
+  background:rgba(0,200,120,.34);
+}
+.nr-nav-trip-progress>span.active{color:#f4f9fb}
+.nr-nav-trip-progress>span.active i{
+  border-color:#00c878;
+  background:#00c878;
+  color:#03271d;
+  box-shadow:0 0 0 4px rgba(0,200,120,.10);
+}
+@media(max-width:759px){
+  .nr-nav-status{bottom:calc(326px + env(safe-area-inset-bottom))}
+}
+@media(max-width:430px){
+  .nr-nav-status{bottom:calc(338px + env(safe-area-inset-bottom))}
+  .nr-nav-trip-progress small{font-size:7.5px}
+}
