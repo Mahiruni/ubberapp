@@ -72,7 +72,7 @@ export default function DiscoverNexRidePage() {
             <span>NexRide is not currently published in the App Store or Google Play. Use the web app for now.</span>
           </div>
         </div>
-        <div className="nr-promo-hero-visual nr-promo-addis-night" role="img" aria-label="Night traffic in Addis Ababa">
+        <div className="nr-promo-hero-visual nr-promo-addis-night" role="img" aria-label="Addis Ababa skyline">
           <div className="nr-promo-photo-tag">
             <span>Addis Ababa</span>
             <strong>Built for the city in motion.</strong>
@@ -110,7 +110,20 @@ export default function DiscoverNexRidePage() {
       </section>
 
       <section className="nr-promo-split nr-promo-driver">
-        <div className="nr-promo-split-photo nr-promo-car" role="img" aria-label="Vehicle photographed on a city street at night" />
+        <div className="nr-promo-driver-visual" aria-hidden="true">
+          <div className="nr-promo-driver-lockup">
+            <span className="nr-promo-mark large">N</span>
+            <div>
+              <strong>NexRide Driver</strong>
+              <small>Verified access · clear trip stages · live availability</small>
+            </div>
+          </div>
+          <div className="nr-promo-driver-grid">
+            <span><Icon name="shield" size={20} /> Verification</span>
+            <span><Icon name="pin" size={20} /> Trip guidance</span>
+            <span><Icon name="clock" size={20} /> Availability</span>
+          </div>
+        </div>
         <div className="nr-promo-split-copy">
           <span className="nr-promo-eyebrow">NEXRIDE DRIVER</span>
           <h2>Drive. Earn. Grow.</h2>
@@ -168,8 +181,6 @@ export default function DiscoverNexRidePage() {
 
         <div className="nr-promo-credits">
           <span>Photography:</span>
-          <a href="https://unsplash.com/photos/cars-on-road-during-night-time-VW1r1g5TnuU" target="_blank" rel="noreferrer">Gift Habeshaw / Unsplash</a>
-          <a href="https://unsplash.com/photos/black-vehicle-parked-on-road-during-nighttime-CvfxfpTnisM" target="_blank" rel="noreferrer">Khanh Lam / Unsplash</a>
           <a href="https://unsplash.com/photos/a-city-street-with-tall-buildings-and-people-TDHU6EZQrsE" target="_blank" rel="noreferrer">Vatroslav Bank / Unsplash</a>
           <a href="https://commons.wikimedia.org/wiki/File:Addis_Ababa_skyline.jpg" target="_blank" rel="noreferrer">Simfan34 / Wikimedia Commons · CC BY-SA 3.0</a>
         </div>
