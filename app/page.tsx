@@ -40,6 +40,7 @@ import {
 } from "../components/nexride/driver";
 import type { Language } from "../lib/nexride-i18n";
 import type { PreviewProfile, PreviewTrip } from "../lib/nexride-preview";
+import { resolveSessionRole } from "../lib/nexride-account-role";
 import "./nexride.css";
 import "./rider-home.css";
 import "./destination.css";
@@ -76,6 +77,7 @@ export default function Home() {
   );
   const [ready, setReady] = useState(cached?.destination === "/");
   const [authenticated, setAuthenticated] = useState(Boolean(cached?.session));
+  const [isAdmin, setIsAdmin] = useState(false);
   const [startupError, setStartupError] = useState<StartupError | null>(null);
   const [attempt, setAttempt] = useState(0);
   const startupRouter = useRef(router);
@@ -86,10 +88,14 @@ export default function Home() {
       setLanguage(storedLanguage(localStorage));
     } catch {}
     initializeRider()
-      .then((result) => {
+      .then(async (result) => {
+        const accountRole = result.session
+          ? await resolveSessionRole(result.session).catch(() => "")
+          : "";
         if (!active) return;
         const p = result.preferences;
         setAuthenticated(Boolean(result.session));
+        setIsAdmin(accountRole === "admin");
         setLanguage(p.language);
         setMode(p.mode);
         setTheme(p.theme);
@@ -146,6 +152,7 @@ export default function Home() {
             trip={trip}
             setTrip={setTrip}
             authenticated={authenticated}
+            isAdmin={isAdmin}
             onReset={() => {
               setProfile(emptyProfile);
               setTrip(null);
@@ -176,6 +183,7 @@ function AppWorkspace({
   trip,
   setTrip,
   authenticated,
+  isAdmin,
   onReset,
 }: {
   language: Language;
@@ -189,6 +197,7 @@ function AppWorkspace({
   trip: PreviewTrip | null;
   setTrip: (t: PreviewTrip) => void;
   authenticated: boolean;
+  isAdmin: boolean;
   onReset: () => void;
 }) {
   const t = useTranslation();
@@ -359,6 +368,12 @@ function AppWorkspace({
             <Icon name="star" />
             Discover NexRide
           </button>
+          {isAdmin && (
+            <button onClick={() => window.location.assign("/admin")}>
+              <Icon name="shield" />
+              Admin Control Center
+            </button>
+          )}
           <p>{t("brandTagline")}</p>
         </div>
       </aside>
@@ -598,7 +613,7 @@ function AppWorkspace({
                 <div className="nr-avatar">{initials}</div>
                 <div>
                   <strong>{profile.name || t("guest")}</strong>
-                  <small>{t("localAccount")}</small>
+                  <small>{isAdmin ? "Administrator" : t("localAccount")}</small>
                 </div>
               </div>
               <div className="nr-list">
@@ -625,6 +640,17 @@ function AppWorkspace({
                   title="Discover NexRide"
                   onClick={() => window.location.assign("/discover")}
                 />
+                {isAdmin && (
+                  <ListRow
+                    icon="shield"
+                    title="Admin Control Center"
+                    detail="Review drivers, documents & operations"
+                    onClick={() => {
+                      setPanel(null);
+                      window.location.assign("/admin");
+                    }}
+                  />
+                )}
               </div>
               <Button
                 variant="secondary"
