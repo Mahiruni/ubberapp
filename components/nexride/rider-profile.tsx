@@ -16,6 +16,7 @@ type Props = {
   profile: PreviewProfile;
   setProfile:(p:PreviewProfile)=>void;
   rides:()=>void;
+  saved:()=>void;
   payments:()=>void;
   safety:()=>void;
   support:()=>void;
@@ -81,7 +82,6 @@ export function RiderProfile(props:Props) {
   const [loading,setLoading]=useState(true);
   const [loadError,setLoadError]=useState(false);
   const [attempt,setAttempt]=useState(0);
-  const [completedTrips,setCompletedTrips]=useState<number|null>(null);
   const [panel,setPanel]=useState<'edit'|'settings'|'privacy'|'signout'|null>(null);
   const [form,setForm]=useState(profile);
   const [busy,setBusy]=useState(false);
@@ -97,20 +97,11 @@ export function RiderProfile(props:Props) {
     setLoadError(false);
     setAccount(null);
     setPhotoFailed(false);
-    setCompletedTrips(null);
 
     void readAccount()
-      .then(async value=>{
+      .then(value=>{
         if(!active)return;
         setAccount(value);
-        if(value){
-          const result=await supabase
-            .from('ride_requests')
-            .select('id',{count:'exact',head:true})
-            .eq('rider_id',value.id)
-            .eq('status','completed');
-          if(active&&!result.error)setCompletedTrips(result.count??0);
-        }
       })
       .catch(()=>{if(active)setLoadError(true)})
       .finally(()=>{if(active)setLoading(false)});
@@ -132,7 +123,6 @@ export function RiderProfile(props:Props) {
   const shown=account?.profile || (!loading&&!loadError?profile:{name:'',phone:'',email:''});
   const initials=shown.name.trim().split(/\s+/).slice(0,2).map(v=>v[0]).join('').toUpperCase()||'NR';
   const open=(next:typeof panel)=>{setError('');setPanel(next)};
-  const accountState=account?say('Signed in','ገብተዋል'):say('Preview account','የማሳያ መለያ');
 
   const save=async()=>{
     if(lock.current)return;
@@ -207,35 +197,31 @@ export function RiderProfile(props:Props) {
     }
   };
 
-  return <section className="nr-account nr-account-v2" aria-labelledby="nr-account-title">
-    <header className="nr-account-top">
+  return <section className="nr-account nr-account-v2 nr-account-standard" aria-labelledby="nr-account-title">
+    <header className="nr-account-top nr-account-standard-top">
       <div>
-        <span className="nr-account-eyebrow">NEXRIDE · {say('YOUR ACCOUNT','የእርስዎ መለያ')}</span>
-        <h1 id="nr-account-title">{say('Your NexRide','የNexRide መለያዎ')}</h1>
-        <p>{say('One place for rides, payments, safety and preferences.','ጉዞ፣ ክፍያ፣ ደህንነት እና ምርጫዎች በአንድ ቦታ።')}</p>
+        <span className="nr-account-eyebrow">NEXRIDE · {say('ACCOUNT','መለያ')}</span>
+        <h1 id="nr-account-title">{say('Account','መለያ')}</h1>
+        <p>{say('Manage your profile, rides and preferences.','መገለጫዎን፣ ጉዞዎችዎን እና ምርጫዎችዎን ያስተዳድሩ።')}</p>
       </div>
-      <span className="nr-account-status"><i/>{accountState}</span>
     </header>
 
-    <section className="nr-account-hero">
+    <section className="nr-account-hero nr-account-identity-card">
       <div className="nr-account-avatar-wrap">
         <div className="nr-account-avatar">
           {account?.avatar&&!photoFailed
-            ?<Image src={account.avatar} alt={say('Your profile photo','የመገለጫዎ ፎቶ')} width={88} height={88} unoptimized onError={()=>setPhotoFailed(true)}/>
+            ?<Image src={account.avatar} alt={say('Your profile photo','የመገለጫዎ ፎቶ')} width={72} height={72} unoptimized onError={()=>setPhotoFailed(true)}/>
             :<span aria-label={say('Profile initials','የስም መጀመሪያ ፊደላት')}>{initials}</span>}
         </div>
-        <span className="nr-account-avatar-badge"><Icon name="check" size={13}/></span>
+        {account&&<span className="nr-account-avatar-badge" aria-label={say('Signed in','ገብተዋል')}><Icon name="check" size={12}/></span>}
       </div>
       <div className="nr-account-identity">
-        <span className="nr-account-role">{props.isAdmin?'ADMINISTRATOR':'RIDER'}</span>
         <h2>{loading?say('Loading profile…','መገለጫ በመጫን ላይ…'):loadError?say('Profile unavailable','መገለጫ አይገኝም'):shown.name||t('guest')}</h2>
-        <p>{shown.email||say('Local preview profile','የአካባቢ ማሳያ መገለጫ')}</p>
-        <div className="nr-account-contact-line">
-          <span><Icon name="phone" size={14}/>{shown.phone||say('Add phone number','ስልክ ቁጥር ያክሉ')}</span>
-        </div>
+        <p>{shown.phone||shown.email||say('Add your contact details','የመገናኛ መረጃዎን ያክሉ')}</p>
+        {shown.phone&&shown.email&&<small>{shown.email}</small>}
       </div>
       <button className="nr-account-edit" disabled={loading||loadError} onClick={()=>{setForm(shown);open('edit')}}>
-        <Icon name="user" size={17}/><span>{say('Edit profile','መገለጫ አርትዕ')}</span>
+        <Icon name="user" size={17}/><span>{say('Edit','አርትዕ')}</span>
       </button>
     </section>
 
@@ -245,56 +231,41 @@ export function RiderProfile(props:Props) {
       <button onClick={()=>setAttempt(v=>v+1)}>{say('Retry','እንደገና ሞክር')}</button>
     </div>}
 
-    <section className="nr-account-metrics" aria-label={say('Account summary','የመለያ ማጠቃለያ')}>
-      <AccountMetric label={say('Completed rides','የተጠናቀቁ ጉዞዎች')} value={completedTrips===null?'—':String(completedTrips)} />
-      <AccountMetric label={say('Contact','መገናኛ')} value={shown.phone?say('Ready','ዝግጁ'):say('Incomplete','ያልተሟላ')} />
-      <AccountMetric label={say('Account','መለያ')} value={account?say('Signed in','ገብቷል'):t('preview')} />
-    </section>
+    <div className="nr-account-standard-groups">
+      <AccountSection title={say('Your NexRide','የእርስዎ NexRide')} subtitle={say('Everything for your rides','ለጉዞዎችዎ የሚያስፈልጉ ነገሮች')}>
+        <AccountRow icon="clock" title={say('Activity','እንቅስቃሴ')} detail={say('Trips and receipts','ጉዞዎች እና ደረሰኞች')} onClick={props.rides}/>
+        <AccountRow icon="wallet" title={say('Payments','ክፍያዎች')} detail={say('Payment methods and status','የክፍያ መንገዶች እና ሁኔታ')} onClick={props.payments}/>
+        <AccountRow icon="star" title={say('Saved places','የተቀመጡ ቦታዎች')} detail={say('Home, work and frequent places','ቤት፣ ስራ እና ተደጋጋሚ ቦታዎች')} onClick={props.saved}/>
+        <AccountRow icon="shield" title={say('Safety','ደህንነት')} detail={say('Safety tools and trip sharing','የደህንነት መሳሪያዎች እና ጉዞ ማጋራት')} onClick={props.safety}/>
+      </AccountSection>
 
-    <section className="nr-account-quick-grid" aria-label={say('Quick actions','ፈጣን እርምጃዎች')}>
-      <QuickAction icon="clock" title={say('Activity','እንቅስቃሴ')} detail={say('Trips & receipts','ጉዞዎች እና ደረሰኞች')} onClick={props.rides}/>
-      <QuickAction icon="wallet" title={say('Payments','ክፍያዎች')} detail={say('Wallet & payment status','የኪስ ቦርሳ እና ክፍያ ሁኔታ')} onClick={props.payments}/>
-      <QuickAction icon="shield" title={say('Safety','ደህንነት')} detail={say('Safety Center','የደህንነት ማዕከል')} onClick={props.safety}/>
-      <QuickAction icon="chat" title={say('Support','ድጋፍ')} detail={say('Help when you need it','ሲያስፈልግዎ እገዛ')} onClick={props.support}/>
-    </section>
+      <AccountSection title={say('Account & help','መለያ እና እገዛ')} subtitle={say('Your details and support','ዝርዝሮችዎ እና ድጋፍ')}>
+        <AccountRow icon="user" title={say('Personal information','የግል መረጃ')} detail={say('Name and contact details','ስም እና የመገናኛ ዝርዝሮች')} onClick={()=>{setForm(shown);open('edit')}}/>
+        <AccountRow icon="chat" title={say('Support','ድጋፍ')} detail={say('Help with rides and your account','ለጉዞና መለያ እገዛ')} onClick={props.support}/>
+        <AccountRow icon="info" title={say('Privacy & data','ግላዊነት እና ውሂብ')} detail={say('How NexRide handles your information','NexRide መረጃዎን እንዴት እንደሚይዝ')} onClick={()=>open('privacy')}/>
+      </AccountSection>
 
-    <div className="nr-account-columns">
-      <div>
-        <AccountSection title={say('Your account','የእርስዎ መለያ')} subtitle={say('Identity and account details','ማንነት እና መለያ ዝርዝሮች')}>
-          <AccountRow icon="user" title={say('Personal information','የግል መረጃ')} detail={shown.email||say('Name and contact details','ስም እና መገናኛ ዝርዝሮች')} onClick={()=>{setForm(shown);open('edit')}}/>
-          <AccountRow icon="clock" title={say('Activity','እንቅስቃሴ')} detail={say('Trips, status and receipts','ጉዞዎች፣ ሁኔታ እና ደረሰኞች')} onClick={props.rides}/>
-          <AccountRow icon="wallet" title={say('Payments','ክፍያዎች')} detail={say('Methods and payment status','የክፍያ መንገዶች እና ሁኔታ')} onClick={props.payments}/>
-        </AccountSection>
+      <AccountSection title={say('Preferences','ምርጫዎች')} subtitle={say('Language, appearance and alerts','ቋንቋ፣ መልክ እና ማሳወቂያዎች')}>
+        <AccountRow icon="settings" title={t('settings')} detail={say('Manage your app preferences','የመተግበሪያ ምርጫዎችዎን ያስተዳድሩ')} onClick={()=>open('settings')}/>
+      </AccountSection>
 
-        <AccountSection title={say('Safety & support','ደህንነት እና ድጋፍ')} subtitle={say('Help and protection tools','የእገዛ እና ጥበቃ መሳሪያዎች')}>
-          <AccountRow icon="shield" title={say('Safety Center','የደህንነት ማዕከል')} detail={say('Emergency help, sharing and reports','የአደጋ እገዛ፣ ማጋራት እና ሪፖርት')} onClick={props.safety}/>
-          <AccountRow icon="chat" title={say('Support','ድጋፍ')} detail={say('Help with rides and your account','ለጉዞና መለያ እገዛ')} onClick={props.support}/>
-        </AccountSection>
-      </div>
-
-      <div>
-        <AccountSection title={say('Preferences','ምርጫዎች')} subtitle={say('Make NexRide work your way','NexRideን በሚፈልጉት መንገድ ያዘጋጁ')}>
-          <AccountRow icon="settings" title={t('settings')} detail={say('Language, appearance and alerts','ቋንቋ፣ መልክ እና ማሳወቂያ')} onClick={()=>open('settings')}/>
-          <AccountRow icon="info" title={say('Privacy & your data','ግላዊነት እና ውሂብዎ')} detail={say('How NexRide handles account information','NexRide የመለያ መረጃን እንዴት እንደሚይዝ')} onClick={()=>open('privacy')}/>
-          <div className="nr-account-language-row">
-            <span><Icon name="globe" size={18}/><strong>{t('language')}</strong></span>
-            <div className="nr-segmented" role="group" aria-label={t('language')}>
-              <button aria-pressed={language==='en'} onClick={()=>props.setLanguage('en')}>EN</button>
-              <button aria-pressed={language==='am'} onClick={()=>props.setLanguage('am')}>አማ</button>
-            </div>
-          </div>
-        </AccountSection>
-
-        <AccountSection title="NexRide" subtitle={say('Account modes and platform tools','የመለያ ሁኔታዎች እና መሳሪያዎች')}>
-          <AccountRow icon="navigation" title={t('switchDriver')} detail={say('Open the Driver experience','የአሽከርካሪ ልምድን ይክፈቱ')} onClick={props.switchDriver}/>
-          {props.isAdmin&&<AccountRow icon="shield" title="Admin Control Center" detail="Drivers, verification, operations & platform management" onClick={()=>window.location.assign('/admin')} accent/>}
-        </AccountSection>
-      </div>
+      <section className="nr-account-secondary-actions" aria-label={say('More NexRide options','ተጨማሪ የNexRide አማራጮች')}>
+        <button onClick={props.switchDriver}>
+          <span className="nr-account-row-icon"><Icon name="navigation" size={19}/></span>
+          <span className="nr-account-row-copy"><strong>{say('Drive with NexRide','በNexRide ያሽከርክሩ')}</strong><small>{say('Open the Driver experience','የአሽከርካሪ ልምድን ይክፈቱ')}</small></span>
+          <Icon name="chevron" size={17}/>
+        </button>
+        {props.isAdmin&&<button className="admin-access" onClick={()=>window.location.assign('/admin')}>
+          <span className="nr-account-row-icon"><Icon name="shield" size={19}/></span>
+          <span className="nr-account-row-copy"><strong>Admin Control Center</strong><small>Operations and platform management</small></span>
+          <Icon name="chevron" size={17}/>
+        </button>}
+      </section>
     </div>
 
     {notice&&<div className="nr-account-success" role="status"><Icon name="check" size={17}/><span>{notice}</span></div>}
 
-    <footer className="nr-account-footer">
+    <footer className="nr-account-footer nr-account-standard-footer">
       <button className="nr-account-signout-button" onClick={()=>open('signout')}>
         <Icon name="power" size={18}/>{account||loadError?say('Sign out','ውጣ'):say('Exit preview','ከማሳያ ውጣ')}
       </button>
@@ -342,18 +313,6 @@ export function RiderProfile(props:Props) {
       </>}
     </Dialog>}
   </section>;
-}
-
-function AccountMetric({label,value}:{label:string;value:string}) {
-  return <div className="nr-account-metric"><small>{label}</small><strong>{value}</strong></div>;
-}
-
-function QuickAction({icon,title,detail,onClick}:{icon:IconName;title:string;detail:string;onClick:()=>void}) {
-  return <button className="nr-account-quick" onClick={onClick}>
-    <span><Icon name={icon} size={20}/></span>
-    <div><strong>{title}</strong><small>{detail}</small></div>
-    <Icon name="chevron" size={16}/>
-  </button>;
 }
 
 function AccountSection({title,subtitle,children}:{title:string;subtitle:string;children:ReactNode}) {
