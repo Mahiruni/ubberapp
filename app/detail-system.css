@@ -95,9 +95,6 @@ body{
   --nr-emerald:#00c878;
   --nr-emerald-pressed:#08b96f;
   --nr-emerald-soft:#eafff3;
-  --nr-shadow-sm:var(--nr-shadow-sm);
-  --nr-shadow-md:var(--nr-shadow-md);
-  --nr-shadow-lg:var(--nr-shadow-lg);
   background:var(--bg);
   color:var(--text);
   font-size:14px;
