@@ -810,7 +810,7 @@ function DriverBottomNav({ screen, navigate }: { screen: DriverScreen; navigate:
 
   const activate = (id: (typeof items)[number]["id"]) => {
     if (id === "activity") {
-      window.location.assign("/driver/earnings/report");
+      window.location.assign("/driver/activity");
       return;
     }
     if (id === "support") {
