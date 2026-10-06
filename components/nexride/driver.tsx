@@ -3,12 +3,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "./ui";
+import { RiderMap } from "./rider-map";
+import { useRiderLocation } from "../../lib/nexride-location";
 import { DriverEarningsScreen } from "./driver-earnings";
 import { DriverProfileScreen } from "./driver-profile";
 import { loadDriverEarningsReport } from "../../lib/nexride-driver-earnings";
 import { supabase } from "../../lib/supabase";
 import { resolveSessionRole } from "../../lib/nexride-account-role";
 import "../../app/driver/driver-dashboard.css";
+import "../../app/rider-home.css";
 
 export type DriverScreen = "home" | "earnings" | "map" | "profile";
 type ReviewStatus = "draft" | "pending" | "approved" | "rejected" | "suspended";
@@ -111,6 +114,7 @@ export function DriverWorkspace({
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState("");
   const [locationPermission, setLocationPermission] = useState<LocationPermission>("checking");
+  const mapLocation = useRiderLocation();
 
   useEffect(() => {
     let active = true;
@@ -426,7 +430,11 @@ export function DriverWorkspace({
     setLocationPermission("checking");
 
     currentPosition()
-      .then(() => setLocationPermission("granted"))
+      .then(() => {
+        setLocationPermission("granted");
+        mapLocation.locate();
+        mapLocation.locate();
+      })
       .catch((positionError: GeolocationPositionError | Error) => {
         if ("code" in positionError && positionError.code === positionError.PERMISSION_DENIED) {
           setLocationPermission("denied");
@@ -516,13 +524,55 @@ export function DriverWorkspace({
 
   if (screen === "map") {
     return (
-      <div className="nr-driver-page">
-        <PageHead title="Map" navigate={navigate} back={false} />
-        <div className="nr-driver-map-placeholder">
-          <Icon name="navigation" size={34} />
-          <strong>Driver map</strong>
-          <span>Live navigation opens automatically when you accept a ride. Go online from Home to receive dispatch offers.</span>
-        </div>
+      <div className="nr-driver-page nr-driver-map-page">
+        <header className="nr-driver-map-header">
+          <div>
+            <span className="nr-driver-kicker">NEXRIDE DRIVER</span>
+            <h1>Driver map</h1>
+            <p>{state.online ? "You’re online and visible for eligible dispatch." : "Go online when you’re ready to receive requests."}</p>
+          </div>
+          <button className="nr-driver-icon-btn" onClick={() => navigate("profile")} aria-label="Open driver profile">
+            <Icon name="user" />
+          </button>
+        </header>
+
+        <section className="nr-driver-live-map-shell" aria-label="Driver live map">
+          <RiderMap
+            position={mapLocation.position}
+            status={mapLocation.status}
+            locate={mapLocation.locate}
+            recenter={mapLocation.recenter}
+            initials={initials}
+            onProfile={() => navigate("profile")}
+            locked={loading}
+            readOnly
+            topLabel={state.online ? "ONLINE" : "OFFLINE"}
+          />
+
+          <div className="nr-driver-map-float">
+            <div className="nr-driver-map-state">
+              <span className={`nr-status-dot ${state.online ? "online" : "offline"}`} aria-hidden="true" />
+              <div>
+                <strong>{state.online ? "Online" : "Offline"}</strong>
+                <span>
+                  {mapLocation.status === "ready"
+                    ? "Current location centered on the same NexRide map used by Riders."
+                    : mapLocation.status === "denied"
+                      ? "Location permission is blocked on this device."
+                      : "Use the locate button to center your current position."}
+                </span>
+              </div>
+            </div>
+            <button
+              className={`nr-driver-primary ${state.online ? "secondary-state" : ""}`}
+              disabled={loading || updating || (!state.online && !canGoOnline)}
+              onClick={toggleAvailability}
+            >
+              {updating ? "Updating…" : state.online ? "Go Offline" : "Go Online"}
+            </button>
+          </div>
+        </section>
+
         <DriverBottomNav screen={screen} navigate={navigate} />
       </div>
     );
@@ -544,6 +594,7 @@ export function DriverWorkspace({
   return (
     <div className="nr-driver-page">
       <header className="nr-driver-header">
+        <div className="nr-driver-brand-pill"><Icon name="car" size={15} /><span>NexRide Driver</span></div>
         <div className="nr-driver-avatar">{state.avatarUrl ? <img src={state.avatarUrl} alt="" /> : initials}</div>
         <div>
           <span className="nr-driver-kicker">DRIVER HOME</span>
@@ -554,6 +605,7 @@ export function DriverWorkspace({
       </header>
 
       <section className={`nr-driver-card nr-availability-card ${state.online ? "is-online" : ""}`}>
+        <div className="nr-availability-icon" aria-hidden="true"><Icon name={state.online ? "navigation" : "car"} size={21} /></div>
         <div className="nr-availability-copy">
           <span className={`nr-status-dot ${state.online ? "online" : "offline"}`} aria-hidden="true" />
           <div>
@@ -579,6 +631,23 @@ export function DriverWorkspace({
           {block.action && <button onClick={resolveBlock}>{block.action}</button>}
         </div>
       )}
+
+      <section className="nr-driver-home-map-card">
+        <div className="nr-driver-home-map-copy">
+          <div>
+            <span className="nr-driver-kicker">LIVE MAP</span>
+            <strong>Drive with the same NexRide map Riders see</strong>
+            <p>Use your location, review the service area, and open full Driver Map when you’re ready.</p>
+          </div>
+          <button onClick={() => navigate("map")}>Open map <Icon name="chevron" size={16} /></button>
+        </div>
+        <div className="nr-driver-home-map-mini" aria-hidden="true">
+          <span className="nr-driver-home-map-road road-a" />
+          <span className="nr-driver-home-map-road road-b" />
+          <span className="nr-driver-home-map-road road-c" />
+          <span className="nr-driver-home-map-pin"><Icon name="navigation" size={15} /></span>
+        </div>
+      </section>
 
       <div className="nr-driver-metric-grid" aria-label="Driver summary">
         <Metric label="Today’s earnings" value={state.earnings === null ? "—" : formatEarnings(state.earnings)} suffix="ETB" hint={state.earnings === null ? "Unavailable" : "Today"} loading={loading} />

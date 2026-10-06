@@ -35,6 +35,7 @@ export function RiderMap({
   locked = false,
   searching = false,
   readOnly = false,
+  topLabel,
 }: {
   position: RiderLocation | null;
   status: LocationStatus;
@@ -48,6 +49,7 @@ export function RiderMap({
   locked?: boolean;
   searching?: boolean;
   readOnly?: boolean;
+  topLabel?: string;
 }) {
   const t = useTranslation();
   const language = useContext(LanguageContext);
@@ -369,7 +371,7 @@ export function RiderMap({
         >
           {initials === "NR" ? <Icon name="user" size={21} /> : initials}
         </button>
-        <span className="nr-map-preview-chip">{t("preview")}</span>
+        <span className="nr-map-preview-chip">{topLabel || t("preview")}</span>
         <button
           className="nr-recenter"
           aria-label={t("recenter")}
