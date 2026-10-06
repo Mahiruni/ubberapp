@@ -433,7 +433,6 @@ export function DriverWorkspace({
       .then(() => {
         setLocationPermission("granted");
         mapLocation.locate();
-        mapLocation.locate();
       })
       .catch((positionError: GeolocationPositionError | Error) => {
         if ("code" in positionError && positionError.code === positionError.PERMISSION_DENIED) {
@@ -476,6 +475,7 @@ export function DriverWorkspace({
           updated_at: new Date(position.timestamp || Date.now()).toISOString(),
         };
         setLocationPermission("granted");
+        mapLocation.locate();
       } catch (positionError) {
         if (
           typeof positionError === "object" &&
