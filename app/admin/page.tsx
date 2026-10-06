@@ -145,7 +145,7 @@ export default function AdminPage() {
         const result = await supabase
           .from("drivers")
           .select(
-            "id,city_id,license_number,license_expiry,vehicle,vehicle_plate,is_online,rating,review_status,rejection_reason,submitted_at,reviewed_at,created_at,updated_at",
+            "id,city_id,license_number,license_expiry,vehicle,vehicle_plate,license_document_path,vehicle_registration_path,is_online,rating,review_status,rejection_reason,submitted_at,reviewed_at,created_at,updated_at",
           )
           .order("created_at", { ascending: false })
           .limit(100);
@@ -890,21 +890,52 @@ function DataModule({
 
                     {module === "drivers" && (
                       <td className="actions">
-                        {row.review_status !== "approved" && (
+                        {row.license_document_path && (
                           <button
-                            onClick={() =>
-                              action(
-                                "admin_driver_review",
-                                {
-                                  p_driver_id: row.id,
-                                  p_status: "approved",
-                                },
-                                "Driver approved",
-                              )
-                            }
+                            onClick={() => void openAdminDriverDocument(row.license_document_path)}
                           >
-                            Approve
+                            License
                           </button>
+                        )}
+                        {row.vehicle_registration_path && (
+                          <button
+                            onClick={() => void openAdminDriverDocument(row.vehicle_registration_path)}
+                          >
+                            Registration
+                          </button>
+                        )}
+                        {row.review_status === "pending" && (
+                          <>
+                            <button
+                              onClick={() =>
+                                action(
+                                  "admin_driver_review",
+                                  {
+                                    p_driver_id: row.id,
+                                    p_status: "approved",
+                                  },
+                                  "Driver approved",
+                                )
+                              }
+                            >
+                              Approve
+                            </button>
+                            <button
+                              className="danger-action"
+                              onClick={() =>
+                                action(
+                                  "admin_driver_review",
+                                  {
+                                    p_driver_id: row.id,
+                                    p_status: "rejected",
+                                  },
+                                  "Driver rejected",
+                                )
+                              }
+                            >
+                              Reject
+                            </button>
+                          </>
                         )}
                         {row.review_status === "approved" && (
                           <button
@@ -1045,6 +1076,29 @@ function DataModule({
       </section>
     </main>
   );
+}
+
+async function openAdminDriverDocument(path: unknown) {
+  if (typeof path !== "string" || !path) return;
+
+  const preview = window.open("", "_blank");
+  try {
+    const { data, error } = await supabase.storage
+      .from("driver-verification")
+      .createSignedUrl(path, 300);
+
+    if (error || !data?.signedUrl) throw error || new Error("Document unavailable");
+
+    if (preview) {
+      preview.opener = null;
+      preview.location.href = data.signedUrl;
+    } else {
+      window.location.assign(data.signedUrl);
+    }
+  } catch {
+    preview?.close();
+    window.alert("This driver document could not be opened. Refresh the Drivers list and try again.");
+  }
 }
 
 function renderCell(key: string, value: unknown) {
