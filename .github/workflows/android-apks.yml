@@ -1,6 +1,6 @@
 name: Build NexRide Android APKs
 
-on:
+'on':
   workflow_dispatch:
   push:
     branches: [main]
