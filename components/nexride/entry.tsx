@@ -2,7 +2,6 @@
 import Image from "next/image";
 import { useEffect, useState, type ReactNode } from "react";
 import { Brand, Button, LanguageContext } from "./ui";
-import { VehicleIllustration } from "./vehicle";
 import type { Language } from "../../lib/nexride-i18n";
 import { LANGUAGE_KEY, storedLanguage } from "../../lib/nexride-startup";
 import "./splash.css";
@@ -54,8 +53,7 @@ export function EntryShell({
                 <span>ADDIS ABABA · NEXRIDE</span>
                 <strong>Better rides.<br />A brighter tomorrow.</strong>
               </div>
-              <div className="nr-auth-hero-vehicle"><VehicleIllustration category="comfort" /></div>
-            </div>
+                </div>
 
             <div className="nr-auth-content">
               <div className="nr-entry-language">
