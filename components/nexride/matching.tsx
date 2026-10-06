@@ -33,6 +33,15 @@ export function DriverMatching({ model, changeCategory, previewAssigned, home }:
     <div className="nr-matching-body">
       <div className={`nr-matching-symbol ${searching ? 'searching' : ''}`} aria-hidden="true"><Icon name={status === 'assigned' || status === 'cancelled' ? 'check' : connectionLost ? 'globe' : 'car'} size={28} /></div>
       <header className="nr-matching-heading">
+        <span className="nr-matching-kicker">
+          {language === "am"
+            ? status === "assigned"
+              ? "አሽከርካሪ ተገኝቷል"
+              : "NEXRIDE እየፈለገ ነው"
+            : status === "assigned"
+              ? "DRIVER MATCHED"
+              : "NEXRIDE MATCHING"}
+        </span>
         <h1 tabIndex={-1} ref={heading}>{t(title)}</h1>
         <p>{t(connectionLost ? 'matchingConnectionNote' : status === 'assigned' ? 'matchingAcceptedNote' : status === 'no_drivers' ? 'matchingEmptyNote' : status === 'cancelled' ? 'matchingCancelledNote' : status === 'delayed' ? 'matchingDelayedNote' : 'matchingNote')}</p>
       </header>
@@ -41,10 +50,15 @@ export function DriverMatching({ model, changeCategory, previewAssigned, home }:
         <span><Icon name="check" size={16} />{t('matchingRequestSent')}</span><span className="nr-match-progress-line" />
         <span><i className="nr-match-dots" aria-hidden="true"><b/><b/><b/></i>{t('matchingAcceptance')}</span>
       </div>}
-      {status === 'assigned' && snapshot?.driver && <div className="nr-confirmed-driver">
+      {status === 'assigned' && snapshot?.driver && <div className="nr-confirmed-driver nr-confirmed-driver-v2">
         <span className="nr-confirmed-driver-avatar"><Icon name="user" size={28}/></span>
-        <div><strong>{snapshot.driver.name}</strong><p>{snapshot.driver.vehicle}</p><span className="nr-confirmed-plate">{snapshot.driver.plate}</span></div>
-        {snapshot.driver.pickupMinutes !== null && <small>{money(snapshot.driver.pickupMinutes)} {t('minutes')}<br/>{t('estimated')}</small>}
+        <div className="nr-confirmed-driver-copy">
+          <small>{language === "am" ? "የእርስዎ አሽከርካሪ" : "YOUR DRIVER"}</small>
+          <strong>{snapshot.driver.name}</strong>
+          <p>{snapshot.driver.vehicle}</p>
+          <span className="nr-confirmed-plate">{snapshot.driver.plate}</span>
+        </div>
+        {snapshot.driver.pickupMinutes !== null && <div className="nr-confirmed-driver-eta"><small>{t('estimated')}</small><strong>{money(snapshot.driver.pickupMinutes)} {t('minutes')}</strong></div>}
       </div>}
       <div className="nr-match-summary" aria-label={t('matchingSummary')}>
         <div className="nr-match-place"><span className="nr-match-point"/><div><small>{t('pickup')}</small><strong>{request.journey.pickup && endpointName(request.journey.pickup, language, t)}</strong></div></div>
