@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { DriverNavigationMap, type NavigationCoordinate } from "../../../components/nexride/driver-navigation-map";
 import { Icon } from "../../../components/nexride/ui";
 import { supabase } from "../../../lib/supabase";
-import { nexrideApiHeaders } from "../../../lib/nexride-api-auth";
+import { nexrideApiFetch } from "../../../lib/nexride-api-auth";
+import { resolveSessionRole } from "../../../lib/nexride-account-role";
 import "../../nexride.css";
 import "./navigation.css";
 
@@ -156,8 +157,14 @@ export default function DriverNavigationPage() {
       const { data } = await supabase.auth.getSession();
       const session = data.session;
       if (!active) return;
-      if (!session || session.user.user_metadata?.role !== "driver") {
+      if (!session) {
         router.replace("/driver/auth");
+        return;
+      }
+      const role = await resolveSessionRole(session).catch(() => "");
+      if (!active) return;
+      if (role !== "driver") {
+        router.replace(role === "admin" ? "/admin" : "/");
         return;
       }
 
@@ -291,17 +298,16 @@ export default function DriverNavigationPage() {
 
     if (now - lastAvailabilityAtRef.current >= 12000) {
       lastAvailabilityAtRef.current = now;
-      void supabase
-        .from("drivers")
-        .update({
+      void nexrideApiFetch("/api/driver/availability", {
+        method: "PATCH",
+        body: JSON.stringify({
           location: {
             latitude: position.lat,
             longitude: position.lng,
             accuracy: position.accuracy,
-            updated_at: new Date().toISOString(),
           },
-        })
-        .eq("id", driverId);
+        }),
+      });
     }
   }, [driverId, position, trip]);
 
@@ -337,10 +343,9 @@ export default function DriverNavigationPage() {
     routePendingRef.current = true;
     void (async () => {
       try {
-        const response = await fetch("/api/driver/route", {
+        const response = await nexrideApiFetch("/api/driver/route", {
           method: "POST",
           cache: "no-store",
-          headers: await nexrideApiHeaders(true),
           body: JSON.stringify({
             rideRequestId: trip.requestId,
             position: { lat: position.lat, lng: position.lng },
