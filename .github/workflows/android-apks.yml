@@ -1,0 +1,92 @@
+name: Build NexRide Android APKs
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/android-apks.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  apk:
+    name: Build ${{ matrix.role }} APK
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        role: [rider, driver]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Install web dependencies
+        run: npm ci
+
+      - name: Install Capacitor build tooling
+        run: npm install --no-save @capacitor/core@latest @capacitor/cli@latest @capacitor/android@latest
+
+      - name: Configure native shell
+        shell: bash
+        run: |
+          if [ "${{ matrix.role }}" = "rider" ]; then
+            APP_ID="com.nexride.rider"
+            APP_NAME="NexRide Rider"
+            START_PATH="/rider"
+          else
+            APP_ID="com.nexride.driver"
+            APP_NAME="NexRide Driver"
+            START_PATH="/driver"
+          fi
+
+          cat > capacitor.config.json <<EOF
+          {
+            "appId": "$APP_ID",
+            "appName": "$APP_NAME",
+            "webDir": "public",
+            "server": {
+              "url": "https://ubberapp.vercel.app$START_PATH",
+              "cleartext": false,
+              "androidScheme": "https"
+            },
+            "android": {
+              "allowMixedContent": false
+            }
+          }
+          EOF
+
+      - name: Create Android project
+        run: npx cap add android
+
+      - name: Build debug APK
+        working-directory: android
+        run: ./gradlew assembleDebug
+
+      - name: Stage APK
+        shell: bash
+        run: |
+          mkdir -p dist
+          cp android/app/build/outputs/apk/debug/app-debug.apk "dist/NexRide-${{ matrix.role }}-debug.apk"
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: NexRide-${{ matrix.role }}-APK
+          path: dist/NexRide-${{ matrix.role }}-debug.apk
+          if-no-files-found: error
+          retention-days: 14
