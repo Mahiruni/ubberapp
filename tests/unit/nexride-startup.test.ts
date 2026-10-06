@@ -23,7 +23,7 @@ const session = {
       phone: "+251911000000",
     },
   },
-} as Session;
+} as unknown as Session;
 let values: Map<string, string>;
 let storage: Storage;
 beforeEach(() => {
@@ -174,7 +174,7 @@ describe("rider initialization", () => {
           phone: "+251911000000",
         },
       },
-    } as Session;
+    } as unknown as Session;
 
     enterRider(riderSession);
 
