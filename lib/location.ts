@@ -8,12 +8,18 @@ export type RouteStep = {
   modifier?: string;
   roadName?: string;
 };
+export type TrafficLevel = "low" | "moderate" | "heavy" | "severe";
 export type RouteResult = {
   distanceMeters: number;
   durationSeconds: number;
   geometry?: [number, number][];
   steps?: RouteStep[];
   provider: "mapbox" | "fallback";
+  traffic?: {
+    level: TrafficLevel;
+    provider: "mapbox";
+    segments: number;
+  };
 };
 const MAPBOX = "https://api.mapbox.com";
 export const mapboxToken = () => {
@@ -66,6 +72,7 @@ export async function routeBetween(
       coords +
       "?alternatives=false&geometries=geojson&overview=full&steps=" +
       (options.steps ? "true" : "false") +
+      (profile === "driving-traffic" ? "&annotations=congestion" : "") +
       "&language=en&radiuses=" +
       points.map(() => 100).join(";") +
       "&access_token=" +
@@ -96,6 +103,31 @@ export async function routeBetween(
     )
   )
     throw new Error("route_invalid");
+  const congestion = (r.legs || [])
+    .flatMap((leg: { annotation?: { congestion?: unknown[] } }) =>
+      Array.isArray(leg.annotation?.congestion) ? leg.annotation!.congestion! : [],
+    )
+    .filter((value: unknown): value is TrafficLevel =>
+      ["low", "moderate", "heavy", "severe"].includes(String(value)),
+    );
+  const traffic = congestion.length
+    ? (() => {
+        const rank: TrafficLevel[] = ["low", "moderate", "heavy", "severe"];
+        const counts = new Map<TrafficLevel, number>();
+        for (const level of congestion)
+          counts.set(level, (counts.get(level) || 0) + 1);
+        const level = rank.reduce((best, current) => {
+          const bestCount = counts.get(best) || 0;
+          const currentCount = counts.get(current) || 0;
+          return currentCount > bestCount ||
+            (currentCount === bestCount &&
+              rank.indexOf(current) > rank.indexOf(best))
+            ? current
+            : best;
+        }, "low" as TrafficLevel);
+        return { level, provider: "mapbox" as const, segments: congestion.length };
+      })()
+    : undefined;
   return {
     distanceMeters: r.distance,
     durationSeconds: r.duration,
@@ -103,6 +135,7 @@ export async function routeBetween(
       c[1],
       c[0],
     ]),
+    traffic,
     steps: options.steps
       ? (r.legs || [])
           .flatMap((leg: { steps?: unknown[] }) => Array.isArray(leg.steps) ? leg.steps : [])

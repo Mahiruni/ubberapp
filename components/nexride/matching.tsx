@@ -62,6 +62,11 @@ export function DriverMatching({ model, changeCategory, previewAssigned, home }:
       <div className="nr-match-summary" aria-label={t('matchingSummary')}>
         <div className="nr-match-place"><span className="nr-match-point"/><div><small>{t('pickup')}</small><strong>{request.journey.pickup && endpointName(request.journey.pickup, language, t)}</strong></div></div>
         <div className="nr-match-place"><span className="nr-match-point destination"/><div><small>{t('dropoff')}</small><strong>{request.journey.destination && endpointName(request.journey.destination, language, t)}</strong></div></div>
+        {request.journey.routeState.status === 'ready' && request.journey.routeState.route && <div className="nr-match-route-meta" data-traffic={request.journey.routeState.route.traffic?.level || 'unavailable'}>
+          <span><Icon name="clock" size={15}/>{Math.max(1, Math.round(request.journey.routeState.route.durationSeconds / 60))} {t('minutes')}</span>
+          <span>{(request.journey.routeState.route.distanceMeters / 1000).toFixed(1)} {t('kilometers')}</span>
+          <span className="nr-match-traffic"><i aria-hidden="true"/>{request.journey.routeState.route.traffic ? t(request.journey.routeState.route.traffic.level === 'low' ? 'trafficLow' : request.journey.routeState.route.traffic.level === 'moderate' ? 'trafficModerate' : request.journey.routeState.route.traffic.level === 'heavy' ? 'trafficHeavy' : 'trafficSevere') : t('trafficUnavailable')}</span>
+        </div>}
         <div className="nr-match-fare"><div><strong>{t(request.fare.category)}</strong><small>{t('cash')}</small></div><div><strong>{total !== null ? money(total) : '—'} <span>ETB</span></strong><small>{t(request.fare.priceType === 'sample' ? 'sampleFare' : request.fare.priceType === 'estimate' ? 'estimated' : 'confirmed')}</small></div></div>
         {request.fare.charges.length > 0 && <details className="nr-match-charges"><summary>{t('matchingCharges')}</summary>{request.fare.charges.map((charge, i) => <p key={i}><span>{charge.name}</span><strong>{money(charge.amount)} ETB</strong></p>)}</details>}
       </div>

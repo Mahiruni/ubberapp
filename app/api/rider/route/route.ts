@@ -31,7 +31,7 @@ export async function POST(request: Request) {
   if (!mapboxToken()) return response({ status: "unavailable", coverage }, 503);
   try {
     const route = await routeBetween([pickup, destination], {
-      profile: "driving",
+      profile: "driving-traffic",
       requireProvider: true,
     });
     return response({ status: "ready", route, coverage });

@@ -8,7 +8,34 @@ import {
 } from "./nexride-search";
 import type { Place } from "./nexride-places";
 import type { RiderLocation } from "./nexride-location";
+import type { Language } from "./nexride-i18n";
 import type { RouteResult } from "./location";
+const JOURNEY_STORAGE_KEY = "nexride.rider.journey.v1";
+const endpointSources = new Set(["preview", "provider", "device", "pin"]);
+function restoreEndpoint(value: unknown): Endpoint | null {
+  const point = value as Partial<Endpoint> | null;
+  if (
+    !point ||
+    !validPoint(point) ||
+    !endpointSources.has(String(point.source)) ||
+    typeof point.confirmed !== "boolean"
+  )
+    return null;
+  return {
+    lat: point.lat!,
+    lng: point.lng!,
+    name: typeof point.name === "string" ? point.name.slice(0, 180) : "",
+    address:
+      typeof point.address === "string" ? point.address.slice(0, 320) : "",
+    source: point.source as Endpoint["source"],
+    confirmed: point.confirmed,
+    ...(typeof point.accuracy === "number" &&
+    Number.isFinite(point.accuracy) &&
+    point.accuracy >= 0
+      ? { accuracy: point.accuracy }
+      : {}),
+  };
+}
 export type RouteState = {
   key: string;
   status:
@@ -22,7 +49,7 @@ export type RouteState = {
   route?: RouteResult;
   coverage?: { kind: "preview" | "configured" };
 };
-export function useJourney(position: RiderLocation | null) {
+export function useJourney(position: RiderLocation | null, language: Language = "en") {
   const [pickup, setPickup] = useState<Endpoint | null>(null);
   const [destination, setDestination] = useState<Endpoint | null>(null);
   const [pinMode, setPinMode] = useState<"pickup" | "destination" | null>(null);
@@ -32,7 +59,33 @@ export function useJourney(position: RiderLocation | null) {
   const [sheetRatio, setSheetRatio] = useState(0.62);
   const [viewport, setViewport] = useState({ height: 0, keyboard: false });
   const nextDevice = useRef(false);
+  const [storageReady, setStorageReady] = useState(false);
   const reverseCache = useRef(new Map<string, { name: string; address: string }>());
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(JOURNEY_STORAGE_KEY);
+      if (raw) {
+        const saved = JSON.parse(raw) as {
+          pickup?: unknown;
+          destination?: unknown;
+        };
+        const restoredPickup = restoreEndpoint(saved.pickup);
+        const restoredDestination = restoreEndpoint(saved.destination);
+        if (restoredPickup) setPickup(restoredPickup);
+        if (restoredDestination) setDestination(restoredDestination);
+      }
+    } catch {}
+    setStorageReady(true);
+  }, []);
+  useEffect(() => {
+    if (!storageReady) return;
+    try {
+      sessionStorage.setItem(
+        JOURNEY_STORAGE_KEY,
+        JSON.stringify({ pickup, destination }),
+      );
+    } catch {}
+  }, [pickup, destination, storageReady]);
   const key = endpointKey(pickup, destination);
   const valid =
     !!pickup?.confirmed &&
@@ -71,6 +124,7 @@ export function useJourney(position: RiderLocation | null) {
       mode: "reverse",
       lat: String(coords.lat),
       lng: String(coords.lng),
+      lang: language,
     });
     fetch(`/api/rider/search?${params}`, {
       signal: AbortSignal.timeout(9000),
@@ -78,20 +132,31 @@ export function useJourney(position: RiderLocation | null) {
     })
       .then((r) => r.json())
       .then((data) => {
-        const name = data.results?.[0]?.address;
-        if (typeof name !== "string") return;
+        const result = data?.results?.[0] as Endpoint | undefined;
+        if (!result || !validPoint(result)) return;
+        const name =
+          typeof result.name === "string" && result.name.trim()
+            ? result.name.trim()
+            : typeof result.address === "string"
+              ? result.address.trim()
+              : "";
+        const address =
+          typeof result.address === "string" && result.address.trim()
+            ? result.address.trim()
+            : point.address;
+        if (!name && !address) return;
         setter((current) =>
           current?.source === "pin" &&
           current.lat === coords.lat &&
           current.lng === coords.lng
-            ? { ...current, name, address: `${name} · ${point.address}` }
+            ? { ...current, name: name || address, address }
             : current,
         );
       })
       .catch(() => {});
   };
   useEffect(() => {
-    if (!position) return;
+    if (!storageReady || !position) return;
     if (nextDevice.current || !pickup) {
       nextDevice.current = false;
       setPickup({
@@ -104,7 +169,7 @@ export function useJourney(position: RiderLocation | null) {
     }
     // Device updates do not override a manually selected pickup.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [position]);
+  }, [position, storageReady]);
   useEffect(() => {
     if (!position || pickup?.source !== "device" || pickup.name) return;
     const cacheKey = pickup.lat.toFixed(4) + "," + pickup.lng.toFixed(4);
@@ -121,6 +186,7 @@ export function useJourney(position: RiderLocation | null) {
         mode: "reverse",
         lat: String(pickup.lat),
         lng: String(pickup.lng),
+        lang: language,
       });
       fetch("/api/rider/search?" + params, {
         signal: AbortSignal.any([controller.signal, AbortSignal.timeout(9000)]),
@@ -157,7 +223,7 @@ export function useJourney(position: RiderLocation | null) {
       clearTimeout(timer);
       controller.abort();
     };
-  }, [pickup?.address, pickup?.lat, pickup?.lng, pickup?.name, pickup?.source, position]);
+  }, [pickup?.address, pickup?.lat, pickup?.lng, pickup?.name, pickup?.source, position, language]);
   useEffect(() => {
     if (!valid || !pickup || !destination) {
       setResult({ key, status: "idle" });

@@ -72,6 +72,42 @@ export function RideSelection({
               : t("destination")}
           </span>
         </div>
+        {journey.routeState.status === "ready" &&
+          journey.routeState.route && (
+            <div
+              className="nr-ride-route-meta"
+              data-traffic={
+                journey.routeState.route.traffic?.level || "unavailable"
+              }
+            >
+              <span>
+                <Icon name="clock" size={15} />
+                {Math.max(
+                  1,
+                  Math.round(journey.routeState.route.durationSeconds / 60),
+                )}{" "}
+                {t("minutes")}
+              </span>
+              <span>
+                {(journey.routeState.route.distanceMeters / 1000).toFixed(1)}{" "}
+                {t("kilometers")}
+              </span>
+              <span className="nr-ride-traffic">
+                <i aria-hidden="true" />
+                {journey.routeState.route.traffic
+                  ? t(
+                      journey.routeState.route.traffic.level === "low"
+                        ? "trafficLow"
+                        : journey.routeState.route.traffic.level === "moderate"
+                          ? "trafficModerate"
+                          : journey.routeState.route.traffic.level === "heavy"
+                            ? "trafficHeavy"
+                            : "trafficSevere",
+                    )
+                  : t("trafficUnavailable")}
+              </span>
+            </div>
+          )}
         {journey.routeState.status === "unavailable" && (
           <p className="nr-ride-route-unavailable">{t("noRoadRoute")}</p>
         )}

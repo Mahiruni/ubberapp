@@ -477,6 +477,7 @@ function AppWorkspace({
               readOnly={["finding", "trip", "live"].includes(screen)}
               searching={screen === 'finding' && !matching.connectionLost && ['searching', 'delayed'].includes(matching.snapshot?.status || 'searching')}
               rideLabel={["rides", "finding", "trip", "live"].includes(screen)}
+              topLabel={authenticated ? t("city") : t("preview")}
               back={screen === "rides" ? () => navigate("destination") : undefined}
               locked={requestPending}
             />

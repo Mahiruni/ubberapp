@@ -158,6 +158,11 @@ export function RiderWorkspace({
         data={homePlaces}
         status={locationStatus}
         position={position}
+        locationLabel={
+          journey.pickup?.source === "device"
+            ? endpointName(journey.pickup, language, t)
+            : undefined
+        }
         shortcut={(kind) => {
           if (kind === "saved") {
             navigate("saved");

@@ -487,7 +487,28 @@ export function RouteReview({ journey: j }: { journey: Journey }) {
             {t("minutes")} · {(state.route.distanceMeters / 1000).toFixed(1)}{" "}
             {t("kilometers")}
           </strong>
-          <p>{t("providerEstimate")}</p>
+          <div
+            className="nr-route-traffic"
+            data-traffic={state.route.traffic?.level || "unavailable"}
+          >
+            <i aria-hidden="true" />
+            <span>
+              {state.route.traffic
+                ? t(
+                    state.route.traffic.level === "low"
+                      ? "trafficLow"
+                      : state.route.traffic.level === "moderate"
+                        ? "trafficModerate"
+                        : state.route.traffic.level === "heavy"
+                          ? "trafficHeavy"
+                          : "trafficSevere",
+                  )
+                : t("trafficUnavailable")}
+            </span>
+          </div>
+          <p>
+            {t(state.route.traffic ? "trafficAwareEta" : "providerEstimate")}
+          </p>
         </>
       ) : (
         <p>

@@ -6,6 +6,7 @@ export async function GET(request: Request) {
   const params = new URL(request.url).searchParams;
   const reverse = params.get("mode") === "reverse";
   const q = params.get("q")?.trim() || "";
+  const language = params.get("lang") === "am" ? "am" : "en";
   const point = {
     lat: Number(params.get("lat")),
     lng: Number(params.get("lng")),
@@ -21,7 +22,7 @@ export async function GET(request: Request) {
   const query = new URLSearchParams({
     access_token: token,
     limit: reverse ? "1" : "6",
-    language: "en",
+    language,
   });
   if (reverse) {
     query.set("latitude", String(point.lat));

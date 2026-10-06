@@ -5,6 +5,7 @@ import type * as Leaflet from "leaflet";
 import { Icon, LanguageContext, Spinner, useTranslation } from "./ui";
 import { endpointName } from "./destination";
 import type { LocationStatus, RiderLocation } from "../../lib/nexride-location";
+import { formatDistance, formatDuration } from "../../lib/location";
 import "leaflet/dist/leaflet.css";
 function fitPlan(
   view: Leaflet.Map,
@@ -63,6 +64,7 @@ export function RiderMap({
   rideLabelRef.current = rideLabel;
   const planMarkers = useRef<Leaflet.LayerGroup | null>(null);
   const routeLine = useRef<Leaflet.Polyline | null>(null);
+  const routeCasing = useRef<Leaflet.Polyline | null>(null);
   const [tiles, setTiles] = useState<"loading" | "ready" | "unavailable">(
     "loading",
   );
@@ -283,20 +285,34 @@ export function RiderMap({
   ]);
   useEffect(() => {
     routeLine.current?.remove();
+    routeCasing.current?.remove();
     routeLine.current = null;
+    routeCasing.current = null;
     if (!geometry || !mounted || !map.current || !library.current) return;
-    const line = library.current
+    const casing = library.current
       .polyline(geometry, {
-        color: "#2985e5",
-        weight: 5,
-        opacity: 0.9,
-        className: "nr-provider-route",
+        color: "#ffffff",
+        weight: 9,
+        opacity: 0.94,
+        className: "nr-provider-route-casing",
+        interactive: false,
       })
       .addTo(map.current);
+    const line = library.current
+      .polyline(geometry, {
+        color: "#246bc6",
+        weight: 5,
+        opacity: 0.96,
+        className: "nr-provider-route",
+        interactive: false,
+      })
+      .addTo(map.current);
+    routeCasing.current = casing;
     routeLine.current = line;
     fitPlan(map.current, line.getBounds(), rideLabelRef.current);
     return () => {
       line.remove();
+      casing.remove();
     };
   }, [geometry, mounted]);
   useEffect(() => {
@@ -309,6 +325,21 @@ export function RiderMap({
     return () => { area.remove(); };
   }, [searching, pickup?.lat, pickup?.lng, mounted]);
   // Availability is not connected. No invented vehicle markers are rendered.
+  const route =
+    journey?.routeState.status === "ready"
+      ? journey.routeState.route
+      : undefined;
+  const trafficLabel = route?.traffic
+    ? t(
+        route.traffic.level === "low"
+          ? "trafficLow"
+          : route.traffic.level === "moderate"
+            ? "trafficModerate"
+            : route.traffic.level === "heavy"
+              ? "trafficHeavy"
+              : "trafficSevere",
+      )
+    : "";
   return (
     <section
       className="nr-rider-map-surface"
@@ -381,6 +412,26 @@ export function RiderMap({
           <Icon name="locate" size={21} />
         </button>
       </div>
+      {route && (
+        <div
+          className="nr-map-route-summary"
+          data-traffic={route.traffic?.level || "unavailable"}
+          role="status"
+          aria-label={`${formatDuration(route.durationSeconds)}, ${formatDistance(route.distanceMeters)}${trafficLabel ? `, ${trafficLabel}` : ""}`}
+        >
+          <span>
+            <Icon name="clock" size={16} />
+            <strong>{formatDuration(route.durationSeconds)}</strong>
+          </span>
+          <span>{formatDistance(route.distanceMeters)}</span>
+          {trafficLabel && (
+            <span className="nr-map-traffic">
+              <i aria-hidden="true" />
+              {trafficLabel}
+            </span>
+          )}
+        </div>
+      )}
       {journey?.pinMode && (
         <button
           className="nr-use-map-center"

@@ -9,9 +9,11 @@ import type { LocationStatus, RiderLocation } from "../../lib/nexride-location";
 export function LocationMessage({
   status,
   position,
+  label,
 }: {
   status: LocationStatus;
   position: RiderLocation | null;
+  label?: string;
 }) {
   const t = useTranslation();
   return (
@@ -23,17 +25,19 @@ export function LocationMessage({
         size={16}
       />
       <span>
-        {t(
-          status === "loading"
-            ? "locating"
-            : status === "denied"
-              ? "locationPermissionDenied"
-              : status === "unavailable"
-                ? "locationUnavailable"
-                : status === "ready"
-                  ? "locationReady"
-                  : "locationPrompt",
-        )}
+        {status === "ready" && label
+          ? label
+          : t(
+              status === "loading"
+                ? "locating"
+                : status === "denied"
+                  ? "locationPermissionDenied"
+                  : status === "unavailable"
+                    ? "locationUnavailable"
+                    : status === "ready"
+                      ? "locationReady"
+                      : "locationPrompt",
+            )}
       </span>
     </div>
   );
@@ -45,6 +49,7 @@ export function RiderHomePanel({
   shortcut,
   status,
   position,
+  locationLabel,
 }: {
   navigate: () => void;
   choose: (p: Place) => void;
@@ -52,6 +57,7 @@ export function RiderHomePanel({
   shortcut: (kind: "home" | "work" | "saved") => void;
   status: LocationStatus;
   position: RiderLocation | null;
+  locationLabel?: string;
 }) {
   const t = useTranslation();
   const language = useContext(LanguageContext);
@@ -116,7 +122,7 @@ export function RiderHomePanel({
           </button>
         ))}
       </div>
-      <LocationMessage status={status} position={position} />
+      <LocationMessage status={status} position={position} label={locationLabel} />
       <div className="nr-home-history-heading">
         <h2>{t("recentDestinations")}</h2>
       </div>
