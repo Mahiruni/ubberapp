@@ -6,6 +6,7 @@ import { Button, EmptyState, ErrorState, Icon, SkeletonBlock, StatusChip, useTra
 import { resolveSessionRole } from "../../../lib/nexride-account-role";
 import { supabase } from "../../../lib/supabase";
 import "../../detail-system.css";
+import "../driver-dashboard.css";
 
 type ActivityRow = {
   id: string;
@@ -199,12 +200,28 @@ export default function DriverActivityPage() {
         )}
       </div>
 
-      <nav className="fixed inset-x-3 bottom-[calc(8px+env(safe-area-inset-bottom,0px))] z-30 mx-auto grid max-w-xl grid-cols-5 gap-1 rounded-[22px] border border-white/10 bg-[#071722]/95 p-1.5 shadow-[0_18px_48px_rgba(0,0,0,.30)] backdrop-blur-xl" aria-label="Driver navigation">
-        <button className="grid min-h-12 place-items-center gap-0.5 rounded-[16px] text-[10px] font-semibold text-white/55" onClick={() => router.push("/driver/home")}><Icon name="home" size={18}/><span>{t("home")}</span></button>
-        <button className="grid min-h-12 place-items-center gap-0.5 rounded-[16px] text-[10px] font-semibold text-white/55" onClick={() => router.push("/driver/home?screen=earnings")}><Icon name="money" size={18}/><span>{t("earnings")}</span></button>
-        <button className="grid min-h-12 place-items-center gap-0.5 rounded-[16px] bg-[#00c878]/15 text-[10px] font-semibold text-[#65edb0]" aria-current="page"><Icon name="clock" size={18}/><span>{t("activity")}</span></button>
-        <button className="grid min-h-12 place-items-center gap-0.5 rounded-[16px] text-[10px] font-semibold text-white/55" onClick={() => router.push("/support?role=driver")}><Icon name="chat" size={18}/><span>{t("help")}</span></button>
-        <button className="grid min-h-12 place-items-center gap-0.5 rounded-[16px] text-[10px] font-semibold text-white/55" onClick={() => router.push("/driver/home?screen=profile")}><Icon name="user" size={18}/><span>{t("account")}</span></button>
+      <nav className="nr-driver-bottom-nav" aria-label="Driver navigation" data-screen="activity">
+        {[
+          { id: "home", label: t("home"), icon: "home" as const, href: "/driver/home" },
+          { id: "requests", label: t("requests"), icon: "clock" as const, href: "/driver/activity" },
+          { id: "earnings", label: t("earnings"), icon: "money" as const, href: "/driver/home?screen=earnings" },
+          { id: "messages", label: t("messages"), icon: "chat" as const, href: "/support?role=driver" },
+          { id: "account", label: t("account"), icon: "user" as const, href: "/driver/home?screen=profile" },
+        ].map((item) => (
+          <button
+            type="button"
+            key={item.id}
+            className={item.id === "requests" ? "active" : ""}
+            onClick={() => router.push(item.href)}
+            aria-current={item.id === "requests" ? "page" : undefined}
+            aria-label={item.label}
+          >
+            <span className="nr-driver-nav-icon" aria-hidden="true">
+              <Icon name={item.icon} size={20} />
+            </span>
+            <span className="nr-driver-nav-label">{item.label}</span>
+          </button>
+        ))}
       </nav>
     </main>
   );
