@@ -2,11 +2,14 @@
 import Image from "next/image";
 import { useEffect, useState, type ReactNode } from "react";
 import { Brand, Button, LanguageContext } from "./ui";
+import { VehicleIllustration } from "./vehicle";
 import type { Language } from "../../lib/nexride-i18n";
 import { LANGUAGE_KEY, storedLanguage } from "../../lib/nexride-startup";
 import "./splash.css";
+
 export function EntryShell({ children, photoCredit = false }: { children: ReactNode; photoCredit?: boolean }) {
   const [language, setLanguage] = useState<Language>("en");
+
   useEffect(() => {
     try {
       const saved = storedLanguage(localStorage);
@@ -14,35 +17,59 @@ export function EntryShell({ children, photoCredit = false }: { children: ReactN
       document.documentElement.lang = saved;
     } catch {}
   }, []);
+
   return (
     <LanguageContext value={language}>
-      <main className="nr-app" data-mode="rider" data-theme="dark">
-        <div className="nr-entry-page">
-          <section className="nr-entry-card">
-            <div className="nr-entry-language">
-              <Button
-                variant="ghost"
-                onClick={() => {
-                  const next = language === "en" ? "am" : "en";
-                  setLanguage(next);
-                  document.documentElement.lang = next;
-                  try {
-                    localStorage.setItem(LANGUAGE_KEY, next);
-                  } catch {}
-                }}
-              >
-                {language === "en" ? "አማርኛ" : "English"}
-              </Button>
+      <main className="nr-app nr-auth-experience" data-mode="rider" data-theme="light">
+        <div className="nr-auth-page">
+          <section className="nr-auth-shell nr-auth-shell-rider">
+            <div className="nr-auth-hero" aria-hidden="true">
+              <Image
+                src="/images/addis-splash-city.jpg"
+                alt=""
+                fill
+                priority
+                sizes="(max-width: 760px) 100vw, 760px"
+                quality={86}
+              />
+              <div className="nr-auth-hero-wash" />
+              <div className="nr-auth-hero-top">
+                <Brand />
+                <span className="nr-auth-role-tab">Rider</span>
+              </div>
+              <div className="nr-auth-hero-copy">
+                <span>ADDIS ABABA · NEXRIDE</span>
+                <strong>Better rides.<br />A brighter tomorrow.</strong>
+              </div>
+              <div className="nr-auth-hero-vehicle"><VehicleIllustration category="comfort" /></div>
             </div>
-            <Brand />
-            {children}
-            {photoCredit && <PhotoCredit />}
+
+            <div className="nr-auth-content">
+              <div className="nr-entry-language">
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    const next = language === "en" ? "am" : "en";
+                    setLanguage(next);
+                    document.documentElement.lang = next;
+                    try {
+                      localStorage.setItem(LANGUAGE_KEY, next);
+                    } catch {}
+                  }}
+                >
+                  {language === "en" ? "አማርኛ" : "English"}
+                </Button>
+              </div>
+              {children}
+              {photoCredit && <PhotoCredit />}
+            </div>
           </section>
         </div>
       </main>
     </LanguageContext>
   );
 }
+
 export function EntryPhoto() {
   return (
     <div className="nr-entry-photo">
@@ -56,6 +83,7 @@ export function EntryPhoto() {
     </div>
   );
 }
+
 export function PhotoCredit() {
   return (
     <small className="nr-entry-credit">
