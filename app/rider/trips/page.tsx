@@ -101,7 +101,7 @@ export default function RiderTripsPage() {
                   onClick={() => router.push("/rider/trips/receipt?ride=" + encodeURIComponent(ride.id))}
                 >
                   <span className={"nr-history-icon " + (ride.status === "completed" ? "completed" : cancelled ? "cancelled" : "")}>
-                    <Icon name={ride.status === "completed" ? "check" : "car"} size={19} />
+                    <Icon name={ride.status === "completed" ? "check" : "navigation"} size={19} />
                   </span>
                   <span className="nr-history-copy">
                     <strong>{ride.pickup} → {ride.destination}</strong>
