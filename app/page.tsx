@@ -251,6 +251,8 @@ function AppWorkspace({
   const riderMapView =
     mode === "rider" && ["home", "destination", "rides", "finding"].includes(screen);
   const riderSearch = mode === "rider" && screen === "destination";
+  const riderOperationalFlow =
+    mode === "rider" && ["destination", "rides", "finding", "trip", "live"].includes(screen);
   useEffect(() => {
     if (riderScreen === "rides" && !journey.canContinue)
       setRiderScreen("destination");
@@ -263,8 +265,8 @@ function AppWorkspace({
       ? [
           { id: "home", label: t("home"), icon: "home" },
           { id: "trips", label: t("activity"), icon: "clock" },
-          { id: "wallet", label: t("wallet"), icon: "wallet" },
-          { id: "profile", label: t("profileNav"), icon: "user" },
+          { id: "safety", label: t("safety"), icon: "shield" },
+          { id: "profile", label: language === "am" ? "መለያ" : "Account", icon: "user" },
         ]
       : [
           { id: "home", label: t("home"), icon: "home" },
@@ -277,6 +279,10 @@ function AppWorkspace({
     if (mode === "rider" && id === "trips") {
       setPanel(null);
       window.location.assign("/rider/trips");
+      return;
+    }
+    if (mode === "rider" && id === "safety") {
+      openSafety("rider");
       return;
     }
     if (mode === "rider" && id === "wallet") {
@@ -576,9 +582,11 @@ function AppWorkspace({
             )}
           </div>
         </div>
-        <div className="nr-mobile-nav">
-          <Navigation items={navItems} active={screen} onNavigate={navigate} />
-        </div>
+        {!riderOperationalFlow && (
+          <div className="nr-mobile-nav" aria-label="Primary rider navigation">
+            <Navigation items={navItems} active={screen} onNavigate={navigate} />
+          </div>
+        )}
       </section>
       {toast && (
         <div className="nr-toast" role="status">
