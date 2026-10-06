@@ -13,27 +13,30 @@ import type { RouteResult } from "./location";
 const JOURNEY_STORAGE_KEY = "nexride.rider.journey.v1";
 const endpointSources = new Set(["preview", "provider", "device", "pin"]);
 function restoreEndpoint(value: unknown): Endpoint | null {
-  const point = value as Partial<Endpoint> | null;
+  const point = value as Record<string, unknown> | null;
+  const lat = Number(point?.lat);
+  const lng = Number(point?.lng);
+  const source = String(point?.source || "");
   if (
     !point ||
-    !validPoint(point) ||
-    !endpointSources.has(String(point.source)) ||
+    !Number.isFinite(lat) ||
+    Math.abs(lat) > 90 ||
+    !Number.isFinite(lng) ||
+    Math.abs(lng) > 180 ||
+    !endpointSources.has(source) ||
     typeof point.confirmed !== "boolean"
   )
     return null;
+  const accuracy = Number(point.accuracy);
   return {
-    lat: point.lat!,
-    lng: point.lng!,
+    lat,
+    lng,
     name: typeof point.name === "string" ? point.name.slice(0, 180) : "",
     address:
       typeof point.address === "string" ? point.address.slice(0, 320) : "",
-    source: point.source as Endpoint["source"],
+    source: source as Endpoint["source"],
     confirmed: point.confirmed,
-    ...(typeof point.accuracy === "number" &&
-    Number.isFinite(point.accuracy) &&
-    point.accuracy >= 0
-      ? { accuracy: point.accuracy }
-      : {}),
+    ...(Number.isFinite(accuracy) && accuracy >= 0 ? { accuracy } : {}),
   };
 }
 export type RouteState = {
