@@ -145,10 +145,10 @@
 .nr-promo-addis-night{
   background-image:
     linear-gradient(90deg,#06243a 0%,rgba(6,36,58,.72) 10%,rgba(3,17,29,.08) 48%,rgba(3,17,29,.22) 100%),
-    url("https://images.unsplash.com/photo-1607455656618-82bb0223a5ae?auto=format&fit=crop&w=1800&q=82");
+    url("https://upload.wikimedia.org/wikipedia/commons/3/33/Addis_Ababa_skyline.jpg");
+  background-position:center 54%;
 }
 .nr-promo-hero-visual::after,
-.nr-promo-split-photo::after,
 .nr-promo-photo-panel::after{
   content:"";
   position:absolute;
@@ -256,13 +256,73 @@
   border-radius:26px;
   background:#06243a;
 }
-.nr-promo-split-photo{position:relative;min-height:560px;background-size:cover;background-position:center}
-.nr-promo-car{
-  background-image:
-    linear-gradient(90deg,rgba(3,20,34,.03),rgba(3,20,34,.08) 58%,rgba(6,36,58,.78) 100%),
-    url("https://images.unsplash.com/photo-1578195230156-521846be36f3?auto=format&fit=crop&w=1800&q=82");
-  background-position:center;
+.nr-promo-driver-visual{
+  position:relative;
+  min-height:560px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  padding:clamp(28px,5vw,56px);
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 20% 18%,rgba(0,200,120,.18),transparent 24%),
+    radial-gradient(circle at 78% 76%,rgba(47,140,255,.13),transparent 27%),
+    linear-gradient(145deg,#031a2c,#082d47);
 }
+.nr-promo-driver-visual::before{
+  content:"";
+  position:absolute;
+  inset:8% 10%;
+  border:1px solid rgba(95,226,174,.18);
+  border-radius:42% 58% 48% 52%/55% 42% 58% 45%;
+  transform:rotate(-8deg);
+}
+.nr-promo-driver-visual::after{
+  content:"";
+  position:absolute;
+  width:72%;
+  aspect-ratio:1;
+  right:-26%;
+  bottom:-42%;
+  border:1px solid rgba(121,171,201,.18);
+  border-radius:50%;
+  box-shadow:
+    0 0 0 42px rgba(121,171,201,.035),
+    0 0 0 84px rgba(121,171,201,.025);
+}
+.nr-promo-driver-lockup{
+  position:relative;
+  z-index:1;
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.nr-promo-driver-lockup>div{display:grid;gap:5px}
+.nr-promo-driver-lockup strong{font-size:clamp(24px,3vw,38px);letter-spacing:-.045em}
+.nr-promo-driver-lockup small{max-width:340px;color:#86a6b8;font-size:10px;line-height:1.55}
+.nr-promo-driver-grid{
+  position:relative;
+  z-index:1;
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:8px;
+}
+.nr-promo-driver-grid span{
+  min-height:88px;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  padding:13px;
+  border:1px solid rgba(85,133,159,.28);
+  border-radius:15px;
+  background:rgba(5,34,54,.72);
+  color:#9cb8c7;
+  font-size:9px;
+  font-weight:850;
+}
+.nr-promo-driver-grid svg{color:#5de0ac}
 .nr-promo-split-copy{
   display:flex;
   flex-direction:column;
@@ -350,12 +410,12 @@
   .nr-promo-addis-night{
     background-image:
       linear-gradient(180deg,#06243a 0%,rgba(6,36,58,.2) 30%,rgba(3,17,29,.32) 100%),
-      url("https://images.unsplash.com/photo-1607455656618-82bb0223a5ae?auto=format&fit=crop&w=1400&q=80");
+      url("https://upload.wikimedia.org/wikipedia/commons/3/33/Addis_Ababa_skyline.jpg");
   }
   .nr-promo-value-grid{grid-template-columns:repeat(2,1fr)}
   .nr-promo-value:last-child{grid-column:1/-1}
   .nr-promo-split{grid-template-columns:1fr}
-  .nr-promo-split-photo{min-height:440px}
+  .nr-promo-driver-visual{min-height:420px}
 }
 @media(max-width:640px){
   .nr-promo-topbar{min-height:64px;padding:10px 14px}
@@ -377,7 +437,9 @@
   .nr-promo-photo-copy{padding:24px 20px}
   .nr-promo-photo-copy h2{font-size:42px}
   .nr-promo-split{width:calc(100% - 20px);margin:64px auto;border-radius:20px}
-  .nr-promo-split-photo{min-height:340px}
+  .nr-promo-driver-visual{min-height:330px;padding:26px 20px}
+  .nr-promo-driver-grid{grid-template-columns:1fr}
+  .nr-promo-driver-grid span{min-height:58px;flex-direction:row;align-items:center;justify-content:flex-start}
   .nr-promo-split-copy{padding:28px 20px 32px}
   .nr-promo-split-copy h2{font-size:42px}
   .nr-promo-service-note{width:calc(100% - 20px);margin:24px auto 64px}
