@@ -11,6 +11,7 @@ import { nexrideAuthRedirectUrl } from "../../../lib/nexride-auth-url";
 import { resolveSessionRole } from "../../../lib/nexride-account-role";
 import "../auth/driver-auth.css";
 import "./driver-onboarding.css";
+import "../../auth-experience.css";
 
 export default function DriverOnboarding() {
   const router = useRouter();
@@ -51,8 +52,9 @@ export default function DriverOnboarding() {
 
     const { data: sessionData } = await supabase.auth.getSession();
     const existing = sessionData.session;
+    const existingRole = existing ? await resolveSessionRole(existing).catch(() => "") : "";
 
-    if (existing && existing.user.user_metadata?.role === "driver") {
+    if (existing && existingRole === "driver") {
       const { error: updateError } = await supabase.auth.updateUser({
         data: {
           role: "driver",
