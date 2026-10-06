@@ -7,7 +7,15 @@ import type { Language } from "../../lib/nexride-i18n";
 import { LANGUAGE_KEY, storedLanguage } from "../../lib/nexride-startup";
 import "./splash.css";
 
-export function EntryShell({ children, photoCredit = false }: { children: ReactNode; photoCredit?: boolean }) {
+export function EntryShell({
+  children,
+  photoCredit = false,
+  authMode,
+}: {
+  children: ReactNode;
+  photoCredit?: boolean;
+  authMode?: "signin" | "signup" | "forgot" | "reset";
+}) {
   const [language, setLanguage] = useState<Language>("en");
 
   useEffect(() => {
@@ -20,7 +28,12 @@ export function EntryShell({ children, photoCredit = false }: { children: ReactN
 
   return (
     <LanguageContext value={language}>
-      <main className="nr-app nr-auth-experience" data-mode="rider" data-theme="light">
+      <main
+        className="nr-app nr-auth-experience"
+        data-mode="rider"
+        data-theme="light"
+        data-auth-mode={authMode}
+      >
         <div className="nr-auth-page">
           <section className="nr-auth-shell nr-auth-shell-rider">
             <div className="nr-auth-hero" aria-hidden="true">
