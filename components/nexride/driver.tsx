@@ -691,7 +691,7 @@ export function DriverWorkspace({
   return (
     <div className="nr-driver-page">
       <header className="nr-driver-header">
-        <div className="nr-driver-brand-pill"><Icon name="car" size={15} /><span>NexRide Driver</span></div>
+        <div className="nr-driver-brand-pill"><Icon name="navigation" size={15} /><span>NexRide Driver</span></div>
         <div className="nr-driver-avatar">{state.avatarUrl ? <img src={state.avatarUrl} alt="" /> : initials}</div>
         <div>
           <span className="nr-driver-kicker">DRIVER HOME</span>
@@ -768,7 +768,7 @@ export function DriverWorkspace({
         </section>
       ) : (
         <section className="nr-driver-card nr-empty-trip">
-          <div className="nr-empty-trip-icon"><Icon name="car" size={23} /></div>
+          <div className="nr-empty-trip-icon"><Icon name="locate" size={23} /></div>
           <div>
             <strong>No trips yet</strong>
             <span>{state.online ? "You’re available. New dispatch offers will open automatically when they arrive." : "Go online when eligible to start receiving ride requests."}</span>
