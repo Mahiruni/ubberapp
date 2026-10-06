@@ -80,7 +80,7 @@ function RiderWelcome() {
 
       <div className="nr-rider-entry-benefits" aria-label="Rider experience">
         <span><Icon name="pin" size={18} /> Pickup & destination</span>
-        <span><Icon name="car" size={18} /> Ride choices</span>
+        <span><Icon name="navigation" size={18} /> Ride choices</span>
         <span><Icon name="shield" size={18} /> Safety & support</span>
       </div>
 
