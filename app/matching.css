@@ -24,7 +24,6 @@
 .nr-match-point { border: 3px solid #00c878; width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
 .nr-match-point.destination { border-color: #041c30; border-radius: 3px; }
 .nr-match-fare { border-top: 1px solid #e1e7ed; margin-top: 14px; padding-top: 12px; display: flex; gap: 8px; align-items: center; }
-.nr-match-fare .nr-vehicle-art { width: 58px; height: 38px; }
 .nr-match-fare strong { font-size: 14px; font-variant-numeric: tabular-nums; }
 .nr-match-fare > div:last-child { margin-left: auto; text-align: right; }
 .nr-match-fare strong > span { font-size: 12px; }
