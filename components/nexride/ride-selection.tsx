@@ -44,7 +44,10 @@ export function RideSelection({
     <section className="nr-ride-selection" aria-label={t("chooseRide")}>
       <div className="nr-ride-handle" />
       <header>
-        <h1>{t("chooseRide")}</h1>
+        <div className="nr-ride-heading-copy">
+          <span>{language === "am" ? "ለዚህ ጉዞ የሚገኙ አማራጮች" : "Best options for this trip"}</span>
+          <h1>{t("chooseRide")}</h1>
+        </div>
         <button
           className="nr-icon-button"
           aria-label={t("editJourney")}
@@ -255,7 +258,7 @@ export function RideSelection({
             if (model.canRequest) setConfirmOpen(true);
           }}
           disabled={!model.canRequest}
-          aria-label={t("requestRide")}
+          aria-label={language === "am" ? t("requestRide") : `Request ${t(model.selected)}`}
         >
           {busy ? (
             <>
@@ -265,7 +268,7 @@ export function RideSelection({
           ) : accepted ? (
             t("requestReceived")
           ) : (
-            t("requestRide")
+            language === "am" ? t("requestRide") : `Request ${t(model.selected)}`
           )}
           {!busy && !accepted && total !== null && (
             <span className="nr-request-total">ETB {money(total)}</span>
@@ -435,6 +438,7 @@ function RideOption({
               : `${fare.pickupMinutes} ${t("minutes")} · ${t("pickup")}`}
         </small>
       </span>
+      {selected && <span className="nr-ride-selected-indicator" aria-hidden="true"><Icon name="check" size={13} /></span>}
       <span className="nr-ride-price">
         <strong>
           <span>ETB </span>
