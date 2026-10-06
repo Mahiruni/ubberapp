@@ -296,7 +296,7 @@ export default function DriverRideRequestPage() {
           </div>
         ) : !offer || !request ? (
           <RequestState
-            icon="car"
+            icon="navigation"
             title={op("No active ride request")}
             body={op("New ride requests will appear here when NexRide dispatch sends one to you.")}
             action={op("Back to Driver Home")}
