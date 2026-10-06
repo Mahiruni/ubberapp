@@ -253,7 +253,7 @@ export function RiderWorkspace({
       {realTrips.userId && <section className="nr-real-trip-history" aria-label="Your booked trips">
         {realTrips.loading && <p role="status">Loading your trips…</p>}
         {realTrips.error && <div role="alert"><p>Trip history could not be refreshed. Previously received details may be out of date.</p><Button variant="secondary" onClick={() => void realTrips.refresh()}>Retry</Button></div>}
-        {realTrips.rows.map(row => <ListRow key={String(row.id)} icon={row.state === 'completed' ? 'check' : 'car'}
+        {realTrips.rows.map(row => <ListRow key={String(row.id)} icon={row.state === 'completed' ? 'check' : 'navigation'}
           title={String(row.destination_address || 'Destination unavailable')}
           detail={`${String(row.state).replaceAll('_', ' ')} · ${String(row.id).slice(0, 8)}`}
           onClick={() => openRealTrip(String(row.id), row.state)} />)}
@@ -264,7 +264,7 @@ export function RiderWorkspace({
           <p className="nr-muted">{t("recent")}</p>
           <div className="nr-list">
             <ListRow
-              icon={trip.completed ? "check" : "car"}
+              icon={trip.completed ? "check" : "navigation"}
               title={trip.destination}
               detail={`${t(trip.ride)} · ${trip.amount} ETB · ${t("sample")}`}
               onClick={() => { setSelectedTripId(null); navigate(trip.completed ? "summary" : "trip"); }}
