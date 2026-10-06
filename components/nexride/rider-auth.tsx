@@ -21,7 +21,7 @@ export type RiderAuthMode = "signin" | "signup" | "forgot" | "reset";
 
 export function RiderAuthScreen({ mode }: { mode: RiderAuthMode }) {
   return (
-    <EntryShell>
+    <EntryShell authMode={mode}>
       <RiderAuth mode={mode} />
     </EntryShell>
   );
