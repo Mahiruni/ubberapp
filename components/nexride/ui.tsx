@@ -296,6 +296,119 @@ export function ListRow({
   );
 }
 
+export type StatusTone = "neutral" | "success" | "warning" | "danger" | "info";
+
+export function StatusChip({
+  children,
+  tone = "neutral",
+  icon,
+}: {
+  children: ReactNode;
+  tone?: StatusTone;
+  icon?: IconName;
+}) {
+  return (
+    <span className={`nr-status-chip ${tone}`}>
+      {icon && <Icon name={icon} size={14} />}
+      <span>{children}</span>
+    </span>
+  );
+}
+
+export function IconButton({
+  label,
+  icon,
+  className = "",
+  ...props
+}: ButtonHTMLAttributes<HTMLButtonElement> & {
+  label: string;
+  icon: IconName;
+}) {
+  return (
+    <button
+      type="button"
+      className={`nr-icon-button ${className}`}
+      aria-label={label}
+      {...props}
+    >
+      <Icon name={icon} />
+    </button>
+  );
+}
+
+export function SectionHeader({
+  eyebrow,
+  title,
+  detail,
+  action,
+}: {
+  eyebrow?: string;
+  title: string;
+  detail?: string;
+  action?: ReactNode;
+}) {
+  return (
+    <header className="nr-section-header">
+      <div>
+        {eyebrow && <span>{eyebrow}</span>}
+        <h2>{title}</h2>
+        {detail && <p>{detail}</p>}
+      </div>
+      {action}
+    </header>
+  );
+}
+
+export function EmptyState({
+  icon = "info",
+  title,
+  detail,
+  action,
+}: {
+  icon?: IconName;
+  title: string;
+  detail?: string;
+  action?: ReactNode;
+}) {
+  return (
+    <div className="nr-state nr-state-empty">
+      <span className="nr-state-icon"><Icon name={icon} size={22} /></span>
+      <strong>{title}</strong>
+      {detail && <p>{detail}</p>}
+      {action}
+    </div>
+  );
+}
+
+export function ErrorState({
+  title,
+  detail,
+  action,
+}: {
+  title: string;
+  detail?: string;
+  action?: ReactNode;
+}) {
+  return (
+    <div className="nr-state nr-state-error" role="alert">
+      <span className="nr-state-icon"><Icon name="info" size={22} /></span>
+      <strong>{title}</strong>
+      {detail && <p>{detail}</p>}
+      {action}
+    </div>
+  );
+}
+
+export function SkeletonBlock({
+  className = "",
+  label = "Loading",
+}: {
+  className?: string;
+  label?: string;
+}) {
+  return <span className={`nr-skeleton-block ${className}`} role="status" aria-label={label} />;
+}
+
 export function InputField({
   label,
   ...props
