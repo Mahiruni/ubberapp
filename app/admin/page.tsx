@@ -9,6 +9,7 @@ type Module =
   | "overview"
   | "rides"
   | "drivers"
+  | "verification"
   | "users"
   | "finance"
   | "safety"
@@ -21,6 +22,7 @@ const nav: [Module, string, string][] = [
   ["overview", "Overview", "⌂"],
   ["rides", "Live rides", "↗"],
   ["drivers", "Drivers", "◆"],
+  ["verification", "Verification", "✓"],
   ["users", "Users", "●"],
   ["finance", "Finance", "₿"],
   ["safety", "Safety", "!"],
@@ -141,14 +143,16 @@ export default function AdminPage() {
           .limit(100);
         if (result.error) throw result.error;
         data = result.data || [];
-      } else if (module === "drivers") {
-        const result = await supabase
+      } else if (module === "drivers" || module === "verification") {
+        let driverQuery = supabase
           .from("drivers")
           .select(
             "id,city_id,license_number,license_expiry,vehicle,vehicle_plate,license_document_path,vehicle_registration_path,is_online,rating,review_status,rejection_reason,submitted_at,reviewed_at,created_at,updated_at",
           )
           .order("created_at", { ascending: false })
           .limit(100);
+        if (module === "verification") driverQuery = driverQuery.eq("review_status", "pending");
+        const result = await driverQuery;
         if (result.error) throw result.error;
         data = result.data || [];
       } else if (module === "users") {
@@ -317,6 +321,8 @@ export default function AdminPage() {
   };
 
   const action = async (fn: string, args: Row, success: string) => {
+    const consequential = /approved|rejected|suspended|cancelled|resolved/i.test(success);
+    if (consequential && !window.confirm(`${success}? This changes live production state.`)) return;
     const { error: actionError } = await supabase.rpc(fn, args);
     if (actionError) {
       toast(actionError.message);
@@ -610,12 +616,8 @@ function Overview({
               <small>driver payouts paid</small>
             </div>
           </div>
-          <div className="mini-chart">
-            {[34, 46, 41, 58, 52, 67, 61, 73, 69, 82, 76, 88].map(
-              (height, index) => (
-                <span key={index} style={{ height: height + "%" }} />
-              ),
-            )}
+          <div className="admin-signal-note">
+            Live summary only · NexRide does not display synthetic trend points.
           </div>
         </section>
 
@@ -633,7 +635,7 @@ function Overview({
                 ? metrics.pendingReviews + " pending review"
                 : "No pending driver reviews"
             }
-            onClick={() => setModule("drivers")}
+            onClick={() => setModule("verification")}
             icon="◆"
           />
           <Quick
@@ -668,7 +670,7 @@ function Overview({
           <button onClick={() => setModule("rides")}>
             Monitor rides <span>→</span>
           </button>
-          <button onClick={() => setModule("drivers")}>
+          <button onClick={() => setModule("verification")}>
             Verify drivers <span>→</span>
           </button>
           <button onClick={() => setModule("finance")}>
@@ -777,7 +779,7 @@ function DataModule({
           "payment_status",
           "created_at",
         ]
-      : module === "drivers"
+      : module === "drivers" || module === "verification"
         ? [
             "id",
             "review_status",
@@ -827,6 +829,7 @@ function DataModule({
 
   const hasActions =
     module === "drivers" ||
+    module === "verification" ||
     module === "rides" ||
     module === "safety" ||
     module === "support";
@@ -842,6 +845,8 @@ function DataModule({
               ? "Current NexRide requests, assignment state, fare and payment status."
               : module === "drivers"
                 ? "Verification, availability and driver health."
+                : module === "verification"
+                  ? "Pending Driver identity, vehicle and document reviews."
                 : module === "users"
                   ? "Rider, driver and administrative identities."
                   : module === "finance"
@@ -888,7 +893,7 @@ function DataModule({
                       <td key={column}>{renderCell(column, row[column])}</td>
                     ))}
 
-                    {module === "drivers" && (
+                    {(module === "drivers" || module === "verification") && (
                       <td className="actions">
                         {row.license_document_path && (
                           <button
