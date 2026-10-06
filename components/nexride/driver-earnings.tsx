@@ -248,6 +248,7 @@ function EarningsChart({
   values: number[];
   labels: string[];
 }) {
+  const op = useOperationalTranslation();
   const width = 360;
   const height = 112;
   const top = 12;
