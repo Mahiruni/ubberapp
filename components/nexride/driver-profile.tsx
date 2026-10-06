@@ -242,7 +242,7 @@ export function DriverProfileScreen({
 
       <section className="nr-driver-profile-quick-grid" aria-label="Driver profile quick actions">
         <DriverQuick icon="shield" title="Documents" detail={verification.title} onClick={() => router.push("/driver/profile/documents")}/>
-        <DriverQuick icon="car" title="Vehicle" detail={profile.vehiclePlate || "Vehicle details"} onClick={() => router.push("/driver/profile/vehicle")}/>
+        <DriverQuick icon="pin" title="Vehicle" detail={profile.vehiclePlate || "Vehicle details"} onClick={() => router.push("/driver/profile/vehicle")}/>
         <DriverQuick icon="money" title="Earnings" detail="Reports & trip earnings" onClick={() => router.push("/driver/earnings/report")}/>
         <DriverQuick icon="wallet" title="Payouts" detail="Account & withdrawals" onClick={() => router.push("/driver/profile/payouts")}/>
       </section>
@@ -252,7 +252,7 @@ export function DriverProfileScreen({
           <DriverSection title="Driver account" subtitle="Identity, documents and vehicle">
             <DriverRow icon="user" title="Personal details" detail={profile.phone || profile.email || "Driver contact information"} onClick={() => router.push("/driver/profile/settings")}/>
             <DriverRow icon="shield" title="Driver documents" detail={verification.title} onClick={() => router.push("/driver/profile/documents")}/>
-            <DriverRow icon="car" title="Vehicle information" detail={profile.vehicle || "Vehicle details"} onClick={() => router.push("/driver/profile/vehicle")}/>
+            <DriverRow icon="pin" title="Vehicle information" detail={profile.vehicle || "Vehicle details"} onClick={() => router.push("/driver/profile/vehicle")}/>
           </DriverSection>
 
           <DriverSection title="Earnings & payouts" subtitle="Your work and money">
