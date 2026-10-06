@@ -1,10 +1,12 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Dialog, Icon } from "./ui";
+import { Dialog, Icon, type IconName } from "./ui";
 import { supabase } from "../../lib/supabase";
 import { retryStartup } from "../../lib/nexride-startup";
+import { nexrideApiFetch } from "../../lib/nexride-api-auth";
 import {
   initialsFor,
   loadDriverProfileData,
@@ -30,25 +32,42 @@ export function DriverProfileScreen({
   const [signingOut, setSigningOut] = useState(false);
   const [signOutError, setSignOutError] = useState("");
 
-  useEffect(() => {
+  const load = async () => {
     if (!driverId) return;
+    setLoading(true);
+    setError("");
+    try {
+      const data = await loadDriverProfileData(driverId);
+      setProfile(data);
+    } catch {
+      setError("NexRide could not load your driver profile.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     let active = true;
     setLoading(true);
     setError("");
-
     loadDriverProfileData(driverId)
       .then((data) => active && setProfile(data))
       .catch(() => active && setError("NexRide could not load your driver profile."))
       .finally(() => active && setLoading(false));
 
+    const onFocus = () => {
+      if (active) void loadDriverProfileData(driverId).then((data) => active && setProfile(data)).catch(() => {});
+    };
+    window.addEventListener("focus", onFocus);
     return () => {
       active = false;
+      window.removeEventListener("focus", onFocus);
     };
   }, [driverId]);
 
   if (loading) {
     return (
-      <div className="nr-driver-profile-loading" aria-busy="true">
+      <div className="nr-driver-profile-loading nr-driver-profile-loading-v2" aria-busy="true">
         <span className="photo" />
         <span className="wide" />
         <span />
@@ -63,13 +82,17 @@ export function DriverProfileScreen({
         <Icon name="info" size={22} />
         <strong>Profile unavailable</strong>
         <p>{error || "Your driver profile could not be loaded."}</p>
-        <button onClick={onBack}>Back to Driver Home</button>
+        <div className="nr-profile-state-actions">
+          <button onClick={() => void load()}>Retry</button>
+          <button className="secondary" onClick={onBack}>Driver Home</button>
+        </div>
       </section>
     );
   }
 
   const verification = verificationSummary(profile);
   const initials = initialsFor(profile.fullName);
+  const verified = verification.tone === "approved";
 
   async function signOutDriver() {
     if (signingOut) return;
@@ -86,34 +109,33 @@ export function DriverProfileScreen({
         .maybeSingle();
 
       if (activeRide.error) {
-        setSignOutError(
-          "NexRide could not verify your active-trip status. Try again before signing out.",
-        );
+        setSignOutError("NexRide could not verify your active-trip status. Try again before signing out.");
         return;
       }
 
       if (activeRide.data) {
-        setSignOutError(
-          "Finish or cancel your active trip before signing out of the driver app.",
-        );
+        setSignOutError("Finish or cancel your active trip before signing out of the Driver app.");
         return;
       }
 
-      const offline = await supabase
-        .from("drivers")
-        .update({ is_online: false })
-        .eq("id", driverId);
-
-      if (offline.error) {
-        setSignOutError(
-          "NexRide could not take your driver account offline. Try again before signing out.",
-        );
+      const offlineResponse = await nexrideApiFetch("/api/driver/availability", {
+        method: "PATCH",
+        body: JSON.stringify({ online: false }),
+      });
+      if (!offlineResponse.ok && offlineResponse.status !== 409) {
+        setSignOutError("NexRide could not take your driver account offline. Try again before signing out.");
         return;
       }
 
-      const { error: authError } = await supabase.auth.signOut();
+      const { error: authError } = await supabase.auth.signOut({ scope: "local" });
       if (authError) {
         setSignOutError("Sign out could not be completed. Please try again.");
+        return;
+      }
+
+      const current = await supabase.auth.getSession();
+      if (current.error || current.data.session) {
+        setSignOutError("Sign out could not be confirmed. Please try again.");
         return;
       }
 
@@ -128,32 +150,54 @@ export function DriverProfileScreen({
     }
   }
 
+  const statusDetail =
+    verification.tone === "approved"
+      ? "Identity and vehicle documents are approved."
+      : verification.detail;
+
   return (
-    <>
+    <div className="nr-driver-profile-v2">
       <header className="nr-driver-profile-heading">
         <div>
-          <span className="nr-driver-kicker">NEXRIDE DRIVER</span>
-          <h1>Profile</h1>
+          <span className="nr-driver-kicker">NEXRIDE · DRIVER ACCOUNT</span>
+          <h1>Your Driver profile</h1>
+          <p>Identity, verification, vehicle, earnings and safety in one place.</p>
         </div>
         <button className="nr-driver-icon-btn" onClick={onBack} aria-label="Back to driver home">
           <Icon name="back" />
         </button>
       </header>
 
-      <section className="nr-driver-profile-hero">
+      <section className="nr-driver-profile-hero nr-driver-profile-hero-v2">
         <div className="nr-driver-profile-photo">
           {profile.avatarUrl ? (
-            <img src={profile.avatarUrl} alt={profile.fullName + " profile"} />
+            <Image src={profile.avatarUrl} alt={profile.fullName + " profile"} width={88} height={88} unoptimized />
           ) : (
-            <span aria-label="No profile photograph available">{initials}</span>
+            <span aria-label="Profile initials">{initials}</span>
           )}
+          {verified && <i className="nr-driver-photo-badge"><Icon name="check" size={13}/></i>}
         </div>
+
         <div className="nr-driver-profile-identity">
-          <span className="nr-driver-profile-role">DRIVER</span>
+          <div className="nr-driver-role-line">
+            <span className="nr-driver-profile-role">DRIVER</span>
+            <span className={"nr-driver-verification-pill " + verification.tone}>
+              <i />
+              {verification.title}
+            </span>
+          </div>
           <h2>{profile.fullName}</h2>
-          <p>{verification.title}</p>
+          <p>{profile.email || "NexRide Driver account"}</p>
+          <div className="nr-driver-contact-line">
+            <span><Icon name="phone" size={14}/>{profile.phone || "Add a phone number"}</span>
+            {profile.vehiclePlate && <span><Icon name="car" size={14}/>{profile.vehiclePlate}</span>}
+          </div>
         </div>
-        <span className={"nr-profile-verification-dot " + verification.tone} aria-hidden="true" />
+
+        <button className="nr-driver-profile-edit" onClick={() => router.push("/driver/profile/settings")}>
+          <Icon name="settings" size={16}/>
+          Edit
+        </button>
       </section>
 
       {profile.accountStatus !== "active" && (
@@ -161,7 +205,7 @@ export function DriverProfileScreen({
           <Icon name="info" size={18} />
           <div>
             <strong>Account restriction</strong>
-            <span>Your account status is {profile.accountStatus}. Availability and profile changes may be limited.</span>
+            <span>Your account status is {profile.accountStatus}. Driver availability and profile changes may be limited.</span>
           </div>
         </div>
       )}
@@ -176,78 +220,80 @@ export function DriverProfileScreen({
         </div>
       )}
 
-      <section className="nr-driver-profile-summary" aria-label="Driver summary">
-        <ProfileMetric
-          label="Rating"
-          value={profile.rating === null ? "—" : profile.rating.toFixed(1)}
-          suffix={profile.rating === null ? "" : "★"}
-        />
-        <ProfileMetric
-          label="Trips"
-          value={profile.completedTrips === null ? "—" : String(profile.completedTrips)}
-        />
-        <ProfileMetric
-          label="Vehicle"
-          value={profile.vehicle || "Not provided"}
-          compact
-        />
-        <ProfileMetric
-          label="Plate"
-          value={profile.vehiclePlate || "Not provided"}
-          compact
-        />
+      <section className="nr-driver-profile-summary nr-driver-profile-summary-v2" aria-label="Driver summary">
+        <ProfileMetric label="Rating" value={profile.rating === null ? "—" : profile.rating.toFixed(1)} suffix={profile.rating === null ? "" : "★"} />
+        <ProfileMetric label="Completed trips" value={profile.completedTrips === null ? "—" : String(profile.completedTrips)} />
+        <ProfileMetric label="Vehicle" value={profile.vehicle || "Not provided"} compact />
+        <ProfileMetric label="Plate" value={profile.vehiclePlate || "Not provided"} compact />
       </section>
+
+      <section className={"nr-driver-verification-card " + verification.tone}>
+        <div className="nr-driver-verification-symbol"><Icon name="shield" size={23}/></div>
+        <div>
+          <span>DRIVER VERIFICATION</span>
+          <strong>{verification.title}</strong>
+          <p>{statusDetail}</p>
+        </div>
+        <button onClick={() => router.push("/driver/profile/documents")}>
+          {verified ? "View documents" : profile.reviewStatus === "draft" ? "Complete verification" : "Review status"}
+          <Icon name="chevron" size={16}/>
+        </button>
+      </section>
+
+      <section className="nr-driver-profile-quick-grid" aria-label="Driver profile quick actions">
+        <DriverQuick icon="shield" title="Documents" detail={verification.title} onClick={() => router.push("/driver/profile/documents")}/>
+        <DriverQuick icon="car" title="Vehicle" detail={profile.vehiclePlate || "Vehicle details"} onClick={() => router.push("/driver/profile/vehicle")}/>
+        <DriverQuick icon="money" title="Earnings" detail="Reports & trip earnings" onClick={() => router.push("/driver/earnings/report")}/>
+        <DriverQuick icon="wallet" title="Payouts" detail="Account & withdrawals" onClick={() => router.push("/driver/profile/payouts")}/>
+      </section>
+
+      <div className="nr-driver-profile-columns">
+        <div>
+          <DriverSection title="Driver account" subtitle="Identity, documents and vehicle">
+            <DriverRow icon="user" title="Personal details" detail={profile.phone || profile.email || "Driver contact information"} onClick={() => router.push("/driver/profile/settings")}/>
+            <DriverRow icon="shield" title="Driver documents" detail={verification.title} onClick={() => router.push("/driver/profile/documents")}/>
+            <DriverRow icon="car" title="Vehicle information" detail={profile.vehicle || "Vehicle details"} onClick={() => router.push("/driver/profile/vehicle")}/>
+          </DriverSection>
+
+          <DriverSection title="Earnings & payouts" subtitle="Your work and money">
+            <DriverRow icon="money" title="Earnings report" detail="Completed trips and earnings ledger" onClick={() => router.push("/driver/earnings/report")}/>
+            <DriverRow icon="wallet" title="Payouts" detail="Payout account, balance and history" onClick={() => router.push("/driver/profile/payouts")}/>
+          </DriverSection>
+        </div>
+
+        <div>
+          <DriverSection title="Safety & support" subtitle="Protection and help tools">
+            <DriverRow icon="shield" title="Safety Center" detail="Emergency, trip sharing and reporting" onClick={onSafety}/>
+            <DriverRow icon="chat" title="Driver support" detail="Help and trip-related support" onClick={() => router.push("/support?role=driver")}/>
+          </DriverSection>
+
+          <DriverSection title="Preferences & account" subtitle="Your NexRide Driver settings">
+            <DriverRow icon="settings" title="Profile settings" detail="Name, phone and account details" onClick={() => router.push("/driver/profile/settings")}/>
+            <DriverRow icon="info" title="Privacy & account data" detail="Authenticated Driver information stays private" onClick={() => router.push("/driver/profile/documents")}/>
+          </DriverSection>
+        </div>
+      </div>
 
       {!profile.avatarUrl && (
         <p className="nr-profile-photo-note">
-          No driver photograph is available in the current profile integration. NexRide uses your initials here rather than exposing an unrelated image.
+          NexRide is using your initials because no Driver photograph is currently connected to this account.
         </p>
       )}
 
-      <section className="nr-driver-profile-menu" aria-label="Driver profile options">
-        <ProfileMenuRow
-          icon="shield"
-          title="Documents"
-          detail={verification.title}
-          onClick={() => router.push("/driver/profile/documents")}
-        />
-        <ProfileMenuRow
-          icon="car"
-          title="Vehicle"
-          detail={profile.vehiclePlate || "Vehicle details"}
-          onClick={() => router.push("/driver/profile/vehicle")}
-        />
-        <ProfileMenuRow
-          icon="wallet"
-          title="Payouts"
-          detail="Earnings and payout status"
-          onClick={() => router.push("/driver/profile/payouts")}
-        />
-        <ProfileMenuRow
-          icon="settings"
-          title="Settings"
-          detail="Editable profile information"
-          onClick={() => router.push("/driver/profile/settings")}
-        />
-      </section>
-
-      <button className="nr-driver-profile-safety" onClick={onSafety}>
-        <Icon name="shield" size={18} />
-        <span>Safety Center</span>
-        <Icon name="chevron" size={16} />
-      </button>
-
-      <button
-        className="nr-driver-profile-signout"
-        onClick={() => {
-          setSignOutError("");
-          setSignOutOpen(true);
-        }}
-        disabled={signingOut}
-      >
-        <Icon name="power" size={18} />
-        <span>Sign out</span>
-      </button>
+      <footer className="nr-driver-profile-footer">
+        <button
+          className="nr-driver-profile-signout"
+          onClick={() => {
+            setSignOutError("");
+            setSignOutOpen(true);
+          }}
+          disabled={signingOut}
+        >
+          <Icon name="power" size={18} />
+          <span>Sign out</span>
+        </button>
+        <p>Verified identity, vehicle, document and payout information stays inside authenticated Driver surfaces.</p>
+      </footer>
 
       {signOutOpen && (
         <Dialog
@@ -259,9 +305,13 @@ export function DriverProfileScreen({
             }
           }}
         >
-          <p className="nr-driver-signout-copy">
-            NexRide will take you offline first so you stop receiving new ride requests.
-          </p>
+          <div className="nr-driver-signout-intro">
+            <span><Icon name="power" size={22}/></span>
+            <div>
+              <strong>End this Driver session?</strong>
+              <p>NexRide checks that you have no active trip, takes you offline, then clears the local session.</p>
+            </div>
+          </div>
           {signOutError && (
             <div className="nr-profile-alert" role="alert">
               <Icon name="info" size={17} />
@@ -269,47 +319,20 @@ export function DriverProfileScreen({
             </div>
           )}
           <div className="nr-driver-signout-actions">
-            <button
-              type="button"
-              className="secondary"
-              disabled={signingOut}
-              onClick={() => {
-                setSignOutOpen(false);
-                setSignOutError("");
-              }}
-            >
+            <button type="button" className="secondary" disabled={signingOut} onClick={() => {setSignOutOpen(false);setSignOutError("");}}>
               Stay signed in
             </button>
-            <button
-              type="button"
-              className="danger"
-              disabled={signingOut}
-              onClick={() => void signOutDriver()}
-            >
+            <button type="button" className="danger" disabled={signingOut} onClick={() => void signOutDriver()}>
               {signingOut ? "Signing out…" : "Sign out"}
             </button>
           </div>
         </Dialog>
       )}
-
-      <p className="nr-driver-profile-privacy">
-        Verified identity, document, vehicle, and financial information stays inside authenticated driver surfaces and is not added to trip sharing, public previews, or notification text.
-      </p>
-    </>
+    </div>
   );
 }
 
-function ProfileMetric({
-  label,
-  value,
-  suffix = "",
-  compact = false,
-}: {
-  label: string;
-  value: string;
-  suffix?: string;
-  compact?: boolean;
-}) {
+function ProfileMetric({ label, value, suffix = "", compact = false }: { label: string; value: string; suffix?: string; compact?: boolean }) {
   return (
     <div className={"nr-profile-metric" + (compact ? " compact" : "")}>
       <small>{label}</small>
@@ -318,25 +341,25 @@ function ProfileMetric({
   );
 }
 
-function ProfileMenuRow({
-  icon,
-  title,
-  detail,
-  onClick,
-}: {
-  icon: "shield" | "car" | "wallet" | "settings";
-  title: string;
-  detail: string;
-  onClick: () => void;
-}) {
-  return (
-    <button className="nr-driver-profile-menu-row" onClick={onClick}>
-      <span className="nr-profile-menu-icon"><Icon name={icon} size={19} /></span>
-      <span className="nr-profile-menu-copy">
-        <strong>{title}</strong>
-        <small>{detail}</small>
-      </span>
-      <Icon name="chevron" size={17} />
-    </button>
-  );
+function DriverQuick({icon,title,detail,onClick}:{icon:IconName;title:string;detail:string;onClick:()=>void}) {
+  return <button className="nr-driver-profile-quick" onClick={onClick}>
+    <span><Icon name={icon} size={20}/></span>
+    <div><strong>{title}</strong><small>{detail}</small></div>
+    <Icon name="chevron" size={16}/>
+  </button>;
+}
+
+function DriverSection({title,subtitle,children}:{title:string;subtitle:string;children:React.ReactNode}) {
+  return <section className="nr-driver-profile-section">
+    <header><h3>{title}</h3><p>{subtitle}</p></header>
+    <div>{children}</div>
+  </section>;
+}
+
+function DriverRow({icon,title,detail,onClick}:{icon:IconName;title:string;detail:string;onClick:()=>void}) {
+  return <button className="nr-driver-profile-row" onClick={onClick}>
+    <span className="nr-driver-profile-row-icon"><Icon name={icon} size={19}/></span>
+    <span className="nr-driver-profile-row-copy"><strong>{title}</strong><small>{detail}</small></span>
+    <Icon name="chevron" size={17}/>
+  </button>;
 }
