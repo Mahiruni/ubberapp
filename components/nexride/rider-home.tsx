@@ -64,6 +64,13 @@ export function RiderHomePanel({
   return (
     <section className="nr-rider-home-panel" aria-label={t("destination")}>
       <div className="nr-home-handle" aria-hidden="true" />
+      <div className="nr-rider-home-intro">
+        <div>
+          <span className="nr-home-kicker">NEXRIDE</span>
+          <h2>{language === "am" ? "ወዴት መሄድ ይፈልጋሉ?" : "Where are you going?"}</h2>
+        </div>
+        <span className="nr-home-city"><Icon name="pin" size={14} />{t("city")}</span>
+      </div>
       <h1 className="nr-sr-only">{t("where")}</h1>
       <button
         className="nr-home-search"
