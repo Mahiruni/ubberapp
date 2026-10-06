@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "../../../components/nexride/ui";
+import { useOperationalTranslation } from "../../../components/nexride/operational-i18n";
 import { supabase } from "../../../lib/supabase";
 import { nexrideApiHeaders } from "../../../lib/nexride-api-auth";
 import "../../nexride.css";
@@ -28,6 +29,7 @@ const money = (value: number | string | null) => {
 
 export default function RiderWalletPage() {
   const router = useRouter();
+  const op = useOperationalTranslation();
   const [issues, setIssues] = useState<PaymentIssue[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -63,12 +65,12 @@ export default function RiderWalletPage() {
         const capability = await capabilityResponse.json().catch(() => null);
         if (active) setOnlinePayments(capability?.enabled === true && capability?.provider === "chapa");
       }
-      if (queryError) setError("Payment status could not be loaded.");
+      if (queryError) setError(op("Payment status could not be loaded."));
       else setIssues((rows || []) as PaymentIssue[]);
       setLoading(false);
     })().catch(() => {
       if (active) {
-        setError("Payment information could not be loaded.");
+        setError(op("Payment information could not be loaded."));
         setLoading(false);
       }
     });
@@ -122,7 +124,7 @@ export default function RiderWalletPage() {
           : "Online payment could not be started. Your ride remains unchanged.",
       );
     } catch {
-      setError("Online payment could not be started. Check your connection and try again.");
+      setError(op("Online payment could not be started. Check your connection and try again."));
     } finally {
       setPayingRide("");
     }
@@ -137,8 +139,8 @@ export default function RiderWalletPage() {
           </button>
           <div>
             <span className="kicker">NEXRIDE RIDER</span>
-            <h1>Wallet & payments</h1>
-            <p>Supported payment methods only</p>
+            <h1>{op("Wallet & payments")}</h1>
+            <p>{op("Supported payment methods only")}</p>
           </div>
           <span />
         </header>
@@ -150,8 +152,8 @@ export default function RiderWalletPage() {
             {error && <div className="nr-support-feedback" role="alert"><Icon name="info" size={16} /><span>{error}</span></div>}
 
             <section className="nr-support-card nr-wallet-balance">
-              <small>Stored wallet balance</small>
-              <strong>Not available</strong>
+              <small>{op("Stored wallet balance")}</small>
+              <strong>{op("Not available")}</strong>
               <p>NexRide does not currently maintain a rider stored-value wallet. No balance is shown as zero because that could be mistaken for a real financial balance.</p>
             </section>
 
@@ -159,19 +161,19 @@ export default function RiderWalletPage() {
               <div className="nr-payment-method">
                 <span className="nr-payment-method-icon"><Icon name="money" size={19} /></span>
                 <span>
-                  <strong>Cash</strong>
+                  <strong>{op("Cash")}</strong>
                   <small>Pay the driver in cash according to the confirmed trip amount.</small>
                 </span>
-                <span className="nr-payment-selected">SUPPORTED</span>
+                <span className="nr-payment-selected">{op("SUPPORTED")}</span>
               </div>
               {onlinePayments && (
                 <div className="nr-payment-method">
                   <span className="nr-payment-method-icon"><Icon name="card" size={19} /></span>
                   <span>
-                    <strong>Online payment · Chapa</strong>
+                    <strong>{op("Online payment · Chapa")}</strong>
                     <small>Available for completed rides with an unpaid balance. Checkout is hosted by Chapa.</small>
                   </span>
-                  <span className="nr-payment-selected">AVAILABLE</span>
+                  <span className="nr-payment-selected">{op("AVAILABLE")}</span>
                 </div>
               )}
               <div className="nr-payment-notice">
@@ -183,7 +185,7 @@ export default function RiderWalletPage() {
 
             <section className="nr-support-card nr-payment-issues">
               <div className="nr-payment-notice">
-                <strong>Payment status</strong><br />
+                <strong>{op("Payment status")}</strong><br />
                 Pending or failed statuses below come from actual trip records. Cash selection itself does not require a network authorization step.
               </div>
 
@@ -214,7 +216,7 @@ export default function RiderWalletPage() {
                         onClick={() => void payOnline(ride)}
                       >
                         {payingRide === ride.id && <span className="nr-spinner" aria-hidden="true" />}
-                        {payingRide === ride.id ? "Opening…" : "Pay online"}
+                        {payingRide === ride.id ? op("Opening…") : op("Pay online")}
                       </button>
                     )}
                   </article>
@@ -222,7 +224,7 @@ export default function RiderWalletPage() {
               }) : (
                 <div className="nr-support-state" style={{ border: 0, borderRadius: 0, background: "transparent" }}>
                   <span><Icon name="check" size={20} /></span>
-                  <strong>No unresolved payment statuses</strong>
+                  <strong>{op("No unresolved payment statuses")}</strong>
                   <p>There are no rider trip records currently marked pending, failed, or unknown.</p>
                 </div>
               )}
