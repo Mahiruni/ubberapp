@@ -800,39 +800,30 @@ function Metric({ label, value, suffix, hint, loading }: { label: string; value:
 
 function DriverBottomNav({ screen, navigate }: { screen: DriverScreen; navigate: (screen: DriverScreen) => void }) {
   const t = useTranslation();
-  const items: { id: "home" | "earnings" | "activity" | "support" | "profile"; label: string; icon: "home" | "money" | "clock" | "chat" | "user" }[] = [
+  const items: { id: DriverScreen; label: string; icon: "home" | "money" | "navigation" | "user" }[] = [
     { id: "home", label: t("home"), icon: "home" },
     { id: "earnings", label: t("earnings"), icon: "money" },
-    { id: "activity", label: t("activity"), icon: "clock" },
-    { id: "support", label: t("help"), icon: "chat" },
+    { id: "map", label: t("map"), icon: "navigation" },
     { id: "profile", label: t("account"), icon: "user" },
   ];
 
-  const activate = (id: (typeof items)[number]["id"]) => {
-    if (id === "activity") {
-      window.location.assign("/driver/activity");
-      return;
-    }
-    if (id === "support") {
-      window.location.assign("/support?role=driver");
-      return;
-    }
-    navigate(id);
-  };
-
   return (
-    <nav className="nr-driver-bottom-nav" aria-label="Driver navigation">
+    <nav className="nr-driver-bottom-nav" aria-label="Driver navigation" data-screen={screen}>
       {items.map((item) => {
         const active = screen === item.id;
         return (
           <button
+            type="button"
             key={item.id}
             className={active ? "active" : ""}
-            onClick={() => activate(item.id)}
+            onClick={() => navigate(item.id)}
             aria-current={active ? "page" : undefined}
+            aria-label={item.label}
           >
-            <Icon name={item.icon} size={19} />
-            <span>{item.label}</span>
+            <span className="nr-driver-nav-icon" aria-hidden="true">
+              <Icon name={item.icon} size={20} />
+            </span>
+            <span className="nr-driver-nav-label">{item.label}</span>
           </button>
         );
       })}
