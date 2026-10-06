@@ -7,6 +7,7 @@ import { DriverEarningsScreen } from "./driver-earnings";
 import { DriverProfileScreen } from "./driver-profile";
 import { loadDriverEarningsReport } from "../../lib/nexride-driver-earnings";
 import { supabase } from "../../lib/supabase";
+import { resolveSessionRole } from "../../lib/nexride-account-role";
 import "../../app/driver/driver-dashboard.css";
 
 export type DriverScreen = "home" | "earnings" | "map" | "profile";
@@ -128,8 +129,11 @@ export function DriverWorkspace({
         return;
       }
 
-      if (data.session.user.user_metadata?.role !== "driver") {
-        router.replace("/auth");
+      const accountRole = await resolveSessionRole(data.session);
+      if (!active) return;
+
+      if (accountRole !== "driver") {
+        router.replace(accountRole === "admin" ? "/admin" : "/");
         return;
       }
 

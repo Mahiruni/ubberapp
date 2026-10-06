@@ -31,8 +31,9 @@ test("rider sign-in, sign-up and recovery are addressable screens", async ({ pag
   await expect(page.getByLabel("Confirm password", { exact: true })).toBeVisible();
 });
 
-test("legacy auth URL remains a rider sign-in compatibility route", async ({ page }) => {
+test("legacy auth URL redirects one-way to Rider sign-in", async ({ page }) => {
   await page.goto("/auth");
+  await expect(page).toHaveURL(/\/rider\/sign-in$/);
   await expect(page.getByText("NEXRIDE · RIDER")).toBeVisible();
   await expect(page.getByLabel("Email address", { exact: true })).toBeVisible();
 });

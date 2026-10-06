@@ -531,30 +531,34 @@ function AppWorkspace({
                 </Button>
               </Sheet>
             ) : null}
-            <div hidden={mode !== "rider" || profileView}>
-              <RiderWorkspace
-                screen={riderScreen}
-                navigate={navigateRider}
-                onSafety={() => openSafety("rider")}
-                onUnavailable={unavailable}
-                trip={trip}
-                setTrip={setTrip}
-                position={riderLocation.position}
-                locationStatus={riderLocation.status}
-                locate={riderLocation.locate}
-                journey={journey}
-                onBookingPending={onBookingPending}
-                matching={matching}
-                onTripSource={setLiveTripShown}
-              />
-            </div>
-            <div hidden={mode !== "driver" || profileView}>
-              <DriverWorkspace
-                screen={driverScreen}
-                navigate={navigateDriver}
-                onSafety={() => openSafety("driver")}
-              />
-            </div>
+            {mode === "rider" && (
+              <div hidden={profileView}>
+                <RiderWorkspace
+                  screen={riderScreen}
+                  navigate={navigateRider}
+                  onSafety={() => openSafety("rider")}
+                  onUnavailable={unavailable}
+                  trip={trip}
+                  setTrip={setTrip}
+                  position={riderLocation.position}
+                  locationStatus={riderLocation.status}
+                  locate={riderLocation.locate}
+                  journey={journey}
+                  onBookingPending={onBookingPending}
+                  matching={matching}
+                  onTripSource={setLiveTripShown}
+                />
+              </div>
+            )}
+            {mode === "driver" && (
+              <div hidden={profileView}>
+                <DriverWorkspace
+                  screen={driverScreen}
+                  navigate={navigateDriver}
+                  onSafety={() => openSafety("driver")}
+                />
+              </div>
+            )}
           </div>
         </div>
         <div className="nr-mobile-nav">
