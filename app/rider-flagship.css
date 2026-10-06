@@ -1,0 +1,190 @@
+/* NexRide Rider Flagship — structural refinement of the booking journey */
+.nr-rider-home-intro{
+  display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin:2px 2px 14px
+}
+.nr-rider-home-intro>div{min-width:0}
+.nr-home-kicker{
+  display:block;color:#6b7f8f;font-size:10px;font-weight:900;letter-spacing:.14em;line-height:1
+}
+.nr-rider-home-intro h2{
+  margin:6px 0 0;color:#102334;font-size:24px;line-height:1.08;letter-spacing:-.045em;font-weight:790
+}
+.nr-home-city{
+  flex:none;display:inline-flex;align-items:center;gap:5px;min-height:30px;padding:0 9px;
+  border:1px solid #e2e8ec;border-radius:999px;background:#f8fafb;color:#52697a;font-size:10px;font-weight:750
+}
+.nr-home-search{
+  position:relative;min-height:66px!important;padding:0 14px!important;border-radius:18px!important;
+  border:1px solid #dfe6eb!important;background:#fff!important;box-shadow:0 12px 34px rgba(4,28,48,.075)!important
+}
+.nr-home-search>svg:first-child{
+  width:36px;height:36px;padding:9px;border-radius:12px;background:#edf9f3;color:#008b57
+}
+.nr-home-search>span:first-of-type{font-size:19px!important;font-weight:760!important}
+.nr-home-shortcuts{margin:12px 0 10px!important}
+.nr-home-shortcuts button{
+  min-height:48px!important;border-radius:999px!important;padding:0 12px!important;background:#f7f9fa!important;
+  border:1px solid #e4e9ed!important;font-size:12px!important
+}
+.nr-home-shortcuts button svg{color:#4b6779}
+.nr-home-shortcuts button:hover{background:#eef9f3!important;border-color:#cce8d8!important}
+.nr-home-location{border:0!important;background:transparent!important;padding:3px 2px!important}
+.nr-home-destinations{display:grid;gap:2px}
+.nr-home-destinations .nr-list-row{
+  min-height:58px;padding:8px 4px!important;border-bottom:0!important;border-radius:14px
+}
+.nr-home-destinations .nr-list-row:hover{background:#f7f9fa}
+.nr-home-destinations .nr-list-icon{width:38px;height:38px;border-radius:13px;background:#f1f4f6;color:#4f6a7b}
+.nr-home-destinations .nr-list-row strong{font-size:13px!important}
+.nr-home-destinations .nr-list-row small{font-size:11px!important}
+
+/* Destination sheet */
+.nr-destination-panel>header{padding:16px 18px 12px!important;align-items:flex-start!important}
+.nr-destination-title{min-width:0;flex:1}
+.nr-destination-title>span{display:block;color:#758897;font-size:10px;font-weight:850;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+.nr-destination-title h1{font-size:22px!important;line-height:1.1!important;letter-spacing:-.035em}
+.nr-endpoint-fields{
+  position:relative;gap:8px!important;padding-left:2px
+}
+.nr-endpoint-fields::before{
+  content:"";position:absolute;left:21px;top:33px;bottom:33px;width:1px;background:#d7e0e6;z-index:0
+}
+.nr-endpoint-field{
+  position:relative;z-index:1;min-height:62px!important;padding:7px 10px!important;border-radius:15px!important;
+  border-color:#e2e7eb!important;background:#f8fafb!important
+}
+.nr-endpoint-field.focused{
+  background:#fff!important;border-color:#00ad6a!important;box-shadow:0 0 0 3px rgba(0,200,120,.075)!important
+}
+.nr-endpoint-field>svg{
+  width:30px;height:30px;padding:7px;border-radius:10px;background:#fff;box-shadow:0 0 0 1px #e3e9ed;color:#008b57!important
+}
+.nr-endpoint-field:last-child>svg{color:#102334!important}
+.nr-endpoint-field small{font-size:10px!important;font-weight:800;letter-spacing:.03em}
+.nr-endpoint-field input{font-size:15px!important;font-weight:630}
+.nr-destination-actions{margin:10px 0 14px!important}
+.nr-destination-actions button{
+  min-height:44px!important;border-radius:13px!important;background:#fff!important;border-color:#e1e7eb!important;
+  font-size:11px!important;font-weight:760
+}
+.nr-search-saved{gap:8px!important}
+.nr-search-saved button{
+  min-height:64px;padding:11px!important;border-radius:15px!important;background:#f8fafb!important;border-color:#e4e9ed!important
+}
+.nr-place-suggestion{
+  min-height:62px!important;padding:8px 4px!important;border-bottom-color:#edf1f3!important;border-radius:12px
+}
+.nr-place-suggestion:hover{background:#f8fafb}
+.nr-place-suggestion>svg:first-child{
+  width:36px;height:36px;padding:9px;border-radius:12px;background:#f1f4f6;color:#5a7181!important
+}
+
+/* Ride selection */
+.nr-ride-selection>header{padding:16px 18px 10px!important;align-items:flex-start!important}
+.nr-ride-heading-copy{min-width:0}
+.nr-ride-heading-copy>span{
+  display:block;color:#758897;font-size:10px;font-weight:850;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px
+}
+.nr-ride-heading-copy h1{font-size:24px!important;letter-spacing:-.04em}
+.nr-ride-route-line{
+  margin:2px 0 14px!important;padding:10px 12px;border-radius:14px;background:#f7f9fa;border:1px solid #e7ecef
+}
+.nr-fare-source{font-size:10px!important;font-weight:850;letter-spacing:.08em;text-transform:uppercase;color:#788a98!important}
+.nr-ride-selection .nr-ride-options{gap:8px!important}
+.nr-ride-selection .nr-ride-card{
+  position:relative;min-height:92px!important;padding:12px 12px!important;border-radius:17px!important;
+  border:1px solid #e2e7eb!important;background:#fff!important
+}
+.nr-ride-selection .nr-ride-card:hover:not(:disabled){border-color:#bdcbd3!important;box-shadow:0 8px 22px rgba(4,28,48,.055)}
+.nr-ride-selection .nr-ride-card.selected{
+  border:2px solid #00b56f!important;background:linear-gradient(90deg,#f5fcf8,#fff)!important;
+  box-shadow:0 9px 24px rgba(0,169,104,.085)!important
+}
+.nr-ride-selection .nr-vehicle-art{width:78px!important;height:50px!important}
+.nr-ride-selection .nr-ride-copy strong{font-size:16px!important;letter-spacing:-.02em}
+.nr-ride-selection .nr-ride-copy small{font-size:11px!important}
+.nr-ride-selection .nr-ride-price strong{font-size:17px!important;letter-spacing:-.025em}
+.nr-ride-selected-indicator{
+  position:absolute;top:9px;right:9px;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;
+  background:#00c878;color:#03271d;border:3px solid #fff;box-shadow:0 5px 12px rgba(0,169,104,.18)
+}
+.nr-ride-card.selected .nr-ride-price{padding-right:18px}
+.nr-fare-explanation{
+  margin-top:12px!important;padding:12px;border-radius:14px;background:#f8fafb;border:1px solid #e7ecef
+}
+.nr-fare-breakdown{background:#fff!important;border-radius:12px!important}
+.nr-ride-selection footer{
+  padding:10px 16px calc(12px + env(safe-area-inset-bottom))!important;background:rgba(255,255,255,.96)!important;
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)
+}
+.nr-ride-payment{min-height:50px!important}
+.nr-ride-payment>svg{width:34px;height:34px;padding:8px;border-radius:11px;background:#f1f4f6}
+.nr-ride-selection footer .nr-button{
+  min-height:54px!important;border-radius:15px!important;font-size:15px!important;font-weight:820!important
+}
+.nr-request-total{
+  padding-left:12px;margin-left:auto!important;border-left:1px solid rgba(4,28,48,.16);font-size:12px!important
+}
+
+/* Matching and assigned-driver transition */
+.nr-driver-matching{border-radius:26px!important}
+.nr-matching-body{padding:22px 20px 16px!important}
+.nr-matching-kicker{
+  display:block;margin-bottom:5px;color:#718694;font-size:9px;font-weight:900;letter-spacing:.13em
+}
+.nr-matching-heading h1{font-size:27px!important;line-height:1.08!important;letter-spacing:-.045em!important}
+.nr-matching-heading p{max-width:390px!important;font-size:13px!important;line-height:1.55!important}
+.nr-matching-symbol{
+  width:54px!important;height:54px!important;border-radius:18px!important;margin-bottom:14px!important;
+  box-shadow:0 8px 20px rgba(0,169,104,.08)
+}
+.nr-match-progress{
+  margin:18px 0!important;padding:11px 12px;border-radius:14px;background:#f8fafb;border:1px solid #e7ecef
+}
+.nr-match-summary{
+  border-radius:18px!important;padding:13px!important;background:#fafbfc!important;border-color:#e5eaed!important
+}
+.nr-confirmed-driver-v2{
+  margin:16px 0 4px;padding:14px!important;border:1px solid #e3e8ec;border-radius:18px;background:#fff;
+  box-shadow:0 10px 28px rgba(4,28,48,.06)
+}
+.nr-confirmed-driver-avatar{
+  width:58px!important;height:58px!important;border-radius:18px!important;background:#eef9f4!important;color:#008c57
+}
+.nr-confirmed-driver-copy{min-width:0;flex:1}
+.nr-confirmed-driver-copy>small{display:block;color:#758897;font-size:8px;font-weight:900;letter-spacing:.12em}
+.nr-confirmed-driver-copy strong{font-size:17px!important;letter-spacing:-.025em}
+.nr-confirmed-driver-copy p{font-size:11px!important}
+.nr-confirmed-plate{
+  padding:5px 8px!important;border-radius:7px!important;background:#f7f9fa;font-size:12px!important;letter-spacing:.08em!important
+}
+.nr-confirmed-driver-eta{text-align:right;flex:none}
+.nr-confirmed-driver-eta small{display:block;margin:0!important;color:#758897!important;font-size:9px!important}
+.nr-confirmed-driver-eta strong{display:block;margin-top:3px;font-size:14px;font-variant-numeric:tabular-nums}
+.nr-driver-matching footer{
+  padding:8px 16px calc(12px + env(safe-area-inset-bottom))!important;background:rgba(255,255,255,.97)!important;
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)
+}
+
+@media(max-width:800px){
+  .nr-rider-home-intro{margin:1px 0 12px}
+  .nr-rider-home-intro h2{font-size:22px}
+  .nr-home-city{display:none}
+  .nr-rider-home-panel{padding-top:10px!important}
+  .nr-home-search{min-height:62px!important}
+  .rider-home-view .nr-panel{max-height:48dvh!important}
+  .rider-search-view .nr-stage{grid-template-rows:minmax(125px,1fr) minmax(0,var(--nr-search-height,64dvh))!important}
+  .rider-ride-view .nr-stage{grid-template-rows:minmax(150px,1fr) minmax(0,min(68dvh,calc(100dvh - 150px)))!important}
+  .rider-matching-view .nr-stage{grid-template-rows:minmax(180px,1fr) minmax(0,min(54dvh,calc(100dvh - 205px)))!important}
+  .nr-destination-panel,.nr-ride-selection,.nr-driver-matching{border-radius:28px 28px 0 0!important}
+}
+@media(max-width:430px){
+  .nr-rider-home-intro h2{font-size:21px}
+  .nr-home-shortcuts button{padding-inline:9px!important}
+  .nr-ride-selection .nr-vehicle-art{width:68px!important}
+  .nr-confirmed-driver-v2{align-items:flex-start!important}
+  .nr-confirmed-driver-eta strong{font-size:12px}
+}
+@media(prefers-reduced-motion:reduce){
+  .nr-ride-selection .nr-ride-card,.nr-home-search,.nr-place-suggestion{transition:none!important}
+}
