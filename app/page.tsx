@@ -39,6 +39,7 @@ import {
   type DriverScreen,
 } from "../components/nexride/driver";
 import type { Language } from "../lib/nexride-i18n";
+import { LANGUAGE_EVENT } from "../components/nexride/language-provider";
 import type { PreviewProfile, PreviewTrip } from "../lib/nexride-preview";
 import { resolveSessionRole } from "../lib/nexride-account-role";
 import "./nexride.css";
@@ -135,6 +136,7 @@ export default function Home() {
   }, [ready, language, mode, theme, profile, trip]);
   useEffect(() => {
     document.documentElement.lang = language;
+    window.dispatchEvent(new CustomEvent(LANGUAGE_EVENT, { detail: language }));
   }, [language]);
   return (
     <LanguageContext value={language}>
