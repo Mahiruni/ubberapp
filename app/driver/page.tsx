@@ -35,7 +35,7 @@ export default function DriverWelcome() {
 
   return (
     <main className="driver-welcome">
-      <div className="driver-welcome-media" aria-hidden="true"><Image src="/images/addis-skyline.webp" alt="" fill priority sizes="100vw" className="driver-city" /><div className="driver-car-photo" /><div className="driver-welcome-gradient" /></div>
+      <div className="driver-welcome-media" aria-hidden="true"><Image src="/images/addis-skyline.webp" alt="" fill priority sizes="100vw" className="driver-city" /><div className="driver-welcome-gradient" /></div>
       <section className="driver-welcome-content">
         <div className="driver-welcome-top"><Brand driver /><span className="driver-role-badge">DRIVER</span></div>
         <div className="driver-welcome-copy"><div className="driver-mark" aria-hidden="true">N</div><p className="driver-eyebrow">NEXRIDE · DRIVER</p><h1>Drive. Earn. Grow.</h1><p className="driver-subtitle">Turn your time on the road into reliable earnings with NexRide.</p></div>
