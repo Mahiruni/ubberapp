@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Brand, Icon } from "../../../components/nexride/ui";
-import { VehicleIllustration } from "../../../components/nexride/vehicle";
 import { supabase } from "../../../lib/supabase";
 import { nexrideAuthRedirectUrl } from "../../../lib/nexride-auth-url";
 import { resolveSessionRole } from "../../../lib/nexride-account-role";
@@ -123,8 +122,7 @@ export default function DriverOnboarding() {
               <span>NEXRIDE · DRIVER</span>
               <strong>Drive Addis.<br />Build your day.</strong>
             </div>
-            <div className="nr-auth-hero-vehicle driver"><VehicleIllustration category="xl" /></div>
-          </div>
+            </div>
 
           <div className="nr-auth-content">
             <Link href="/driver" className="nr-auth-back">← Driver home</Link>
