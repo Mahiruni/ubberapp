@@ -3,7 +3,9 @@
 import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Brand } from "../../../components/nexride/ui";
+import Image from "next/image";
+import { Brand, Icon } from "../../../components/nexride/ui";
+import { VehicleIllustration } from "../../../components/nexride/vehicle";
 import { supabase } from "../../../lib/supabase";
 import { enterDriver } from "../../../lib/nexride-startup";
 import { driverResumeDestination } from "../../../lib/nexride-driver-verification";
@@ -77,24 +79,47 @@ export default function DriverAuth() {
   }
 
   return (
-    <main className="driver-auth-page">
-      <section className="driver-auth-card">
-        <Link href="/driver" className="driver-auth-back">← Back</Link>
-        <Brand driver />
-        <span className="driver-auth-role">DRIVER ACCOUNT</span>
-        <h1>Welcome back.</h1>
-        <p>Sign in to your NexRide driver account and continue where you left off.</p>
+    <main className="nr-auth-experience driver-auth-page">
+      <div className="nr-auth-page">
+        <section className="nr-auth-shell nr-auth-shell-driver">
+          <div className="nr-auth-hero" aria-hidden="true">
+            <Image src="/images/addis-splash-city.jpg" alt="" fill priority sizes="(max-width: 760px) 100vw, 760px" quality={86} />
+            <div className="nr-auth-hero-wash driver" />
+            <div className="nr-auth-hero-top">
+              <Brand />
+              <span className="nr-auth-role-tab">Driver</span>
+            </div>
+            <div className="nr-auth-hero-copy">
+              <span>NEXRIDE · DRIVER</span>
+              <strong>Drive. Earn.<br />Grow.</strong>
+            </div>
+            <div className="nr-auth-hero-vehicle driver"><VehicleIllustration category="comfort" /></div>
+          </div>
 
-        <form onSubmit={submit}>
-          <label>Email<input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username" required /></label>
-          <label>Password<input type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" required /></label>
-          {error && <div className="driver-auth-error" role="alert">{error}</div>}
-          {notice && <div className="driver-auth-notice" role="status">{notice}</div>}
-          <button className="driver-auth-submit" type="submit" disabled={busy}>{busy ? "Signing in…" : "Sign in as Driver"}</button>
-        </form>
+          <div className="nr-auth-content">
+            <Link href="/driver" className="nr-auth-back">← Driver home</Link>
+            <span className="driver-auth-role">DRIVER ACCOUNT</span>
+            <h1>Driver Sign In</h1>
+            <p>Welcome back. Go online and start earning.</p>
 
-        <p className="driver-auth-footer">New to NexRide? <Link href="/driver/onboarding">Create a driver account</Link></p>
-      </section>
+            <form onSubmit={submit} className="nr-auth-form">
+              <label><span>Email address</span><div className="nr-auth-input"><Icon name="user" size={19}/><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username" placeholder="Email address" required /></div></label>
+              <label><span>Password</span><div className="nr-auth-input"><Icon name="shield" size={19}/><input type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" placeholder="Password" required /></div></label>
+              {error && <div className="driver-auth-error" role="alert">{error}</div>}
+              {notice && <div className="driver-auth-notice" role="status">{notice}</div>}
+              <button className="driver-auth-submit" type="submit" disabled={busy}>{busy ? "Signing in…" : "Sign In →"}</button>
+            </form>
+
+            <div className="nr-auth-divider"><span>or</span></div>
+            <Link className="nr-auth-create-link" href="/driver/onboarding"><Icon name="plus" size={18}/>Create Driver Account</Link>
+            <div className="nr-auth-role-note">
+              <span><Icon name="car" size={20}/></span>
+              <div><strong>This sign in is for Drivers</strong><small>Accept trips, manage documents, and earn with NexRide.</small></div>
+            </div>
+            <Link className="nr-auth-role-link" href="/rider/sign-in">Need a ride instead? <strong>Switch to Rider →</strong></Link>
+          </div>
+        </section>
+      </div>
     </main>
   );
 }
