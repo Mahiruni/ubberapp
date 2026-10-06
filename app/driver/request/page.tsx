@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { RideMap } from "../../../components/nexride/map";
 import { Icon } from "../../../components/nexride/ui";
 import { supabase } from "../../../lib/supabase";
+import { resolveSessionRole } from "../../../lib/nexride-account-role";
 import "../../nexride.css";
 import "./driver-request.css";
 
@@ -31,6 +32,8 @@ type RideRequest = {
   ride_category: string;
   estimated_trip_fare_etb: number | null;
   estimated_driver_payout_etb: number | null;
+  estimated_trip_distance_km: number | null;
+  estimated_trip_duration_minutes: number | null;
   status: string;
   assigned_driver_id: string | null;
 };
@@ -95,7 +98,7 @@ export default function DriverRideRequestPage() {
 
     const { data: ride, error: rideError } = await supabase
       .from("ride_requests")
-      .select("id,pickup_location,destination_location,pickup_lat,pickup_lng,destination_lat,destination_lng,ride_category,estimated_trip_fare_etb,estimated_driver_payout_etb,status,assigned_driver_id")
+      .select("id,pickup_location,destination_location,pickup_lat,pickup_lng,destination_lat,destination_lng,ride_category,estimated_trip_fare_etb,estimated_driver_payout_etb,estimated_trip_distance_km,estimated_trip_duration_minutes,status,assigned_driver_id")
       .eq("id", nextOffer.request_id)
       .maybeSingle();
 
@@ -112,8 +115,14 @@ export default function DriverRideRequestPage() {
       const session = data.session;
 
       if (!active) return;
-      if (!session || session.user.user_metadata?.role !== "driver") {
+      if (!session) {
         router.replace("/driver/auth");
+        return;
+      }
+      const role = await resolveSessionRole(session).catch(() => "");
+      if (!active) return;
+      if (role !== "driver") {
+        router.replace(role === "admin" ? "/admin" : "/");
         return;
       }
 
@@ -360,6 +369,12 @@ export default function DriverRideRequestPage() {
                 <small>{fare?.label || "Estimate"}</small>
                 <strong>{fare ? `${formatMoney(fare.value)} ETB` : "Not provided"}</strong>
               </div>
+              {request.estimated_trip_distance_km !== null && (
+                <div><small>Trip distance</small><strong>{request.estimated_trip_distance_km.toFixed(1)} km</strong></div>
+              )}
+              {request.estimated_trip_duration_minutes !== null && (
+                <div><small>Trip time</small><strong>{Math.max(1, Math.round(request.estimated_trip_duration_minutes))} min</strong></div>
+              )}
             </div>
 
             {acceptFailure && (
