@@ -338,6 +338,7 @@ export const messages = {
   wallet: ["Wallet", "ቦርሳ"],
   profile: ["Account", "መለያ"],
   earnings: ["Earnings", "ገቢ"],
+  map: ["Map", "ካርታ"],
   requests: ["Requests", "ጥያቄዎች"],
   preview: ["Preview mode", "የማሳያ ሁነታ"],
   previewInfo: [
