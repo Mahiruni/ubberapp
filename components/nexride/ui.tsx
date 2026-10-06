@@ -115,10 +115,15 @@ export function Button({
   children: ReactNode;
   loading?: boolean;
 }) {
+  const variantClass = {
+    primary: "bg-[var(--nr-emerald)] text-[#041a11] border-[var(--nr-emerald)] hover:bg-[var(--nr-emerald-pressed)]",
+    secondary: "bg-[var(--nr-surface)] text-[var(--nr-text)] border-[var(--nr-border)] hover:bg-[var(--nr-bg-secondary)]",
+    ghost: "bg-transparent text-[var(--nr-text-secondary)] border-transparent hover:bg-[var(--nr-bg-secondary)]",
+  }[variant];
   return (
     <button
       type="button"
-      className={`nr-button nr-${variant} ${className}`}
+      className={`nr-button nr-${variant} inline-flex min-h-11 items-center justify-center gap-2 rounded-[18px] border px-5 py-3 text-[15px] font-semibold tracking-[-0.015em] transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 motion-reduce:transition-none ${variantClass} ${className}`}
       aria-busy={loading || undefined}
       disabled={disabled || loading}
       {...props}
@@ -136,7 +141,7 @@ export function StatusBanner({
   compact?: boolean;
 }) {
   return (
-    <div className={`nr-notice ${compact ? "compact" : ""}`}>
+    <div className={`nr-notice flex items-start gap-2.5 rounded-[18px] border border-[var(--nr-border)] bg-[var(--nr-bg-secondary)] px-3.5 py-3 text-sm text-[var(--nr-text-secondary)] ${compact ? "compact" : ""}`}>
       <Icon name="info" size={17} />
       <span>{children}</span>
     </div>
@@ -155,10 +160,10 @@ export function Sheet({
 }) {
   const t = useTranslation();
   return (
-    <section className="nr-sheet">
+    <section className="nr-sheet w-full rounded-t-[30px] border border-[var(--nr-border)] bg-[var(--nr-surface-raised)] text-[var(--nr-text)] shadow-[var(--nr-shadow-md)]">
       <div className="nr-handle" />
       {title && (
-        <div className="nr-sheet-heading">
+        <div className="nr-sheet-heading flex items-center gap-3">
           {onBack && (
             <button
               className="nr-icon-button"
@@ -188,11 +193,11 @@ export function Navigation({
   onNavigate: (id: string) => void;
 }) {
   return (
-    <nav className="nr-navigation" aria-label="NexRide">
+    <nav className="nr-navigation grid w-full grid-flow-col auto-cols-fr gap-1" aria-label="NexRide">
       {items.map((item) => (
         <button
           key={item.id}
-          className={active === item.id ? "active" : ""}
+          className={`min-h-11 rounded-[16px] px-2 py-2 text-[11px] font-semibold transition-colors duration-200 motion-reduce:transition-none ${active === item.id ? "active" : ""}`}
           onClick={() => onNavigate(item.id)}
           aria-current={active === item.id ? "page" : undefined}
         >
@@ -229,14 +234,14 @@ export function Dialog({
   return (
     <dialog
       ref={dialog}
-      className="nr-dialog"
+      className="nr-dialog m-auto w-[min(92vw,520px)] rounded-[26px] border border-[var(--nr-border)] bg-[var(--nr-surface-raised)] p-0 text-[var(--nr-text)] shadow-[var(--nr-shadow-lg)] backdrop:bg-black/45"
       aria-labelledby="nr-dialog-title"
       onCancel={onClose}
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="nr-dialog-head">
+      <div className="nr-dialog-head flex items-center justify-between gap-4 border-b border-[var(--nr-border)] px-5 py-4">
         <h2 id="nr-dialog-title">{title}</h2>
         <button
           className="nr-icon-button"
@@ -277,7 +282,7 @@ export function ListRow({
 }) {
   const contents = (
     <>
-      <span className="nr-list-icon">
+      <span className="nr-list-icon grid size-10 shrink-0 place-items-center rounded-[14px] bg-[var(--nr-emerald-soft)] text-[var(--nr-emerald-pressed)]">
         <Icon name={icon} />
       </span>
       <span>
@@ -288,11 +293,11 @@ export function ListRow({
     </>
   );
   return onClick ? (
-    <button className="nr-list-row" onClick={onClick}>
+    <button className="nr-list-row flex w-full items-center gap-3 rounded-[16px] px-3 py-3 text-left transition-colors duration-200 hover:bg-[var(--nr-bg-secondary)] motion-reduce:transition-none" onClick={onClick}>
       {contents}
     </button>
   ) : (
-    <div className="nr-list-row">{contents}</div>
+    <div className="nr-list-row flex w-full items-center gap-3 rounded-[16px] px-3 py-3">{contents}</div>
   );
 }
 
@@ -308,7 +313,7 @@ export function StatusChip({
   icon?: IconName;
 }) {
   return (
-    <span className={`nr-status-chip ${tone}`}>
+    <span className={`nr-status-chip ${tone} inline-flex min-h-7 items-center gap-1.5 rounded-full border border-[var(--nr-border)] px-2.5 py-1 text-xs font-semibold`}>
       {icon && <Icon name={icon} size={14} />}
       <span>{children}</span>
     </span>
@@ -327,7 +332,7 @@ export function IconButton({
   return (
     <button
       type="button"
-      className={`nr-icon-button ${className}`}
+      className={`nr-icon-button grid size-11 min-h-11 place-items-center rounded-[15px] border border-[var(--nr-border)] bg-[var(--nr-surface-glass)] text-[var(--nr-text)] shadow-[var(--nr-shadow-sm)] transition-transform duration-200 active:scale-95 motion-reduce:transition-none ${className}`}
       aria-label={label}
       {...props}
     >
@@ -348,7 +353,7 @@ export function SectionHeader({
   action?: ReactNode;
 }) {
   return (
-    <header className="nr-section-header">
+    <header className="nr-section-header flex items-start justify-between gap-4">
       <div>
         {eyebrow && <span>{eyebrow}</span>}
         <h2>{title}</h2>
@@ -371,7 +376,7 @@ export function EmptyState({
   action?: ReactNode;
 }) {
   return (
-    <div className="nr-state nr-state-empty">
+    <div className="nr-state nr-state-empty grid justify-items-start gap-2 rounded-[20px] border border-dashed border-[var(--nr-border-strong)] bg-[var(--nr-bg-secondary)] p-5 text-[var(--nr-text)]">
       <span className="nr-state-icon"><Icon name={icon} size={22} /></span>
       <strong>{title}</strong>
       {detail && <p>{detail}</p>}
@@ -390,7 +395,7 @@ export function ErrorState({
   action?: ReactNode;
 }) {
   return (
-    <div className="nr-state nr-state-error" role="alert">
+    <div className="nr-state nr-state-error grid justify-items-start gap-2 rounded-[20px] border border-[#c63d4d]/25 bg-[#c63d4d]/10 p-5" role="alert">
       <span className="nr-state-icon"><Icon name="info" size={22} /></span>
       <strong>{title}</strong>
       {detail && <p>{detail}</p>}
@@ -406,7 +411,7 @@ export function SkeletonBlock({
   className?: string;
   label?: string;
 }) {
-  return <span className={`nr-skeleton-block ${className}`} role="status" aria-label={label} />;
+  return <span className={`nr-skeleton-block block animate-pulse rounded-[12px] bg-[var(--nr-bg-secondary)] motion-reduce:animate-none ${className}`} role="status" aria-label={label} />;
 }
 
 export function InputField({
@@ -414,9 +419,9 @@ export function InputField({
   ...props
 }: InputHTMLAttributes<HTMLInputElement> & { label: string }) {
   return (
-    <label className="nr-input-field">
+    <label className="nr-input-field grid gap-1.5 rounded-[18px] border border-[var(--nr-border)] bg-[var(--nr-surface)] px-3.5 py-2.5 text-xs font-semibold text-[var(--nr-text-secondary)] transition-[border-color,box-shadow] duration-200 focus-within:border-[var(--nr-emerald)] focus-within:shadow-[0_0_0_4px_rgba(0,200,120,.12)] motion-reduce:transition-none">
       {label}
-      <input {...props} />
+      <input className="min-h-7 w-full border-0 bg-transparent p-0 text-[15px] font-medium text-[var(--nr-text)] outline-none placeholder:text-[var(--nr-text-muted)]" {...props} />
     </label>
   );
 }
