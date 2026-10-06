@@ -406,7 +406,7 @@ function RequestState({
   action,
   onAction,
 }: {
-  icon: "car" | "navigation" | "clock" | "info" | "check";
+  icon: "navigation" | "clock" | "info" | "check";
   title: string;
   body: string;
   action: string;
