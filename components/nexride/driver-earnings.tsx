@@ -203,7 +203,7 @@ export function DriverEarningsScreen({
           ) : null}
 
           <div className="nr-earnings-metrics">
-            <MetricCard label={op("Trips completed")} value={report.completedTrips === null ? "—" : String(report.completedTrips)} hint={op("Completed in period")} icon="car" />
+            <MetricCard label={op("Trips completed")} value={report.completedTrips === null ? "—" : String(report.completedTrips)} hint={op("Completed in period")} icon="navigation" />
             <MetricCard label={op("Online time")} value={formatOnlineTime(report.onlineSeconds)} hint={op("Recorded sessions")} icon="clock" />
             <MetricCard label={op("Avg. per trip")} value={report.averagePerTripEtb === null ? "—" : `${formatEtb(report.averagePerTripEtb)} ETB`} hint={report.earningsPartial ? "Unavailable while partial" : "Net earnings"} icon="money" />
           </div>
@@ -227,7 +227,7 @@ function MetricCard({
   label: string;
   value: string;
   hint: string;
-  icon: "car" | "clock" | "money";
+  icon: "navigation" | "clock" | "money";
 }) {
   return (
     <section className="nr-earnings-metric">
