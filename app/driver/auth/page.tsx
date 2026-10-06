@@ -7,6 +7,7 @@ import { Brand } from "../../../components/nexride/ui";
 import { supabase } from "../../../lib/supabase";
 import { enterDriver } from "../../../lib/nexride-startup";
 import { driverResumeDestination } from "../../../lib/nexride-driver-verification";
+import { resolveSessionRole } from "../../../lib/nexride-account-role";
 import "../driver-welcome.css";
 import "./driver-auth.css";
 
@@ -21,11 +22,19 @@ export default function DriverAuth() {
     let active = true;
     supabase.auth.getSession().then(async ({ data }) => {
       if (!active || !data.session) return;
-      if (data.session.user.user_metadata?.role === "driver") {
-        enterDriver(data.session);
-        const destination = await driverResumeDestination(data.session);
-        if (active) router.replace(destination);
+      const role = await resolveSessionRole(data.session);
+      if (!active) return;
+      if (role === "admin") {
+        router.replace("/admin");
+        return;
       }
+      if (role !== "driver") {
+        router.replace("/");
+        return;
+      }
+      enterDriver(data.session);
+      const destination = await driverResumeDestination(data.session);
+      if (active) router.replace(destination);
     });
     return () => { active = false; };
   }, [router]);
@@ -47,10 +56,13 @@ export default function DriverAuth() {
       return;
     }
 
-    if (data.session.user.user_metadata?.role !== "driver") {
-      await supabase.auth.signOut();
-      setError("This account is registered as a rider. Please use the driver registration flow.");
-      setBusy(false);
+    const role = await resolveSessionRole(data.session);
+    if (role === "admin") {
+      router.replace("/admin");
+      return;
+    }
+    if (role !== "driver") {
+      router.replace("/");
       return;
     }
 

@@ -2,6 +2,7 @@
 
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "./supabase";
+import { resolveSessionRole } from "./nexride-account-role";
 
 export type DriverReviewStatus = "draft" | "pending" | "approved" | "rejected" | "suspended";
 export type DriverDestination = "/driver/auth" | "/driver/onboarding" | "/driver/verification" | "/driver/home";
@@ -21,7 +22,7 @@ export async function getDriverReviewStatus(userId: string): Promise<DriverRevie
 }
 
 export async function driverResumeDestination(session: Session): Promise<DriverDestination> {
-  if (session.user.user_metadata?.role !== "driver") return "/driver/auth";
+  if ((await resolveSessionRole(session)) !== "driver") return "/driver/auth";
   if (session.user.user_metadata?.driver_onboarding_complete !== true) return "/driver/onboarding";
 
   try {

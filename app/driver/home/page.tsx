@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { DriverWorkspace, type DriverScreen } from "../../../components/nexride/driver";
 import { supabase } from "../../../lib/supabase";
 import { getDriverReviewStatus } from "../../../lib/nexride-driver-verification";
+import { resolveSessionRole } from "../../../lib/nexride-account-role";
 import "../../../app/nexride.css";
 import "../../../app/driver/driver-dashboard.css";
 
@@ -23,9 +24,18 @@ export default function DriverHomePage() {
     supabase.auth.getSession().then(async ({ data }) => {
       if (!active) return;
       const session = data.session;
-      const role = session?.user?.user_metadata?.role;
-      if (!session || role !== "driver") {
+      if (!session) {
         router.replace("/driver/auth");
+        return;
+      }
+
+      const role = await resolveSessionRole(session);
+      if (role === "admin") {
+        router.replace("/admin");
+        return;
+      }
+      if (role !== "driver") {
+        router.replace("/");
         return;
       }
       if (session.user.user_metadata?.driver_onboarding_complete !== true) {

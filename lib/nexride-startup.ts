@@ -1,4 +1,5 @@
 import type { Session } from "@supabase/supabase-js";
+import { resolveSessionRole } from "./nexride-account-role";
 import type { Language } from "./nexride-i18n";
 import type { PreviewProfile, PreviewTrip } from "./nexride-preview";
 export const PREVIEW_STORAGE_KEY = "nexride-preview-v2";
@@ -23,8 +24,8 @@ export function restorePreferences(storage: Pick<Storage, "getItem" | "removeIte
   if (trip && typeof trip.destination === "string" && typeof trip.amount === "number" && Number.isFinite(trip.amount) && ["economy", "comfort", "premium", "xl"].includes(trip.ride)) preferences.trip = { pickup: typeof trip.pickup === "string" ? trip.pickup : "", destination: trip.destination, ride: trip.ride, amount: trip.amount, completed: trip.completed === true, rating: typeof trip.rating === "number" ? Math.min(5, Math.max(0, trip.rating)) : 0 };
   try { storage.removeItem("nexride-state"); } catch {} return { preferences, returningPreview: Boolean(saved || legacy), onboardingComplete, previewEnabled };
 }
-export function startupDestination({ session, returningPreview, previewEnabled, onboardingComplete }: { session: Session | null; returningPreview: boolean; previewEnabled: boolean; onboardingComplete: boolean }): StartupDestination {
-  const role = session?.user?.user_metadata?.role;
+export function startupDestination({ session, returningPreview, previewEnabled, onboardingComplete, accountRole }: { session: Session | null; returningPreview: boolean; previewEnabled: boolean; onboardingComplete: boolean; accountRole?: string | null }): StartupDestination {
+  const role = accountRole || session?.user?.user_metadata?.role;
   if (role === "driver") return session?.user?.user_metadata?.driver_onboarding_complete === true ? "/driver/home" : "/driver/onboarding";
   if (session || returningPreview || previewEnabled) return "/";
   return onboardingComplete ? "/rider/sign-in" : "/onboarding";
@@ -62,7 +63,8 @@ export function initializeRider(): Promise<StartupResult> {
       if (result.error) throw new StartupError("session");
 
       const session = result.data.session;
-      const role = session?.user?.user_metadata?.role;
+      const accountRole = session ? await resolveSessionRole(session) : null;
+      const role = accountRole || session?.user?.user_metadata?.role;
 
       if (role === "driver") {
         restored.preferences.mode = "driver";
@@ -90,7 +92,7 @@ export function initializeRider(): Promise<StartupResult> {
         } catch {}
       }
 
-      const destination = startupDestination({ ...restored, session });
+      const destination = startupDestination({ ...restored, session, accountRole });
       completed = { preferences: restored.preferences, destination, session };
       return completed;
     } catch (error) {

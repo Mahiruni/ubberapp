@@ -12,6 +12,7 @@ import {
   PREVIEW_ENABLED_KEY,
 } from "../../lib/nexride-startup";
 import { driverResumeDestination } from "../../lib/nexride-driver-verification";
+import { resolveSessionRole } from "../../lib/nexride-account-role";
 import { ensureRiderProfile, RiderProfileBootstrapError } from "../../lib/nexride-rider-profile-bootstrap";
 
 export type RiderAuthMode = "signin" | "signup" | "forgot" | "reset";
@@ -79,9 +80,14 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
       restoringSession = true;
 
       try {
-        if (session.user.user_metadata?.role === "driver") {
+        const role = await resolveSessionRole(session);
+        if (role === "driver") {
           const destination = await driverResumeDestination(session);
           if (active) router.replace(destination);
+          return;
+        }
+        if (role === "admin") {
+          if (active) router.replace("/admin");
           return;
         }
 
@@ -94,7 +100,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
         if (!active) return;
 
         if (cause instanceof RiderProfileBootstrapError && cause.code === "role_conflict") {
-          await supabase.auth.signOut();
+          await supabase.auth.signOut({ scope: "local" });
           if (active) {
             setError(t("riderAuthOnly"));
             setCheckingSession(false);
@@ -175,9 +181,15 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
         return;
       }
 
-      if (data.session.user.user_metadata?.role === "driver") {
-        await supabase.auth.signOut();
-        setError(t("riderAuthOnly"));
+      const role = await resolveSessionRole(data.session);
+      if (role === "driver") {
+        navigating = true;
+        router.replace(await driverResumeDestination(data.session));
+        return;
+      }
+      if (role === "admin") {
+        navigating = true;
+        router.replace("/admin");
         return;
       }
 
@@ -189,7 +201,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
       router.replace("/");
     } catch (cause) {
       if (cause instanceof RiderProfileBootstrapError && cause.code === "role_conflict") {
-        await supabase.auth.signOut();
+        await supabase.auth.signOut({ scope: "local" });
         setError(t("riderAuthOnly"));
       } else if (cause instanceof RiderProfileBootstrapError) {
         setError("Your Rider profile is not ready. Please try again.");
@@ -337,9 +349,15 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
         return;
       }
 
-      if (data.session.user.user_metadata?.role === "driver") {
-        await supabase.auth.signOut();
-        setError(t("riderAuthOnly"));
+      const role = await resolveSessionRole(data.session);
+      if (role === "driver") {
+        navigating = true;
+        router.replace(await driverResumeDestination(data.session));
+        return;
+      }
+      if (role === "admin") {
+        navigating = true;
+        router.replace("/admin");
         return;
       }
 
@@ -350,7 +368,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
       router.replace("/");
     } catch (cause) {
       if (cause instanceof RiderProfileBootstrapError && cause.code === "role_conflict") {
-        await supabase.auth.signOut();
+        await supabase.auth.signOut({ scope: "local" });
         setError(t("riderAuthOnly"));
       } else if (cause instanceof RiderProfileBootstrapError) {
         setError("Your Rider profile is not ready. Please try again.");
