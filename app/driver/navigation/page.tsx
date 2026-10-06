@@ -552,7 +552,7 @@ export default function DriverNavigationPage() {
             <button className="nr-nav-stage-secondary" disabled={busy} onClick={() => transition("arrived_pickup")}>{busy ? op("Updating…") : op("Arrived at pickup")}</button>
           </div>
         ) : trip.status === "arrived_pickup" ? (
-          <button className="nr-nav-stage-primary" disabled={busy} onClick={() => transition("in_trip")}><Icon name="car" size={19} /> {busy ? op("Starting…") : op("Start trip")}</button>
+          <button className="nr-nav-stage-primary" disabled={busy} onClick={() => transition("in_trip")}><Icon name="navigation" size={19} /> {busy ? op("Starting…") : op("Start trip")}</button>
         ) : trip.status === "in_trip" ? (
           <div className="nr-nav-stage-actions">
             <a className="nr-nav-stage-primary" href={mapsUrl} target="_blank" rel="noreferrer"><Icon name="navigation" size={19} /> {op("Open Google Maps")}</a>
