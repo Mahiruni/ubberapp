@@ -15,6 +15,7 @@ import { driverResumeDestination } from "../../lib/nexride-driver-verification";
 import { resolveSessionRole } from "../../lib/nexride-account-role";
 import { ensureRiderProfile, RiderProfileBootstrapError } from "../../lib/nexride-rider-profile-bootstrap";
 import { nexrideAuthRedirectUrl } from "../../lib/nexride-auth-url";
+import { authErrorKey } from "../../lib/nexride-auth-errors";
 
 export type RiderAuthMode = "signin" | "signup" | "forgot" | "reset";
 
@@ -57,7 +58,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
     }
 
     if (authErrorDescription) {
-      setError(authErrorDescription);
+      setError(t(authErrorKey(authErrorDescription, "signin")));
     }
 
     const restoreSession = async (session: NonNullable<Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"]>) => {
@@ -247,7 +248,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
       });
 
       if (signUpError) {
-        setError(signUpError.message || "Unable to create your account.");
+        setError(t(authErrorKey(signUpError, "signup")));
         return;
       }
 
@@ -266,7 +267,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
       navigating = true;
       router.replace("/rider/sign-in?created=1");
     } catch {
-      setError("Unable to create your account. Check your connection and try again.");
+      setError(t("createAccountFailure"));
     } finally {
       if (!navigating) setBusy(false);
     }
@@ -287,13 +288,13 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
       );
 
       if (recoveryError) {
-        setError("We couldn’t send the recovery email. Check the address and try again.");
+        setError(t(authErrorKey(recoveryError, "recovery")));
         return;
       }
 
       setNotice(t("recoverySent"));
     } catch {
-      setError("We couldn’t send the recovery email. Check your connection and try again.");
+      setError(t("recoveryFailure"));
     } finally {
       setBusy(false);
     }
@@ -323,7 +324,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
       const { error: updateError } = await supabase.auth.updateUser({ password });
 
       if (updateError) {
-        setError("Your password could not be updated. Request a new recovery link and try again.");
+        setError(t(authErrorKey(updateError, "password")));
         return;
       }
 
@@ -358,7 +359,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
       } else if (cause instanceof RiderProfileBootstrapError) {
         setError("Your Rider profile is not ready. Please try again.");
       } else {
-        setError("Your password could not be updated. Request a new recovery link and try again.");
+        setError(t("passwordUpdateFailure"));
       }
     } finally {
       if (!navigating) setBusy(false);
