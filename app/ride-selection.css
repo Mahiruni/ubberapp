@@ -104,11 +104,6 @@
 .nr-ride-selection .nr-ride-card.unavailable {
   background: #f5f7f9;
 }
-.nr-vehicle-art {
-  width: 74px;
-  height: 48px;
-  flex-shrink: 0;
-}
 .nr-ride-selection .nr-ride-copy strong {
   font-size: 15px;
 }
@@ -443,10 +438,7 @@
     padding: 10px 8px;
     gap: 6px;
   }
-  .nr-vehicle-art {
-    width: 66px;
-    height: 46px;
-  }
+  
   .nr-ride-selection footer {
     padding-bottom: calc(8px + env(safe-area-inset-bottom));
   }
