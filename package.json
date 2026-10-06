@@ -12,8 +12,8 @@
     "test:e2e:ui": "playwright test --ui",
     "test:all": "npm run test && npm run test:e2e",
     "predev": "node scripts/generate-brand-assets.mjs",
-    "prebuild": "node scripts/promote-mahirnft-admin.mjs && node scripts/generate-brand-assets.mjs",
-    "postinstall": "node scripts/generate-brand-assets.mjs"
+    "prebuild": "node scripts/generate-brand-assets.mjs",
+    "postinstall": "node scripts/promote-mahirnft-admin.mjs && node scripts/generate-brand-assets.mjs"
   },
   "engines": {
     "node": "24.x"
