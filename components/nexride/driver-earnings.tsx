@@ -86,12 +86,12 @@ export function DriverEarningsScreen({
       .then((next) => {
         if (!active) return;
         setReport(next);
-        if (next.failed) setFailedMessage(op("NexRide could not load earnings, trip, or online-time reporting."));
+        if (next.failed) setFailedMessage(op("We couldn’t load your earnings right now."));
       })
       .catch(() => {
         if (!active) return;
         setReport(null);
-        setFailedMessage(op("NexRide could not load your earnings report."));
+        setFailedMessage(op("We couldn’t load your earnings right now."));
       })
       .finally(() => active && setLoading(false));
 
@@ -119,7 +119,7 @@ export function DriverEarningsScreen({
     <>
       <header className="nr-earnings-head">
         <div>
-          <span className="nr-driver-kicker">NEXRIDE DRIVER</span>
+          <span className="nr-driver-kicker">NEXRIDE · DRIVER</span>
           <h1>{op("Earnings")}</h1>
         </div>
         <button className="nr-driver-icon-btn" onClick={onBack} aria-label={op("Back to driver home")}>
@@ -181,7 +181,7 @@ export function DriverEarningsScreen({
               <span><Icon name="money" size={22} /></span>
               <div>
                 <strong>{op("No activity in this period")}</strong>
-                <p>No completed trips, earnings entries, or recorded online time were found for {earningsPeriodLabel(period).toLowerCase()}.</p>
+                <p>No completed trips, recorded earnings, or online time were found for this period.</p>
               </div>
             </section>
           ) : report.earningsPartial && hasCompletedTrips ? (
@@ -189,7 +189,7 @@ export function DriverEarningsScreen({
               <span><Icon name="info" size={20} /></span>
               <div>
                 <strong>{op("Earnings data is incomplete")}</strong>
-                <p>Completed trips exist in this period, but one or more finalized driver-earning entries are not yet recorded. NexRide is not substituting estimated fares.</p>
+                <p>Some completed trips do not yet have finalized earnings. Estimated fares are not included in this total.</p>
               </div>
             </section>
           ) : report.sourceErrors.length > 0 ? (
@@ -197,7 +197,7 @@ export function DriverEarningsScreen({
               <span><Icon name="info" size={20} /></span>
               <div>
                 <strong>{op("Some report data is unavailable")}</strong>
-                <p>Unavailable: {report.sourceErrors.join(", ")}. Available metrics below are still live.</p>
+                <p>Some reporting sources are unavailable. The metrics shown below are still current.</p>
               </div>
             </section>
           ) : null}
@@ -205,7 +205,7 @@ export function DriverEarningsScreen({
           <div className="nr-earnings-metrics">
             <MetricCard label={op("Trips completed")} value={report.completedTrips === null ? "—" : String(report.completedTrips)} hint={op("Completed in period")} icon="navigation" />
             <MetricCard label={op("Online time")} value={formatOnlineTime(report.onlineSeconds)} hint={op("Recorded sessions")} icon="clock" />
-            <MetricCard label={op("Avg. per trip")} value={report.averagePerTripEtb === null ? "—" : `${formatEtb(report.averagePerTripEtb)} ETB`} hint={report.earningsPartial ? "Unavailable while partial" : "Net earnings"} icon="money" />
+            <MetricCard label={op("Avg. per trip")} value={report.averagePerTripEtb === null ? "—" : `${formatEtb(report.averagePerTripEtb)} ETB`} hint={report.earningsPartial ? "Waiting for finalized earnings" : "Net earnings"} icon="money" />
           </div>
 
           <button className="nr-earnings-report-action" onClick={onOpenReport}>
@@ -269,7 +269,7 @@ function EarningsChart({
         <small>{report.earningsPartial ? op("Partial") : op("Finalized entries")}</small>
       </div>
       {values.every((value) => value === 0) ? (
-        <div className="nr-earnings-chart-empty">No recorded earnings entries to plot.</div>
+        <div className="nr-earnings-chart-empty">No recorded earnings to chart.</div>
       ) : (
         <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-labelledby="nr-earnings-chart-title nr-earnings-chart-desc">
           <title id="nr-earnings-chart-title">Net driver earnings trend</title>

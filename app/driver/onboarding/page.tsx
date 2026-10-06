@@ -120,15 +120,15 @@ export default function DriverOnboarding() {
             </div>
             <div className="nr-auth-hero-copy">
               <span>NEXRIDE · DRIVER</span>
-              <strong>Drive Addis.<br />Build your day.</strong>
+              <strong>Drive. Earn.<br />Grow.</strong>
             </div>
             </div>
 
           <div className="nr-auth-content">
-            <Link href="/driver" className="nr-auth-back">← Driver home</Link>
+            <Link href="/driver" className="nr-auth-back">← Back</Link>
             <span className="driver-auth-role">DRIVER ACCOUNT</span>
-            <h1>Create Driver Account</h1>
-            <p>Sign up to drive, complete verification, and earn with NexRide.</p>
+            <h1>Create your driver account</h1>
+            <p>Add your details and vehicle, then complete verification before going online.</p>
 
             <form onSubmit={submit} className="nr-auth-form">
               <div className="driver-form-grid">
@@ -139,7 +139,7 @@ export default function DriverOnboarding() {
               <label><span>Password</span><div className="nr-auth-input"><Icon name="shield" size={19}/><input type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" minLength={6} placeholder="Password" required /></div></label>
 
               <div className="nr-auth-subsection">
-                <div><span>VEHICLE DETAILS</span><small>Used during Driver verification.</small></div>
+                <div><span>VEHICLE DETAILS</span><small>Used to verify your driver account.</small></div>
                 <div className="driver-form-grid">
                   <label><span>Vehicle</span><div className="nr-auth-input"><Icon name="settings" size={19}/><input value={vehicle} onChange={(e) => setVehicle(e.target.value)} placeholder="Toyota Corolla" required /></div></label>
                   <label><span>Plate number</span><div className="nr-auth-input"><Icon name="card" size={19}/><input value={plate} onChange={(e) => setPlate(e.target.value)} placeholder="2-A12345" required /></div></label>
@@ -148,16 +148,16 @@ export default function DriverOnboarding() {
 
               {error && <div className="driver-auth-error" role="alert">{error}</div>}
               {notice && <div className="driver-auth-notice" role="status">{notice}<Link href="/driver/auth">Sign in as Driver</Link></div>}
-              <button className="driver-auth-submit" type="submit" disabled={busy}>{busy ? "Creating account…" : "Create Account →"}</button>
+              <button className="driver-auth-submit" type="submit" disabled={busy}>{busy ? "Creating account…" : "Create account"}</button>
             </form>
 
             <div className="nr-auth-divider"><span>or</span></div>
             <Link className="nr-auth-create-link" href="/driver/auth">Already have an account? <strong>Sign In</strong></Link>
             <div className="nr-auth-role-note">
               <span><Icon name="briefcase" size={20}/></span>
-              <div><strong>This account is for Drivers</strong><small>Submit documents, manage trips, and start earning.</small></div>
+              <div><strong>Driver account</strong><small>Complete verification, manage trips, and track earnings.</small></div>
             </div>
-            <Link className="nr-auth-role-link" href="/rider/sign-in">Need to ride instead? <strong>Switch to Rider →</strong></Link>
+            <Link className="nr-auth-role-link" href="/rider/sign-in">Looking for a ride? <strong>Switch to Rider →</strong></Link>
           </div>
         </section>
       </div>

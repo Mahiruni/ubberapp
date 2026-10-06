@@ -398,7 +398,7 @@ export default function DriverRideRequestPage() {
           <>
             <div className="nr-request-heading">
               <div>
-                <span className="nr-request-eyebrow">INCOMING</span>
+                <span className="nr-request-eyebrow">NEW REQUEST</span>
                 <h1>New ride request</h1>
               </div>
               {offer.expires_at && secondsRemaining !== null && (
@@ -428,14 +428,14 @@ export default function DriverRideRequestPage() {
             <div className="nr-request-summary">
               <div><small>Ride</small><strong>{request.ride_category}</strong></div>
               <div>
-                <small>{fare?.label || "Estimate"}</small>
+                <small>{fare?.label || "Estimated fare"}</small>
                 <strong>{fare ? `${formatMoney(fare.value)} ETB` : "Not provided"}</strong>
               </div>
               {request.estimated_trip_distance_km !== null && (
                 <div><small>Trip distance</small><strong>{request.estimated_trip_distance_km.toFixed(1)} km</strong></div>
               )}
               {request.estimated_trip_duration_minutes !== null && (
-                <div><small>Trip time</small><strong>{Math.max(1, Math.round(request.estimated_trip_duration_minutes))} min</strong></div>
+                <div><small>Estimated trip time</small><strong>{Math.max(1, Math.round(request.estimated_trip_duration_minutes))} min</strong></div>
               )}
             </div>
 

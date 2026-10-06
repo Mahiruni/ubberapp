@@ -36,7 +36,7 @@ export default function DriverVehiclePage() {
         }
         if (active) setProfile(next);
       } catch {
-        if (active) setError("NexRide could not load your vehicle details.");
+        if (active) setError("We couldn’t load your vehicle details.");
       } finally {
         if (active) setLoading(false);
       }
@@ -57,9 +57,9 @@ export default function DriverVehiclePage() {
             <Icon name="back" />
           </button>
           <div>
-            <span className="nr-driver-kicker">DRIVER PROFILE</span>
+            <span className="nr-driver-kicker">NEXRIDE · DRIVER</span>
             <h1>Vehicle</h1>
-            <p>Review-controlled vehicle information</p>
+            <p>Your verified vehicle details.</p>
           </div>
         </header>
 
@@ -94,7 +94,7 @@ export default function DriverVehiclePage() {
 
               <div className="nr-profile-locked-note">
                 <Icon name="shield" size={17} />
-                <span>Vehicle and plate details are verification-controlled. They are intentionally not editable from general profile settings because changes may affect driver eligibility.</span>
+                <span>Vehicle and plate changes require verification because they can affect driver eligibility.</span>
               </div>
             </section>
 
@@ -102,7 +102,7 @@ export default function DriverVehiclePage() {
               <div className="nr-profile-panel-head">
                 <div>
                   <h2>Need to update the vehicle?</h2>
-                  <p>Use Documents to replace vehicle registration records. Changes that affect verified vehicle identity must go through review.</p>
+                  <p>Update registration documents and submit changes for review.</p>
                 </div>
               </div>
               <div className="nr-doc-actions">

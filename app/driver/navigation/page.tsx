@@ -196,7 +196,7 @@ export default function DriverNavigationPage() {
           })
           .subscribe();
       } catch (error) {
-        setMessage(error instanceof Error ? error.message : "Navigation could not be loaded.");
+        setMessage(error instanceof Error ? error.message : "We couldn’t load this trip.");
       } finally {
         if (active) setLoading(false);
       }
@@ -388,7 +388,7 @@ export default function DriverNavigationPage() {
                 const lng = Number(maneuver.lng);
                 if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
                 return {
-                  instruction: typeof step.instruction === "string" && step.instruction ? step.instruction : "Continue",
+                  instruction: typeof step.instruction === "string" && step.instruction ? step.instruction : "Continue on route",
                   distanceMeters: Number.isFinite(Number(step.distanceMeters)) ? Number(step.distanceMeters) : 0,
                   durationSeconds: Number.isFinite(Number(step.durationSeconds)) ? Number(step.durationSeconds) : 0,
                   maneuver: { lat, lng },
@@ -440,7 +440,7 @@ export default function DriverNavigationPage() {
     if (trip.status === "accepted") return { target: "pickup" as const, title: "Navigate to pickup", destination: trip.pickup, coordinate: trip.pickupCoordinate, distance: trip.pickupDistanceKm, eta: trip.pickupEtaMinutes, badge: "PICKUP" };
     if (trip.status === "arrived_pickup") return { target: "pickup" as const, title: "Arrived at pickup", destination: trip.pickup, coordinate: trip.pickupCoordinate, distance: 0, eta: 0, badge: "AT PICKUP" };
     if (trip.status === "in_trip") return { target: "destination" as const, title: "Navigate to destination", destination: trip.destination, coordinate: trip.destinationCoordinate, distance: trip.tripDistanceKm, eta: trip.tripDurationMinutes, badge: "IN TRIP" };
-    return { target: "destination" as const, title: trip.status === "completed" ? "Trip complete" : "Trip unavailable", destination: trip.destination, coordinate: trip.destinationCoordinate, distance: null, eta: null, badge: trip.status === "completed" ? "COMPLETED" : "ENDED" };
+    return { target: "destination" as const, title: trip.status === "completed" ? "Trip completed" : "Trip unavailable", destination: trip.destination, coordinate: trip.destinationCoordinate, distance: null, eta: null, badge: trip.status === "completed" ? "COMPLETED" : "ENDED" };
   }, [trip]);
 
   const mapsUrl = stage ? navigationUrl(stage.coordinate, stage.destination) : "";
@@ -516,7 +516,7 @@ export default function DriverNavigationPage() {
 
       <section className="nr-nav-guidance" aria-live="polite">
         <span className="nr-nav-guidance-icon"><Icon name="navigation" size={30} /></span>
-        <div><small>{stage.badge}</small><strong>{guidanceTitle}</strong>{canNavigate && <em>{nativeRoute?.target === stage.target ? op("Live NexRide road guidance") : op("Google Maps fallback available")}</em>}</div>
+        <div><small>{stage.badge}</small><strong>{guidanceTitle}</strong>{canNavigate && <em>{nativeRoute?.target === stage.target ? op("Route guidance") : op("Google Maps is also available")}</em>}</div>
         <span className="nr-nav-guidance-distance">{guidanceDistance}</span>
       </section>
 
@@ -530,16 +530,16 @@ export default function DriverNavigationPage() {
       {(gpsState !== "fresh" || routeNotice || locationShareError || nativeRouteNotice) && (
         <div className={`nr-nav-status ${gpsState === "lost" || locationShareError ? "danger" : gpsState === "stale" || nativeRouteNotice ? "warning" : ""}`}>
           <Icon name={gpsState === "fresh" && !locationShareError && !nativeRouteNotice ? "check" : "info"} size={16} />
-          <span>{locationShareError || routeNotice || nativeRouteNotice || gpsMessage || op("Acquiring GPS location…")}</span>
+          <span>{locationShareError || routeNotice || nativeRouteNotice || gpsMessage || op("Getting your location…")}</span>
         </div>
       )}
 
       <section className="nr-nav-bottom-card">
         <div className="nr-nav-trip-meta"><span>{trip.rideCategory}</span><span>{stage.badge}</span></div>
         <div className="nr-nav-current-destination">
-          <small>{stage.target === "pickup" ? op("CURRENT PICKUP") : op("CURRENT DESTINATION")}</small>
+          <small>{stage.target === "pickup" ? op("PICKUP") : op("DESTINATION")}</small>
           <h1>{stage.destination}</h1>
-          <p>{routeEtaMinutes === null ? op("Arrival estimate unavailable") : routeEtaMinutes === 0 ? op("You are at this stop") : `Estimated arrival in ~${routeEtaMinutes} min`}</p>
+          <p>{routeEtaMinutes === null ? op("Arrival estimate unavailable") : routeEtaMinutes === 0 ? op("You are at this stop") : `Arriving in about ${routeEtaMinutes} min`}</p>
         </div>
 
         {message && <div className="nr-nav-action-error" role="alert"><Icon name="info" size={16} /><span>{message}</span></div>}
@@ -565,7 +565,7 @@ export default function DriverNavigationPage() {
           </div>
         )}
 
-        {canNavigate && <div className="nr-nav-handoff"><Icon name="info" size={15} /><span>{nativeRoute?.target === stage.target ? "NexRide refreshes the road route and next maneuver from your live GPS. Google Maps remains available for voice, lane guidance, and external navigation." : "NexRide road guidance is unavailable right now. Use Google Maps for turn-by-turn navigation."}</span></div>}
+        {canNavigate && <div className="nr-nav-handoff"><Icon name="info" size={15} /><span>{nativeRoute?.target === stage.target ? "NexRide keeps the route updated from your location. Google Maps is also available for turn-by-turn guidance." : "Route guidance is unavailable right now. Use Google Maps for turn-by-turn directions."}</span></div>}
       </section>
     </main>
   );

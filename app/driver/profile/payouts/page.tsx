@@ -78,7 +78,7 @@ export default function DriverPayoutsPage() {
         body?.status === "setup_required"
           ? "Payout setup is temporarily unavailable."
           : body?.status === "unavailable"
-            ? "NexRide could not load payout status."
+            ? "We couldn’t load your payout status."
             : "Payout service is unavailable.",
       );
     }
@@ -121,14 +121,14 @@ export default function DriverPayoutsPage() {
           setError(
             loadError instanceof Error
               ? loadError.message
-              : "NexRide could not load payout information.",
+              : "We couldn’t load your payout information.",
           );
       } finally {
         if (active) setLoading(false);
       }
     })().catch(() => {
       if (active) {
-        setError("NexRide could not load payout information.");
+        setError("We couldn’t load your payout information.");
         setLoading(false);
       }
     });
@@ -177,17 +177,17 @@ export default function DriverPayoutsPage() {
               ? "Complete driver verification before configuring payouts."
               : body?.status === "invalid_account"
                 ? "Check the account holder name and account number."
-                : "NexRide could not save this payout account.",
+                : "We couldn’t save this payout account.",
         );
       }
       setAccountNumber("");
-      setNotice("Payout account saved securely.");
+      setNotice("Payout account saved.");
       await fetchSnapshot(false);
     } catch (saveError) {
       setError(
         saveError instanceof Error
           ? saveError.message
-          : "NexRide could not save this payout account.",
+          : "We couldn’t save this payout account.",
       );
     } finally {
       setBusy("");
@@ -239,7 +239,7 @@ export default function DriverPayoutsPage() {
                 ? "Payouts are available only to active, verified drivers."
                 : body?.status === "provider_rejected"
                   ? "The payout provider rejected this withdrawal. Check your account details."
-                  : "NexRide could not submit this payout request.",
+                  : "We couldn’t submit this payout request.",
         );
       }
 
@@ -248,15 +248,15 @@ export default function DriverPayoutsPage() {
         body?.status === "paid"
           ? "Payout confirmed."
           : body?.status === "verification_required"
-            ? "Payout reserved. NexRide will keep it pending until the provider can be verified."
-            : "Payout submitted. Provider processing can take additional time.",
+            ? "Payout requested. It will stay pending until the provider confirms it."
+            : "Payout submitted. Processing time can vary.",
       );
       await fetchSnapshot(false);
     } catch (requestError) {
       setError(
         requestError instanceof Error
           ? requestError.message
-          : "NexRide could not submit this payout request.",
+          : "We couldn’t submit this payout request.",
       );
     } finally {
       setBusy("");
@@ -275,18 +275,18 @@ export default function DriverPayoutsPage() {
       });
       const body = await response.json().catch(() => null);
       if (!response.ok || body?.status !== "reconciled")
-        throw new Error("NexRide could not refresh provider payout status.");
+        throw new Error("We couldn’t refresh the payout status.");
       await fetchSnapshot(false);
       setNotice(
         body.updated
-          ? "Payout status refreshed from the provider."
+          ? "Payout status updated."
           : "No payout status changes were reported.",
       );
     } catch (refreshError) {
       setError(
         refreshError instanceof Error
           ? refreshError.message
-          : "NexRide could not refresh payout status.",
+          : "We couldn’t refresh the payout status.",
       );
     } finally {
       setBusy("");
@@ -315,9 +315,9 @@ export default function DriverPayoutsPage() {
             <Icon name="back" />
           </button>
           <div>
-            <span className="nr-driver-kicker">DRIVER PROFILE</span>
+            <span className="nr-driver-kicker">NEXRIDE · DRIVER</span>
             <h1>{op("Payouts")}</h1>
-            <p>Secure earnings withdrawal and provider status</p>
+            <p>Withdraw eligible earnings and track payout status.</p>
           </div>
         </header>
 
@@ -351,7 +351,7 @@ export default function DriverPayoutsPage() {
                   </p>
                 </div>
                 <span className="nr-driver-kicker">
-                  {configured ? "CHAPA" : "OFFLINE"}
+                  {configured ? "CHAPA" : "UNAVAILABLE"}
                 </span>
               </div>
 
@@ -376,8 +376,7 @@ export default function DriverPayoutsPage() {
                 <div className="nr-profile-locked-note">
                   <Icon name="wallet" size={17} />
                   <span>
-                    Driver payouts are not enabled in this environment yet.
-                    Earnings remain visible and no withdrawal is simulated.
+                    Payouts are not available right now. Your recorded earnings remain visible.
                   </span>
                 </div>
               ) : !eligible ? (
@@ -398,7 +397,7 @@ export default function DriverPayoutsPage() {
                       {snapshot.account.accountNumberMasked}
                     </small>
                   </div>
-                  <span className="nr-doc-status approved">CONFIGURED</span>
+                  <span className="nr-doc-status approved">SAVED</span>
                 </div>
               ) : (
                 <div className="nr-profile-locked-note">
@@ -421,8 +420,7 @@ export default function DriverPayoutsPage() {
                         : "Add payout account"}
                     </h2>
                     <p>
-                      The full account number is encrypted server-side and is never
-                      shown again after saving.
+                      For security, your full account number is not shown again after saving.
                     </p>
                   </div>
                 </div>

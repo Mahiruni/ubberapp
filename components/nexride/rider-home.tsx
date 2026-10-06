@@ -34,11 +34,6 @@ export function LocationMessage({
                   ? "locationReady"
                   : "locationPrompt",
         )}
-        {status === "ready" && position && (
-          <small>
-            {t("accuracy")} ±{Math.ceil(position.accuracy)} m
-          </small>
-        )}
       </span>
     </div>
   );
@@ -130,7 +125,7 @@ export function RiderHomePanel({
           <span><Icon name="clock" size={19} /></span>
           <div>
             <strong>{t("emptyRecent")}</strong>
-            <small>Your real destinations will appear here after you start riding with NexRide.</small>
+            <small>Places you ride to will appear here.</small>
           </div>
         </div>
       )}

@@ -66,7 +66,7 @@ export default function DriverVerificationPage() {
         .maybeSingle();
 
       if (!active) return;
-      if (loadError) setError("Unable to load verification status.");
+      if (loadError) setError("We couldn’t load your verification status.");
       if (data) {
         const next = data.review_status as DriverReviewStatus;
         setStatus(next || "draft");
@@ -168,7 +168,7 @@ export default function DriverVerificationPage() {
           ? "Your driver license must have a future expiry date."
           : payload?.status === "verification_locked"
             ? "Approved or suspended verification cannot be replaced from this screen."
-            : "Unable to submit verification. Please try again.";
+            : "We couldn’t submit your verification. Try again.";
       setError(message);
       setBusy(false);
       return;
@@ -186,16 +186,16 @@ export default function DriverVerificationPage() {
   return (
     <main className="driver-onboarding-page">
       <section className="driver-onboarding-card driver-auth-card">
-        <Link href="/driver/home" className="driver-auth-back">← Driver home</Link>
+        <Link href="/driver/home" className="driver-auth-back">← Back</Link>
         <Brand driver />
-        <span className="driver-auth-role">DRIVER ONBOARDING · STEP 2 OF 2</span>
-        <h1>{status === "approved" ? "You’re verified." : status === "pending" ? "Verification submitted." : "Verify your account."}</h1>
+        <span className="driver-auth-role">NEXRIDE · DRIVER · STEP 2 OF 2</span>
+        <h1>{status === "approved" ? "You’re verified" : status === "pending" ? "Verification submitted" : "Verify your account"}</h1>
         <p>
           {status === "approved"
             ? "Your driver account is approved and can go online."
             : status === "pending"
-              ? "Your documents are stored privately and are awaiting NexRide review. Status updates appear automatically in the driver dashboard."
-              : "Upload your current driver license and vehicle registration. Documents stay in private storage and are available only to you and authorized NexRide reviewers."}
+              ? "Your documents are private and awaiting review. Your status will update automatically."
+              : "Upload your current driver license and vehicle registration. Only you and authorized NexRide reviewers can access these documents."}
         </p>
 
         {status === "rejected" && <div className="driver-auth-error" role="alert">{reason || "Your previous submission needs an update. Please upload the corrected documents."}</div>}
@@ -213,13 +213,13 @@ export default function DriverVerificationPage() {
             <label>Vehicle registration document<input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" onChange={(e) => setRegistrationFile(e.target.files?.[0] || null)} required /></label>
             <small className="driver-auth-draft-note">Text fields are kept on this device if you navigate back. For security, browsers require document files to be selected again.</small>
             {error && <div className="driver-auth-error" role="alert">{error}</div>}
-            <button className="driver-auth-submit" type="submit" disabled={busy}>{busy ? "Submitting securely…" : "Submit for Verification"}</button>
+            <button className="driver-auth-submit" type="submit" disabled={busy}>{busy ? "Submitting…" : "Submit for review"}</button>
           </form>
         )}
 
         {status === "approved" && !editingApproved && <button className="driver-auth-submit" type="button" onClick={() => setEditingApproved(true)}>Update verified driver details</button>}
-        {locked && status !== "approved" && <button className="driver-auth-submit" type="button" onClick={() => router.replace("/driver/home")}>Continue to Driver Home</button>}
-        {status === "approved" && !editingApproved && <button className="driver-auth-secondary" type="button" onClick={() => router.replace("/driver/home?screen=profile")}>Back to Profile</button>}
+        {locked && status !== "approved" && <button className="driver-auth-submit" type="button" onClick={() => router.replace("/driver/home")}>Back to driver home</button>}
+        {status === "approved" && !editingApproved && <button className="driver-auth-secondary" type="button" onClick={() => router.replace("/driver/home?screen=profile")}>Back to profile</button>}
       </section>
     </main>
   );

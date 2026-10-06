@@ -379,12 +379,12 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
   if (mode === "signin" && checkingSession) {
     return (
       <>
-        <span className="nr-rider-entry-kicker">RIDER ACCOUNT</span>
-        <h1>Rider Sign In</h1>
-        <p>Preparing your Rider session…</p>
+        <span className="nr-rider-entry-kicker">NEXRIDE · RIDER</span>
+        <h1>Sign in</h1>
+        <p>Getting your account ready…</p>
         {notice && <p className="nr-auth-notice" role="status">{notice}</p>}
         {error && <p className="nr-auth-error" role="alert">{error}</p>}
-        <StatusBanner>Securely restoring your account. You will continue automatically.</StatusBanner>
+        <StatusBanner>Restoring your account securely. You’ll continue automatically.</StatusBanner>
       </>
     );
   }
@@ -403,9 +403,9 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
   if (mode === "signup") {
     return (
       <>
-        <span className="nr-rider-entry-kicker">RIDER ACCOUNT</span>
-        <h1>Create Rider Account</h1>
-        <p>Sign up to book rides, save places, and move around Addis Ababa.</p>
+        <span className="nr-rider-entry-kicker">NEXRIDE · RIDER</span>
+        <h1>Create your account</h1>
+        <p>Book rides, save places, and keep every trip in one place.</p>
         <form className="nr-profile-form" onSubmit={signUp} aria-busy={busy}>
           <InputField label={t("fullName")} autoComplete="name" required maxLength={80} value={fullName} onChange={(event) => setFullName(event.target.value)} />
           <InputField label={t("phoneNumber")} type="tel" autoComplete="tel" required value={phone} onChange={(event) => setPhone(event.target.value)} />
@@ -423,9 +423,9 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
         </p>
         <div className="nr-auth-role-note">
           <span><Icon name="user" size={20} /></span>
-          <div><strong>This account is for Riders</strong><small>Book rides, save places, and move around your city.</small></div>
+          <div><strong>Rider account</strong><small>Book rides, save places, and manage your trips.</small></div>
         </div>
-        <Link className="nr-auth-role-link" href="/driver">Want to drive with NexRide? <strong>Switch to Driver →</strong></Link>
+        <Link className="nr-auth-role-link" href="/driver">Driving with NexRide? <strong>Switch to Driver →</strong></Link>
       </>
     );
   }
@@ -475,9 +475,9 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
 
   return (
     <>
-      <span className="nr-rider-entry-kicker">RIDER ACCOUNT</span>
-      <h1>Rider Sign In</h1>
-      <p>Welcome back. Book your next ride in seconds.</p>
+      <span className="nr-rider-entry-kicker">NEXRIDE · RIDER</span>
+      <h1>Sign in</h1>
+      <p>Sign in to book a ride or manage your trips.</p>
       <form className="nr-profile-form" onSubmit={signIn} aria-busy={busy}>
         <InputField label={t("authEmail")} type="email" autoComplete="username" required value={email} onChange={(event) => setEmail(event.target.value)} />
         <InputField label={t("password")} type="password" autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} />
@@ -499,13 +499,13 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
 
       <div className="nr-auth-role-note">
         <span><Icon name="user" size={20} /></span>
-        <div><strong>This sign in is for Riders</strong><small>Book rides, get around, and explore your city.</small></div>
+        <div><strong>Rider account</strong><small>Book rides, manage trips, and keep your saved places close.</small></div>
       </div>
 
-      <Link className="nr-auth-role-link" href="/driver">Need to drive with NexRide? <strong>Switch to Driver →</strong></Link>
+      <Link className="nr-auth-role-link" href="/driver">Driving with NexRide? <strong>Switch to Driver →</strong></Link>
 
       <details className="nr-auth-preview">
-        <summary>Preview NexRide</summary>
+        <summary>Explore without signing in</summary>
         <StatusBanner compact>{t("previewInfo")}</StatusBanner>
         <Button variant="ghost" onClick={preview} disabled={busy}>{t("explorePreview")}</Button>
       </details>

@@ -82,8 +82,8 @@ export default function DriverEarningsReportPage() {
             <Icon name="back" />
           </button>
           <div>
-            <span className="nr-driver-kicker">DRIVER EARNINGS</span>
-            <h1>Detailed report</h1>
+            <span className="nr-driver-kicker">NEXRIDE · DRIVER EARNINGS</span>
+            <h1>Earnings report</h1>
             <p>{report ? earningsPeriodLabel(report.period) : "Reporting period"}</p>
           </div>
         </header>
@@ -102,7 +102,7 @@ export default function DriverEarningsReportPage() {
                 <span><Icon name="info" size={20} /></span>
                 <div>
                   <strong>Partial report</strong>
-                  <p>Some completed trips do not yet have finalized earnings entries, or one reporting source is unavailable. Recorded figures are shown without substituting estimated fares.</p>
+                  <p>Some figures are still being finalized. Estimated fares are not used in this report.</p>
                 </div>
               </section>
             )}
@@ -120,7 +120,7 @@ export default function DriverEarningsReportPage() {
               <div className="nr-report-section-head"><h2>Activity</h2><span>{earningsPeriodLabel(report.period)}</span></div>
               <div className="nr-report-row"><span>Trips completed</span><strong>{report.completedTrips ?? "—"}</strong></div>
               <div className="nr-report-row"><span>Recorded online time</span><strong>{formatOnlineTime(report.onlineSeconds)}</strong></div>
-              <div className="nr-report-row"><span>Average net earnings / trip</span><strong>{report.averagePerTripEtb === null ? "—" : `${formatEtb(report.averagePerTripEtb)} ETB`}</strong></div>
+              <div className="nr-report-row"><span>Average per trip</span><strong>{report.averagePerTripEtb === null ? "—" : `${formatEtb(report.averagePerTripEtb)} ETB`}</strong></div>
             </section>
 
             <section className="nr-report-section">
@@ -139,7 +139,7 @@ export default function DriverEarningsReportPage() {
                     <small>{new Date(entry.effectiveAt).toLocaleString("en-ET")} · {entry.status}</small>
                   </div>
                 )) : (
-                  <div className="nr-report-ledger-empty">No financial ledger entries were recorded for this period.</div>
+                  <div className="nr-report-ledger-empty">No earnings entries were recorded for this period.</div>
                 )}
               </div>
             </section>

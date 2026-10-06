@@ -140,9 +140,9 @@ export default function RiderWalletPage() {
             <Icon name="back" />
           </button>
           <div>
-            <span className="kicker">NEXRIDE RIDER</span>
-            <h1>{op("Wallet & payments")}</h1>
-            <p>{op("Supported payment methods only")}</p>
+            <span className="kicker">NEXRIDE · RIDER</span>
+            <h1>{op("Payments")}</h1>
+            <p>{op("Choose how you pay for your rides.")}</p>
           </div>
           <span />
         </header>
@@ -153,18 +153,12 @@ export default function RiderWalletPage() {
           <>
             {error && <div className="nr-support-feedback" role="alert"><Icon name="info" size={16} /><span>{error}</span></div>}
 
-            <section className="nr-support-card nr-wallet-balance">
-              <small>{op("Stored wallet balance")}</small>
-              <strong>{op("Not available")}</strong>
-              <p>NexRide does not currently maintain a rider stored-value wallet. No balance is shown as zero because that could be mistaken for a real financial balance.</p>
-            </section>
-
             <section className="nr-support-card">
               <div className="nr-payment-method">
                 <span className="nr-payment-method-icon"><Icon name="money" size={19} /></span>
                 <span>
                   <strong>{op("Cash")}</strong>
-                  <small>Pay the driver in cash according to the confirmed trip amount.</small>
+                  <small>{op("Pay the driver after your trip.")}</small>
                 </span>
                 <span className="nr-payment-selected">{op("SUPPORTED")}</span>
               </div>
@@ -173,22 +167,22 @@ export default function RiderWalletPage() {
                   <span className="nr-payment-method-icon"><Icon name="card" size={19} /></span>
                   <span>
                     <strong>{op("Online payment · Chapa")}</strong>
-                    <small>Available for completed rides with an unpaid balance. Checkout is hosted by Chapa.</small>
+                    <small>{op("Available for completed rides that still need payment.")}</small>
                   </span>
                   <span className="nr-payment-selected">{op("AVAILABLE")}</span>
                 </div>
               )}
               <div className="nr-payment-notice">
                 {onlinePayments
-                  ? "NexRide never collects or stores raw card details. Online checkout opens on Chapa and payment is marked paid only after server-side verification."
-                  : "Cash is currently the only enabled rider payment method. Online payment stays hidden until a real payment provider and webhook secret are configured."}
+                  ? op("Online checkout opens securely with Chapa. NexRide marks a payment confirmed only after verification.")
+                  : op("Cash is currently available. Online payment appears only when it is enabled for your ride.")}
               </div>
             </section>
 
             <section className="nr-support-card nr-payment-issues">
               <div className="nr-payment-notice">
                 <strong>{op("Payment status")}</strong><br />
-                Pending or failed statuses below come from actual trip records. Cash selection itself does not require a network authorization step.
+                {op("Trips that need payment attention appear below.")}
               </div>
 
               {issues.length ? issues.map((ride) => {
@@ -226,8 +220,8 @@ export default function RiderWalletPage() {
               }) : (
                 <div className="nr-support-state" style={{ border: 0, borderRadius: 0, background: "transparent" }}>
                   <span><Icon name="check" size={20} /></span>
-                  <strong>{op("No unresolved payment statuses")}</strong>
-                  <p>There are no rider trip records currently marked pending, failed, or unknown.</p>
+                  <strong>{op("No payment issues")}</strong>
+                  <p>{op("There are no trips waiting for payment attention.")}</p>
                 </div>
               )}
             </section>

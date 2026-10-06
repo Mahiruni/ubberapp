@@ -132,7 +132,7 @@ export function RiderProfile(props:Props) {
   const shown=account?.profile || (!loading&&!loadError?profile:{name:'',phone:'',email:''});
   const initials=shown.name.trim().split(/\s+/).slice(0,2).map(v=>v[0]).join('').toUpperCase()||'NR';
   const open=(next:typeof panel)=>{setError('');setPanel(next)};
-  const accountState=account?say('Connected account','የተገናኘ መለያ'):say('Preview account','የማሳያ መለያ');
+  const accountState=account?say('Signed in','ገብተዋል'):say('Preview account','የማሳያ መለያ');
 
   const save=async()=>{
     if(lock.current)return;
@@ -163,7 +163,7 @@ export function RiderProfile(props:Props) {
         setProfile(saved);
       }
       setPanel(null);
-      setNotice(account?say('Profile updated successfully.','መገለጫው ተዘምኗል።'):say('Preview details saved on this device.','የማሳያ ዝርዝሮች ተቀምጠዋል።'));
+      setNotice(account?say('Profile updated','መገለጫው ተዘምኗል።'):say('Preview details saved on this device.','የማሳያ ዝርዝሮች ተቀምጠዋል።'));
     }catch{
       setError(say('Could not save your profile. Your changes are still here; please retry.','መገለጫዎን ማስቀመጥ አልተቻለም።'));
     }finally{
@@ -252,7 +252,7 @@ export function RiderProfile(props:Props) {
     </section>
 
     <section className="nr-account-quick-grid" aria-label={say('Quick actions','ፈጣን እርምጃዎች')}>
-      <QuickAction icon="clock" title={say('My rides','ጉዞዎቼ')} detail={say('History & receipts','ታሪክ እና ደረሰኞች')} onClick={props.rides}/>
+      <QuickAction icon="clock" title={say('Activity','እንቅስቃሴ')} detail={say('Trips & receipts','ጉዞዎች እና ደረሰኞች')} onClick={props.rides}/>
       <QuickAction icon="wallet" title={say('Payments','ክፍያዎች')} detail={say('Wallet & payment status','የኪስ ቦርሳ እና ክፍያ ሁኔታ')} onClick={props.payments}/>
       <QuickAction icon="shield" title={say('Safety','ደህንነት')} detail={say('Safety Center','የደህንነት ማዕከል')} onClick={props.safety}/>
       <QuickAction icon="chat" title={say('Support','ድጋፍ')} detail={say('Help when you need it','ሲያስፈልግዎ እገዛ')} onClick={props.support}/>
@@ -262,13 +262,13 @@ export function RiderProfile(props:Props) {
       <div>
         <AccountSection title={say('Your account','የእርስዎ መለያ')} subtitle={say('Identity and account details','ማንነት እና መለያ ዝርዝሮች')}>
           <AccountRow icon="user" title={say('Personal information','የግል መረጃ')} detail={shown.email||say('Name and contact details','ስም እና መገናኛ ዝርዝሮች')} onClick={()=>{setForm(shown);open('edit')}}/>
-          <AccountRow icon="clock" title={say('Ride history','የጉዞ ታሪክ')} detail={say('Trips, status and receipts','ጉዞዎች፣ ሁኔታ እና ደረሰኞች')} onClick={props.rides}/>
-          <AccountRow icon="wallet" title={say('Wallet & payments','ኪስ ቦርሳ እና ክፍያ')} detail={say('Supported payment methods and status','የሚደገፉ ክፍያዎች እና ሁኔታ')} onClick={props.payments}/>
+          <AccountRow icon="clock" title={say('Activity','እንቅስቃሴ')} detail={say('Trips, status and receipts','ጉዞዎች፣ ሁኔታ እና ደረሰኞች')} onClick={props.rides}/>
+          <AccountRow icon="wallet" title={say('Payments','ክፍያዎች')} detail={say('Methods and payment status','የክፍያ መንገዶች እና ሁኔታ')} onClick={props.payments}/>
         </AccountSection>
 
         <AccountSection title={say('Safety & support','ደህንነት እና ድጋፍ')} subtitle={say('Help and protection tools','የእገዛ እና ጥበቃ መሳሪያዎች')}>
-          <AccountRow icon="shield" title={say('Safety Center','የደህንነት ማዕከል')} detail={say('Emergency, sharing and reporting tools','ድንገተኛ፣ ማጋራት እና ሪፖርት')} onClick={props.safety}/>
-          <AccountRow icon="chat" title={say('Help & Support','እገዛ እና ድጋፍ')} detail={say('Guidance and trip-related support','መመሪያ እና የጉዞ ድጋፍ')} onClick={props.support}/>
+          <AccountRow icon="shield" title={say('Safety Center','የደህንነት ማዕከል')} detail={say('Emergency help, sharing and reports','የአደጋ እገዛ፣ ማጋራት እና ሪፖርት')} onClick={props.safety}/>
+          <AccountRow icon="chat" title={say('Support','ድጋፍ')} detail={say('Help with rides and your account','ለጉዞና መለያ እገዛ')} onClick={props.support}/>
         </AccountSection>
       </div>
 
@@ -305,7 +305,7 @@ export function RiderProfile(props:Props) {
       panel==='edit'?say('Edit profile','መገለጫ አርትዕ')
       :panel==='settings'?t('settings')
       :panel==='privacy'?say('Privacy & your data','ግላዊነት እና ውሂብዎ')
-      :say('Sign out','ውጣ')
+      :say('Sign out of NexRide?','ከNexRide ይውጡ?')
     } onClose={()=>{if(!busy)setPanel(null)}}>
       {panel==='edit'?<form className="nr-profile-form nr-profile-form-v2" onSubmit={e=>{e.preventDefault();void save()}} aria-busy={busy}>
         <div className="nr-edit-profile-intro">
@@ -332,7 +332,7 @@ export function RiderProfile(props:Props) {
       :<>
         <div className="nr-signout-confirm">
           <span><Icon name="power" size={22}/></span>
-          <div><strong>{say('Sign out on this device?','በዚህ መሣሪያ ይውጡ?')}</strong><p>{say('This does not cancel an active booking.','ይህ ንቁ ጉዞን አይሰርዝም።')}</p></div>
+          <div><strong>{say('Sign out on this device?','በዚህ መሣሪያ ይውጡ?')}</strong><p>{say('You’ll need to sign in again. Active bookings are not cancelled automatically.','እንደገና መግባት ይኖርብዎታል። ንቁ ጉዞዎች በራስ-ሰር አይሰረዙም።')}</p></div>
         </div>
         {error&&<p role="alert" className="nr-account-error">{error}</p>}
         <div className="nr-signout-actions">

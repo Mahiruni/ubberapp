@@ -20,12 +20,12 @@ type Module =
 type Row = Record<string, any>;
 
 const nav: [Module, string, IconName][] = [
-  ["overview", "Overview", "home"],
-  ["rides", "Live rides", "navigation"],
+  ["overview", "Dashboard", "home"],
+  ["rides", "Rides", "navigation"],
   ["drivers", "Drivers", "user"],
   ["verification", "Verification", "check"],
   ["users", "Users", "users"],
-  ["finance", "Finance", "money"],
+  ["finance", "Payments", "money"],
   ["safety", "Safety", "shield"],
   ["support", "Support", "chat"],
   ["audit", "Audit log", "clock"],
@@ -133,7 +133,7 @@ export default function AdminPage() {
     );
 
     if (metricError) {
-      setError("Live admin metrics could not be loaded.");
+      setError("Dashboard metrics are unavailable right now.");
       return;
     }
 
@@ -253,7 +253,7 @@ export default function AdminPage() {
       setRows(data);
     } catch {
       setRows([]);
-      setError("This administrative data could not be loaded.");
+      setError("This data is unavailable right now. Try refreshing.");
     } finally {
       setRefreshing(false);
     }
@@ -326,7 +326,7 @@ export default function AdminPage() {
       await supabase.auth.signInWithPassword({ email, password });
 
     if (signInError) {
-      setError(signInError.message);
+      setError("We couldn’t sign you in. Check your administrator credentials and try again.");
       setLoginBusy(false);
       return;
     }
@@ -386,7 +386,7 @@ export default function AdminPage() {
     return (
       <div className="admin-loading">
         <span />
-        Securing NexRide Control Center…
+        Opening NexRide Control Center…
       </div>
     );
   }
@@ -397,10 +397,9 @@ export default function AdminPage() {
         <div className="login-card">
           <div className="admin-mark">N</div>
           <p className="admin-kicker">NEXRIDE · CONTROL CENTER</p>
-          <h1>Operations, with control.</h1>
+          <h1>NexRide Control Center</h1>
           <p className="login-copy">
-            Restricted administrative access. Rider and driver accounts cannot
-            enter this workspace.
+            Sign in with an authorized administrator account. Rider and driver accounts cannot access this workspace.
           </p>
           <form onSubmit={signIn}>
             <label>
@@ -425,13 +424,12 @@ export default function AdminPage() {
             </label>
             {error && <div className="login-error">{error}</div>}
             <button className="admin-primary" disabled={loginBusy}>
-              {loginBusy ? "Authenticating…" : "Enter Control Center"}
+              {loginBusy ? "Signing in…" : "Sign in"}
               <span>→</span>
             </button>
           </form>
           <small>
-            Access is enforced by Supabase Auth and admin RLS. Credentials are
-            never stored by the dashboard.
+            Administrative access is restricted to authorized NexRide accounts.
           </small>
         </div>
       </main>
@@ -493,7 +491,7 @@ export default function AdminPage() {
             </button>
             <div className="admin-header-brand"><Brand /></div>
             <div className="admin-header-context">
-              <span className="admin-kicker">NEXRIDE ADMIN</span>
+              <span className="admin-kicker">NEXRIDE · ADMIN</span>
               <h2>{activeTitle}</h2>
             </div>
           </div>
@@ -590,12 +588,9 @@ function Overview({
     <main className="admin-content">
       <div className="hero-row">
         <div>
-          <p className="admin-kicker">REAL-TIME OPERATIONS</p>
-          <h1>The network at a glance.</h1>
-          <p>
-            Current ride state, verified drivers, safety workload and real
-            financial ledgers.
-          </p>
+          <p className="admin-kicker">OPERATIONS</p>
+          <h1>Operations at a glance</h1>
+          <p>Live rides, driver availability, safety workload, and recorded financial activity.</p>
         </div>
         <select
           value={range}
@@ -613,28 +608,28 @@ function Overview({
         <Metric
           label="Active rides"
           value={String(metrics.active)}
-          detail="Accepted, pickup or in-trip"
+          detail="Accepted, at pickup, or in trip"
           accent
         />
         <Metric
           label="Online drivers"
           value={String(metrics.drivers)}
-          detail="Approved and available"
+          detail="Approved and online"
         />
         <Metric
-          label="Completed revenue"
+          label="Completed ride revenue"
           value={formatMoney(metrics.revenue)}
           detail="Selected period"
         />
         <Metric
           label="Riders"
           value={String(metrics.riders)}
-          detail="Active rider accounts"
+          detail="Rider accounts"
         />
         <Metric
           label="Safety queue"
           value={String(metrics.openSafety)}
-          detail="Submitted or reviewing"
+          detail="Open or under review"
           danger
         />
       </div>
@@ -644,26 +639,26 @@ function Overview({
           <div className="card-head">
             <div>
               <span className="admin-kicker">NETWORK HEALTH</span>
-              <h3>Operating signal</h3>
+              <h3>Network status</h3>
             </div>
             <span className="healthy">● Live</span>
           </div>
           <div className="signal">
             <div>
               <strong>{metrics.active}</strong>
-              <small>rides in motion</small>
+              <small>active rides</small>
             </div>
             <div>
               <strong>{formatMoney(metrics.onlinePaid)}</strong>
-              <small>verified online payments</small>
+              <small>confirmed online payments</small>
             </div>
             <div>
               <strong>{formatMoney(metrics.payoutsPaid)}</strong>
-              <small>driver payouts paid</small>
+              <small>completed driver payouts</small>
             </div>
           </div>
           <div className="admin-signal-note">
-            Live summary only · NexRide does not display synthetic trend points.
+            Live data only · no estimated trend data.
           </div>
         </section>
 
@@ -710,20 +705,20 @@ function Overview({
       <section className="admin-card module-strip">
         <div>
           <span className="admin-kicker">OPERATIONS</span>
-          <h3>Move quickly</h3>
+          <h3>Quick actions</h3>
         </div>
         <div className="quick-actions">
           <button onClick={() => setModule("rides")}>
-            Monitor rides <span>→</span>
+            View rides <span>→</span>
           </button>
           <button onClick={() => setModule("verification")}>
-            Verify drivers <span>→</span>
+            Review verification <span>→</span>
           </button>
           <button onClick={() => setModule("finance")}>
-            Review finance <span>→</span>
+            Review payments <span>→</span>
           </button>
           <button onClick={() => setModule("audit")}>
-            Inspect audit <span>→</span>
+            View audit log <span>→</span>
           </button>
         </div>
       </section>
@@ -884,24 +879,24 @@ function DataModule({
     <main className="admin-content">
       <div className="module-head">
         <div>
-          <p className="admin-kicker">OPERATIONS DATA</p>
+          <p className="admin-kicker">NEXRIDE · ADMIN</p>
           <h1>{title}</h1>
           <p>
             {module === "rides"
-              ? "Current NexRide requests, assignment state, fare and payment status."
+              ? "Requests, assignments, fares, and payment status."
               : module === "drivers"
-                ? "Verification, availability and driver health."
+                ? "Verification, availability, and driver status."
                 : module === "verification"
-                  ? "Pending Driver identity, vehicle and document reviews."
+                  ? "Identity, vehicle, and document reviews awaiting action."
                 : module === "users"
-                  ? "Rider, driver and administrative identities."
+                  ? "Rider, driver, and administrator accounts."
                   : module === "finance"
-                    ? "Verified rider payments and driver payout requests."
+                    ? "Confirmed rider payments and driver payout requests."
                     : module === "safety"
-                      ? "Safety reports submitted through the live Safety Center."
+                      ? "Safety reports and their review status."
                       : module === "support"
-                        ? "Customer and driver support requests from the production app."
-                        : "Administrative actions recorded by the control plane."}
+                        ? "Rider and driver support requests."
+                        : "Administrative actions and account changes."}
           </p>
         </div>
         <div className="module-tools">
@@ -1113,10 +1108,9 @@ function DataModule({
                   <td colSpan={columns.length + (hasActions ? 1 : 0)}>
                     <div className="empty">
                       <span>⌁</span>
-                      <b>No records yet</b>
+                      <b>No records to show</b>
                       <small>
-                        This module is connected to the current NexRide production
-                        schema.
+                        Records will appear here when activity is available.
                       </small>
                     </div>
                   </td>

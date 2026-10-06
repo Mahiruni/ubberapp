@@ -7,27 +7,27 @@ const values = [
   {
     icon: "shield" as const,
     title: "Safe",
-    text: "Safety Center, trip sharing and clear trip details are built into the experience.",
+    text: "Safety tools, trip sharing, and clear driver details stay within reach.",
   },
   {
     icon: "clock" as const,
     title: "Fast",
-    text: "A low-friction flow keeps booking, matching and trip actions easy to reach.",
+    text: "A focused booking flow keeps the next action clear.",
   },
   {
     icon: "money" as const,
     title: "Transparent",
-    text: "Fares, payment states and trip statuses are labeled from confirmed product data.",
+    text: "Routes, fares, payment states, and trip statuses are labeled clearly.",
   },
   {
     icon: "star" as const,
     title: "Premium",
-    text: "Thoughtful typography, calm motion and polished rider and driver interfaces.",
+    text: "A calm, considered experience from pickup to arrival.",
   },
   {
     icon: "pin" as const,
     title: "Local",
-    text: "Designed around Addis Ababa riders, drivers, places and day-to-day mobility.",
+    text: "Built around Addis Ababa places and everyday movement.",
   },
 ];
 
@@ -39,7 +39,7 @@ export default function DiscoverNexRidePage() {
           <span className="nr-promo-mark" aria-hidden="true">N</span>
           <span>
             <strong>NexRide</strong>
-            <small>Better rides. A brighter tomorrow.</small>
+            <small>Better Rides. A Brighter Tomorrow.</small>
           </span>
         </Link>
         <nav aria-label="Discover NexRide">
@@ -55,16 +55,15 @@ export default function DiscoverNexRidePage() {
             <span className="nr-promo-mark large" aria-hidden="true">N</span>
             <div>
               <strong>NexRide</strong>
-              <small>Better rides. A brighter tomorrow.</small>
+              <small>Better Rides. A Brighter Tomorrow.</small>
             </div>
           </div>
-          <h1 id="nr-promo-title">More than a ride.<br />It’s a better way to move.</h1>
+          <h1 id="nr-promo-title">More than a ride.<br />A better way to move.</h1>
           <p>
-            A local ride experience focused on clear trip information, thoughtful safety tools,
-            and a smoother connection between riders and drivers.
+            Clear trip information, thoughtful safety tools, and a simpler connection between riders and drivers.
           </p>
           <div className="nr-promo-actions">
-            <Link className="nr-promo-primary" href="/">Open rider app <Icon name="arrow" size={17} /></Link>
+            <Link className="nr-promo-primary" href="/">Book a ride <Icon name="arrow" size={17} /></Link>
             <Link className="nr-promo-secondary" href="/driver">Drive with NexRide</Link>
           </div>
           <div className="nr-promo-app-note">
@@ -75,15 +74,15 @@ export default function DiscoverNexRidePage() {
         <div className="nr-promo-hero-visual nr-promo-addis-night" role="img" aria-label="Addis Ababa skyline">
           <div className="nr-promo-photo-tag">
             <span>Addis Ababa</span>
-            <strong>Built for the city in motion.</strong>
+            <strong>Built for the way Addis moves.</strong>
           </div>
         </div>
       </section>
 
       <section className="nr-promo-values" aria-labelledby="nr-values-title">
         <div className="nr-promo-section-heading">
-          <span>WHY NEXRIDE</span>
-          <h2 id="nr-values-title">Five principles behind the experience.</h2>
+          <span>WHAT GUIDES NEXRIDE</span>
+          <h2 id="nr-values-title">Designed around what matters on every ride.</h2>
         </div>
         <div className="nr-promo-value-grid">
           {values.map((value) => (
@@ -103,8 +102,7 @@ export default function DiscoverNexRidePage() {
           <span>ROOTED HERE</span>
           <h2 id="nr-skyline-title">Addis Ababa and beyond.</h2>
           <p>
-            Built in Addis with room to grow. Live service availability is shown only where
-            NexRide actually supports booking; this message is a direction, not a coverage claim.
+            Built in Addis with room to grow. Service is shown only where NexRide currently supports booking.
           </p>
         </div>
       </section>
@@ -115,7 +113,7 @@ export default function DiscoverNexRidePage() {
             <span className="nr-promo-mark large">N</span>
             <div>
               <strong>NexRide Driver</strong>
-              <small>Verified access · clear trip stages · live availability</small>
+              <small>Verified access · clear trips · organized earnings</small>
             </div>
           </div>
           <div className="nr-promo-driver-grid">
@@ -125,25 +123,22 @@ export default function DiscoverNexRidePage() {
           </div>
         </div>
         <div className="nr-promo-split-copy">
-          <span className="nr-promo-eyebrow">NEXRIDE DRIVER</span>
+          <span className="nr-promo-eyebrow">NEXRIDE · DRIVER</span>
           <h2>Drive. Earn. Grow.</h2>
           <p>
-            Join the driver onboarding flow, submit verification documents securely, and manage
-            availability once approved. Earnings depend on completed rides and actual demand;
-            NexRide does not guarantee income.
+            Complete verification, go online when approved, and keep trips and earnings organized. Earnings depend on completed rides and actual demand; NexRide does not guarantee income.
           </p>
-          <Link className="nr-promo-primary" href="/driver">Explore driver onboarding <Icon name="arrow" size={17} /></Link>
+          <Link className="nr-promo-primary" href="/driver">Become a driver <Icon name="arrow" size={17} /></Link>
         </div>
       </section>
 
       <section className="nr-promo-photo-panel nr-promo-people" aria-labelledby="nr-people-title">
         <div className="nr-promo-photo-copy wide">
           <span>PEOPLE FIRST</span>
-          <h2 id="nr-people-title">Real People. Real Journeys.</h2>
-          <p>Connecting you to what matters most.</p>
+          <h2 id="nr-people-title">Real people. Real journeys.</h2>
+          <p>Clear communication at every stage of the ride.</p>
           <small>
-            NexRide is designed around everyday movement and clear human communication, without
-            turning private trip or account data into marketing content.
+            NexRide is designed around everyday movement while keeping private trip and account data out of marketing content.
           </small>
         </div>
       </section>
@@ -151,11 +146,9 @@ export default function DiscoverNexRidePage() {
       <section className="nr-promo-service-note">
         <span><Icon name="pin" size={20} /></span>
         <div>
-          <strong>Service information stays grounded.</strong>
+          <strong>Clear about what’s available.</strong>
           <p>
-            NexRide does not promise guaranteed safety, guaranteed driver earnings, or service
-            outside areas supported by the live product. Availability and pricing should be
-            confirmed in the app.
+            Availability, pricing, and driver assignment come from current product data. NexRide does not invent coverage, earnings, or safety guarantees.
           </p>
         </div>
       </section>
@@ -166,7 +159,7 @@ export default function DiscoverNexRidePage() {
             <span className="nr-promo-mark" aria-hidden="true">N</span>
             <span>
               <strong>NexRide</strong>
-              <small>Better rides. A brighter tomorrow.</small>
+              <small>Better Rides. A Brighter Tomorrow.</small>
             </span>
           </Link>
           <div className="nr-promo-footer-values" aria-label="NexRide values">
@@ -178,6 +171,14 @@ export default function DiscoverNexRidePage() {
             ))}
           </div>
         </div>
+
+        <nav className="nr-promo-credits" aria-label="NexRide footer navigation">
+          <Link href="/">Rider</Link>
+          <Link href="/driver">Driver</Link>
+          <Link href="/safety?role=rider">Safety</Link>
+          <Link href="/support?role=rider">Support</Link>
+          <span>Built for the way Ethiopia moves.</span>
+        </nav>
 
         <div className="nr-promo-credits">
           <span>Photography:</span>

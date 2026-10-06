@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "../../../../components/nexride/ui";
+import { useOperationalTranslation } from "../../../../components/nexride/operational-i18n";
 import { RiderBottomNavigation, usePersistedRiderTheme } from "../../../../components/nexride/rider-bottom-nav";
 import { supabase } from "../../../../lib/supabase";
 import {
@@ -19,6 +20,7 @@ import "../../supporting.css";
 
 export default function RiderReceiptPage() {
   const router = useRouter();
+  const op = useOperationalTranslation();
   const theme = usePersistedRiderTheme();
   const [ride, setRide] = useState<RiderRide | null>(null);
   const [rating, setRating] = useState<RideRating | null>(null);
@@ -44,7 +46,7 @@ export default function RiderReceiptPage() {
       }
 
       if (!rideId) {
-        setError("No ride was selected.");
+        setError(op("No ride was selected."));
         setLoading(false);
         return;
       }
@@ -56,7 +58,7 @@ export default function RiderReceiptPage() {
           loadRiderRide(rideId, session.user.id),
           loadRideRating(rideId, session.user.id),
         ]);
-        if (!nextRide) throw new Error("This receipt is not available for your account.");
+        if (!nextRide) throw new Error(op("This receipt is not available for your account."));
         if (!active) return;
         setRide(nextRide);
         setRating(nextRating);
@@ -65,7 +67,7 @@ export default function RiderReceiptPage() {
           setFeedback(nextRating.feedback);
         }
       } catch (cause) {
-        if (active) setError(cause instanceof Error ? cause.message : "Receipt unavailable.");
+        if (active) setError(cause instanceof Error ? cause.message : op("Receipt unavailable."));
       } finally {
         if (active) setLoading(false);
       }
@@ -74,7 +76,7 @@ export default function RiderReceiptPage() {
     return () => {
       active = false;
     };
-  }, [router]);
+  }, [router, op]);
 
   async function submitRating() {
     if (!ride || !userId || busy || draftScore < 1 || draftScore > 5 || rating) return;
@@ -92,7 +94,7 @@ export default function RiderReceiptPage() {
       .single();
 
     if (insertError || !data) {
-      setRatingError("Your rating could not be confirmed. Please retry.");
+      setRatingError(op("Your rating could not be confirmed. Try again."));
     } else {
       setRating({ score: data.score, feedback: data.feedback || "" });
     }
@@ -109,8 +111,8 @@ export default function RiderReceiptPage() {
             <Icon name="back" />
           </button>
           <div>
-            <span className="kicker">NEXRIDE RECEIPT</span>
-            <h1>Trip details</h1>
+            <span className="kicker">NEXRIDE · TRIP</span>
+            <h1>{op("Trip details")}</h1>
             <p>{ride ? new Date(rideDate(ride)).toLocaleString("en-ET", { dateStyle: "medium", timeStyle: "short" }) : "Receipt"}</p>
           </div>
           <span />
@@ -121,9 +123,9 @@ export default function RiderReceiptPage() {
         ) : error || !ride ? (
           <section className="nr-support-state" role="alert">
             <span><Icon name="info" size={22} /></span>
-            <strong>Receipt unavailable</strong>
-            <p>{error || "This trip receipt could not be loaded."}</p>
-            <button onClick={() => router.replace("/rider/trips")}>Back to history</button>
+            <strong>{op("Receipt unavailable")}</strong>
+            <p>{error || op("This trip receipt could not be loaded.")}</p>
+            <button onClick={() => router.replace("/rider/trips")}>{op("Back to Activity")}</button>
           </section>
         ) : (
           <>
@@ -131,10 +133,10 @@ export default function RiderReceiptPage() {
               <div className="nr-receipt-hero-top">
                 <div>
                   <span className="kicker">{ride.category.toUpperCase()}</span>
-                  <h2>{amount?.amount === null ? "Amount unavailable" : amount?.amount?.toLocaleString("en-ET") + " ETB"}</h2>
+                  <h2>{amount?.amount === null ? op("Fare unavailable") : amount?.amount?.toLocaleString("en-ET") + " ETB"}</h2>
                 </div>
                 <span className={"nr-receipt-status " + (ride.status === "completed" ? "completed" : ride.status === "cancelled" || ride.status === "withdrawn" ? "cancelled" : "")}>
-                  {formatRideStatus(ride.status)}
+                  {op(formatRideStatus(ride.status))}
                 </span>
               </div>
 
@@ -145,15 +147,15 @@ export default function RiderReceiptPage() {
             </section>
 
             <section className="nr-receipt-grid" aria-label="Receipt summary">
-              <ReceiptValue label="Fare" value={amount?.amount === null ? "Unavailable" : amount?.amount?.toLocaleString("en-ET") + " ETB"} note={amount?.final ? "Final fare" : "Estimated fare"} />
-              <ReceiptValue label="Payment method" value="Cash" note="Only supported rider method" />
-              <ReceiptValue label="Payment status" value={ride.paymentStatus} note={ride.paymentStatus === "paid" ? "Confirmed" : "Backend status"} />
-              <ReceiptValue label="Rating" value={rating ? rating.score + " / 5" : "Not rated"} note="Your rider rating" />
+              <ReceiptValue label={op("Fare")} value={amount?.amount === null ? op("Unavailable") : amount?.amount?.toLocaleString("en-ET") + " ETB"} note={amount?.final ? op("Final fare") : op("Estimated fare")} />
+              <ReceiptValue label={op("Payment method")} value={op("Cash")} note={op("Pay after your trip")} />
+              <ReceiptValue label={op("Payment status")} value={op(ride.paymentStatus)} note={ride.paymentStatus === "paid" ? op("Confirmed") : op("Current status")} />
+              <ReceiptValue label={op("Rating")} value={rating ? rating.score + " / 5" : op("Not rated")} note={op("Your feedback")} />
             </section>
 
             {ride.status === "completed" && (
               <section className="nr-support-card nr-rating-panel">
-                <h2>{rating ? "Your rating" : "Rate this ride"}</h2>
+                <h2>{rating ? op("Your rating") : op("How was your ride?")}</h2>
                 <div className="nr-rating-stars" role="group" aria-label="Ride rating">
                   {[1,2,3,4,5].map((score) => (
                     <button
@@ -172,11 +174,11 @@ export default function RiderReceiptPage() {
                     <textarea
                       value={feedback}
                       maxLength={1000}
-                      placeholder="Optional feedback"
+                      placeholder={op("Share optional feedback")}
                       onChange={(event) => setFeedback(event.target.value)}
                     />
                     <button className="nr-rating-submit" disabled={busy || draftScore === 0} onClick={() => void submitRating()}>
-                      {busy ? "Submitting…" : "Submit rating"}
+                      {busy ? op("Submitting…") : op("Submit rating")}
                     </button>
                   </>
                 )}
@@ -188,13 +190,13 @@ export default function RiderReceiptPage() {
             <section className="nr-support-card nr-support-channels">
               <a className="nr-support-channel" href={"/support?ride=" + encodeURIComponent(ride.id)}>
                 <span><Icon name="chat" size={17} /></span>
-                <span><strong>Get help with this trip</strong><small>Open trip-specific support</small></span>
+                <span><strong>{op("Get help with this trip")}</strong><small>{op("Support for this ride")}</small></span>
                 <Icon name="chevron" size={15} />
               </a>
               {(ride.status === "accepted" || ride.status === "arrived_pickup" || ride.status === "in_trip") && (
                 <a className="nr-support-channel" href={"/trip/chat?ride=" + encodeURIComponent(ride.id) + "&role=rider"}>
                   <span><Icon name="chat" size={17} /></span>
-                  <span><strong>Message driver</strong><small>Active-trip conversation</small></span>
+                  <span><strong>{op("Message driver")}</strong><small>{op("Trip conversation")}</small></span>
                   <Icon name="chevron" size={15} />
                 </a>
               )}

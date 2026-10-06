@@ -19,11 +19,11 @@
 <symbol id="target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/></symbol>
 <symbol id="check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
 </defs></svg>
-<header class="app-header"><a class="brand" href="./" aria-label="NexRide"><span class="brandmark">N</span>NexRide</a><span class="header-label">Your pickup, made simple.</span><a class="screen-link" href="trip.html">Active trip</a><span class="ride-badge">Rider</span></header>
+<header class="app-header"><a class="brand" href="./" aria-label="NexRide"><span class="brandmark">N</span>NexRide</a><span class="header-label">Your ride</span><a class="screen-link" href="trip.html">Active trip</a><span class="ride-badge">Rider</span></header>
 <div id="demoBar" class="demo-bar"><a class="preview-route" href="completion.html" data-preview-link>Completion preview</a><span><b>Design preview</b><span class="demo-note"> · Sample driver, trip & map</span></span><label>Preview state <select id="scenario"><option value="approaching">On the way</option><option value="arrived">Arrived</option><option value="stale">Stale location</option><option value="eta">No ETA</option><option value="reassigning">Reassigning</option><option value="cancelled">Cancelled</option><option value="fee">Cancellation fee</option></select></label></div>
 <main class="workspace">
 <section class="map-section" aria-label="Pickup map">
-<div class="map-heading"><div class="eyebrow">YOUR RIDE</div><div class="map-heading-row"><h1>Almost time to go.</h1><span class="map-city">Addis Ababa</span></div></div>
+<div class="map-heading"><div class="eyebrow">PICKUP</div><div class="map-heading-row"><h1>Your driver is on the way</h1><span class="map-city">Addis Ababa</span></div></div>
 <div class="status-banner" role="status" aria-live="polite" aria-atomic="true"><span class="status-icon"><svg><use href="#pin"/></svg></span><div><h2 id="statusTitle">Driver on the way</h2><p id="statusDetail">Heading to your pickup point</p></div><div class="eta"><b id="etaNumber">4</b><span id="etaUnit">min away</span></div></div>
 <div class="map-wrap">
 <svg id="map" class="map" viewBox="0 0 900 700" role="img" aria-labelledby="mapTitle mapDesc"><title id="mapTitle">Driver approach to pickup</title><desc id="mapDesc">Illustrative sample map of Addis Ababa. Emerald line connects the sample driver with pickup. Navy line shows the selected trip.</desc>
@@ -45,13 +45,13 @@
 </div>
 </section>
 <aside class="ride-panel">
-<div class="sheet-handle"></div><div class="panel-top"><span class="eyebrow">MEET YOUR DRIVER</span><span id="category" class="category">Economy</span></div>
+<div class="sheet-handle"></div><div class="panel-top"><span class="eyebrow">YOUR DRIVER</span><span id="category" class="category">Economy</span></div>
 <div id="driverContent"><div class="driver-row"><img id="driverPhoto" class="driver-photo" src="assets/driver.png" alt="Sample driver portrait"><div><h2 id="driverName">Tesfaye Alemu</h2><p id="driverStats" class="driver-stats"><span class="star">★</span> 4.9 <span>· 256 trips</span></p><p id="verification" class="verification" hidden></p></div></div>
 <div class="vehicle-card"><div class="vehicle-top"><div><h3 id="vehicleModel">Toyota Corolla</h3><p id="vehicleColor">Silver · 4 seats</p></div><span class="vehicle-tag">YOUR CAR</span></div><div class="plate-row"><span class="plate-label">LICENSE PLATE</span><strong id="vehiclePlate">ET 74235</strong></div></div>
 <div class="actions" aria-label="Driver and trip actions"><button data-action="call"><span><svg><use href="#phone"/></svg></span>Call</button><button data-action="chat"><span><svg><use href="#chat"/></svg></span>Chat</button><button data-action="share"><span><svg><use href="#share"/></svg></span>Share</button><button data-action="safety"><span><svg><use href="#shield"/></svg></span>Safety</button></div></div>
 <div id="stateNotice" class="state-notice" hidden></div>
-<div class="pickup-card"><div class="pickup-label"><svg><use href="#pin"/></svg><span>PICKUP POINT</span></div><h3 id="pickupName">Meskel Square</h3><p id="pickupArea">Kirkos, Addis Ababa</p><div class="instructions"><span class="instruction-line"></span><p id="instructions">Wait by the main entrance, on the Africa Avenue side. Look for the silver Toyota Corolla.</p></div></div>
-<div class="destination-row"><i></i><div><span>Going to</span><b id="destinationName">Bole International Airport</b></div></div>
+<div class="pickup-card"><div class="pickup-label"><svg><use href="#pin"/></svg><span>PICKUP</span></div><h3 id="pickupName">Meskel Square</h3><p id="pickupArea">Kirkos, Addis Ababa</p><div class="instructions"><span class="instruction-line"></span><p id="instructions">Wait by the main entrance, on the Africa Avenue side. Look for the silver Toyota Corolla.</p></div></div>
+<div class="destination-row"><i></i><div><span>Destination</span><b id="destinationName">Bole International Airport</b></div></div>
 <div class="fare-row"><span>Estimated fare</span><b id="fare">145 ETB</b></div>
 <div class="panel-footer"><button id="cancel" class="cancel">Cancel ride</button><span id="bookingReference">Sample booking · NR-2048</span></div>
 </aside>

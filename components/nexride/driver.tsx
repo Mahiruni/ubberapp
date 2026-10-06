@@ -624,9 +624,9 @@ export function DriverWorkspace({
       <div className="nr-driver-page nr-driver-map-page">
         <header className="nr-driver-map-header">
           <div>
-            <span className="nr-driver-kicker">NEXRIDE DRIVER</span>
+            <span className="nr-driver-kicker">NEXRIDE · DRIVER</span>
             <h1>Driver map</h1>
-            <p>{state.online ? "You’re online and visible for eligible dispatch." : "Go online when you’re ready to receive requests."}</p>
+            <p>{state.online ? "You’re online and ready for ride requests." : "Go online when you’re ready to receive requests."}</p>
           </div>
           <button className="nr-driver-icon-btn" onClick={() => navigate("profile")} aria-label="Open driver profile">
             <Icon name="user" />
@@ -653,10 +653,10 @@ export function DriverWorkspace({
                 <strong>{state.online ? "Online" : "Offline"}</strong>
                 <span>
                   {mapLocation.status === "ready"
-                    ? "Current location centered on the same NexRide map used by Riders."
+                    ? "Your current location is centered on the map."
                     : mapLocation.status === "denied"
                       ? "Location permission is blocked on this device."
-                      : "Use the locate button to center your current position."}
+                      : "Use the location button to center the map on you."}
                 </span>
               </div>
             </div>
@@ -665,7 +665,7 @@ export function DriverWorkspace({
               disabled={loading || updating || (!state.online && !canGoOnline)}
               onClick={toggleAvailability}
             >
-              {updating ? "Updating…" : state.online ? "Go Offline" : "Go Online"}
+              {updating ? "Updating…" : state.online ? "Go offline" : "Go online"}
             </button>
           </div>
         </section>
@@ -695,8 +695,8 @@ export function DriverWorkspace({
         <div className="nr-driver-avatar">{state.avatarUrl ? <img src={state.avatarUrl} alt="" /> : initials}</div>
         <div>
           <span className="nr-driver-kicker">DRIVER HOME</span>
-          <h1>Good day, {firstName}</h1>
-          <p>Ready when you are.</p>
+          <h1>{state.online ? "You’re online" : `Ready to drive, ${firstName}?`}</h1>
+          <p>{state.online ? "Ready for ride requests." : "Go online to receive ride requests."}</p>
         </div>
         <button className="nr-driver-icon-btn" onClick={() => navigate("profile")} aria-label="Open driver profile"><Icon name="user" /></button>
       </header>
@@ -721,10 +721,10 @@ export function DriverWorkspace({
               <strong>{state.online ? "Online" : "Offline"}</strong>
               <span>
                 {state.online
-                  ? "Visible for eligible dispatch. NexRide keeps your current location fresh while you’re available."
+                  ? "Ready for ride requests. NexRide uses your location while you’re online."
                   : verified
                     ? "Go online when you’re ready to receive requests."
-                    : "Complete Driver eligibility before going online."}
+                    : "Complete verification before going online."}
               </span>
             </div>
           </div>
@@ -733,7 +733,7 @@ export function DriverWorkspace({
             disabled={loading || updating || (!state.online && !canGoOnline)}
             onClick={toggleAvailability}
           >
-            {updating ? "Updating…" : state.online ? "Go Offline" : "Go Online"}
+            {updating ? "Updating…" : state.online ? "Go offline" : "Go online"}
           </button>
         </div>
       </section>
@@ -771,19 +771,19 @@ export function DriverWorkspace({
           <div className="nr-empty-trip-icon"><Icon name="locate" size={23} /></div>
           <div>
             <strong>No trips yet</strong>
-            <span>{state.online ? "You’re available. New dispatch offers will open automatically when they arrive." : "Go online when eligible to start receiving ride requests."}</span>
+            <span>{state.online ? "You’re online. New ride requests will appear here." : "Go online to start receiving ride requests."}</span>
           </div>
         </section>
       )}
 
-      <button className="nr-driver-action-row" onClick={onSafety}><Icon name="shield" /><span>Safety & support</span><Icon name="chevron" /></button>
+      <button className="nr-driver-action-row" onClick={onSafety}><Icon name="shield" /><span>Safety & Support</span><Icon name="chevron" /></button>
       <DriverBottomNav screen={screen} navigate={navigate} />
     </div>
   );
 }
 
 function PageHead({ title, navigate, back = true }: { title: string; navigate: (screen: DriverScreen) => void; back?: boolean }) {
-  return <div className="nr-driver-page-head"><div><span className="nr-driver-kicker">NEXRIDE DRIVER</span><h1>{title}</h1></div>{back && <button className="nr-driver-icon-btn" onClick={() => navigate("home")} aria-label="Back to driver home"><Icon name="back" /></button>}</div>;
+  return <div className="nr-driver-page-head"><div><span className="nr-driver-kicker">NEXRIDE · DRIVER</span><h1>{title}</h1></div>{back && <button className="nr-driver-icon-btn" onClick={() => navigate("home")} aria-label="Back to driver home"><Icon name="back" /></button>}</div>;
 }
 
 function Metric({ label, value, suffix, hint, loading }: { label: string; value: string; suffix?: string; hint: string; loading: boolean }) {

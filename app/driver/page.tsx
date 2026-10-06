@@ -38,8 +38,8 @@ export default function DriverWelcome() {
       <div className="driver-welcome-media" aria-hidden="true"><Image src="/images/addis-skyline.webp" alt="" fill priority sizes="100vw" className="driver-city" /><div className="driver-welcome-gradient" /></div>
       <section className="driver-welcome-content">
         <div className="driver-welcome-top"><Brand driver /><span className="driver-role-badge">DRIVER</span></div>
-        <div className="driver-welcome-copy"><div className="driver-mark" aria-hidden="true">N</div><p className="driver-eyebrow">NEXRIDE · DRIVER</p><h1>Drive. Earn. Grow.</h1><p className="driver-subtitle">Turn your time on the road into reliable earnings with NexRide.</p></div>
-        <div className="driver-welcome-actions"><Link className="driver-get-started" href="/driver/onboarding">Get Started</Link><Link className="driver-sign-in" href="/driver/auth">I already have an account</Link><p className="driver-role-note">Driver access only · <Link href="/rider/sign-in">Riders sign in here.</Link></p></div>
+        <div className="driver-welcome-copy"><div className="driver-mark" aria-hidden="true">N</div><p className="driver-eyebrow">NEXRIDE · DRIVER</p><h1>Drive. Earn. Grow.</h1><p className="driver-subtitle">Work on your schedule and keep every trip clearly organized.</p></div>
+        <div className="driver-welcome-actions"><Link className="driver-get-started" href="/driver/onboarding">Get started</Link><Link className="driver-sign-in" href="/driver/auth">I already have an account</Link><p className="driver-role-note">Looking for a ride? · <Link href="/rider/sign-in">Rider sign in</Link></p></div>
       </section>
     </main>
   );

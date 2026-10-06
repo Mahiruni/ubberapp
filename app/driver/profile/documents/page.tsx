@@ -67,7 +67,7 @@ export default function DriverDocumentsPage() {
       } catch {
         if (active) {
           setMessageTone("error");
-          setMessage("NexRide could not load your verification documents.");
+          setMessage("We couldn’t load your verification documents.");
         }
       } finally {
         if (active) setLoading(false);
@@ -185,7 +185,7 @@ export default function DriverDocumentsPage() {
     await refresh(profile.id);
     setBusy(null);
     setMessageTone("success");
-    setMessage("Replacement uploaded securely. Your verification is now under review and driver availability is paused until approval.");
+    setMessage("Document submitted. Your verification is under review, and you’ll stay offline until it is approved.");
   }
 
   function handleFile(kind: "license" | "registration") {
@@ -210,9 +210,9 @@ export default function DriverDocumentsPage() {
             <Icon name="back" />
           </button>
           <div>
-            <span className="nr-driver-kicker">DRIVER PROFILE</span>
+            <span className="nr-driver-kicker">NEXRIDE · DRIVER</span>
             <h1>Documents</h1>
-            <p>Private verification documents · visible only to you and authorized NexRide reviewers</p>
+            <p>Private documents used to verify your driver account.</p>
           </div>
         </header>
 
@@ -238,7 +238,7 @@ export default function DriverDocumentsPage() {
               <div className="nr-profile-panel-head">
                 <div>
                   <h2>Verification documents</h2>
-                  <p>Replacing an approved document sends the verification set back to review and takes the driver offline until approval.</p>
+                  <p>Replacing an approved document sends your verification back for review and keeps you offline until approval.</p>
                 </div>
               </div>
 
@@ -285,7 +285,7 @@ export default function DriverDocumentsPage() {
 
             <div className="nr-profile-locked-note">
               <Icon name="shield" size={17} />
-              <span>License numbers, vehicle plates, and verification documents are review-controlled. Editable contact information is kept separately in Settings.</span>
+              <span>License, vehicle, and document changes require review. Contact details can be changed in Settings.</span>
             </div>
           </>
         ) : (

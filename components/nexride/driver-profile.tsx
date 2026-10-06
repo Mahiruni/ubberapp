@@ -40,7 +40,7 @@ export function DriverProfileScreen({
       const data = await loadDriverProfileData(driverId);
       setProfile(data);
     } catch {
-      setError("NexRide could not load your driver profile.");
+      setError("We couldn’t load your driver profile.");
     } finally {
       setLoading(false);
     }
@@ -52,7 +52,7 @@ export function DriverProfileScreen({
     setError("");
     loadDriverProfileData(driverId)
       .then((data) => active && setProfile(data))
-      .catch(() => active && setError("NexRide could not load your driver profile."))
+      .catch(() => active && setError("We couldn’t load your driver profile."))
       .finally(() => active && setLoading(false));
 
     const onFocus = () => {
@@ -152,7 +152,7 @@ export function DriverProfileScreen({
 
   const statusDetail =
     verification.tone === "approved"
-      ? "Identity and vehicle documents are approved."
+      ? "Your identity and vehicle documents are approved."
       : verification.detail;
 
   return (
@@ -160,8 +160,8 @@ export function DriverProfileScreen({
       <header className="nr-driver-profile-heading">
         <div>
           <span className="nr-driver-kicker">NEXRIDE · DRIVER ACCOUNT</span>
-          <h1>Your Driver profile</h1>
-          <p>Identity, verification, vehicle, earnings and safety in one place.</p>
+          <h1>Your driver account</h1>
+          <p>Profile, verification, vehicle, earnings, and safety in one place.</p>
         </div>
         <button className="nr-driver-icon-btn" onClick={onBack} aria-label="Back to driver home">
           <Icon name="back" />
@@ -243,8 +243,8 @@ export function DriverProfileScreen({
       <section className="nr-driver-profile-quick-grid" aria-label="Driver profile quick actions">
         <DriverQuick icon="shield" title="Documents" detail={verification.title} onClick={() => router.push("/driver/profile/documents")}/>
         <DriverQuick icon="pin" title="Vehicle" detail={profile.vehiclePlate || "Vehicle details"} onClick={() => router.push("/driver/profile/vehicle")}/>
-        <DriverQuick icon="money" title="Earnings" detail="Reports & trip earnings" onClick={() => router.push("/driver/earnings/report")}/>
-        <DriverQuick icon="wallet" title="Payouts" detail="Account & withdrawals" onClick={() => router.push("/driver/profile/payouts")}/>
+        <DriverQuick icon="money" title="Earnings" detail="Reports and trip earnings" onClick={() => router.push("/driver/earnings/report")}/>
+        <DriverQuick icon="wallet" title="Payouts" detail="Payout account and withdrawals" onClick={() => router.push("/driver/profile/payouts")}/>
       </section>
 
       <div className="nr-driver-profile-columns">
@@ -255,28 +255,28 @@ export function DriverProfileScreen({
             <DriverRow icon="pin" title="Vehicle information" detail={profile.vehicle || "Vehicle details"} onClick={() => router.push("/driver/profile/vehicle")}/>
           </DriverSection>
 
-          <DriverSection title="Earnings & payouts" subtitle="Your work and money">
-            <DriverRow icon="money" title="Earnings report" detail="Completed trips and earnings ledger" onClick={() => router.push("/driver/earnings/report")}/>
-            <DriverRow icon="wallet" title="Payouts" detail="Payout account, balance and history" onClick={() => router.push("/driver/profile/payouts")}/>
+          <DriverSection title="Earnings & payouts" subtitle="Earnings and payout history">
+            <DriverRow icon="money" title="Earnings report" detail="Completed trips and recorded earnings" onClick={() => router.push("/driver/earnings/report")}/>
+            <DriverRow icon="wallet" title="Payouts" detail="Payout account and history" onClick={() => router.push("/driver/profile/payouts")}/>
           </DriverSection>
         </div>
 
         <div>
           <DriverSection title="Safety & support" subtitle="Protection and help tools">
-            <DriverRow icon="shield" title="Safety Center" detail="Emergency, trip sharing and reporting" onClick={onSafety}/>
-            <DriverRow icon="chat" title="Driver support" detail="Help and trip-related support" onClick={() => router.push("/support?role=driver")}/>
+            <DriverRow icon="shield" title="Safety Center" detail="Emergency help, trip sharing, and reports" onClick={onSafety}/>
+            <DriverRow icon="chat" title="Driver support" detail="Help with trips and your driver account" onClick={() => router.push("/support?role=driver")}/>
           </DriverSection>
 
           <DriverSection title="Preferences & account" subtitle="Your NexRide Driver settings">
             <DriverRow icon="settings" title="Profile settings" detail="Name, phone and account details" onClick={() => router.push("/driver/profile/settings")}/>
-            <DriverRow icon="info" title="Privacy & account data" detail="Authenticated Driver information stays private" onClick={() => router.push("/driver/profile/documents")}/>
+            <DriverRow icon="info" title="Privacy & account data" detail="Your authenticated driver information stays private" onClick={() => router.push("/driver/profile/documents")}/>
           </DriverSection>
         </div>
       </div>
 
       {!profile.avatarUrl && (
         <p className="nr-profile-photo-note">
-          NexRide is using your initials because no Driver photograph is currently connected to this account.
+          Your initials are shown because no driver photo is currently connected to this account.
         </p>
       )}
 
@@ -292,12 +292,12 @@ export function DriverProfileScreen({
           <Icon name="power" size={18} />
           <span>Sign out</span>
         </button>
-        <p>Verified identity, vehicle, document and payout information stays inside authenticated Driver surfaces.</p>
+        <p>Your verified identity, vehicle, documents, and payout details are available only in authenticated driver areas.</p>
       </footer>
 
       {signOutOpen && (
         <Dialog
-          title="Sign out of Driver?"
+          title="Sign out of NexRide?"
           onClose={() => {
             if (!signingOut) {
               setSignOutOpen(false);
@@ -308,8 +308,8 @@ export function DriverProfileScreen({
           <div className="nr-driver-signout-intro">
             <span><Icon name="power" size={22}/></span>
             <div>
-              <strong>End this Driver session?</strong>
-              <p>NexRide checks that you have no active trip, takes you offline, then clears the local session.</p>
+              <strong>Sign out on this device?</strong>
+              <p>NexRide first checks that you have no active trip, then takes you offline and signs you out.</p>
             </div>
           </div>
           {signOutError && (

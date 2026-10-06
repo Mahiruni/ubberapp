@@ -156,7 +156,7 @@ export default function SafetyCenterPage() {
             <Icon name="back" />
           </button>
           <div>
-            <span>NEXRIDE SAFETY</span>
+            <span>NEXRIDE · SAFETY</span>
             <h1>{view === "home" ? op("Safety Center") : view === "sos" ? op("Emergency SOS") : view === "share" ? op("Share your trip") : view === "help" ? op("Help Center") : op("Report an issue")}</h1>
           </div>
           <span className={`nr-safety-network ${online ? "online" : "offline"}`}>
@@ -167,7 +167,7 @@ export default function SafetyCenterPage() {
         {!online && (
           <div className="nr-safety-offline" role="status">
             <Icon name="info" size={17} />
-            <span>Internet is unavailable. Emergency phone shortcuts can still work, but NexRide reports cannot be submitted until you reconnect.</span>
+            <span>{op("You’re offline. Emergency phone shortcuts can still work, but reports cannot be sent until you reconnect.")}</span>
           </div>
         )}
 
@@ -208,8 +208,8 @@ function SafetyHome({
       <section className="nr-safety-intro">
         <div className="nr-safety-shield"><Icon name="shield" size={26} /></div>
         <div>
-          <strong>Safety tools when you need them</strong>
-          <p>Emergency calling, trip sharing, guidance, and reporting are separated clearly so each action does exactly what it says.</p>
+          <strong>{op("Help and safety tools when you need them")}</strong>
+          <p>{op("Choose the action that matches what you need right now.")}</p>
         </div>
       </section>
 
@@ -218,36 +218,36 @@ function SafetyHome({
           tone="danger"
           icon="phone"
           title={op("Emergency SOS")}
-          detail={op("Hold to open verified emergency call options. NexRide does not dispatch responders.")}
+          detail={op("Open emergency call options. NexRide does not dispatch responders.")}
           onClick={() => open("sos")}
         />
         <SafetyAction
           tone="success"
           icon="share"
           title={op("Share your trip")}
-          detail={op("Review and share a one-time trip snapshot with someone you trust.")}
+          detail={op("Share a one-time trip snapshot with someone you trust.")}
           onClick={() => open("share")}
         />
         <SafetyAction
           tone="info"
           icon="chat"
           title={op("Help Center")}
-          detail={op("Get clear guidance for safety, trip, location, and connection issues.")}
+          detail={op("Find guidance for safety, trip, location, and connection issues.")}
           onClick={() => open("help")}
         />
         <SafetyAction
           tone="neutral"
           icon="info"
           title={op("Report an issue")}
-          detail={op("Choose a category, add optional details, and include relevant trip context.")}
+          detail={op("Tell NexRide what happened and include trip details when available.")}
           onClick={() => open("report")}
         />
       </div>
 
       <section className="nr-safety-context">
-        <span>CURRENT CONTEXT</span>
+        <span>{op("TRIP CONTEXT")}</span>
         {loadingTrip ? (
-          <p>Checking active trip…</p>
+          <p>{op("Checking your trip…")}</p>
         ) : trip.source !== "none" ? (
           <>
             <strong>{role === "driver" ? op("Driver trip context available") : op("Rider trip context available")}</strong>
@@ -255,8 +255,8 @@ function SafetyHome({
           </>
         ) : (
           <>
-            <strong>No active trip context</strong>
-            <p>Safety tools remain available. Trip-specific details will only be attached when NexRide has a current trip reference.</p>
+            <strong>{op("No active trip")}</strong>
+            <p>{op("Safety tools are still available. Trip details are attached only when a current trip is available.")}</p>
           </>
         )}
       </section>
@@ -328,8 +328,8 @@ function EmergencySOS() {
       <div className="nr-sos-explainer">
         <span className="nr-sos-icon"><Icon name="phone" size={25} /></span>
         <div>
-          <strong>What SOS does</strong>
-          <p>Holding the control opens emergency call options verified for Addis Ababa. NexRide does not currently send an alert to police, ambulance, a dispatch center, or a trusted contact.</p>
+          <strong>{op("Emergency call options")}</strong>
+          <p>{op("Holding the control opens emergency phone shortcuts. NexRide does not send an emergency alert or dispatch responders.")}</p>
         </div>
       </div>
 
@@ -344,19 +344,19 @@ function EmergencySOS() {
             aria-describedby="nr-sos-hold-note"
           >
             <span className="nr-sos-progress" style={{ width: `${progress}%` }} aria-hidden="true" />
-            <span>{op("Hold to activate SOS options")}</span>
+            <span>{op("Hold for emergency options")}</span>
           </button>
           <div className="nr-sos-progress-label" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress)}>
             {progress > 0 ? `${Math.round(progress)}% · release to cancel` : op("Hold for about 2 seconds")}
           </div>
           <p id="nr-sos-hold-note" className="nr-sos-accessible-note">You can release at any time before activation. For keyboard, switch-control, or other assistive access, use the button below.</p>
-          <button className="nr-sos-alternative" onClick={activate}>{op("Open emergency options")}</button>
+          <button className="nr-sos-alternative" onClick={activate}>{op("Open emergency call options")}</button>
         </>
       ) : (
         <div className="nr-sos-options" role="status">
           <div className="nr-sos-not-sent">
             <Icon name="info" size={18} />
-            <span><strong>{op("No emergency alert has been sent.")}</strong> Choose a phone service below to place a call yourself.</span>
+            <span><strong>{op("No emergency alert has been sent.")}</strong> {op("Choose a phone service below to place the call yourself.")}</span>
           </div>
           <a href="tel:991"><span>Addis Ababa Police</span><strong>991</strong></a>
           <a href="tel:912"><span>Fire service</span><strong>912</strong></a>
@@ -444,7 +444,7 @@ function TripShare({
       </div>
 
       {!online && <p className="nr-share-offline">You are offline. Device sharing or copying may still work, but no live NexRide data can refresh until you reconnect.</p>}
-      <button className="nr-share-primary" onClick={share}><Icon name="share" size={18} /> {op("Share trip snapshot")}</button>
+      <button className="nr-share-primary" onClick={share}><Icon name="share" size={18} /> {op("{op("Share trip")}")}</button>
       {status && <p className="nr-share-status" role="status">{status}</p>}
     </section>
   );

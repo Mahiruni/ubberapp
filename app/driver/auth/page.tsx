@@ -98,7 +98,7 @@ export default function DriverAuth() {
             </div>
 
           <div className="nr-auth-content">
-            <Link href="/driver" className="nr-auth-back">← Driver home</Link>
+            <Link href="/driver" className="nr-auth-back">← Back</Link>
             <span className="driver-auth-role">{t("driverAccount").toUpperCase()}</span>
             <h1>{t("driverSignInTitle")}</h1>
             <p>{t("driverSignInIntro")}</p>
@@ -115,9 +115,9 @@ export default function DriverAuth() {
             <Link className="nr-auth-create-link" href="/driver/onboarding"><Icon name="plus" size={18}/>{t("driverCreateAccount")}</Link>
             <div className="nr-auth-role-note">
               <span><Icon name="briefcase" size={20}/></span>
-              <div><strong>{t("driverAuthOnly")}</strong><small>Accept trips, manage documents, and earn with NexRide.</small></div>
+              <div><strong>{t("driverAuthOnly")}</strong><small>Go online, manage trips, and keep your account ready.</small></div>
             </div>
-            <Link className="nr-auth-role-link" href="/rider/sign-in">Need a ride instead? <strong>Switch to Rider →</strong></Link>
+            <Link className="nr-auth-role-link" href="/rider/sign-in">Looking for a ride? <strong>Switch to Rider →</strong></Link>
           </div>
         </section>
       </div>

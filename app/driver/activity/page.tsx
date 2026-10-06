@@ -125,9 +125,9 @@ export default function DriverActivityPage() {
             <Icon name="back" />
           </button>
           <div className="min-w-0 flex-1">
-            <span className="text-[11px] font-bold tracking-[.14em] text-[#65edb0]">NEXRIDE DRIVER</span>
+            <span className="text-[11px] font-bold tracking-[.14em] text-[#65edb0]">NEXRIDE · DRIVER</span>
             <h1 className="mt-1 text-[clamp(24px,6vw,34px)] font-extrabold tracking-[-.04em]">{t("activity")}</h1>
-            <p className="mt-1 text-sm text-white/60">Recent dispatch and trip outcomes from your Driver account.</p>
+            <p className="mt-1 text-sm text-white/60">Accepted, completed, and cancelled trips.</p>
           </div>
         </header>
 
@@ -154,16 +154,16 @@ export default function DriverActivityPage() {
           </div>
         ) : failed ? (
           <ErrorState
-            title="Driver activity unavailable"
-            detail="NexRide could not refresh your trip activity."
+            title="Activity unavailable"
+            detail="We couldn’t refresh your trips. Check your connection and try again."
             action={<Button variant="secondary" onClick={() => driverId && void load(driverId)}>Retry</Button>}
           />
         ) : rows.length === 0 ? (
           <EmptyState
             icon="clock"
-            title="No Driver activity yet"
-            detail="Accepted and completed rides will appear here automatically."
-            action={<Button onClick={() => router.push("/driver/home")}>Driver Home</Button>}
+            title="No trips here yet"
+            detail="Your accepted and completed trips will appear here."
+            action={<Button onClick={() => router.push("/driver/home")}>Back to home</Button>}
           />
         ) : (
           <div className="grid gap-3">

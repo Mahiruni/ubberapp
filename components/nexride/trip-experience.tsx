@@ -39,7 +39,7 @@ export function TripExperience({ screen, tripId, userId, preview, navigate, setP
     ready.current = false; latest.current = null;
     const send = (message: unknown) => frame.current?.contentWindow?.postMessage(message, window.location.origin);
     const publish = () => { if (ready.current && latest.current) send({ type: 'nexride:snapshot', snapshot: latest.current }); };
-    const announce = (value: boolean) => { connected = value; if (!stopped) { setConnection(value ? 'Trip updates connected' : 'Connection lost · last received trip details'); if (ready.current) send({ type: 'nexride:connection', connected: value }); } };
+    const announce = (value: boolean) => { connected = value; if (!stopped) { setConnection(value ? 'Trip updates are live' : 'You’re offline · showing the latest trip details'); if (ready.current) send({ type: 'nexride:connection', connected: value }); } };
     const refresh = async () => {
       if (stopped || pending || !tripId || !userId) return;
       if (!navigator.onLine) { announce(false); return; }
@@ -98,10 +98,10 @@ export function TripExperience({ screen, tripId, userId, preview, navigate, setP
   if (tripId && !userId) return <section className="nr-trip-experience"><p role="status">Sign in to view this trip.</p><button onClick={() => navigate("home")}>Back to home</button></section>;
   return <section className="nr-trip-experience" aria-label={screen === 'summary' ? 'Trip receipt and rating' : 'Your trip'}>
     <div className="nr-trip-toolbar">
-      <button onClick={() => window.location.assign('/rider/trips')}>All trips</button>
-      <span role="status">{live ? connection : 'Design preview · sample ride'}</span>
+      <button onClick={() => window.location.assign('/rider/trips')}>Activity</button>
+      <span role="status">{live ? connection : 'Preview ride'}</span>
       {screen !== 'summary' && <button onClick={openSafety}>Safety</button>}
-      {!live && screen !== 'summary' && <button onClick={() => { if (screen === 'live' && preview) setPreview({ ...preview, completed: true }); navigate(screen === 'trip' ? 'live' : 'summary'); }}>{screen === 'trip' ? 'Start preview trip' : 'Complete preview trip'}</button>}
+      {!live && screen !== 'summary' && <button onClick={() => { if (screen === 'live' && preview) setPreview({ ...preview, completed: true }); navigate(screen === 'trip' ? 'live' : 'summary'); }}>{screen === 'trip' ? 'Start trip' : 'Complete trip'}</button>}
     </div>
     <iframe ref={frame} key={`${file}:${tripId || 'preview'}`} className="nr-trip-frame" title={screen === 'summary' ? 'NexRide trip receipt and rating' : screen === 'live' ? 'NexRide active trip' : 'NexRide assigned driver'}
       onLoad={() => frame.current?.contentWindow?.postMessage({ type: 'nexride:ping' }, window.location.origin)}

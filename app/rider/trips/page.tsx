@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "../../../components/nexride/ui";
+import { useOperationalTranslation } from "../../../components/nexride/operational-i18n";
 import { RiderBottomNavigation, usePersistedRiderTheme } from "../../../components/nexride/rider-bottom-nav";
 import { supabase } from "../../../lib/supabase";
 import {
@@ -17,6 +18,7 @@ import "../supporting.css";
 
 export default function RiderTripsPage() {
   const router = useRouter();
+  const op = useOperationalTranslation();
   const theme = usePersistedRiderTheme();
   const [rides, setRides] = useState<RiderRide[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,7 +31,7 @@ export default function RiderTripsPage() {
       const next = await loadRiderRideHistory(userId);
       setRides(next);
     } catch {
-      setError("Trip history could not be loaded.");
+      setError(op("We couldn’t load your rides. Check your connection and try again."));
     } finally {
       setLoading(false);
     }
@@ -49,7 +51,7 @@ export default function RiderTripsPage() {
     return () => {
       active = false;
     };
-  }, [router]);
+  }, [router, op]);
 
   return (
     <main className="nr-app nr-support-page" data-theme={theme} data-mode="rider">
@@ -59,9 +61,9 @@ export default function RiderTripsPage() {
             <Icon name="back" />
           </button>
           <div>
-            <span className="kicker">NEXRIDE RIDER</span>
-            <h1>Trip history</h1>
-            <p>Completed and cancelled rides</p>
+            <span className="kicker">NEXRIDE · RIDER</span>
+            <h1>{op("Your rides")}</h1>
+            <p>{op("Completed and cancelled trips")}</p>
           </div>
           <button
             className="nr-support-icon-btn"
@@ -69,7 +71,7 @@ export default function RiderTripsPage() {
               const { data } = await supabase.auth.getSession();
               if (data.session) await load(data.session.user.id);
             }}
-            aria-label="Refresh trip history"
+            aria-label={op("Refresh rides")}
           >
             <Icon name="clock" />
           </button>
@@ -80,7 +82,7 @@ export default function RiderTripsPage() {
         ) : error ? (
           <section className="nr-support-state" role="alert">
             <span><Icon name="info" size={22} /></span>
-            <strong>History unavailable</strong>
+            <strong>{op("Rides unavailable")}</strong>
             <p>{error}</p>
             <button
               onClick={async () => {
@@ -92,7 +94,7 @@ export default function RiderTripsPage() {
             </button>
           </section>
         ) : rides.length ? (
-          <section className="nr-history-list" aria-label="Past rides">
+          <section className="nr-history-list" aria-label={op("Ride activity")}>
             {rides.map((ride) => {
               const amount = rideAmount(ride);
               const cancelled = ride.status === "cancelled" || ride.status === "withdrawn";
@@ -111,7 +113,7 @@ export default function RiderTripsPage() {
                   </span>
                   <span className="nr-history-side">
                     <strong>{amount.amount === null ? "—" : amount.amount.toLocaleString("en-ET") + " ETB"}</strong>
-                    <span className="nr-history-status">{formatRideStatus(ride.status)}{amount.amount !== null && !amount.final ? " · estimate" : ""}</span>
+                    <span className="nr-history-status">{op(formatRideStatus(ride.status))}{amount.amount !== null && !amount.final ? " · estimate" : ""}</span>
                   </span>
                 </button>
               );
@@ -120,9 +122,9 @@ export default function RiderTripsPage() {
         ) : (
           <section className="nr-support-state">
             <span><Icon name="clock" size={22} /></span>
-            <strong>No past rides yet</strong>
-            <p>Completed and cancelled NexRide trips will appear here once the live rider booking flow creates them.</p>
-            <button onClick={() => router.replace("/")}>Book a ride</button>
+            <strong>{op("No rides here yet")}</strong>
+            <p>{op("Your completed and cancelled trips will appear here.")}</p>
+            <button onClick={() => router.replace("/")}>{op("Book a ride")}</button>
           </section>
         )}
       </div>

@@ -239,25 +239,25 @@ export function RiderWorkspace({
     return (
       <Sheet title={t("wallet")}>
         <div className="nr-balance-card">
-          <small>{t("balance")}</small>
-          <strong>—</strong>
-          <p>NexRide does not currently maintain a stored rider wallet balance. Cash is the only supported rider payment method.</p>
+          <small>{t("paymentMethods")}</small>
+          <strong>{t("cash")}</strong>
+          <p>Pay the driver after your trip. Online payment appears only when it is enabled for your ride.</p>
           <Button onClick={() => window.location.assign("/rider/wallet")}>
-            Open Wallet & payments
+            Open payments
           </Button>
         </div>
       </Sheet>
     );
   return (
-    <Sheet title={t("trips")}>
+    <Sheet title={t("history")}>
       {realTrips.userId && <section className="nr-real-trip-history" aria-label="Your booked trips">
         {realTrips.loading && <p role="status">Loading your trips…</p>}
-        {realTrips.error && <div role="alert"><p>Trip history could not be refreshed. Previously received details may be out of date.</p><Button variant="secondary" onClick={() => void realTrips.refresh()}>Retry</Button></div>}
+        {realTrips.error && <div role="alert"><p>We couldn’t refresh your rides. Previously loaded details may be out of date.</p><Button variant="secondary" onClick={() => void realTrips.refresh()}>Try again</Button></div>}
         {realTrips.rows.map(row => <ListRow key={String(row.id)} icon={row.state === 'completed' ? 'check' : 'navigation'}
           title={String(row.destination_address || 'Destination unavailable')}
           detail={`${String(row.state).replaceAll('_', ' ')} · ${String(row.id).slice(0, 8)}`}
           onClick={() => openRealTrip(String(row.id), row.state)} />)}
-        {!realTrips.loading && !realTrips.error && !realTrips.rows.length && <p>No booked trips yet.</p>}
+        {!realTrips.loading && !realTrips.error && !realTrips.rows.length && <p>No rides here yet.</p>}
       </section>}
       {trip ? (
         <>

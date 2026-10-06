@@ -43,7 +43,7 @@ export default function DriverProfileSettingsPage() {
       setLoading(false);
     })().catch(() => {
       if (active) {
-        setFeedback("NexRide could not load profile settings.");
+        setFeedback("We couldn’t load your profile settings.");
         setLoading(false);
       }
     });
@@ -76,7 +76,7 @@ export default function DriverProfileSettingsPage() {
       .eq("id", profile.id);
 
     if (error) {
-      setFeedback(error.message || "Profile changes could not be saved.");
+      setFeedback("We couldn’t save your changes. Try again.");
       setBusy(false);
       return;
     }
@@ -90,7 +90,7 @@ export default function DriverProfileSettingsPage() {
 
     setProfile({ ...profile, fullName: cleanName, phone: cleanPhone });
     setSuccess(true);
-    setFeedback("Profile information updated.");
+    setFeedback("Profile updated.");
     setBusy(false);
   }
 
@@ -102,9 +102,9 @@ export default function DriverProfileSettingsPage() {
             <Icon name="back" />
           </button>
           <div>
-            <span className="nr-driver-kicker">DRIVER PROFILE</span>
+            <span className="nr-driver-kicker">NEXRIDE · DRIVER</span>
             <h1>Settings</h1>
-            <p>Editable profile information</p>
+            <p>Keep your contact details up to date.</p>
           </div>
         </header>
 
@@ -123,7 +123,7 @@ export default function DriverProfileSettingsPage() {
               <div className="nr-profile-panel-head">
                 <div>
                   <h2>Personal information</h2>
-                  <p>Name and phone are editable profile fields. They do not change your verified driver license or vehicle identity.</p>
+                  <p>Update your name and phone here. Verified license and vehicle details use the verification flow.</p>
                 </div>
               </div>
 
@@ -154,10 +154,10 @@ export default function DriverProfileSettingsPage() {
                   Account email
                   <input value={profile.email || "Not available"} disabled aria-describedby="nr-email-note" />
                 </label>
-                <small id="nr-email-note">Email is shown for account reference and is not changed from this profile form.</small>
+                <small id="nr-email-note">Email is your sign-in identity and cannot be changed here.</small>
 
                 <button type="submit" disabled={busy || profile.accountStatus !== "active"}>
-                  {busy ? "Saving…" : "Save profile changes"}
+                  {busy ? "Saving…" : "Save changes"}
                 </button>
               </form>
 
@@ -173,7 +173,7 @@ export default function DriverProfileSettingsPage() {
               <div className="nr-profile-panel-head">
                 <div>
                   <h2>Verified information</h2>
-                  <p>Driver license, vehicle plate, and verification documents require the review flow.</p>
+                  <p>License, vehicle, and verification document changes require review.</p>
                 </div>
               </div>
               <div className="nr-doc-actions">
@@ -188,7 +188,7 @@ export default function DriverProfileSettingsPage() {
 
             <div className="nr-profile-locked-note">
               <Icon name="shield" size={17} />
-              <span>NexRide keeps personal, verification, and financial data inside authenticated account surfaces. These details are not added to trip-share previews or general notification text.</span>
+              <span>Your personal, verification, and financial details stay inside authenticated account areas.</span>
             </div>
           </>
         ) : (

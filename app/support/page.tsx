@@ -14,32 +14,32 @@ const DRAFT_KEY = "nexride.support.draft";
 const TOPICS = [
   {
     title: "A ride did not go as expected",
-    body: "Open the trip from Trip history, review the receipt and status, then use Get help with this trip so NexRide can attach the correct ride reference.",
+    body: "Open Activity, choose the trip, and select Get help with this trip so the correct ride is attached.",
     tags: "trip driver route cancellation receipt",
   },
   {
     title: "Payment shows pending or failed",
-    body: "Wallet & payments shows payment statuses supplied by the trip record. Cash is the only supported rider payment method right now; no raw card data is collected.",
+    body: "Open Payments to review the trip’s payment status. Cash is available, and online payment appears only when it is enabled.",
     tags: "payment cash wallet pending failed",
   },
   {
     title: "Contact your driver",
-    body: "Rider–driver chat and the call shortcut are available only for an assigned active trip when NexRide has the participant contact information.",
+    body: "Call or message your driver from an active assigned trip when contact options are available.",
     tags: "chat call driver message contact",
   },
   {
     title: "Emergency or safety concern",
-    body: "Use Safety Center for emergency phone shortcuts, trip sharing and safety reporting. NexRide does not claim that opening Safety Center dispatches responders.",
+    body: "Open Safety for emergency call options, trip sharing, and safety reporting. NexRide does not dispatch emergency responders.",
     tags: "safety emergency sos share",
   },
   {
     title: "Lost item after a ride",
-    body: "Choose Lost item in the support report and select the relevant past trip. Include a concise description without unnecessary sensitive information.",
+    body: "Choose Lost item, select the relevant trip, and tell us what was lost. Avoid including unnecessary sensitive information.",
     tags: "lost item belongings trip",
   },
   {
     title: "App or connection problem",
-    body: "If submission fails, NexRide keeps your unfinished support report draft on this device. Reconnect and submit again.",
+    body: "Your draft stays on this device if you go offline. Reconnect and send it when you’re ready.",
     tags: "app connection offline error report",
   },
 ] as const;
@@ -185,7 +185,7 @@ export default function HelpSupportPage() {
       setFeedback(op("Support request could not be submitted. Your draft remains saved on this device."));
     } else {
       setSuccess(true);
-      setFeedback("Support request submitted. Reference " + String(data.id).slice(0, 8).toUpperCase() + ".");
+      setFeedback(op("Your request was sent. Reference") + " " + String(data.id).slice(0, 8).toUpperCase() + ".");
       setDetails("");
       setSelectedRide("");
       setCategory("trip_issue");
@@ -203,9 +203,9 @@ export default function HelpSupportPage() {
             <Icon name="back" />
           </button>
           <div>
-            <span className="kicker">NEXRIDE SUPPORT</span>
-            <h1>{op("Help & Support")}</h1>
-            <p>{online ? op("Support tools available") : op("Offline · report draft preserved")}</p>
+            <span className="kicker">NEXRIDE · SUPPORT</span>
+            <h1>{op("How can we help?")}</h1>
+            <p>{online ? op("Find an answer or tell us what happened.") : op("You’re offline. Your draft is saved on this device.")}</p>
           </div>
           <span />
         </header>
@@ -215,8 +215,8 @@ export default function HelpSupportPage() {
           <input
             type="search"
             value={search}
-            placeholder={op("Search help topics")}
-            aria-label={op("Search help topics")}
+            placeholder={op("Search help")}
+            aria-label={op("Search help")}
             onChange={(event) => setSearch(event.target.value)}
           />
         </div>
@@ -228,25 +228,25 @@ export default function HelpSupportPage() {
               <p>{op(topic.body)}</p>
             </details>
           )) : (
-            <div className="nr-help-empty">No help topic matches “{search}”. You can still submit a support request below.</div>
+            <div className="nr-help-empty">{op("No matching help topics. You can still send us a request below.")}</div>
           )}
         </section>
 
         <section className="nr-support-card nr-support-channels">
           <a className="nr-support-channel" href="/safety?role=rider">
             <span><Icon name="shield" size={17} /></span>
-            <span><strong>{op("Safety Center")}</strong><small>Emergency calling, sharing and safety reporting</small></span>
+            <span><strong>{op("Safety")}</strong><small>{op("Emergency help, trip sharing, and reports")}</small></span>
             <Icon name="chevron" size={15} />
           </a>
           <a className="nr-support-channel" href="/rider/trips">
             <span><Icon name="clock" size={17} /></span>
-            <span><strong>{op("Trip history")}</strong><small>Open receipts and trip-specific support</small></span>
+            <span><strong>{op("Activity")}</strong><small>{op("Trips, receipts, and trip-specific support")}</small></span>
             <Icon name="chevron" size={15} />
           </a>
           {activeRide && (
             <a className="nr-support-channel" href={"/trip/chat?ride=" + encodeURIComponent(activeRide.id) + "&role=rider"}>
               <span><Icon name="chat" size={17} /></span>
-              <span><strong>{op("Message your driver")}</strong><small>Available for the active assigned trip</small></span>
+              <span><strong>{op("Message driver")}</strong><small>{op("Available during your active trip")}</small></span>
               <Icon name="chevron" size={15} />
             </a>
           )}
@@ -255,13 +255,13 @@ export default function HelpSupportPage() {
         <form className="nr-support-card nr-support-form" onSubmit={submit}>
           <div className="nr-profile-panel-head">
             <div>
-              <h2>{op("Contact NexRide support")}</h2>
-              <p>Submit an in-app support request. Live agent chat, SMS and phone support are not currently connected.</p>
+              <h2>{op("Tell us what happened")}</h2>
+              <p>{op("Choose a trip when relevant and send a support request.")}</p>
             </div>
           </div>
 
           <label>
-            Related trip <small>Optional</small>
+            {op("Trip")} <small>{op("Optional")}</small>
             <select value={selectedRide} disabled={loading} onChange={(event) => setSelectedRide(event.target.value)}>
               <option value="">No specific trip</option>
               {rides.map((ride) => (
@@ -273,7 +273,7 @@ export default function HelpSupportPage() {
           </label>
 
           <label>
-            Issue category
+            {op("Category")}
             <select value={category} onChange={(event) => setCategory(event.target.value as Category)}>
               <option value="trip_issue">Trip issue</option>
               <option value="payment">Payment</option>
@@ -285,19 +285,19 @@ export default function HelpSupportPage() {
           </label>
 
           <label>
-            Details
+            {op("What happened?")}
             <textarea
               value={details}
               maxLength={4000}
-              placeholder={op("Tell us what happened and what outcome you need.")}
+              placeholder={op("Tell us what happened")}
               onChange={(event) => setDetails(event.target.value)}
               required
             />
-            <small>{details.length}/4000 · unfinished text is saved on this device</small>
+            <small>{details.length}/4000 · {op("draft saved on this device")}</small>
           </label>
 
           <button className="nr-support-submit" type="submit" disabled={submitting || !online || !details.trim()}>
-            {submitting ? op("Submitting…") : online ? op("Submit support request") : op("Reconnect to submit")}
+            {submitting ? op("Sending…") : online ? op("Send request") : op("Reconnect to send")}
           </button>
 
           {feedback && (

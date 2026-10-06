@@ -33,9 +33,8 @@ function Welcome() {
   return (
     <>
       <h1>{t("welcome")}</h1>
-      <p>{t("brandMessage")}</p>
-      <EntryPhoto />
       <p>{t("onboardingIntro")}</p>
+      <EntryPhoto />
       <StatusBanner>{t("previewInfo")}</StatusBanner>
       <Button onClick={() => finish(false)}>{t("continueAuth")}</Button>
       <Button variant="ghost" onClick={() => finish(true)}>
