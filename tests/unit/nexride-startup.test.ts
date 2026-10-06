@@ -11,8 +11,12 @@ import {
   updateStartupPreferences,
 } from "../../lib/nexride-startup";
 
-const { getSession } = vi.hoisted(() => ({ getSession: vi.fn() }));
+const { getSession, resolveSessionRole } = vi.hoisted(() => ({
+  getSession: vi.fn(),
+  resolveSessionRole: vi.fn(),
+}));
 vi.mock("../../lib/supabase", () => ({ supabase: { auth: { getSession } } }));
+vi.mock("../../lib/nexride-account-role", () => ({ resolveSessionRole }));
 const session = {
   access_token: "test-session",
   user: {
@@ -43,6 +47,11 @@ beforeEach(() => {
   getSession
     .mockReset()
     .mockResolvedValue({ data: { session: null }, error: null });
+  resolveSessionRole
+    .mockReset()
+    .mockImplementation(async (current: Session) =>
+      String(current.user.user_metadata?.role || ""),
+    );
 });
 afterEach(() => {
   vi.useRealTimers();
