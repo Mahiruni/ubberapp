@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Brand, Icon, useTranslation } from "../../../components/nexride/ui";
-import { VehicleIllustration } from "../../../components/nexride/vehicle";
 import { supabase } from "../../../lib/supabase";
 import { enterDriver } from "../../../lib/nexride-startup";
 import { driverResumeDestination } from "../../../lib/nexride-driver-verification";
@@ -96,8 +95,7 @@ export default function DriverAuth() {
               <span>NEXRIDE · DRIVER</span>
               <strong>Drive. Earn.<br />Grow.</strong>
             </div>
-            <div className="nr-auth-hero-vehicle driver"><VehicleIllustration category="comfort" /></div>
-          </div>
+            </div>
 
           <div className="nr-auth-content">
             <Link href="/driver" className="nr-auth-back">← Driver home</Link>
