@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type * as Leaflet from "leaflet";
+import { Icon } from "./ui";
 import "leaflet/dist/leaflet.css";
 
 export type NavigationCoordinate = { lat: number; lng: number };
@@ -40,6 +41,7 @@ export function DriverNavigationMap({
   const map = useRef<Leaflet.Map | null>(null);
   const library = useRef<typeof Leaflet | null>(null);
   const routeLayer = useRef<Leaflet.Polyline | null>(null);
+  const routeCasing = useRef<Leaflet.Polyline | null>(null);
   const markers = useRef<Leaflet.LayerGroup | null>(null);
   const [mounted, setMounted] = useState(false);
   const [tilesReady, setTilesReady] = useState(true);
@@ -87,6 +89,7 @@ export function DriverNavigationMap({
       map.current = null;
       markers.current = null;
       routeLayer.current = null;
+      routeCasing.current = null;
       library.current = null;
     };
   }, []);
@@ -97,7 +100,9 @@ export function DriverNavigationMap({
     const instance = map.current;
     markers.current.clearLayers();
     routeLayer.current?.remove();
+    routeCasing.current?.remove();
     routeLayer.current = null;
+    routeCasing.current = null;
 
     const known: Leaflet.LatLngExpression[] = [];
     const makeMarker = (
@@ -134,12 +139,21 @@ export function DriverNavigationMap({
     const road = route.filter(valid);
     if (road.length >= 2) {
       const points = road.map((point) => [point.lat, point.lng] as [number, number]);
-      routeLayer.current = L.polyline(points, {
-        color: "#00c878",
-        weight: 6,
-        opacity: 0.95,
+      routeCasing.current = L.polyline(points, {
+        color: "#ffffff",
+        weight: 10,
+        opacity: 0.92,
         lineCap: "round",
         lineJoin: "round",
+        interactive: false,
+      }).addTo(instance);
+      routeLayer.current = L.polyline(points, {
+        color: "#246bc6",
+        weight: 6,
+        opacity: 0.98,
+        lineCap: "round",
+        lineJoin: "round",
+        interactive: false,
       }).addTo(instance);
       known.push(...points);
     }
@@ -193,7 +207,7 @@ export function DriverNavigationMap({
         </div>
       )}
       <button type="button" className="nr-live-map-recenter" onClick={recenter} aria-label="Recenter map">
-        <span aria-hidden="true">◎</span>
+        <Icon name="locate" size={20} />
       </button>
     </div>
   );
