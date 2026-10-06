@@ -286,7 +286,7 @@ export function RiderProfile(props:Props) {
         </AccountSection>
 
         <AccountSection title="NexRide" subtitle={say('Account modes and platform tools','የመለያ ሁኔታዎች እና መሳሪያዎች')}>
-          <AccountRow icon="car" title={t('switchDriver')} detail={say('Open the Driver experience','የአሽከርካሪ ልምድን ይክፈቱ')} onClick={props.switchDriver}/>
+          <AccountRow icon="navigation" title={t('switchDriver')} detail={say('Open the Driver experience','የአሽከርካሪ ልምድን ይክፈቱ')} onClick={props.switchDriver}/>
           {props.isAdmin&&<AccountRow icon="shield" title="Admin Control Center" detail="Drivers, verification, operations & platform management" onClick={()=>window.location.assign('/admin')} accent/>}
         </AccountSection>
       </div>
