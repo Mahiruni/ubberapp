@@ -23,6 +23,7 @@ type PendingMessage = {
 
 export default function TripChatPage() {
   const router = useRouter();
+  const op = useOperationalTranslation();
   const threadRef = useRef<HTMLDivElement>(null);
   const [ride, setRide] = useState<RiderRide | null>(null);
   const [messages, setMessages] = useState<RideMessage[]>([]);
@@ -207,13 +208,13 @@ export default function TripChatPage() {
     <main className="nr-app nr-support-page" data-theme="dark">
       <div className="nr-support-wrap">
         <header className="nr-support-head">
-          <button className="nr-support-back" onClick={back} aria-label="Back">
+          <button className="nr-support-back" onClick={back} aria-label={op("Back")}>
             <Icon name="back" />
           </button>
           <div>
             <span className="kicker">NEXRIDE TRIP CHAT</span>
             <h1>{otherName}</h1>
-            <p>{online ? "Connected" : "Offline · unsent messages can be retried"}</p>
+            <p>{online ? op("Connected") : op("Offline · unsent messages can be retried")}</p>
           </div>
           {otherPhone ? (
             <a className="nr-support-icon-btn" href={"tel:" + otherPhone.replace(/[ ()-]/g, "")} aria-label={"Call " + otherName}>
@@ -231,7 +232,7 @@ export default function TripChatPage() {
         ) : loadError || !ride ? (
           <section className="nr-support-state" role="alert">
             <span><Icon name="chat" size={22} /></span>
-            <strong>Conversation unavailable</strong>
+            <strong>{op("Conversation unavailable")}</strong>
             <p>{loadError || "This trip conversation could not be loaded."}</p>
             <button onClick={back}>Go back</button>
           </section>
@@ -241,11 +242,11 @@ export default function TripChatPage() {
               <div className="nr-chat-context-top">
                 <div>
                   <small>{ride.category.toUpperCase()} · {formatRideStatus(ride.status).toUpperCase()}</small>
-                  <strong>Trip conversation</strong>
+                  <strong>{op("Trip conversation")}</strong>
                 </div>
                 {otherPhone && (
                   <a className="nr-chat-call" href={"tel:" + otherPhone.replace(/[ ()-]/g, "")}>
-                    <Icon name="phone" size={15} /> Call
+                    <Icon name="phone" size={15} /> {op("Call")}
                   </a>
                 )}
               </div>
@@ -256,10 +257,10 @@ export default function TripChatPage() {
               </div>
             </section>
 
-            <div className="nr-chat-thread" ref={threadRef} aria-live="polite" aria-label="Trip messages">
+            <div className="nr-chat-thread" ref={threadRef} aria-live="polite" aria-label={op("Trip messages")}>
               {!messages.length && !pending.length ? (
                 <div className="nr-chat-empty">
-                  No messages yet. Use chat for trip coordination. NexRide does not currently provide typing indicators, delivery receipts, or read receipts.
+                  {op("No messages yet. Use chat for trip coordination. NexRide does not currently provide typing indicators, delivery receipts, or read receipts.")}
                 </div>
               ) : (
                 <>
@@ -276,8 +277,8 @@ export default function TripChatPage() {
                     <article className={"nr-chat-bubble mine" + (message.status === "failed" ? " failed" : "")} key={message.clientId}>
                       <p>{message.body}</p>
                       <footer>
-                        <span>{message.status === "sending" ? "Sending…" : "Failed"}</span>
-                        {message.status === "failed" && <button onClick={() => void send(message.body, message.clientId)}>Retry</button>}
+                        <span>{message.status === "sending" ? op("Sending…") : op("Failed")}</span>
+                        {message.status === "failed" && <button onClick={() => void send(message.body, message.clientId)}>{op("Retry")}</button>}
                       </footer>
                     </article>
                   ))}
@@ -290,12 +291,12 @@ export default function TripChatPage() {
                 value={text}
                 maxLength={2000}
                 rows={1}
-                placeholder={isRideChatActive(ride) ? "Message your trip participant…" : "Chat is read-only after the active trip ends."}
-                aria-label="Trip message"
+                placeholder={isRideChatActive(ride) ? op("Message your trip participant…") : op("Chat is read-only after the active trip ends.")}
+                aria-label={op("Trip message")}
                 disabled={!isRideChatActive(ride)}
                 onChange={(event) => setText(event.target.value)}
               />
-              <button type="submit" disabled={!text.trim() || !isRideChatActive(ride)} aria-label="Send message">
+              <button type="submit" disabled={!text.trim() || !isRideChatActive(ride)} aria-label={op("Send message")}>
                 <Icon name="arrow" size={19} />
               </button>
             </form>
