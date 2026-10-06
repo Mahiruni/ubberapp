@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "../../../../components/nexride/ui";
 import { supabase } from "../../../../lib/supabase";
+import { resolveSessionRole } from "../../../../lib/nexride-account-role";
 import {
   EARNINGS_PERIOD_STORAGE_KEY,
   earningsPeriodLabel,
@@ -42,8 +43,14 @@ export default function DriverEarningsReportPage() {
       const session = data.session;
 
       if (!active) return;
-      if (!session || session.user.user_metadata?.role !== "driver") {
+      if (!session) {
         router.replace("/driver/auth");
+        return;
+      }
+      const role = await resolveSessionRole(session).catch(() => "");
+      if (!active) return;
+      if (role !== "driver") {
+        router.replace(role === "admin" ? "/admin" : "/");
         return;
       }
 
