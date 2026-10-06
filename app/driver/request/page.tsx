@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { RideMap } from "../../../components/nexride/map";
 import { Icon } from "../../../components/nexride/ui";
+import { useOperationalTranslation } from "../../../components/nexride/operational-i18n";
 import { supabase } from "../../../lib/supabase";
 import { resolveSessionRole } from "../../../lib/nexride-account-role";
 import "../../nexride.css";
@@ -66,6 +67,7 @@ function normalizedOffer(row: Record<string, unknown>): RideOffer {
 
 export default function DriverRideRequestPage() {
   const router = useRouter();
+  const op = useOperationalTranslation();
   const [driverId, setDriverId] = useState("");
   const [offer, setOffer] = useState<RideOffer | null>(null);
   const [request, setRequest] = useState<RideRequest | null>(null);
@@ -202,10 +204,10 @@ export default function DriverRideRequestPage() {
   const fare = useMemo(() => {
     if (!request) return null;
     if (request.estimated_driver_payout_etb !== null) {
-      return { label: "Estimated driver payout", value: request.estimated_driver_payout_etb };
+      return { label: op("Estimated driver payout"), value: request.estimated_driver_payout_etb };
     }
     if (request.estimated_trip_fare_etb !== null) {
-      return { label: "Estimated trip fare", value: request.estimated_trip_fare_etb };
+      return { label: op("Estimated trip fare"), value: request.estimated_trip_fare_etb };
     }
     return null;
   }, [request]);
@@ -232,9 +234,9 @@ export default function DriverRideRequestPage() {
       } else if (message.includes("RIDE_REQUEST_UNAVAILABLE") || error?.code === "23505") {
         setOffer((current) => current ? { ...current, status: "withdrawn" } : current);
       } else if (message.includes("DRIVER_NOT_ELIGIBLE")) {
-        setAcceptFailure("Your driver account is not currently eligible to accept rides. Check verification and availability.");
+        setAcceptFailure(op("Your driver account is not currently eligible to accept rides. Check verification and availability."));
       } else {
-        setAcceptFailure("Acceptance failed. The request may have changed or your connection may be unavailable.");
+        setAcceptFailure(op("Acceptance failed. The request may have changed or your connection may be unavailable."));
       }
       setSubmitting(null);
       return;
@@ -260,7 +262,7 @@ export default function DriverRideRequestPage() {
       .maybeSingle();
 
     if (error || !data) {
-      setAcceptFailure("NexRide could not decline this request. Its status may already have changed.");
+      setAcceptFailure(op("NexRide could not decline this request. Its status may already have changed."));
       setSubmitting(null);
       return;
     }
@@ -281,7 +283,7 @@ export default function DriverRideRequestPage() {
         )}
       </div>
 
-      <button className="nr-request-back" onClick={() => router.replace("/driver/home")} aria-label="Back to driver home">
+      <button className="nr-request-back" onClick={() => router.replace("/driver/home")} aria-label={op("Back to driver home")}>
         <Icon name="back" />
       </button>
 
@@ -295,41 +297,41 @@ export default function DriverRideRequestPage() {
         ) : !offer || !request ? (
           <RequestState
             icon="car"
-            title="No active ride request"
-            body="New ride requests will appear here when NexRide dispatch sends one to you."
-            action="Back to Driver Home"
+            title={op("No active ride request")}
+            body={op("New ride requests will appear here when NexRide dispatch sends one to you.")}
+            action={op("Back to Driver Home")}
             onAction={() => router.replace("/driver/home")}
           />
         ) : visibleStatus === "accepted" ? (
           <RequestState
             icon="navigation"
-            title="Ride accepted"
-            body="The ride is assigned to you. Continue to pickup navigation."
-            action="Navigate to pickup"
+            title={op("Ride accepted")}
+            body={op("The ride is assigned to you. Continue to pickup navigation.")}
+            action={op("Navigate to pickup")}
             onAction={() => router.replace(`/driver/navigation?offer=${offer.id}`)}
           />
         ) : visibleStatus === "expired" ? (
           <RequestState
             icon="clock"
-            title="Request expired"
-            body="The acceptance window has ended. You won’t be assigned this ride."
-            action="Back to Driver Home"
+            title={op("Request expired")}
+            body={op("The acceptance window has ended. You won’t be assigned this ride.")}
+            action={op("Back to Driver Home")}
             onAction={() => router.replace("/driver/home")}
           />
         ) : visibleStatus === "withdrawn" ? (
           <RequestState
             icon="info"
-            title="Ride no longer available"
-            body="Another driver may have accepted this ride first, or the request was withdrawn."
-            action="Back to Driver Home"
+            title={op("Ride no longer available")}
+            body={op("Another driver may have accepted this ride first, or the request was withdrawn.")}
+            action={op("Back to Driver Home")}
             onAction={() => router.replace("/driver/home")}
           />
         ) : visibleStatus === "declined" ? (
           <RequestState
             icon="check"
-            title="Ride declined"
-            body="You declined this request. NexRide can send another request while you remain online."
-            action="Back to Driver Home"
+            title={op("Ride declined")}
+            body={op("You declined this request. NexRide can send another request while you remain online.")}
+            action={op("Back to Driver Home")}
             onAction={() => router.replace("/driver/home")}
           />
         ) : (
@@ -385,10 +387,10 @@ export default function DriverRideRequestPage() {
             )}
 
             <button className="nr-request-accept" disabled={Boolean(submitting)} onClick={acceptRide}>
-              {submitting === "accept" ? "Accepting…" : acceptFailure ? "Try Accept Again" : "Accept"}
+              {submitting === "accept" ? op("Accepting…") : acceptFailure ? op("Try Accept Again") : op("Accept")}
             </button>
             <button className="nr-request-decline" disabled={Boolean(submitting)} onClick={declineRide}>
-              {submitting === "decline" ? "Declining…" : "Decline"}
+              {submitting === "decline" ? op("Declining…") : op("Decline")}
             </button>
           </>
         )}
