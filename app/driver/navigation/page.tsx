@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DriverNavigationMap, type NavigationCoordinate } from "../../../components/nexride/driver-navigation-map";
-import { Icon } from "../../../components/nexride/ui";
+import { Button, Dialog, Icon } from "../../../components/nexride/ui";
 import { useOperationalTranslation } from "../../../components/nexride/operational-i18n";
 import { supabase } from "../../../lib/supabase";
 import { nexrideApiFetch } from "../../../lib/nexride-api-auth";
@@ -24,6 +24,7 @@ type GuidanceStep = {
   modifier?: string;
   roadName?: string;
 };
+type TrafficLevel = "low" | "moderate" | "heavy" | "severe";
 type NativeRoute = {
   target: "pickup" | "destination";
   geometry: NavigationCoordinate[];
@@ -31,6 +32,7 @@ type NativeRoute = {
   durationSeconds: number;
   steps: GuidanceStep[];
   generatedAt: number;
+  traffic: TrafficLevel | null;
 };
 
 type NavigationData = {
@@ -115,6 +117,7 @@ export default function DriverNavigationPage() {
   const [locationShareError, setLocationShareError] = useState("");
   const [nativeRoute, setNativeRoute] = useState<NativeRoute | null>(null);
   const [nativeRouteNotice, setNativeRouteNotice] = useState("");
+  const [confirmAction, setConfirmAction] = useState<"in_trip" | "completed" | null>(null);
 
   const loadTrip = useCallback(async (userId: string, offerId: string) => {
     const { data: offer, error: offerError } = await supabase
@@ -409,6 +412,7 @@ export default function DriverNavigationPage() {
           !Number.isFinite(durationSeconds)
         ) return;
 
+        const trafficLevel = body.route?.traffic?.level;
         setNativeRoute({
           target,
           geometry,
@@ -416,6 +420,13 @@ export default function DriverNavigationPage() {
           distanceMeters,
           durationSeconds,
           generatedAt: Number(body.generatedAt) || Date.now(),
+          traffic:
+            trafficLevel === "low" ||
+            trafficLevel === "moderate" ||
+            trafficLevel === "heavy" ||
+            trafficLevel === "severe"
+              ? trafficLevel
+              : null,
         });
         lastRouteAtRef.current = Date.now();
         lastRoutePositionRef.current = position;
@@ -461,6 +472,27 @@ export default function DriverNavigationPage() {
     activeRoute
       ? Math.max(1, Math.round(activeRoute.durationSeconds / 60))
       : stage?.eta ?? null;
+  const trafficLabel = activeRoute?.traffic
+    ? op(
+        activeRoute.traffic === "low"
+          ? "Light traffic"
+          : activeRoute.traffic === "moderate"
+            ? "Moderate traffic"
+            : activeRoute.traffic === "heavy"
+              ? "Heavy traffic"
+              : "Severe traffic",
+      )
+    : "";
+  const stageIndex =
+    trip?.status === "accepted"
+      ? 0
+      : trip?.status === "arrived_pickup"
+        ? 1
+        : trip?.status === "in_trip"
+          ? 2
+          : trip?.status === "completed"
+            ? 3
+            : 0;
 
   async function transition(next: "arrived_pickup" | "in_trip" | "completed") {
     if (!trip || !driverId || busy) return;
@@ -517,7 +549,19 @@ export default function DriverNavigationPage() {
 
       <section className="nr-nav-guidance" aria-live="polite">
         <span className="nr-nav-guidance-icon"><Icon name="navigation" size={30} /></span>
-        <div><small>{stage.badge}</small><strong>{guidanceTitle}</strong>{canNavigate && <em>{nativeRoute?.target === stage.target ? op("Route guidance") : op("Google Maps is also available")}</em>}</div>
+        <div>
+          <small>{stage.badge}</small>
+          <strong>{guidanceTitle}</strong>
+          {canNavigate && (
+            <em>
+              {nativeRoute?.target === stage.target
+                ? trafficLabel
+                  ? `${op("Route guidance")} · ${trafficLabel}`
+                  : op("Route guidance")
+                : op("Google Maps is also available")}
+            </em>
+          )}
+        </div>
         <span className="nr-nav-guidance-distance">{guidanceDistance}</span>
       </section>
 
@@ -536,6 +580,23 @@ export default function DriverNavigationPage() {
       )}
 
       <section className="nr-nav-bottom-card">
+        <div className="nr-nav-trip-progress" aria-label={op("Trip progress")}>
+          {[
+            { label: op("Pickup"), icon: "pin" as const },
+            { label: op("Arrived"), icon: "check" as const },
+            { label: op("In trip"), icon: "navigation" as const },
+            { label: op("Complete"), icon: "check" as const },
+          ].map((item, index) => (
+            <span
+              key={item.label}
+              className={index < stageIndex ? "done" : index === stageIndex ? "active" : ""}
+              aria-current={index === stageIndex ? "step" : undefined}
+            >
+              <i><Icon name={item.icon} size={13} /></i>
+              <small>{item.label}</small>
+            </span>
+          ))}
+        </div>
         <div className="nr-nav-trip-meta"><span>{trip.rideCategory}</span><span>{stage.badge}</span></div>
         <div className="nr-nav-current-destination">
           <small>{stage.target === "pickup" ? op("PICKUP") : op("DESTINATION")}</small>
@@ -553,11 +614,11 @@ export default function DriverNavigationPage() {
             <button className="nr-nav-stage-secondary" disabled={busy} onClick={() => transition("arrived_pickup")}>{busy ? op("Updating…") : op("Arrived at pickup")}</button>
           </div>
         ) : trip.status === "arrived_pickup" ? (
-          <button className="nr-nav-stage-primary" disabled={busy} onClick={() => transition("in_trip")}><Icon name="navigation" size={19} /> {busy ? op("Starting…") : op("Start trip")}</button>
+          <button className="nr-nav-stage-primary" disabled={busy} onClick={() => setConfirmAction("in_trip")}><Icon name="navigation" size={19} /> {busy ? op("Starting…") : op("Start trip")}</button>
         ) : trip.status === "in_trip" ? (
           <div className="nr-nav-stage-actions">
             <a className="nr-nav-stage-primary" href={mapsUrl} target="_blank" rel="noreferrer"><Icon name="navigation" size={19} /> {op("Open Google Maps")}</a>
-            <button className="nr-nav-stage-secondary complete" disabled={busy} onClick={() => transition("completed")}>{busy ? op("Completing…") : op("Complete trip")}</button>
+            <button className="nr-nav-stage-secondary complete" disabled={busy} onClick={() => setConfirmAction("completed")}>{busy ? op("Completing…") : op("Complete trip")}</button>
           </div>
         ) : (
           <div className="nr-nav-stage-actions">
@@ -568,6 +629,35 @@ export default function DriverNavigationPage() {
 
         {canNavigate && <div className="nr-nav-handoff"><Icon name="info" size={15} /><span>{nativeRoute?.target === stage.target ? "NexRide keeps the route updated from your location. Google Maps is also available for turn-by-turn guidance." : "Route guidance is unavailable right now. Use Google Maps for turn-by-turn directions."}</span></div>}
       </section>
+
+      {confirmAction && (
+        <Dialog
+          title={op(confirmAction === "in_trip" ? "Start this trip?" : "Complete this trip?")}
+          onClose={() => !busy && setConfirmAction(null)}
+        >
+          <p className="nr-muted">
+            {op(
+              confirmAction === "in_trip"
+                ? "Start the trip only after the rider is with you and you are ready to leave the pickup."
+                : "Complete the trip only after the rider has reached the destination.",
+            )}
+          </p>
+          <Button
+            loading={busy}
+            disabled={busy}
+            onClick={() => {
+              const next = confirmAction;
+              setConfirmAction(null);
+              if (next) void transition(next);
+            }}
+          >
+            {op(confirmAction === "in_trip" ? "Start trip" : "Complete trip")}
+          </Button>
+          <Button variant="secondary" disabled={busy} onClick={() => setConfirmAction(null)}>
+            {op("Not yet")}
+          </Button>
+        </Dialog>
+      )}
     </main>
   );
 }
