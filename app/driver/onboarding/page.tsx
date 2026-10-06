@@ -141,7 +141,7 @@ export default function DriverOnboarding() {
               <div className="nr-auth-subsection">
                 <div><span>VEHICLE DETAILS</span><small>Used during Driver verification.</small></div>
                 <div className="driver-form-grid">
-                  <label><span>Vehicle</span><div className="nr-auth-input"><Icon name="car" size={19}/><input value={vehicle} onChange={(e) => setVehicle(e.target.value)} placeholder="Toyota Corolla" required /></div></label>
+                  <label><span>Vehicle</span><div className="nr-auth-input"><Icon name="settings" size={19}/><input value={vehicle} onChange={(e) => setVehicle(e.target.value)} placeholder="Toyota Corolla" required /></div></label>
                   <label><span>Plate number</span><div className="nr-auth-input"><Icon name="card" size={19}/><input value={plate} onChange={(e) => setPlate(e.target.value)} placeholder="2-A12345" required /></div></label>
                 </div>
               </div>
@@ -154,7 +154,7 @@ export default function DriverOnboarding() {
             <div className="nr-auth-divider"><span>or</span></div>
             <Link className="nr-auth-create-link" href="/driver/auth">Already have an account? <strong>Sign In</strong></Link>
             <div className="nr-auth-role-note">
-              <span><Icon name="car" size={20}/></span>
+              <span><Icon name="briefcase" size={20}/></span>
               <div><strong>This account is for Drivers</strong><small>Submit documents, manage trips, and start earning.</small></div>
             </div>
             <Link className="nr-auth-role-link" href="/rider/sign-in">Need to ride instead? <strong>Switch to Rider →</strong></Link>
