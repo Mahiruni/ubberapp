@@ -266,7 +266,7 @@ function AppWorkspace({
           { id: "home", label: t("home"), icon: "home" },
           { id: "trips", label: t("activity"), icon: "clock" },
           { id: "safety", label: t("safety"), icon: "shield" },
-          { id: "profile", label: language === "am" ? "መለያ" : "Account", icon: "user" },
+          { id: "profile", label: t("account"), icon: "user" },
         ]
       : [
           { id: "home", label: t("home"), icon: "home" },
