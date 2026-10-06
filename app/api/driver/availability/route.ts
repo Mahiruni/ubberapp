@@ -104,41 +104,68 @@ export async function PATCH(request: Request) {
     if (!hasOnline && current.is_online !== true)
       return reply({ status: "driver_offline" }, 409);
 
-    const patch: Record<string, unknown> = {};
-    if (hasOnline) patch.is_online = body.online === true;
-    if (location) patch.location = location;
+    const selectFields = "review_status,rejection_reason,is_online,rating";
+    let updatedDriver = current;
 
-    // Offline-only updates should run in the authenticated driver's RLS
-    // context. Besides enforcing ownership, this preserves auth.uid() for any
-    // database triggers that depend on the acting user. Location/online writes
-    // continue to use the server client because location is not a client-
-    // writable driver column.
-    const writeClient = goingOffline && !location ? authorized.client : admin;
-    const { data, error } = await writeClient
-      .from("drivers")
-      .update(patch)
-      .eq("id", authorized.user.id)
-      .select("review_status,rejection_reason,is_online,rating")
-      .single();
+    // Keep location writes on the trusted server client because the location
+    // column is intentionally not writable by browser clients. Do not include
+    // is_online in this update: the online-session trigger lives in the
+    // private schema and must run with the authenticated driver's role.
+    if (location) {
+      const { data: locationData, error: locationError } = await admin
+        .from("drivers")
+        .update({ location })
+        .eq("id", authorized.user.id)
+        .select(selectFields)
+        .single();
 
-    if (error || !data) {
-      console.error("driver_availability_update_failed", {
-        driverId: authorized.user.id,
-        operation: goingOffline ? "offline" : hasOnline ? "online" : "location",
-        code: error?.code || "",
-        message: error?.message || "",
-        details: error?.details || "",
-        hint: error?.hint || "",
-      });
-      const message = error?.message || "";
-      if (/approval|approved/i.test(message))
-        return reply({ status: "driver_not_approved" }, 409);
-      return reply({ status: "availability_update_failed" }, 500);
+      if (locationError || !locationData) {
+        console.error("driver_availability_update_failed", {
+          driverId: authorized.user.id,
+          operation: "location",
+          code: locationError?.code || "",
+          message: locationError?.message || "",
+          details: locationError?.details || "",
+          hint: locationError?.hint || "",
+        });
+        return reply({ status: "availability_update_failed" }, 500);
+      }
+
+      updatedDriver = locationData;
+    }
+
+    // Always change is_online in the authenticated driver's RLS context.
+    // Authenticated drivers have the required private-schema access for the
+    // online-session trigger, while ownership remains constrained by RLS.
+    if (hasOnline) {
+      const { data: onlineData, error: onlineError } = await authorized.client
+        .from("drivers")
+        .update({ is_online: body.online === true })
+        .eq("id", authorized.user.id)
+        .select(selectFields)
+        .single();
+
+      if (onlineError || !onlineData) {
+        console.error("driver_availability_update_failed", {
+          driverId: authorized.user.id,
+          operation: goingOffline ? "offline" : "online",
+          code: onlineError?.code || "",
+          message: onlineError?.message || "",
+          details: onlineError?.details || "",
+          hint: onlineError?.hint || "",
+        });
+        const message = onlineError?.message || "";
+        if (/approval|approved/i.test(message))
+          return reply({ status: "driver_not_approved" }, 409);
+        return reply({ status: "availability_update_failed" }, 500);
+      }
+
+      updatedDriver = onlineData;
     }
 
     return reply({
       status: "ready",
-      driver: data,
+      driver: updatedDriver,
     });
   } catch {
     return reply({ status: "availability_service_unavailable" }, 503);
