@@ -216,3 +216,225 @@
 @media(prefers-reduced-motion:reduce){
   .nr-auth-experience *{transition:none!important;animation:none!important}
 }
+
+
+/* Auth viewport lock — keep sign-in/sign-up/recovery screens app-like on mobile. */
+.nr-auth-experience[data-auth-mode]{
+  height:100svh;
+  height:100dvh;
+  min-height:0!important;
+  overflow:hidden;
+  overscroll-behavior:none;
+}
+.nr-auth-experience[data-auth-mode] .nr-auth-page{
+  height:100%;
+  min-height:0;
+  overflow:hidden;
+}
+.nr-auth-experience[data-auth-mode] .nr-auth-shell{
+  max-height:100%;
+}
+.nr-auth-experience[data-auth-mode] .nr-auth-content{
+  min-height:0;
+}
+.nr-auth-experience[data-auth-mode] input,
+.nr-auth-experience[data-auth-mode] button,
+.nr-auth-experience[data-auth-mode] a{
+  -webkit-tap-highlight-color:transparent;
+}
+.nr-auth-experience[data-auth-mode] button,
+.nr-auth-experience[data-auth-mode] a{
+  touch-action:manipulation;
+}
+.nr-auth-experience[data-auth-mode] button:active,
+.nr-auth-experience[data-auth-mode] .nr-auth-create-link:active{
+  transform:scale(.98);
+}
+
+@media(min-width:901px){
+  .nr-auth-experience[data-auth-mode] .nr-auth-shell{
+    height:min(720px,calc(100dvh - 36px));
+    min-height:0;
+  }
+  .nr-auth-experience[data-auth-mode] .nr-auth-hero{
+    height:100%;
+    min-height:0;
+  }
+  .nr-auth-experience[data-auth-mode] .nr-auth-content{
+    overflow:hidden;
+  }
+}
+
+@media(max-width:700px){
+  .nr-auth-experience[data-auth-mode] .nr-auth-page{
+    padding:0;
+  }
+  .nr-auth-experience[data-auth-mode] .nr-auth-shell{
+    width:100%;
+    height:100%;
+    min-height:0;
+    display:grid;
+    grid-template-rows:minmax(116px,27dvh) minmax(0,1fr);
+    border:0;
+    border-radius:0;
+    box-shadow:none;
+    overflow:hidden;
+  }
+  .nr-auth-experience[data-auth-mode] .nr-auth-hero{
+    min-height:0;
+    height:auto;
+  }
+  .nr-auth-experience[data-auth-mode] .nr-auth-content{
+    min-height:0;
+    overflow:hidden;
+    margin-top:-18px;
+    padding:22px 18px max(14px,env(safe-area-inset-bottom));
+    border-radius:22px 22px 0 0;
+  }
+  .nr-auth-experience[data-auth-mode] .nr-auth-content>h1{
+    font-size:clamp(26px,8vw,32px)!important;
+  }
+  .nr-auth-experience[data-auth-mode] .nr-auth-content>p{
+    margin:6px 0 14px!important;
+    font-size:13px!important;
+    line-height:1.38!important;
+  }
+  .nr-auth-experience[data-auth-mode] .nr-profile-form,
+  .nr-auth-experience[data-auth-mode] .nr-auth-form{
+    gap:8px;
+  }
+  .nr-auth-experience[data-auth-mode] .nr-profile-form .nr-input-field{
+    gap:3px;
+  }
+  .nr-auth-experience[data-auth-mode] .nr-profile-form .nr-input-field input,
+  .nr-auth-experience[data-auth-mode] .nr-auth-input{
+    min-height:48px;
+  }
+  .nr-auth-experience[data-auth-mode] .nr-auth-input input{
+    min-height:46px;
+    font-size:16px!important;
+  }
+  .nr-auth-experience[data-auth-mode] .nr-profile-form .nr-button,
+  .nr-auth-experience[data-auth-mode] .driver-auth-submit{
+    min-height:50px!important;
+  }
+  .nr-auth-experience[data-auth-mode] .nr-auth-divider{
+    margin:10px 0;
+  }
+  .nr-auth-experience[data-auth-mode] .nr-auth-create-link{
+    min-height:48px;
+  }
+  .nr-auth-experience[data-auth-mode] .nr-auth-role-note{
+    margin-top:10px;
+    padding:9px 10px;
+  }
+  .nr-auth-experience[data-auth-mode] .nr-auth-role-link{
+    margin-top:10px;
+    padding-top:10px;
+  }
+  .nr-auth-experience[data-auth-mode] .nr-auth-back{
+    margin-bottom:8px;
+  }
+
+  /* Signup is the densest auth screen, so keep every required field visible
+     while trimming only decorative/supporting blocks. */
+  .nr-auth-experience[data-auth-mode="signup"] .nr-auth-shell{
+    grid-template-rows:86px minmax(0,1fr);
+  }
+  .nr-auth-experience[data-auth-mode="signup"] .nr-auth-hero-copy,
+  .nr-auth-experience[data-auth-mode="signup"] .nr-auth-hero-vehicle{
+    display:none;
+  }
+  .nr-auth-experience[data-auth-mode="signup"] .nr-auth-hero-top{
+    top:max(12px,env(safe-area-inset-top));
+  }
+  .nr-auth-experience[data-auth-mode="signup"] .nr-auth-content{
+    margin-top:-10px;
+    padding-top:16px;
+  }
+  .nr-auth-experience[data-auth-mode="signup"] .nr-rider-entry-kicker{
+    min-height:20px!important;
+    margin-bottom:3px!important;
+    font-size:8px!important;
+  }
+  .nr-auth-experience[data-auth-mode="signup"] .nr-auth-content>h1{
+    font-size:26px!important;
+  }
+  .nr-auth-experience[data-auth-mode="signup"] .nr-auth-content>p{
+    margin:3px 0 8px!important;
+    font-size:11px!important;
+  }
+  .nr-auth-experience[data-auth-mode="signup"] .nr-profile-form{
+    gap:5px;
+  }
+  .nr-auth-experience[data-auth-mode="signup"] .nr-profile-form .nr-input-field{
+    gap:2px;
+    font-size:9px;
+  }
+  .nr-auth-experience[data-auth-mode="signup"] .nr-profile-form .nr-input-field input{
+    min-height:44px;
+  }
+  .nr-auth-experience[data-auth-mode="signup"] .nr-profile-form .nr-button{
+    min-height:46px!important;
+    margin-top:2px!important;
+  }
+  .nr-auth-experience[data-auth-mode="signup"] .nr-auth-divider{
+    margin:6px 0;
+  }
+  .nr-auth-experience[data-auth-mode="signup"] .nr-auth-role-note,
+  .nr-auth-experience[data-auth-mode="signup"] .nr-auth-role-link{
+    display:none!important;
+  }
+  .nr-auth-experience[data-auth-mode="signup"] .nr-auth-switch{
+    margin:0!important;
+    font-size:11px!important;
+    text-align:center;
+  }
+}
+
+/* Short phones and keyboard-open visual viewports: collapse decoration, keep
+   the outer page locked, and allow only the form panel to make an invisible
+   accessibility scroll if the focused control would otherwise be unreachable. */
+@media(max-width:700px) and (max-height:680px){
+  .nr-auth-experience[data-auth-mode] .nr-auth-shell{
+    grid-template-rows:94px minmax(0,1fr);
+  }
+  .nr-auth-experience[data-auth-mode] .nr-auth-hero-copy,
+  .nr-auth-experience[data-auth-mode] .nr-auth-hero-vehicle,
+  .nr-auth-experience[data-auth-mode] .nr-auth-role-note,
+  .nr-auth-experience[data-auth-mode] .nr-auth-preview{
+    display:none!important;
+  }
+  .nr-auth-experience[data-auth-mode] .nr-auth-content{
+    margin-top:-8px;
+    padding-top:14px;
+  }
+  .nr-auth-experience[data-auth-mode] .nr-auth-content>p{
+    margin-bottom:9px!important;
+  }
+}
+
+@media(max-width:700px) and (max-height:540px){
+  .nr-auth-experience[data-auth-mode] .nr-auth-shell{
+    grid-template-rows:0 minmax(0,1fr);
+  }
+  .nr-auth-experience[data-auth-mode] .nr-auth-hero{
+    opacity:0;
+    pointer-events:none;
+  }
+  .nr-auth-experience[data-auth-mode] .nr-auth-content{
+    margin-top:0;
+    border-radius:0;
+    padding-top:10px;
+    overflow-y:auto;
+    overscroll-behavior:contain;
+    scrollbar-width:none;
+  }
+  .nr-auth-experience[data-auth-mode] .nr-auth-content::-webkit-scrollbar{
+    display:none;
+  }
+  .nr-auth-experience[data-auth-mode] .nr-auth-role-link,
+  .nr-auth-experience[data-auth-mode] .nr-auth-divider{
+    display:none!important;
+  }
+}
