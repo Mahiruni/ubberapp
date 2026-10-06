@@ -20,7 +20,10 @@ export function endpointName(
   t: ReturnType<typeof useTranslation>,
 ) {
   return p.source === "device"
-    ? t("currentPickup")
+    ? p.name ||
+      (/^-?\d+(?:\.\d+)?,\s*-?\d+(?:\.\d+)?$/.test(p.address || "")
+        ? t("currentPickup")
+        : p.address || t("currentPickup"))
     : p.source === "pin"
       ? `${t("mapPin")}${p.name ? ` · ${p.name}` : ""}`
       : placeName(p, language);

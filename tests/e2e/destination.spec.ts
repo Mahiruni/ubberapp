@@ -201,10 +201,27 @@ test("an uncertain device location requires explicit pickup confirmation", async
     accuracy: 350,
   });
   await context.grantPermissions(["geolocation"]);
+  await page.route("**/api/rider/search?mode=reverse**", (route) =>
+    route.fulfill({
+      json: {
+        status: "ready",
+        results: [
+          {
+            lat: 9.008,
+            lng: 38.775,
+            name: "Bole",
+            address: "Bole, Addis Ababa",
+            source: "provider",
+            confirmed: true,
+          },
+        ],
+      },
+    }),
+  );
   await openSearch(page);
   await select(page, "destination", "Meskel Square");
   await expect(page.getByLabel("Pickup location", { exact: true })).toHaveValue(
-    "Device location",
+    "Bole",
   );
   await expect(
     page.getByRole("button", { name: "Continue to ride options", exact: true }),

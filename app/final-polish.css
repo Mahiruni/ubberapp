@@ -305,3 +305,97 @@ body{min-width:320px;overflow-x:hidden}
     scroll-behavior:auto!important;
   }
 }
+
+/* NexRide compact map-first bottom navigation  original icon-first treatment. */
+.nr-mobile-nav,
+.nr-driver-bottom-nav{
+  background:color-mix(in srgb,var(--surface,#fff) 86%,transparent)!important;
+  border-top:1px solid color-mix(in srgb,var(--line,#dbe4e8) 78%,transparent)!important;
+  box-shadow:0 -8px 28px rgba(4,28,48,.06)!important;
+  backdrop-filter:blur(20px) saturate(1.35);
+  -webkit-backdrop-filter:blur(20px) saturate(1.35);
+}
+.nr-mobile-nav{
+  padding:4px 8px calc(4px + env(safe-area-inset-bottom))!important;
+}
+.nr-mobile-nav .nr-navigation,
+.nr-driver-bottom-nav{
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+  gap:0!important;
+}
+.nr-mobile-nav .nr-navigation button,
+.nr-driver-bottom-nav button{
+  position:relative;
+  min-width:0!important;
+  min-height:54px!important;
+  padding:6px 3px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  color:var(--muted,#667587)!important;
+  gap:3px!important;
+  transition:color 180ms ease,opacity 180ms ease!important;
+}
+.nr-mobile-nav .nr-navigation button:hover,
+.nr-driver-bottom-nav button:hover{
+  background:transparent!important;
+}
+.nr-mobile-nav .nr-navigation button.active,
+.nr-driver-bottom-nav button.active{
+  color:var(--green,#00c878)!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+.nr-mobile-nav .nr-navigation button.active::before,
+.nr-driver-bottom-nav button.active::before{
+  content:"";
+  position:absolute;
+  top:1px;
+  left:50%;
+  width:18px;
+  height:2px;
+  border-radius:999px;
+  transform:translateX(-50%);
+  background:currentColor;
+}
+.nr-mobile-nav .nr-navigation button svg,
+.nr-driver-bottom-nav button svg{
+  width:21px!important;
+  height:21px!important;
+  stroke-width:1.9;
+}
+.nr-mobile-nav .nr-navigation button span,
+.nr-driver-bottom-nav .nr-driver-nav-label{
+  font-size:10px!important;
+  line-height:1.1!important;
+  font-weight:650!important;
+  letter-spacing:-.01em;
+}
+.rider-home-view .nr-mobile-nav,
+.nr-driver-map-page .nr-driver-bottom-nav{
+  background:color-mix(in srgb,var(--surface,#fff) 76%,transparent)!important;
+}
+@media(max-width:360px){
+  .nr-mobile-nav{padding-left:2px!important;padding-right:2px!important}
+  .nr-mobile-nav .nr-navigation button,
+  .nr-driver-bottom-nav button{padding-left:1px!important;padding-right:1px!important}
+  .nr-mobile-nav .nr-navigation button span,
+  .nr-driver-bottom-nav .nr-driver-nav-label{font-size:9px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .nr-mobile-nav .nr-navigation button,
+  .nr-driver-bottom-nav button{transition:none!important}
+}
+
+/* Keep the mobile map, sheet and five-tab footer in distinct layout rows. */
+@media(max-width:800px){
+  .rider-home-view .nr-stage{padding:0!important;gap:0!important}
+  .rider-home-view .nr-rider-map-surface{height:100%;max-height:100%;align-self:stretch;box-sizing:border-box}
+  .rider-home-view .nr-panel{margin:0!important;box-sizing:border-box}
+  .rider-home-view .nr-mobile-nav{left:0!important;right:0!important;width:100%!important;max-width:100%!important;margin:0!important;box-sizing:border-box!important}
+}
+
+@media(max-width:800px){
+  .rider-home-view .nr-panel{margin:0 0 10px!important}
+}

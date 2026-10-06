@@ -800,23 +800,31 @@ function Metric({ label, value, suffix, hint, loading }: { label: string; value:
 
 function DriverBottomNav({ screen, navigate }: { screen: DriverScreen; navigate: (screen: DriverScreen) => void }) {
   const t = useTranslation();
-  const items: { id: DriverScreen; label: string; icon: "home" | "money" | "navigation" | "user" }[] = [
-    { id: "home", label: t("home"), icon: "home" },
-    { id: "earnings", label: t("earnings"), icon: "money" },
-    { id: "map", label: t("map"), icon: "navigation" },
-    { id: "profile", label: t("account"), icon: "user" },
+  const router = useRouter();
+  const items: {
+    id: string;
+    label: string;
+    icon: "home" | "clock" | "money" | "chat" | "user";
+    screen?: DriverScreen;
+    href?: string;
+  }[] = [
+    { id: "home", label: t("home"), icon: "home", screen: "home" },
+    { id: "requests", label: t("requests"), icon: "clock", href: "/driver/activity" },
+    { id: "earnings", label: t("earnings"), icon: "money", screen: "earnings" },
+    { id: "messages", label: t("messages"), icon: "chat", href: "/support?role=driver" },
+    { id: "account", label: t("account"), icon: "user", screen: "profile" },
   ];
 
   return (
     <nav className="nr-driver-bottom-nav" aria-label="Driver navigation" data-screen={screen}>
       {items.map((item) => {
-        const active = screen === item.id;
+        const active = Boolean(item.screen && screen === item.screen);
         return (
           <button
             type="button"
             key={item.id}
             className={active ? "active" : ""}
-            onClick={() => navigate(item.id)}
+            onClick={() => item.href ? router.push(item.href) : item.screen && navigate(item.screen)}
             aria-current={active ? "page" : undefined}
             aria-label={item.label}
           >

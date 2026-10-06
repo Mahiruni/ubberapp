@@ -28,7 +28,6 @@ import {
   useTranslation,
   type IconName,
 } from "../components/nexride/ui";
-import { RideMap } from "../components/nexride/map";
 import { RiderMap } from "../components/nexride/rider-map";
 import { useMatching } from "../lib/nexride-use-matching";
 import { useJourney } from "../lib/nexride-journey";
@@ -268,13 +267,15 @@ function AppWorkspace({
           { id: "home", label: t("home"), icon: "home" },
           { id: "trips", label: t("activity"), icon: "clock" },
           { id: "safety", label: t("safety"), icon: "shield" },
+          { id: "messages", label: t("messages"), icon: "chat" },
           { id: "profile", label: t("account"), icon: "user" },
         ]
       : [
           { id: "home", label: t("home"), icon: "home" },
           { id: "request", label: t("requests"), icon: "navigation" },
           { id: "earnings", label: t("earnings"), icon: "money" },
-          { id: "profile", label: t("profile"), icon: "user" },
+          { id: "messages", label: t("messages"), icon: "chat" },
+          { id: "profile", label: t("account"), icon: "user" },
         ];
   const navigate = (id: string) => {
     if (bookingLock.current) return;
@@ -290,6 +291,21 @@ function AppWorkspace({
     if (mode === "rider" && id === "wallet") {
       setPanel(null);
       window.location.assign("/rider/wallet");
+      return;
+    }
+    if (mode === "rider" && id === "messages") {
+      setPanel(null);
+      window.location.assign("/support");
+      return;
+    }
+    if (mode === "driver" && id === "request") {
+      setPanel(null);
+      window.location.assign("/driver/activity");
+      return;
+    }
+    if (mode === "driver" && id === "messages") {
+      setPanel(null);
+      window.location.assign("/support?role=driver");
       return;
     }
     if (mode === "rider") setRiderScreen(id as RiderScreen);
@@ -451,15 +467,16 @@ function AppWorkspace({
               locked={requestPending}
             />
           ) : (
-            <RideMap
-              route={[
-                "rides",
-                "trip",
-                "live",
-                "request",
-                "navigation",
-              ].includes(screen)}
-              driving={mode === "driver"}
+            <RiderMap
+              position={riderLocation.position}
+              status={riderLocation.status}
+              locate={riderLocation.locate}
+              recenter={riderLocation.recenter}
+              initials={initials}
+              onProfile={() => navigate("profile")}
+              readOnly
+              locked={requestPending}
+              topLabel={mode === "driver" ? t("driver") : undefined}
             />
           )}
           <div className="nr-map-city">

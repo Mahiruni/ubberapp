@@ -32,6 +32,7 @@ export function useJourney(position: RiderLocation | null) {
   const [sheetRatio, setSheetRatio] = useState(0.62);
   const [viewport, setViewport] = useState({ height: 0, keyboard: false });
   const nextDevice = useRef(false);
+  const reverseCache = useRef(new Map<string, { name: string; address: string }>());
   const key = endpointKey(pickup, destination);
   const valid =
     !!pickup?.confirmed &&
@@ -104,6 +105,59 @@ export function useJourney(position: RiderLocation | null) {
     // Device updates do not override a manually selected pickup.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [position]);
+  useEffect(() => {
+    if (!position || pickup?.source !== "device" || pickup.name) return;
+    const cacheKey = pickup.lat.toFixed(4) + "," + pickup.lng.toFixed(4);
+    const cached = reverseCache.current.get(cacheKey);
+    if (cached) {
+      setPickup((current) =>
+        current?.source === "device" ? { ...current, ...cached } : current,
+      );
+      return;
+    }
+    const controller = new AbortController();
+    const timer = setTimeout(() => {
+      const params = new URLSearchParams({
+        mode: "reverse",
+        lat: String(pickup.lat),
+        lng: String(pickup.lng),
+      });
+      fetch("/api/rider/search?" + params, {
+        signal: AbortSignal.any([controller.signal, AbortSignal.timeout(9000)]),
+        cache: "no-store",
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          const result = data?.results?.[0] as Endpoint | undefined;
+          if (!result || !validPoint(result)) return;
+          const name =
+            typeof result.name === "string" && result.name.trim()
+              ? result.name.trim()
+              : typeof result.address === "string"
+                ? result.address.trim()
+                : "";
+          const address =
+            typeof result.address === "string" && result.address.trim()
+              ? result.address.trim()
+              : pickup.address;
+          if (!name && !address) return;
+          const resolved = { name: name || address, address };
+          reverseCache.current.set(cacheKey, resolved);
+          setPickup((current) =>
+            current?.source === "device" &&
+            Math.abs(current.lat - pickup.lat) < 0.0002 &&
+            Math.abs(current.lng - pickup.lng) < 0.0002
+              ? { ...current, ...resolved }
+              : current,
+          );
+        })
+        .catch(() => {});
+    }, 300);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [pickup?.address, pickup?.lat, pickup?.lng, pickup?.name, pickup?.source, position]);
   useEffect(() => {
     if (!valid || !pickup || !destination) {
       setResult({ key, status: "idle" });

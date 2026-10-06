@@ -19,3 +19,24 @@
 @media(min-width:760px){.nr-nav-guidance{left:82px;right:auto;width:430px;top:28px}.nr-nav-home{top:28px;left:28px}.nr-nav-bottom-card{left:auto;right:28px;bottom:28px;transform:none;width:430px;border-radius:23px;border-bottom:1px solid rgba(66,112,140,.4)}.nr-nav-map-controls{right:478px;top:auto;bottom:48px}.nr-nav-status{left:28px;right:auto;width:390px;bottom:48px}}
 @media(max-width:430px){.nr-nav-guidance{gap:9px;padding:10px 11px;min-height:72px}.nr-nav-guidance-icon{width:42px;height:42px}.nr-nav-guidance strong{font-size:17px}.nr-nav-guidance em{display:none}.nr-nav-guidance-distance{max-width:72px;font-size:10px}.nr-nav-map-disclaimer{top:calc(env(safe-area-inset-top) + 96px);font-size:8px}.nr-nav-bottom-card{padding-left:14px;padding-right:14px}.nr-nav-current-destination h1{font-size:20px}.nr-nav-stage-actions{grid-template-columns:1.25fr .82fr}.nr-nav-stage-primary,.nr-nav-stage-secondary{font-size:12px}.nr-nav-status{bottom:calc(304px + env(safe-area-inset-bottom))}}
 @media(prefers-reduced-motion:reduce){.nr-nav-loading span{animation:none}}
+
+/* Real Leaflet driver route surface. */
+.nr-live-navigation-map{background:#061c2c}
+.nr-live-navigation-canvas{position:absolute;inset:0;z-index:0}
+.nr-live-navigation-map .leaflet-container{width:100%;height:100%;background:#061c2c;font:inherit}
+.nr-live-navigation-map .leaflet-control-attribution{font-size:8px;background:rgba(4,28,48,.72);color:#afc1cc}
+.nr-live-navigation-map .leaflet-control-attribution a{color:#dbe8ee}
+.nr-live-nav-marker-wrap{background:transparent!important;border:0!important}
+.nr-live-nav-marker{display:block;position:relative;width:28px;height:28px;border-radius:50%;box-sizing:border-box;filter:drop-shadow(0 4px 8px rgba(0,0,0,.26))}
+.nr-live-nav-marker.pickup{background:#00c878;border:4px solid #fff}
+.nr-live-nav-marker.destination{background:#041c30;border:4px solid #fff}
+.nr-live-nav-marker.pickup.target,.nr-live-nav-marker.destination.target{box-shadow:0 0 0 6px rgba(0,200,120,.2)}
+.nr-live-nav-marker.vehicle{width:34px;height:34px;background:#0b4a78;border:3px solid #fff}
+.nr-live-nav-marker.vehicle::before{content:"";position:absolute;left:50%;top:50%;width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:12px solid #fff;transform:translate(-50%,-56%) rotate(var(--nr-heading,0deg));transform-origin:50% 60%}
+.nr-live-navigation-map[data-gps="stale"] .nr-live-nav-marker.vehicle{opacity:.68}
+.nr-live-navigation-map[data-gps="lost"] .nr-live-nav-marker.vehicle,
+.nr-live-navigation-map[data-gps="unsupported"] .nr-live-nav-marker.vehicle{opacity:.4}
+.nr-live-map-status{position:absolute;z-index:450;left:50%;top:calc(env(safe-area-inset-top) + 104px);max-width:min(88%,430px);transform:translateX(-50%);padding:7px 10px;border:1px solid rgba(151,183,201,.22);border-radius:999px;background:rgba(4,28,48,.82);color:#e4eef3;font-size:10px;font-weight:750;text-align:center;backdrop-filter:blur(12px)}
+.nr-live-map-status.route{top:calc(env(safe-area-inset-top) + 136px);color:#c6d6df}
+.nr-live-map-recenter{position:absolute;z-index:450;right:14px;bottom:170px;width:44px;height:44px;min-height:44px;border:1px solid rgba(117,162,188,.25);border-radius:50%;background:rgba(4,28,48,.88);color:#fff;display:grid;place-items:center;font-size:24px;line-height:1;backdrop-filter:blur(14px)}
+.nr-live-map-recenter:focus-visible{outline:3px solid #00c878;outline-offset:2px}

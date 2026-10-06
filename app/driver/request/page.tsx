@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { RideMap } from "../../../components/nexride/map";
+import { DriverNavigationMap, type NavigationCoordinate } from "../../../components/nexride/driver-navigation-map";
 import { Icon } from "../../../components/nexride/ui";
 import { useOperationalTranslation } from "../../../components/nexride/operational-i18n";
 import { supabase } from "../../../lib/supabase";
@@ -75,6 +75,47 @@ export default function DriverRideRequestPage() {
   const [submitting, setSubmitting] = useState<"accept" | "decline" | null>(null);
   const [acceptFailure, setAcceptFailure] = useState("");
   const [secondsRemaining, setSecondsRemaining] = useState<number | null>(null);
+  const [requestRoute, setRequestRoute] = useState<NavigationCoordinate[]>([]);
+
+  useEffect(() => {
+    if (
+      !request ||
+      !Number.isFinite(request.pickup_lat) ||
+      !Number.isFinite(request.pickup_lng) ||
+      !Number.isFinite(request.destination_lat) ||
+      !Number.isFinite(request.destination_lng)
+    ) {
+      setRequestRoute([]);
+      return;
+    }
+    const controller = new AbortController();
+    void fetch("/api/rider/route", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      cache: "no-store",
+      body: JSON.stringify({
+        pickup: { lat: request.pickup_lat, lng: request.pickup_lng },
+        destination: { lat: request.destination_lat, lng: request.destination_lng },
+      }),
+      signal: AbortSignal.any([controller.signal, AbortSignal.timeout(10000)]),
+    })
+      .then((response) => response.json())
+      .then((body) => {
+        const geometry = Array.isArray(body?.route?.geometry) ? body.route.geometry : [];
+        const road = geometry
+          .filter(
+            (point: unknown) =>
+              Array.isArray(point) &&
+              point.length >= 2 &&
+              Number.isFinite(Number(point[0])) &&
+              Number.isFinite(Number(point[1])),
+          )
+          .map((point: [number, number]) => ({ lat: Number(point[0]), lng: Number(point[1]) }));
+        setRequestRoute(road);
+      })
+      .catch(() => setRequestRoute([]));
+    return () => controller.abort();
+  }, [request]);
 
   const loadOffer = useCallback(async (userId: string, offerId?: string | null) => {
     let query = supabase
@@ -274,7 +315,26 @@ export default function DriverRideRequestPage() {
   return (
     <main className="nr-app nr-driver-request-page" data-mode="driver" data-theme="dark">
       <div className="nr-driver-request-map">
-        <RideMap route />
+        <DriverNavigationMap
+          vehicle={null}
+          pickup={
+            request && Number.isFinite(request.pickup_lat) && Number.isFinite(request.pickup_lng)
+              ? { lat: Number(request.pickup_lat), lng: Number(request.pickup_lng) }
+              : null
+          }
+          destination={
+            request &&
+            Number.isFinite(request.destination_lat) &&
+            Number.isFinite(request.destination_lng)
+              ? { lat: Number(request.destination_lat), lng: Number(request.destination_lng) }
+              : null
+          }
+          route={requestRoute}
+          target="pickup"
+          view="overview"
+          gpsState="unsupported"
+          heading={null}
+        />
         {request && (
           <div className="nr-request-map-labels" aria-hidden="true">
             <span className="pickup"><Icon name="pin" size={14} /> Pickup</span>

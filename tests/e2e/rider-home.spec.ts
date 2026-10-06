@@ -20,14 +20,11 @@ test("home exposes empty history, labeled examples and the requested navigation"
     page.getByText("No recent destinations yet.", { exact: false }),
   ).toBeVisible();
   await expect(
-    page.getByText("Try a preview destination", { exact: true }),
-  ).toBeVisible();
-  await expect(
     page
       .locator(".nr-rider-home-panel")
       .getByRole("button", { name: "Search destination", exact: true }),
   ).toContainText("Where to?");
-  for (const label of ["Home", "Activity", "Wallet", "Profile"])
+  for (const label of ["Home", "Activity", "Safety center", "Messages", "Account"])
     await expect(
       page
         .locator(".nr-navigation:visible")
