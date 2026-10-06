@@ -16,7 +16,6 @@
 <symbol id="shield" viewBox="0 0 24 24"><path d="m12 2 9 4v6c0 5-5 9-9 10-4-1-9-5-9-10V6l9-4Z"/><path d="m8 12 3 3 5-6"/></symbol>
 <symbol id="pin" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></symbol>
 <symbol id="arrow" viewBox="0 0 24 24"><path d="m15 5-7 7 7 7M8 12h14"/></symbol>
-<symbol id="car" viewBox="0 0 24 24"><path d="m5 8 2-5h10l2 5M3 8h18v10H3V8ZM5 18v3M19 18v3M6 12h2M16 12h2"/></symbol>
 <symbol id="target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/></symbol>
 <symbol id="check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
 </defs></svg>
@@ -24,7 +23,7 @@
 <div id="demoBar" class="demo-bar"><span><b>Design preview</b><span class="demo-note"> · Sample trip & map</span></span><div class="preview-controls"><button id="sampleUpdate" class="sample-update">Receive sample location</button><label>State <select id="scenario"><option value="normal">On trip</option><option value="route">Route change</option><option value="delay">Delayed arrival</option><option value="stale">Stale location</option><option value="offline">Connection lost</option><option value="eta">No ETA or distance</option><option value="completed">Trip completed</option></select></label></div></div>
 <main class="workspace">
 <section class="map-section" aria-label="Active trip map">
-<div class="status-banner" role="status" aria-live="polite" aria-atomic="true"><span class="status-icon"><svg><use href="#car"/></svg></span><div class="status-copy"><h1 id="statusTitle">On trip</h1><p id="statusDetail">Bole International Airport</p></div><div class="trip-metrics"><div><span>Estimated arrival</span><b id="arrivalTime">—</b></div><div id="distanceMetric"><span>Remaining</span><b id="remainingDistance">4.2 km</b></div></div></div>
+<div class="status-banner" role="status" aria-live="polite" aria-atomic="true"><span class="status-icon"><svg><use href="#target"/></svg></span><div class="status-copy"><h1 id="statusTitle">On trip</h1><p id="statusDetail">Bole International Airport</p></div><div class="trip-metrics"><div><span>Estimated arrival</span><b id="arrivalTime">—</b></div><div id="distanceMetric"><span>Remaining</span><b id="remainingDistance">4.2 km</b></div></div></div>
 <div id="stateNotice" class="trip-notice" role="status" aria-live="polite" hidden></div>
 <div class="map-wrap">
 <div id="mapSurface" class="map-surface"><svg id="map" class="map" viewBox="0 0 900 700" role="img" aria-labelledby="mapTitle mapDesc"><title id="mapTitle">Vehicle position and trip route</title><desc id="mapDesc">Illustrative sample trip map of Addis Ababa. Pickup is emerald, destination is navy, and the vehicle is shown at its last received sample position.</desc>
@@ -37,7 +36,7 @@
 <g fill="#94a39b" font-family="system-ui" font-size="14"><text x="210" y="160">KAZANCHIS</text><text x="665" y="335">BOLE</text><text x="115" y="490">KIRKOS</text><text x="600" y="610">Bole International Airport</text><text x="302" y="337" transform="rotate(-7 302 337)">Africa Avenue</text></g>
 <g id="tripRoute"><path id="destinationLine" d="M397 304 495 286 525 369 649 408 699 526 735 556" stroke="#083b58" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/><g id="destinationMarker" transform="translate(735 556)"><circle r="13" fill="#073950" stroke="white" stroke-width="5"/><circle r="3" fill="white"/></g></g>
 <g id="pickupMarker" transform="translate(397 304)"><circle class="pickup-ring" r="27" fill="#00b77a" opacity=".12"/><circle r="11" fill="#00a875" stroke="white" stroke-width="5"/><g transform="translate(-78 -69)" filter="url(#shadow)"><rect width="156" height="37" rx="11" fill="white"/><text x="78" y="24" text-anchor="middle" fill="#06392d" font-family="system-ui" font-size="14" font-weight="600">Your pickup</text></g></g>
-<g id="driverMarker" transform="translate(525 369)" filter="url(#shadow)"><circle r="25" fill="white"/><g fill="none" stroke="#06382f" stroke-width="2.4" stroke-linecap="round" transform="translate(-12 -12)"><use href="#car" width="24" height="24"/></g></g>
+<g id="driverMarker" transform="translate(240 389)" filter="url(#shadow)"><circle r="25" fill="white"/><circle r="8" fill="#00a976"/><circle r="3" fill="white"/></g>
 </svg></div>
 <div id="trackingLabel" class="tracking-label"><span class="dot"></span><span id="trackingText">Sample location · updated just now</span></div>
 <button id="recenter" class="recenter" aria-label="Fit trip route"><svg><use href="#target"/></svg></button>
