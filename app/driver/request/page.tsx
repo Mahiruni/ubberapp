@@ -92,9 +92,13 @@ export default function DriverRideRequestPage() {
       return;
     }
     let lastFix = 0;
+    let lastPublished = 0;
     const watchId = navigator.geolocation.watchPosition(
       (result) => {
-        lastFix = result.timestamp || Date.now();
+        const now = Date.now();
+        lastFix = result.timestamp || now;
+        if (lastPublished && now - lastPublished < 8000) return;
+        lastPublished = now;
         setDriverPosition({
           lat: result.coords.latitude,
           lng: result.coords.longitude,
