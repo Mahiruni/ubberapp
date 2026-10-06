@@ -1,5 +1,5 @@
-.rider-profile-view{color:var(--text);--bg:#041c30;--surface:#08253c;--surface-alt:#0b2b43;--text:#f1f7fc;--muted:#aac0d1;--line:#1a3b52;--green-text:#39e69e;--green-wash:#0a3a38}
-.rider-profile-view .nr-stage{background:#041c30}
+.rider-profile-view{color:var(--text)}
+.rider-profile-view .nr-stage{background:var(--bg)}
 .rider-profile-view .nr-map{display:none}
 .rider-profile-view .nr-preview-banner{background:#0a2a40;color:#b3c7d6;border-color:#214057}
 .rider-profile-view .nr-panel{width:min(620px,calc(100% - 56px));top:28px;bottom:28px}
@@ -157,3 +157,196 @@
   .nr-settings-block{grid-template-columns:1fr}.nr-account-footer{align-items:flex-start;flex-direction:column}.nr-account-footer small{text-align:left}
 }
 @media(prefers-reduced-motion:reduce){.nr-account-edit,.nr-account-quick,.nr-account-row{transition:none}}
+
+
+/* Account theme parity: light stays light until the rider explicitly selects dark. */
+.nr-app[data-theme="light"] .rider-profile-view{
+  --bg:#f5f7f9;
+  --surface:#ffffff;
+  --surface-alt:#f5f7f9;
+  --text:#102334;
+  --muted:#667587;
+  --line:#e1e8ec;
+  --green-text:#007448;
+  --green-wash:#eafff3;
+}
+.nr-app[data-theme="light"] .rider-profile-view .nr-stage{
+  background:#f5f7f9;
+}
+.nr-app[data-theme="light"] .rider-profile-view .nr-navigation button:hover{
+  background:#eef3f4;
+}
+.nr-app[data-theme="light"] .rider-profile-view .nr-mode-control button.selected{
+  background:#eafff3;
+  color:#007448;
+}
+
+.nr-app[data-theme="light"] .nr-account,
+.nr-app[data-theme="light"] .nr-account-v2{
+  --surface:#ffffff;
+  --surface-alt:#f5f7f9;
+  --text:#102334;
+  --muted:#667587;
+  --line:#e1e8ec;
+  --green-text:#007448;
+  --green-wash:#eafff3;
+  --ac-surface:#ffffff;
+  --ac-surface-2:#f5f7f9;
+  --ac-surface-3:#eef3f4;
+  --ac-line:#dfe7eb;
+  --ac-text:#102334;
+  --ac-muted:#667587;
+  --ac-green:#00c878;
+  background:
+    radial-gradient(circle at 86% -6%,rgba(0,200,120,.07),transparent 28%),
+    radial-gradient(circle at 3% 0%,rgba(52,118,150,.08),transparent 30%),
+    #ffffff;
+  color:#102334;
+  border-color:#dfe7eb;
+  box-shadow:0 18px 50px rgba(16,35,52,.08);
+  scrollbar-color:#c9d6dc transparent;
+}
+
+.nr-app[data-theme="light"] .nr-account-heading>span,
+.nr-app[data-theme="light"] .nr-account-eyebrow{
+  color:#587486;
+}
+.nr-app[data-theme="light"] .nr-account-heading>p,
+.nr-app[data-theme="light"] .nr-account-top p,
+.nr-app[data-theme="light"] .nr-account-person p,
+.nr-app[data-theme="light"] .nr-account-identity>p,
+.nr-app[data-theme="light"] .nr-account-metric small,
+.nr-app[data-theme="light"] .nr-account-quick small,
+.nr-app[data-theme="light"] .nr-account-section header p,
+.nr-app[data-theme="light"] .nr-account-row-copy small,
+.nr-app[data-theme="light"] .nr-settings-block small,
+.nr-app[data-theme="light"] .nr-account-footer small,
+.nr-app[data-theme="light"] .nr-edit-profile-intro small{
+  color:#667587;
+}
+
+.nr-app[data-theme="light"] .nr-account-hero{
+  background:linear-gradient(145deg,#ffffff,#f4f8f7);
+  border-color:#dfe7eb;
+  box-shadow:0 12px 30px rgba(16,35,52,.06);
+}
+.nr-app[data-theme="light"] .nr-account-avatar{
+  background:linear-gradient(145deg,#eaf7f1,#dff3ea);
+  color:#087d50;
+  border-color:#b9decd;
+  box-shadow:0 8px 24px rgba(16,35,52,.08);
+}
+.nr-app[data-theme="light"] .nr-account-avatar-badge{
+  border-color:#ffffff;
+}
+.nr-app[data-theme="light"] .nr-account-role{
+  background:#eafff3;
+  color:#007448;
+}
+.nr-app[data-theme="light"] .nr-account-contact-line span{
+  color:#526b79;
+}
+.nr-app[data-theme="light"] .nr-account-edit{
+  background:#eafff3;
+  color:#007448!important;
+  border-color:#bfe8d5;
+}
+.nr-app[data-theme="light"] .nr-account-status{
+  background:#eafff3;
+  color:#087d50;
+  border-color:#bfe8d5;
+}
+
+.nr-app[data-theme="light"] .nr-account-metric,
+.nr-app[data-theme="light"] .nr-account-quick,
+.nr-app[data-theme="light"] .nr-account-section{
+  background:#ffffff;
+  color:#102334;
+  border-color:#dfe7eb;
+}
+.nr-app[data-theme="light"] .nr-account-quick:hover,
+.nr-app[data-theme="light"] .nr-account-row:hover{
+  background:#f5f8f8;
+}
+.nr-app[data-theme="light"] .nr-account-quick>span:first-child,
+.nr-app[data-theme="light"] .nr-account-row-icon{
+  background:#edf6f2;
+  color:#087d50;
+  border-color:#d6ebe1;
+}
+.nr-app[data-theme="light"] .nr-account-quick>svg,
+.nr-app[data-theme="light"] .nr-account-row>svg{
+  color:#6d8290;
+}
+.nr-app[data-theme="light"] .nr-account-section>header,
+.nr-app[data-theme="light"] .nr-account-row{
+  border-color:#e6ecef;
+}
+.nr-app[data-theme="light"] .nr-account-row{
+  color:#102334;
+}
+.nr-app[data-theme="light"] .nr-account-row.accent{
+  background:linear-gradient(90deg,rgba(0,200,120,.07),transparent);
+}
+
+.nr-app[data-theme="light"] .nr-account-v2 .nr-segmented,
+.nr-app[data-theme="light"] .nr-account .nr-segmented{
+  background:#f1f4f5;
+  border-color:#d9e2e6;
+}
+.nr-app[data-theme="light"] .nr-account-v2 .nr-segmented button,
+.nr-app[data-theme="light"] .nr-account .nr-segmented button{
+  color:#526b79;
+}
+.nr-app[data-theme="light"] .nr-account-v2 .nr-segmented button[aria-pressed=true],
+.nr-app[data-theme="light"] .nr-account .nr-segmented button[aria-pressed=true]{
+  background:#00c878;
+  color:#032b20;
+}
+
+.nr-app[data-theme="light"] .nr-account-language,
+.nr-app[data-theme="light"] .nr-settings-block,
+.nr-app[data-theme="light"] .nr-edit-profile-intro{
+  background:#f7f9fa;
+  border-color:#dfe7eb;
+}
+.nr-app[data-theme="light"] .nr-account .nr-dialog,
+.nr-app[data-theme="light"] .nr-account-v2 .nr-dialog{
+  background:#ffffff;
+  color:#102334;
+  border-color:#dfe7eb;
+}
+.nr-app[data-theme="light"] .nr-account-v2 .nr-input-field,
+.nr-app[data-theme="light"] .nr-account .nr-input-field{
+  color:#526b79;
+}
+.nr-app[data-theme="light"] .nr-account-v2 .nr-input-field input,
+.nr-app[data-theme="light"] .nr-account .nr-dialog input{
+  background:#ffffff;
+  color:#102334;
+  border-color:#cfdbe1;
+}
+.nr-app[data-theme="light"] .nr-account .nr-dialog input[readonly]{
+  color:#667587;
+  background:#f5f7f9;
+}
+.nr-app[data-theme="light"] .nr-account .nr-secondary{
+  background:#f3f6f7;
+  color:#102334;
+  border-color:#d8e2e7;
+}
+.nr-app[data-theme="light"] .nr-account .nr-ghost,
+.nr-app[data-theme="light"] .nr-account .nr-icon-button{
+  color:#526b79;
+}
+.nr-app[data-theme="light"] .nr-privacy-copy p,
+.nr-app[data-theme="light"] .nr-signout-confirm p,
+.nr-app[data-theme="light"] .nr-driver-signout-intro p{
+  color:#667587!important;
+}
+.nr-app[data-theme="light"] .nr-account-footer{
+  border-color:#e1e8ec;
+}
+.nr-app[data-theme="light"] .nr-account-signout-button{
+  color:#a63d51;
+}
