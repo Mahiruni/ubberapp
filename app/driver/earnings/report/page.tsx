@@ -16,6 +16,7 @@ import {
 } from "../../../../lib/nexride-driver-earnings";
 import "../../../nexride.css";
 import "../earnings.css";
+import "../../../detail-system.css";
 
 function isPeriod(value: string | null): value is EarningsPeriod {
   return value === "today" || value === "week" || value === "month" || value === "30d";

@@ -9,6 +9,7 @@ import { supabase } from "../../lib/supabase";
 import { enterDriver } from "../../lib/nexride-startup";
 import { driverResumeDestination } from "../../lib/nexride-driver-verification";
 import "./driver-welcome.css";
+import "../detail-system.css";
 
 export default function DriverWelcome() {
   const router = useRouter();

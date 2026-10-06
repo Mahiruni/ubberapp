@@ -5,6 +5,7 @@ import type { Session } from "@supabase/supabase-js";
 import { Brand, Icon, type IconName } from "../../components/nexride/ui";
 import { supabase } from "../../lib/supabase";
 import "./admin.css";
+import "../detail-system.css";
 
 type Module =
   | "overview"

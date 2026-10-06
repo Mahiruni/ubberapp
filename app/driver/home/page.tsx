@@ -8,6 +8,7 @@ import { getDriverReviewStatus } from "../../../lib/nexride-driver-verification"
 import { resolveSessionRole } from "../../../lib/nexride-account-role";
 import "../../../app/nexride.css";
 import "../../../app/driver/driver-dashboard.css";
+import "../../detail-system.css";
 
 export default function DriverHomePage() {
   const router = useRouter();

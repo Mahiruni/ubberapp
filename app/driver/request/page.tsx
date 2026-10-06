@@ -9,6 +9,7 @@ import { supabase } from "../../../lib/supabase";
 import { resolveSessionRole } from "../../../lib/nexride-account-role";
 import "../../nexride.css";
 import "./driver-request.css";
+import "../../detail-system.css";
 
 type OfferStatus = "pending" | "accepted" | "declined" | "withdrawn" | "expired";
 

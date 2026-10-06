@@ -13,6 +13,7 @@ import { authErrorKey } from "../../../lib/nexride-auth-errors";
 import "../driver-welcome.css";
 import "./driver-auth.css";
 import "../../auth-experience.css";
+import "../../detail-system.css";
 
 export default function DriverAuth() {
   const router = useRouter();

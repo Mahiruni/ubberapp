@@ -10,6 +10,7 @@ import { resolveSessionRole } from "../../../lib/nexride-account-role";
 import { nexrideApiFetch } from "../../../lib/nexride-api-auth";
 import "../auth/driver-auth.css";
 import "../onboarding/driver-onboarding.css";
+import "../../detail-system.css";
 
 const allowedTypes = new Set(["image/jpeg","image/png","image/webp","application/pdf"]);
 const lockedForDraft = (status: DriverReviewStatus, editingApproved: boolean) =>

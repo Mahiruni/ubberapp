@@ -9,6 +9,7 @@ import { supabase } from "../../../lib/supabase";
 import { nexrideApiHeaders } from "../../../lib/nexride-api-auth";
 import "../../nexride.css";
 import "../supporting.css";
+import "../../detail-system.css";
 
 type PaymentIssue = {
   id: string;

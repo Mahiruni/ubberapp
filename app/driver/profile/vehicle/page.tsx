@@ -11,6 +11,7 @@ import {
 } from "../../../../lib/nexride-driver-profile";
 import "../../../nexride.css";
 import "../profile.css";
+import "../../../detail-system.css";
 
 export default function DriverVehiclePage() {
   const router = useRouter();

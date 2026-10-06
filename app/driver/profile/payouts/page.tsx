@@ -10,6 +10,7 @@ import { formatEtb } from "../../../../lib/nexride-driver-earnings";
 import { loadDriverProfileData } from "../../../../lib/nexride-driver-profile";
 import "../../../nexride.css";
 import "../profile.css";
+import "../../../detail-system.css";
 
 type PayoutBank = {
   code: string;

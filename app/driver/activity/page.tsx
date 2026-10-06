@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button, EmptyState, ErrorState, Icon, SkeletonBlock, StatusChip, useTranslation } from "../../../components/nexride/ui";
 import { resolveSessionRole } from "../../../lib/nexride-account-role";
 import { supabase } from "../../../lib/supabase";
+import "../../detail-system.css";
 
 type ActivityRow = {
   id: string;

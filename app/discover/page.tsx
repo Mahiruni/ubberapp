@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Icon } from "../../components/nexride/ui";
 import "../nexride.css";
 import "./discover.css";
+import "../detail-system.css";
 
 const values = [
   {

@@ -8,6 +8,7 @@ import { useOperationalTranslation } from "../../components/nexride/operational-
 import { supabase } from "../../lib/supabase";
 import "../nexride.css";
 import "./safety.css";
+import "../detail-system.css";
 
 type SafetyView = "home" | "sos" | "share" | "help" | "report";
 type SafetyRole = "rider" | "driver";

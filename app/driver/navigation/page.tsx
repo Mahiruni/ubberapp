@@ -10,6 +10,7 @@ import { nexrideApiFetch } from "../../../lib/nexride-api-auth";
 import { resolveSessionRole } from "../../../lib/nexride-account-role";
 import "../../nexride.css";
 import "./navigation.css";
+import "../../detail-system.css";
 
 type TripStatus = "accepted" | "arrived_pickup" | "in_trip" | "completed" | "withdrawn" | "cancelled";
 type GpsState = "acquiring" | "fresh" | "stale" | "lost" | "unsupported";

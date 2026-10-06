@@ -12,6 +12,7 @@ import {
 } from "../../../../lib/nexride-driver-profile";
 import "../../../nexride.css";
 import "../profile.css";
+import "../../../detail-system.css";
 
 const allowedTypes = new Set(["image/jpeg", "image/png", "image/webp", "application/pdf"]);
 

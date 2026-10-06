@@ -14,6 +14,7 @@ import {
   type EarningsPeriod,
 } from "../../lib/nexride-driver-earnings";
 import "../../app/driver/earnings/earnings.css";
+import "../../app/detail-system.css";
 
 const PERIODS: { id: EarningsPeriod; label: string }[] = [
   { id: "today", label: "Today" },

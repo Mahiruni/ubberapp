@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import "../../nexride.css";
 import "../driver-dashboard.css";
+import "../../detail-system.css";
 
 export default function DriverProfileEntryPage() {
   const router = useRouter();

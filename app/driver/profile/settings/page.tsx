@@ -7,6 +7,7 @@ import { supabase } from "../../../../lib/supabase";
 import { loadDriverProfileData, type DriverProfileData } from "../../../../lib/nexride-driver-profile";
 import "../../../nexride.css";
 import "../profile.css";
+import "../../../detail-system.css";
 
 export default function DriverProfileSettingsPage() {
   const router = useRouter();

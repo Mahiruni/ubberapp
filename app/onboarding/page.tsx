@@ -12,6 +12,7 @@ import {
   PREVIEW_ENABLED_KEY,
 } from "../../lib/nexride-startup";
 import "../nexride.css";
+import "./detail-system.css";
 export default function Onboarding() {
   return (
     <EntryShell photoCredit>

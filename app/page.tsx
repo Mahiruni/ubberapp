@@ -48,6 +48,7 @@ import "./destination.css";
 import "./ride-selection.css";
 import "./matching.css";
 import "./rider-profile.css";
+import "./detail-system.css";
 const STORAGE_KEY = PREVIEW_STORAGE_KEY;
 type Mode = "rider" | "driver";
 type Panel =

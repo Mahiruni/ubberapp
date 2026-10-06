@@ -11,6 +11,7 @@ import { resolveSessionRole } from "../../../lib/nexride-account-role";
 import "../auth/driver-auth.css";
 import "./driver-onboarding.css";
 import "../../auth-experience.css";
+import "../../detail-system.css";
 
 export default function DriverOnboarding() {
   const router = useRouter();

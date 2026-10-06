@@ -8,6 +8,7 @@ import { useOperationalTranslation } from "../../components/nexride/operational-
 import { supabase } from "../../lib/supabase";
 import "../nexride.css";
 import "../rider/supporting.css";
+import "../detail-system.css";
 
 const DRAFT_KEY = "nexride.support.draft";
 

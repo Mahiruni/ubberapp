@@ -15,6 +15,7 @@ import {
 } from "../../../lib/nexride-rider-support";
 import "../../nexride.css";
 import "../../rider/supporting.css";
+import "../../detail-system.css";
 
 type PendingMessage = {
   clientId: string;

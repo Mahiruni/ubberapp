@@ -14,6 +14,7 @@ import {
   type DriverProfileData,
 } from "../../lib/nexride-driver-profile";
 import "../../app/driver/profile/profile.css";
+import "../../app/detail-system.css";
 
 export function DriverProfileScreen({
   driverId,
