@@ -4,7 +4,7 @@ import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { EntryShell } from "./entry";
-import { Button, InputField, StatusBanner, useTranslation } from "./ui";
+import { Button, Icon, InputField, StatusBanner, useTranslation } from "./ui";
 import { supabase } from "../../lib/supabase";
 import {
   enterRider,
@@ -378,8 +378,8 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
   if (mode === "signin" && checkingSession) {
     return (
       <>
-        <span className="nr-rider-entry-kicker">NEXRIDE · RIDER</span>
-        <h1>{t("signIn")}</h1>
+        <span className="nr-rider-entry-kicker">RIDER ACCOUNT</span>
+        <h1>Rider Sign In</h1>
         <p>Preparing your Rider session…</p>
         {notice && <p className="nr-auth-notice" role="status">{notice}</p>}
         {error && <p className="nr-auth-error" role="alert">{error}</p>}
@@ -402,10 +402,9 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
   if (mode === "signup") {
     return (
       <>
-        <span className="nr-rider-entry-kicker">NEXRIDE · RIDER</span>
-        {nav}
-        <h1>{t("createAccount")}</h1>
-        <p>{t("createAccountIntro")}</p>
+        <span className="nr-rider-entry-kicker">RIDER ACCOUNT</span>
+        <h1>Create Rider Account</h1>
+        <p>Sign up to book rides, save places, and move around Addis Ababa.</p>
         <form className="nr-profile-form" onSubmit={signUp} aria-busy={busy}>
           <InputField label={t("fullName")} autoComplete="name" required maxLength={80} value={fullName} onChange={(event) => setFullName(event.target.value)} />
           <InputField label={t("phoneNumber")} type="tel" autoComplete="tel" required value={phone} onChange={(event) => setPhone(event.target.value)} />
@@ -417,10 +416,15 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
             {t(busy ? "creatingAccount" : "createAccount")}
           </Button>
         </form>
+        <div className="nr-auth-divider"><span>or</span></div>
         <p className="nr-auth-switch">
           {t("alreadyHaveAccount")} <Link href="/rider/sign-in">{t("signIn")}</Link>
         </p>
-        <Link className="nr-auth-role-link" href="/driver">{t("driverSignIn")}</Link>
+        <div className="nr-auth-role-note">
+          <span><Icon name="user" size={20} /></span>
+          <div><strong>This account is for Riders</strong><small>Book rides, save places, and move around your city.</small></div>
+        </div>
+        <Link className="nr-auth-role-link" href="/driver">Want to drive with NexRide? <strong>Switch to Driver →</strong></Link>
       </>
     );
   }
@@ -470,10 +474,9 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
 
   return (
     <>
-      <span className="nr-rider-entry-kicker">NEXRIDE · RIDER</span>
-      {nav}
-      <h1>{t("signIn")}</h1>
-      <p>{t("signInIntro")}</p>
+      <span className="nr-rider-entry-kicker">RIDER ACCOUNT</span>
+      <h1>Rider Sign In</h1>
+      <p>Welcome back. Book your next ride in seconds.</p>
       <form className="nr-profile-form" onSubmit={signIn} aria-busy={busy}>
         <InputField label={t("authEmail")} type="email" autoComplete="username" required value={email} onChange={(event) => setEmail(event.target.value)} />
         <InputField label={t("password")} type="password" autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} />
@@ -486,14 +489,25 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
 
       <Link className="nr-auth-inline-link" href="/rider/forgot-password">{t("forgotPassword")}</Link>
 
-      <p className="nr-auth-switch">
-        {t("needAccount")} <Link href="/rider/sign-up">{t("createAccount")}</Link>
-      </p>
+      <div className="nr-auth-divider"><span>or</span></div>
 
-      <Link className="nr-auth-role-link" href="/driver">{t("driverSignIn")}</Link>
+      <Link className="nr-auth-create-link" href="/rider/sign-up">
+        <Icon name="plus" size={18} />
+        Create Rider Account
+      </Link>
 
-      <StatusBanner>{t("previewInfo")}</StatusBanner>
-      <Button variant="ghost" onClick={preview} disabled={busy}>{t("explorePreview")}</Button>
+      <div className="nr-auth-role-note">
+        <span><Icon name="user" size={20} /></span>
+        <div><strong>This sign in is for Riders</strong><small>Book rides, get around, and explore your city.</small></div>
+      </div>
+
+      <Link className="nr-auth-role-link" href="/driver">Need to drive with NexRide? <strong>Switch to Driver →</strong></Link>
+
+      <details className="nr-auth-preview">
+        <summary>Preview NexRide</summary>
+        <StatusBanner compact>{t("previewInfo")}</StatusBanner>
+        <Button variant="ghost" onClick={preview} disabled={busy}>{t("explorePreview")}</Button>
+      </details>
     </>
   );
 }
