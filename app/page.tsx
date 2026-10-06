@@ -511,7 +511,7 @@ function AppWorkspace({
             <p>{t("brandMessage")}</p>
           </div>
           <div className="nr-panel">
-            {profileView && mode === "rider" ? <RiderProfile language={language} setLanguage={setLanguage} theme={theme} setTheme={setTheme} profile={profile} setProfile={setProfile} rides={() => setRiderScreen("trips")} payments={() => setRiderScreen("wallet")} safety={() => openSafety(mode)} support={() => window.location.assign("/support")} switchDriver={() => switchMode("driver")} isAdmin={isAdmin} /> : profileView ? (
+            {profileView && mode === "rider" ? <RiderProfile language={language} setLanguage={setLanguage} theme={theme} setTheme={setTheme} profile={profile} setProfile={setProfile} rides={() => setRiderScreen("trips")} saved={() => setRiderScreen("saved")} payments={() => setRiderScreen("wallet")} safety={() => openSafety(mode)} support={() => window.location.assign("/support")} switchDriver={() => switchMode("driver")} isAdmin={isAdmin} /> : profileView ? (
               <Sheet title={t("profile")}>
                 <div className="nr-profile-header">
                   <div className="nr-avatar">{initials}</div>
