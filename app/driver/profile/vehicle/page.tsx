@@ -110,7 +110,7 @@ export default function DriverVehiclePage() {
                   <Icon name="shield" size={16} /> Manage documents
                 </button>
                 <button className="nr-doc-secondary" onClick={() => router.push("/driver/verification")}>
-                  <Icon name="car" size={16} /> Verification status
+                  <Icon name="shield" size={16} /> Verification status
                 </button>
               </div>
             </section>
