@@ -2,7 +2,6 @@
 import { useContext, useEffect, useRef, useState } from 'react';
 import { Button, Dialog, Icon, LanguageContext, useTranslation } from './ui';
 import { endpointName } from './destination';
-import { VehicleIllustration } from './vehicle';
 import { fareTotal } from '../../lib/nexride-booking';
 import type { Matching } from '../../lib/nexride-use-matching';
 export function DriverMatching({ model, changeCategory, previewAssigned, home }: {
@@ -31,7 +30,7 @@ export function DriverMatching({ model, changeCategory, previewAssigned, home }:
   return <section className="nr-driver-matching" data-matching-state={connectionLost ? 'connection_lost' : status} aria-label={t('matchingScreen')}>
     <div className="nr-ride-handle" />
     <div className="nr-matching-body">
-      <div className={`nr-matching-symbol ${searching ? 'searching' : ''}`} aria-hidden="true"><Icon name={status === 'assigned' || status === 'cancelled' ? 'check' : connectionLost ? 'globe' : 'car'} size={28} /></div>
+      <div className={`nr-matching-symbol ${searching ? 'searching' : ''}`} aria-hidden="true"><Icon name={status === 'assigned' || status === 'cancelled' ? 'check' : connectionLost ? 'globe' : 'locate'} size={28} /></div>
       <header className="nr-matching-heading">
         <span className="nr-matching-kicker">
           {language === "am"
@@ -63,7 +62,7 @@ export function DriverMatching({ model, changeCategory, previewAssigned, home }:
       <div className="nr-match-summary" aria-label={t('matchingSummary')}>
         <div className="nr-match-place"><span className="nr-match-point"/><div><small>{t('pickup')}</small><strong>{request.journey.pickup && endpointName(request.journey.pickup, language, t)}</strong></div></div>
         <div className="nr-match-place"><span className="nr-match-point destination"/><div><small>{t('dropoff')}</small><strong>{request.journey.destination && endpointName(request.journey.destination, language, t)}</strong></div></div>
-        <div className="nr-match-fare"><VehicleIllustration category={request.fare.category}/><div><strong>{t(request.fare.category)}</strong><small>{t('cash')}</small></div><div><strong>{total !== null ? money(total) : '—'} <span>ETB</span></strong><small>{t(request.fare.priceType === 'sample' ? 'sampleFare' : request.fare.priceType === 'estimate' ? 'estimated' : 'confirmed')}</small></div></div>
+        <div className="nr-match-fare"><div><strong>{t(request.fare.category)}</strong><small>{t('cash')}</small></div><div><strong>{total !== null ? money(total) : '—'} <span>ETB</span></strong><small>{t(request.fare.priceType === 'sample' ? 'sampleFare' : request.fare.priceType === 'estimate' ? 'estimated' : 'confirmed')}</small></div></div>
         {request.fare.charges.length > 0 && <details className="nr-match-charges"><summary>{t('matchingCharges')}</summary>{request.fare.charges.map((charge, i) => <p key={i}><span>{charge.name}</span><strong>{money(charge.amount)} ETB</strong></p>)}</details>}
       </div>
       {preview && <p className="nr-match-preview"><strong>{t('preview')}</strong> · {t('findingNote')}</p>}
