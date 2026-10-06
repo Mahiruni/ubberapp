@@ -350,3 +350,246 @@
 .nr-app[data-theme="light"] .nr-account-signout-button{
   color:#a63d51;
 }
+
+
+/* Rider Account standardization — simplified native hierarchy */
+.rider-profile-view .nr-panel{
+  width:min(760px,calc(100% - 48px));
+  max-width:760px;
+}
+.nr-account-standard{
+  max-width:760px;
+  margin:0 auto;
+  padding:24px;
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:22px;
+  box-shadow:none;
+}
+.nr-account-standard-top{
+  margin:0 0 16px;
+}
+.nr-account-standard-top h1{
+  margin:6px 0 0;
+  font-size:28px;
+  line-height:1.08;
+  letter-spacing:-.04em;
+}
+.nr-account-standard-top p{
+  margin:6px 0 0;
+  font-size:13px;
+  color:var(--muted);
+}
+.nr-account-standard .nr-account-identity-card{
+  grid-template-columns:auto minmax(0,1fr) auto;
+  gap:14px;
+  padding:14px;
+  border-radius:16px;
+  background:var(--surface-alt);
+  border:1px solid var(--line);
+  box-shadow:none;
+}
+.nr-account-standard .nr-account-avatar{
+  width:58px;
+  height:58px;
+  border-radius:17px;
+  font-size:18px;
+  box-shadow:none;
+}
+.nr-account-standard .nr-account-avatar-badge{
+  width:22px;
+  height:22px;
+  right:-2px;
+  bottom:-2px;
+  border-width:3px;
+}
+.nr-account-standard .nr-account-identity h2{
+  margin:0;
+  font-size:18px;
+  line-height:1.2;
+  letter-spacing:-.025em;
+}
+.nr-account-standard .nr-account-identity p{
+  margin:3px 0 0;
+  font-size:12px;
+  color:var(--muted);
+}
+.nr-account-standard .nr-account-identity small{
+  display:block;
+  margin-top:3px;
+  font-size:10px;
+  color:var(--muted);
+  opacity:.8;
+}
+.nr-account-standard .nr-account-edit{
+  min-height:40px;
+  padding:0 12px;
+  border-radius:11px;
+  background:transparent;
+  color:var(--green-text)!important;
+  border:1px solid var(--line);
+}
+.nr-account-standard .nr-account-standard-groups{
+  display:grid;
+  gap:12px;
+  margin-top:14px;
+}
+.nr-account-standard .nr-account-section{
+  border-radius:16px;
+  background:var(--surface);
+  border:1px solid var(--line);
+  box-shadow:none;
+}
+.nr-account-standard .nr-account-section>header{
+  padding:13px 14px 9px;
+  border-bottom:1px solid var(--line);
+}
+.nr-account-standard .nr-account-section h3{
+  font-size:13px;
+  line-height:1.2;
+}
+.nr-account-standard .nr-account-section header p{
+  margin-top:3px;
+  font-size:10px;
+  color:var(--muted);
+}
+.nr-account-standard .nr-account-row,
+.nr-account-standard .nr-account-secondary-actions>button{
+  min-height:58px;
+  padding:9px 12px;
+  gap:11px;
+  border:0;
+  border-bottom:1px solid var(--line);
+  background:transparent;
+  color:var(--text);
+  box-shadow:none;
+}
+.nr-account-standard .nr-account-row:last-child,
+.nr-account-standard .nr-account-secondary-actions>button:last-child{
+  border-bottom:0;
+}
+.nr-account-standard .nr-account-row:hover,
+.nr-account-standard .nr-account-secondary-actions>button:hover{
+  background:var(--surface-alt);
+}
+.nr-account-standard .nr-account-row-icon{
+  width:36px;
+  height:36px;
+  border-radius:10px;
+  background:var(--surface-alt);
+  color:var(--muted);
+  border:1px solid var(--line);
+}
+.nr-account-standard .nr-account-row-copy strong{
+  font-size:12px;
+  font-weight:700;
+}
+.nr-account-standard .nr-account-row-copy small{
+  font-size:10px;
+  color:var(--muted);
+}
+.nr-account-standard .nr-account-secondary-actions{
+  overflow:hidden;
+  border:1px solid var(--line);
+  border-radius:16px;
+  background:var(--surface);
+}
+.nr-account-standard .nr-account-secondary-actions>button{
+  width:100%;
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr) auto;
+  align-items:center;
+  text-align:left;
+}
+.nr-account-standard .nr-account-secondary-actions .admin-access .nr-account-row-icon{
+  color:var(--green-text);
+  background:var(--green-wash);
+}
+.nr-account-standard-footer{
+  margin-top:16px;
+  padding-top:14px;
+  border-top:1px solid var(--line);
+}
+.nr-account-standard-footer .nr-account-signout-button{
+  min-height:44px;
+  padding:0 4px;
+  color:#b84252;
+  font-weight:700;
+}
+.nr-account-standard-footer small{
+  color:var(--muted);
+  opacity:.75;
+}
+.nr-account-standard .nr-account-inline-error,
+.nr-account-standard .nr-account-success{
+  margin-top:12px;
+}
+.nr-account-standard .nr-account-settings-v2{
+  gap:10px;
+}
+.nr-account-standard .nr-settings-block{
+  border-radius:13px;
+  background:var(--surface-alt);
+  border-color:var(--line);
+}
+.nr-account-standard .nr-account-toggle{
+  border-color:var(--line);
+}
+.nr-app[data-theme="light"] .nr-account-standard{
+  background:#fff;
+  color:#102334;
+}
+.nr-app[data-theme="light"] .nr-account-standard .nr-account-identity-card,
+.nr-app[data-theme="light"] .nr-account-standard .nr-account-row-icon,
+.nr-app[data-theme="light"] .nr-account-standard .nr-settings-block{
+  background:#f7f9fa;
+}
+.nr-app[data-theme="dark"] .nr-account-standard{
+  background:#071f33;
+}
+.nr-app[data-theme="dark"] .nr-account-standard .nr-account-identity-card,
+.nr-app[data-theme="dark"] .nr-account-standard .nr-account-row-icon,
+.nr-app[data-theme="dark"] .nr-account-standard .nr-settings-block{
+  background:#0a2940;
+}
+@media(max-width:800px){
+  .rider-profile-view .nr-panel{
+    width:100%;
+    max-width:none;
+  }
+  .nr-account-standard{
+    width:100%;
+    max-width:none;
+    min-height:100%;
+    padding:18px 14px calc(28px + env(safe-area-inset-bottom));
+    border:0;
+    border-radius:0;
+  }
+  .nr-account-standard-top h1{
+    font-size:24px;
+  }
+}
+@media(max-width:520px){
+  .nr-account-standard .nr-account-identity-card{
+    grid-template-columns:auto minmax(0,1fr);
+    gap:12px;
+    padding:12px;
+  }
+  .nr-account-standard .nr-account-edit{
+    grid-column:1/-1;
+    width:100%;
+    justify-content:center;
+  }
+  .nr-account-standard .nr-account-row-copy small{
+    white-space:normal;
+    overflow:visible;
+    text-overflow:clip;
+    line-height:1.35;
+  }
+  .nr-account-standard-footer{
+    align-items:flex-start;
+    flex-direction:column;
+    gap:8px;
+  }
+  .nr-account-standard-footer small{text-align:left}
+}
