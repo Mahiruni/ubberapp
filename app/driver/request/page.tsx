@@ -77,6 +77,46 @@ export default function DriverRideRequestPage() {
   const [acceptFailure, setAcceptFailure] = useState("");
   const [secondsRemaining, setSecondsRemaining] = useState<number | null>(null);
   const [requestRoute, setRequestRoute] = useState<NavigationCoordinate[]>([]);
+  const [driverPosition, setDriverPosition] = useState<NavigationCoordinate | null>(null);
+  const [driverHeading, setDriverHeading] = useState<number | null>(null);
+  const [gpsState, setGpsState] = useState<"acquiring" | "fresh" | "stale" | "lost" | "unsupported">("acquiring");
+  const [approachMeta, setApproachMeta] = useState<{
+    distanceKm: number;
+    etaMinutes: number;
+    traffic: "low" | "moderate" | "heavy" | "severe" | null;
+  } | null>(null);
+
+  useEffect(() => {
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      setGpsState("unsupported");
+      return;
+    }
+    let lastFix = 0;
+    const watchId = navigator.geolocation.watchPosition(
+      (result) => {
+        lastFix = result.timestamp || Date.now();
+        setDriverPosition({
+          lat: result.coords.latitude,
+          lng: result.coords.longitude,
+        });
+        setDriverHeading(
+          Number.isFinite(result.coords.heading ?? NaN)
+            ? Number(result.coords.heading)
+            : null,
+        );
+        setGpsState("fresh");
+      },
+      () => setGpsState("lost"),
+      { enableHighAccuracy: true, maximumAge: 5000, timeout: 12000 },
+    );
+    const timer = window.setInterval(() => {
+      if (lastFix && Date.now() - lastFix > 30000) setGpsState("stale");
+    }, 5000);
+    return () => {
+      navigator.geolocation.clearWatch(watchId);
+      window.clearInterval(timer);
+    };
+  }, []);
 
   useEffect(() => {
     if (
@@ -87,17 +127,25 @@ export default function DriverRideRequestPage() {
       !Number.isFinite(request.destination_lng)
     ) {
       setRequestRoute([]);
+      setApproachMeta(null);
       return;
     }
+    const pickup = {
+      lat: Number(request.pickup_lat),
+      lng: Number(request.pickup_lng),
+    };
+    const destination = {
+      lat: Number(request.destination_lat),
+      lng: Number(request.destination_lng),
+    };
+    const start = driverPosition || pickup;
+    const end = driverPosition ? pickup : destination;
     const controller = new AbortController();
     void fetch("/api/rider/route", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       cache: "no-store",
-      body: JSON.stringify({
-        pickup: { lat: request.pickup_lat, lng: request.pickup_lng },
-        destination: { lat: request.destination_lat, lng: request.destination_lng },
-      }),
+      body: JSON.stringify({ pickup: start, destination: end }),
       signal: AbortSignal.any([controller.signal, AbortSignal.timeout(10000)]),
     })
       .then((response) => response.json())
@@ -113,10 +161,35 @@ export default function DriverRideRequestPage() {
           )
           .map((point: [number, number]) => ({ lat: Number(point[0]), lng: Number(point[1]) }));
         setRequestRoute(road);
+        if (driverPosition && body?.status === "ready") {
+          const meters = Number(body.route?.distanceMeters);
+          const seconds = Number(body.route?.durationSeconds);
+          const traffic = body.route?.traffic?.level;
+          setApproachMeta(
+            Number.isFinite(meters) && Number.isFinite(seconds)
+              ? {
+                  distanceKm: meters / 1000,
+                  etaMinutes: Math.max(1, Math.round(seconds / 60)),
+                  traffic:
+                    traffic === "low" ||
+                    traffic === "moderate" ||
+                    traffic === "heavy" ||
+                    traffic === "severe"
+                      ? traffic
+                      : null,
+                }
+              : null,
+          );
+        } else {
+          setApproachMeta(null);
+        }
       })
-      .catch(() => setRequestRoute([]));
+      .catch(() => {
+        setRequestRoute([]);
+        setApproachMeta(null);
+      });
     return () => controller.abort();
-  }, [request]);
+  }, [request, driverPosition?.lat, driverPosition?.lng]);
 
   const loadOffer = useCallback(async (userId: string, offerId?: string | null) => {
     let query = supabase
@@ -317,7 +390,7 @@ export default function DriverRideRequestPage() {
     <main className="nr-app nr-driver-request-page" data-mode="driver" data-theme="dark">
       <div className="nr-driver-request-map">
         <DriverNavigationMap
-          vehicle={null}
+          vehicle={driverPosition}
           pickup={
             request && Number.isFinite(request.pickup_lat) && Number.isFinite(request.pickup_lng)
               ? { lat: Number(request.pickup_lat), lng: Number(request.pickup_lng) }
@@ -333,15 +406,9 @@ export default function DriverRideRequestPage() {
           route={requestRoute}
           target="pickup"
           view="overview"
-          gpsState="unsupported"
-          heading={null}
+          gpsState={gpsState}
+          heading={driverHeading}
         />
-        {request && (
-          <div className="nr-request-map-labels" aria-hidden="true">
-            <span className="pickup"><Icon name="pin" size={14} /> Pickup</span>
-            <span className="destination"><Icon name="navigation" size={14} /> Destination</span>
-          </div>
-        )}
       </div>
 
       <button className="nr-request-back" onClick={() => router.replace("/driver/home")} aria-label={op("Back to driver home")}>
@@ -410,11 +477,34 @@ export default function DriverRideRequestPage() {
               )}
             </div>
 
-            {(offer.pickup_distance_km !== null || offer.pickup_eta_minutes !== null) && (
-              <div className="nr-request-approach">
-                {offer.pickup_distance_km !== null && <strong>{offer.pickup_distance_km.toFixed(1)} km</strong>}
-                {offer.pickup_distance_km !== null && offer.pickup_eta_minutes !== null && <span>•</span>}
-                {offer.pickup_eta_minutes !== null && <span>{offer.pickup_eta_minutes} min to pickup</span>}
+            {(approachMeta || offer.pickup_distance_km !== null || offer.pickup_eta_minutes !== null) && (
+              <div className="nr-request-approach" data-traffic={approachMeta?.traffic || "unavailable"}>
+                <Icon name="navigation" size={15} />
+                <strong>
+                  {(approachMeta?.distanceKm ?? offer.pickup_distance_km) !== null
+                    ? `${(approachMeta?.distanceKm ?? offer.pickup_distance_km)!.toFixed(1)} km`
+                    : op("Distance unavailable")}
+                </strong>
+                <span>•</span>
+                <span>
+                  {(approachMeta?.etaMinutes ?? offer.pickup_eta_minutes) !== null
+                    ? `${Math.max(1, Math.round((approachMeta?.etaMinutes ?? offer.pickup_eta_minutes)!))} min to pickup`
+                    : op("ETA unavailable")}
+                </span>
+                {approachMeta?.traffic && (
+                  <span className="nr-request-traffic">
+                    <i aria-hidden="true" />
+                    {op(
+                      approachMeta.traffic === "low"
+                        ? "Light traffic"
+                        : approachMeta.traffic === "moderate"
+                          ? "Moderate traffic"
+                          : approachMeta.traffic === "heavy"
+                            ? "Heavy traffic"
+                            : "Severe traffic",
+                    )}
+                  </span>
+                )}
               </div>
             )}
 
