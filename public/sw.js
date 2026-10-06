@@ -1,4 +1,4 @@
-const VERSION = "nexride-brand-v1";
+const VERSION = "nexride-flagship-v2";
 const CORE_CACHE = VERSION + "-core";
 const RUNTIME_CACHE = VERSION + "-runtime";
 const CORE_ASSETS = [
@@ -27,7 +27,7 @@ self.addEventListener("install", (event) => {
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys()
-      .then((keys) => Promise.all(keys.filter((key) => key.startsWith("nexride-brand-") && key !== CORE_CACHE && key !== RUNTIME_CACHE).map((key) => caches.delete(key))))
+      .then((keys) => Promise.all(keys.filter((key) => key.startsWith("nexride-") && key !== CORE_CACHE && key !== RUNTIME_CACHE).map((key) => caches.delete(key))))
       .then(() => self.clients.claim())
   );
 });
