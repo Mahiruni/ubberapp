@@ -23,11 +23,12 @@ export type RouteResult = {
 };
 const MAPBOX = "https://api.mapbox.com";
 export const mapboxToken = () => {
-  const value =
+  const value = (
     process.env.MAPBOX_ACCESS_TOKEN ||
     process.env.NEXT_PUBLIC_MAPBOX_TOKEN ||
-    "";
-  return value.includes("replace_me") ? "" : value;
+    ""
+  ).trim();
+  return !value || value.includes("replace_me") ? "" : value;
 };
 const token = mapboxToken;
 export function haversineMeters(a: LatLng, b: LatLng) {
