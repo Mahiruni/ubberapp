@@ -82,7 +82,7 @@ export default function DriverAuth() {
   }
 
   return (
-    <main className="nr-auth-experience driver-auth-page">
+    <main className="nr-auth-experience driver-auth-page" data-auth-mode="signin" data-mode="driver">
       <div className="nr-auth-page">
         <section className="nr-auth-shell nr-auth-shell-driver">
           <div className="nr-auth-hero" aria-hidden="true">
