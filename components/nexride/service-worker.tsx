@@ -10,9 +10,12 @@ export function ServiceWorkerRegistration() {
       return;
     }
 
-    navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch(() => {
-      // PWA enhancement must never block the ride experience.
-    });
+    navigator.serviceWorker
+      .register("/sw.js", { scope: "/", updateViaCache: "none" })
+      .then((registration) => registration.update())
+      .catch(() => {
+        // PWA enhancement must never block the ride experience.
+      });
   }, []);
 
   return null;
