@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { ServiceWorkerRegistration } from "../components/nexride/service-worker";
+import { NexRideLanguageProvider } from "../components/nexride/language-provider";
 import { NEXRIDE_SITE_URL } from "../lib/nexride-site";
 import "./globals.css";
 import "./polish.css";
@@ -142,7 +143,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        {children}
+        <NexRideLanguageProvider>{children}</NexRideLanguageProvider>
         <ServiceWorkerRegistration />
         <script
           type="application/ld+json"
