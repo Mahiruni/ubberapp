@@ -66,6 +66,16 @@ function formatEarnings(value: number | null) {
   return value === null ? "—" : new Intl.NumberFormat("en-ET", { maximumFractionDigits: 0 }).format(value);
 }
 
+function driverErrorTitle(message: string) {
+  const value = message.toLowerCase();
+  if (value.includes("location") || value.includes("gps")) return "Location needs attention";
+  if (value.includes("session") || value.includes("sign in")) return "Driver session needs attention";
+  if (value.includes("verification") || value.includes("approval")) return "Verification status changed";
+  if (value.includes("account")) return "Driver account unavailable";
+  if (value.includes("connection") || value.includes("network")) return "Connection unavailable";
+  return "Availability update failed";
+}
+
 function verificationCopy(status: ReviewStatus, rejectionReason: string) {
   if (status === "pending") {
     return {
@@ -573,8 +583,18 @@ export function DriverWorkspace({
           setError("This driver account is not active. Contact NexRide support.");
         } else if (payload?.status === "location_required") {
           setError("NexRide needs your current location before you can go online.");
+        } else if (payload?.status === "unauthorized") {
+          setError("Your Driver session expired. Sign in again to change availability.");
+        } else if (payload?.status === "driver_required") {
+          setError("This signed-in account is not registered as a Driver.");
+        } else if (payload?.status === "driver_status_unavailable") {
+          setError("NexRide could not read your Driver status. Refresh and try again.");
+        } else if (payload?.status === "availability_update_failed") {
+          setError("NexRide could not save your availability. Your current status was not changed.");
+        } else if (payload?.status === "availability_service_unavailable") {
+          setError("The Driver availability service is temporarily unavailable. Try again shortly.");
         } else {
-          setError("Availability could not be updated. Please try again.");
+          setError("NexRide could not update availability. Refresh your Driver status and try again.");
         }
       } else if (payload?.driver) {
         setState((current) => mergeDriverState(current, payload.driver as Record<string, unknown>));
@@ -681,25 +701,44 @@ export function DriverWorkspace({
         <button className="nr-driver-icon-btn" onClick={() => navigate("profile")} aria-label="Open driver profile"><Icon name="user" /></button>
       </header>
 
-      <section className={`nr-driver-card nr-availability-card ${state.online ? "is-online" : ""}`}>
-        <div className="nr-availability-icon" aria-hidden="true"><Icon name={state.online ? "navigation" : "car"} size={21} /></div>
-        <div className="nr-availability-copy">
-          <span className={`nr-status-dot ${state.online ? "online" : "offline"}`} aria-hidden="true" />
-          <div>
-            <strong>{state.online ? "Online" : "Offline"}</strong>
-            <span>{state.online ? "Available for ride requests." : "Not receiving ride requests."}</span>
+      <section className={`nr-driver-operational-map ${state.online ? "is-online" : ""}`} aria-label="Driver operational map">
+        <RiderMap
+          position={mapLocation.position}
+          status={mapLocation.status}
+          locate={mapLocation.locate}
+          recenter={mapLocation.recenter}
+          initials={initials}
+          onProfile={() => navigate("profile")}
+          locked={loading}
+          readOnly
+          topLabel={state.online ? "ONLINE" : "OFFLINE"}
+        />
+        <div className="nr-driver-operational-card">
+          <div className="nr-driver-operational-status">
+            <span className={`nr-status-dot ${state.online ? "online" : "offline"}`} aria-hidden="true" />
+            <div>
+              <small>DRIVER AVAILABILITY</small>
+              <strong>{state.online ? "Online" : "Offline"}</strong>
+              <span>
+                {state.online
+                  ? "Visible for eligible dispatch. NexRide keeps your current location fresh while you’re available."
+                  : verified
+                    ? "Go online when you’re ready to receive requests."
+                    : "Complete Driver eligibility before going online."}
+              </span>
+            </div>
           </div>
+          <button
+            className={`nr-driver-primary ${state.online ? "secondary-state" : ""}`}
+            disabled={loading || updating || (!state.online && !canGoOnline)}
+            onClick={toggleAvailability}
+          >
+            {updating ? "Updating…" : state.online ? "Go Offline" : "Go Online"}
+          </button>
         </div>
-        <button
-          className={`nr-driver-primary ${state.online ? "secondary-state" : ""}`}
-          disabled={loading || updating || (!state.online && !canGoOnline)}
-          onClick={toggleAvailability}
-        >
-          {updating ? "Updating…" : state.online ? "Go Offline" : "Go Online"}
-        </button>
       </section>
 
-      {error && <div className="nr-driver-notice error" role="alert"><Icon name="info" /><div><strong>Driver status unavailable</strong><span>{error}</span></div></div>}
+      {error && <div className="nr-driver-notice error" role="alert"><Icon name="info" /><div><strong>{driverErrorTitle(error)}</strong><span>{error}</span></div></div>}
 
       {!loading && block && (
         <div className={`nr-driver-notice ${block.tone}`}>
@@ -708,23 +747,6 @@ export function DriverWorkspace({
           {block.action && <button onClick={resolveBlock}>{block.action}</button>}
         </div>
       )}
-
-      <section className="nr-driver-home-map-card">
-        <div className="nr-driver-home-map-copy">
-          <div>
-            <span className="nr-driver-kicker">LIVE MAP</span>
-            <strong>Drive with the same NexRide map Riders see</strong>
-            <p>Use your location, review the service area, and open full Driver Map when you’re ready.</p>
-          </div>
-          <button onClick={() => navigate("map")}>Open map <Icon name="chevron" size={16} /></button>
-        </div>
-        <div className="nr-driver-home-map-mini" aria-hidden="true">
-          <span className="nr-driver-home-map-road road-a" />
-          <span className="nr-driver-home-map-road road-b" />
-          <span className="nr-driver-home-map-road road-c" />
-          <span className="nr-driver-home-map-pin"><Icon name="navigation" size={15} /></span>
-        </div>
-      </section>
 
       <div className="nr-driver-metric-grid" aria-label="Driver summary">
         <Metric label="Today’s earnings" value={state.earnings === null ? "—" : formatEarnings(state.earnings)} suffix="ETB" hint={state.earnings === null ? "Unavailable" : "Today"} loading={loading} />
