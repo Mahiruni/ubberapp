@@ -1,7 +1,6 @@
 "use client";
 import { useContext, useEffect, useState } from "react";
 import { Button, Dialog, Icon, LanguageContext, useTranslation } from "./ui";
-import { VehicleIllustration } from "./vehicle";
 import { endpointName } from "./destination";
 import {
   fareTotal,
@@ -423,7 +422,6 @@ function RideOption({
         }
       }}
     >
-      <VehicleIllustration category={fare.category} />
       <span className="nr-ride-copy">
         <strong>{t(fare.category)}</strong>
         <small>
