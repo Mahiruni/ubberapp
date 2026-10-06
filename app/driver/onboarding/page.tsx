@@ -3,9 +3,12 @@
 import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Brand } from "../../../components/nexride/ui";
+import Image from "next/image";
+import { Brand, Icon } from "../../../components/nexride/ui";
+import { VehicleIllustration } from "../../../components/nexride/vehicle";
 import { supabase } from "../../../lib/supabase";
 import { nexrideAuthRedirectUrl } from "../../../lib/nexride-auth-url";
+import { resolveSessionRole } from "../../../lib/nexride-account-role";
 import "../auth/driver-auth.css";
 import "./driver-onboarding.css";
 
@@ -23,9 +26,15 @@ export default function DriverOnboarding() {
 
   useEffect(() => {
     let active = true;
-    supabase.auth.getSession().then(({ data }) => {
+    supabase.auth.getSession().then(async ({ data }) => {
       if (!active || !data.session) return;
-      if (data.session.user.user_metadata?.role !== "driver") return;
+      const role = await resolveSessionRole(data.session).catch(() => "");
+      if (!active) return;
+      if (role === "admin") {
+        router.replace("/admin");
+        return;
+      }
+      if (role !== "driver") return;
       if (data.session.user.user_metadata?.driver_onboarding_complete === true) {
         router.replace("/driver/verification");
       }
@@ -98,32 +107,60 @@ export default function DriverOnboarding() {
   }
 
   return (
-    <main className="driver-onboarding-page">
-      <section className="driver-onboarding-card">
-        <Link href="/driver" className="driver-auth-back">← Back</Link>
-        <Brand driver />
-        <span className="driver-auth-role">DRIVER ONBOARDING · STEP 1 OF 2</span>
-        <h1>Start driving.</h1>
-        <p>Create your driver account and add the basic vehicle details NexRide needs before verification.</p>
-
-        <form onSubmit={submit}>
-          <div className="driver-form-grid">
-            <label>Full name<input value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" required /></label>
-            <label>Phone number<input value={phone} onChange={(e) => setPhone(e.target.value)} autoComplete="tel" required /></label>
+    <main className="nr-auth-experience driver-onboarding-page">
+      <div className="nr-auth-page">
+        <section className="nr-auth-shell nr-auth-shell-driver">
+          <div className="nr-auth-hero" aria-hidden="true">
+            <Image src="/images/addis-splash-city.jpg" alt="" fill priority sizes="(max-width: 760px) 100vw, 760px" quality={86} />
+            <div className="nr-auth-hero-wash driver" />
+            <div className="nr-auth-hero-top">
+              <Brand />
+              <span className="nr-auth-role-tab">Driver</span>
+            </div>
+            <div className="nr-auth-hero-copy">
+              <span>NEXRIDE · DRIVER</span>
+              <strong>Drive Addis.<br />Build your day.</strong>
+            </div>
+            <div className="nr-auth-hero-vehicle driver"><VehicleIllustration category="xl" /></div>
           </div>
-          <label>Email<input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" required /></label>
-          <label>Password<input type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" minLength={6} required /></label>
-          <div className="driver-form-grid">
-            <label>Vehicle<input value={vehicle} onChange={(e) => setVehicle(e.target.value)} placeholder="Toyota Corolla" required /></label>
-            <label>Plate number<input value={plate} onChange={(e) => setPlate(e.target.value)} placeholder="2-A12345" required /></label>
-          </div>
-          {error && <div className="driver-auth-error" role="alert">{error}</div>}
-          {notice && <div className="driver-auth-notice" role="status">{notice}<Link href="/driver/auth">Sign in as Driver</Link></div>}
-          <button className="driver-auth-submit" type="submit" disabled={busy}>{busy ? "Creating account…" : "Continue to Verification"}</button>
-        </form>
 
-        <p className="driver-auth-footer">Already registered? <Link href="/driver/auth">Sign in as Driver</Link></p>
-      </section>
+          <div className="nr-auth-content">
+            <Link href="/driver" className="nr-auth-back">← Driver home</Link>
+            <span className="driver-auth-role">DRIVER ACCOUNT</span>
+            <h1>Create Driver Account</h1>
+            <p>Sign up to drive, complete verification, and earn with NexRide.</p>
+
+            <form onSubmit={submit} className="nr-auth-form">
+              <div className="driver-form-grid">
+                <label><span>Full name</span><div className="nr-auth-input"><Icon name="user" size={19}/><input value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" placeholder="Full name" required /></div></label>
+                <label><span>Phone number</span><div className="nr-auth-input"><Icon name="phone" size={19}/><input value={phone} onChange={(e) => setPhone(e.target.value)} autoComplete="tel" placeholder="+251…" required /></div></label>
+              </div>
+              <label><span>Email address</span><div className="nr-auth-input"><Icon name="user" size={19}/><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" placeholder="Email address" required /></div></label>
+              <label><span>Password</span><div className="nr-auth-input"><Icon name="shield" size={19}/><input type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" minLength={6} placeholder="Password" required /></div></label>
+
+              <div className="nr-auth-subsection">
+                <div><span>VEHICLE DETAILS</span><small>Used during Driver verification.</small></div>
+                <div className="driver-form-grid">
+                  <label><span>Vehicle</span><div className="nr-auth-input"><Icon name="car" size={19}/><input value={vehicle} onChange={(e) => setVehicle(e.target.value)} placeholder="Toyota Corolla" required /></div></label>
+                  <label><span>Plate number</span><div className="nr-auth-input"><Icon name="card" size={19}/><input value={plate} onChange={(e) => setPlate(e.target.value)} placeholder="2-A12345" required /></div></label>
+                </div>
+              </div>
+
+              {error && <div className="driver-auth-error" role="alert">{error}</div>}
+              {notice && <div className="driver-auth-notice" role="status">{notice}<Link href="/driver/auth">Sign in as Driver</Link></div>}
+              <button className="driver-auth-submit" type="submit" disabled={busy}>{busy ? "Creating account…" : "Create Account →"}</button>
+            </form>
+
+            <div className="nr-auth-divider"><span>or</span></div>
+            <Link className="nr-auth-create-link" href="/driver/auth">Already have an account? <strong>Sign In</strong></Link>
+            <div className="nr-auth-role-note">
+              <span><Icon name="car" size={20}/></span>
+              <div><strong>This account is for Drivers</strong><small>Submit documents, manage trips, and start earning.</small></div>
+            </div>
+            <Link className="nr-auth-role-link" href="/rider/sign-in">Need to ride instead? <strong>Switch to Rider →</strong></Link>
+          </div>
+        </section>
+      </div>
     </main>
   );
 }
