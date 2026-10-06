@@ -109,7 +109,7 @@ export default function DriverOnboarding() {
   }
 
   return (
-    <main className="nr-auth-experience driver-onboarding-page">
+    <main className="nr-auth-experience driver-onboarding-page" data-auth-mode="signup" data-mode="driver">
       <div className="nr-auth-page">
         <section className="nr-auth-shell nr-auth-shell-driver">
           <div className="nr-auth-hero" aria-hidden="true">
