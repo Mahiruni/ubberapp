@@ -479,3 +479,16 @@
     animation: none;
   }
 }
+
+
+/* Rider mobile footer spacing: reserve the fixed nav outside the stage, never as a blank stage rectangle. */
+@media (max-width: 800px) {
+  .nr-app[data-mode="rider"] .rider-home-view .nr-main {
+    height: 100dvh;
+    padding-bottom: calc(64px + env(safe-area-inset-bottom));
+  }
+
+  .nr-app[data-mode="rider"] .rider-home-view .nr-stage {
+    padding-bottom: 0;
+  }
+}
