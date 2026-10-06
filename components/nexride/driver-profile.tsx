@@ -190,7 +190,7 @@ export function DriverProfileScreen({
           <p>{profile.email || "NexRide Driver account"}</p>
           <div className="nr-driver-contact-line">
             <span><Icon name="phone" size={14}/>{profile.phone || "Add a phone number"}</span>
-            {profile.vehiclePlate && <span><Icon name="car" size={14}/>{profile.vehiclePlate}</span>}
+            {profile.vehiclePlate && <span><Icon name="pin" size={14}/>{profile.vehiclePlate}</span>}
           </div>
         </div>
 
