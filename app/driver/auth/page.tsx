@@ -114,7 +114,7 @@ export default function DriverAuth() {
             <div className="nr-auth-divider"><span>or</span></div>
             <Link className="nr-auth-create-link" href="/driver/onboarding"><Icon name="plus" size={18}/>{t("driverCreateAccount")}</Link>
             <div className="nr-auth-role-note">
-              <span><Icon name="car" size={20}/></span>
+              <span><Icon name="briefcase" size={20}/></span>
               <div><strong>{t("driverAuthOnly")}</strong><small>Accept trips, manage documents, and earn with NexRide.</small></div>
             </div>
             <Link className="nr-auth-role-link" href="/rider/sign-in">Need a ride instead? <strong>Switch to Rider →</strong></Link>
