@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "../../../../components/nexride/ui";
+import { useOperationalTranslation } from "../../../../components/nexride/operational-i18n";
 import { nexrideApiFetch } from "../../../../lib/nexride-api-auth";
 import { supabase } from "../../../../lib/supabase";
 import { formatEtb } from "../../../../lib/nexride-driver-earnings";
@@ -54,6 +55,7 @@ const money = (value: unknown) => {
 
 export default function DriverPayoutsPage() {
   const router = useRouter();
+  const op = useOperationalTranslation();
   const [snapshot, setSnapshot] = useState<PayoutSnapshot | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<"account" | "payout" | "refresh" | "">("");
@@ -308,13 +310,13 @@ export default function DriverPayoutsPage() {
           <button
             className="nr-driver-icon-btn"
             onClick={() => router.replace("/driver/home?screen=profile")}
-            aria-label="Back to driver profile"
+            aria-label={op("Back to driver profile")}
           >
             <Icon name="back" />
           </button>
           <div>
             <span className="nr-driver-kicker">DRIVER PROFILE</span>
-            <h1>Payouts</h1>
+            <h1>{op("Payouts")}</h1>
             <p>Secure earnings withdrawal and provider status</p>
           </div>
         </header>
@@ -365,7 +367,7 @@ export default function DriverPayoutsPage() {
                   <strong>{formatEtb(totals.processing, 2)} ETB</strong>
                 </div>
                 <div className="nr-vehicle-detail">
-                  <span>Paid out</span>
+                  <span>{op("Paid out")}</span>
                   <strong>{formatEtb(totals.paid, 2)} ETB</strong>
                 </div>
               </div>
