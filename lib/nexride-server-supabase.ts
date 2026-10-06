@@ -1,5 +1,6 @@
 import { createClient, type SupabaseClient, type User } from "@supabase/supabase-js";
 import { publicConfig } from "./runtime-config";
+import { serverAdminSupabase } from "./nexride-server-admin";
 
 export type RequestSupabase = {
   client: SupabaseClient;
@@ -21,7 +22,10 @@ export async function authorizedRequestSupabase(request: Request): Promise<Reque
     },
   });
 
-  const { data, error } = await client.auth.getUser(token);
+  // Verify the bearer token with the server-only Supabase client.
+  // This avoids coupling token validation to the browser publishable-key client.
+  const verifier = serverAdminSupabase();
+  const { data, error } = await verifier.auth.getUser(token);
   if (error || !data.user) return null;
 
   return { client, user: data.user };

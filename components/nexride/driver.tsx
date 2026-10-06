@@ -10,7 +10,7 @@ import { DriverProfileScreen } from "./driver-profile";
 import { loadDriverEarningsReport } from "../../lib/nexride-driver-earnings";
 import { supabase } from "../../lib/supabase";
 import { resolveSessionRole } from "../../lib/nexride-account-role";
-import { nexrideApiHeaders } from "../../lib/nexride-api-auth";
+import { nexrideApiFetch } from "../../lib/nexride-api-auth";
 import "../../app/driver/driver-dashboard.css";
 import "../../app/rider-home.css";
 
@@ -358,9 +358,8 @@ export function DriverWorkspace({
 
     void (async () => {
       try {
-        const response = await fetch("/api/driver/availability", {
+        const response = await nexrideApiFetch("/api/driver/availability", {
           method: "PATCH",
-          headers: await nexrideApiHeaders(true),
           body: JSON.stringify({ online: false }),
         });
         if (!response.ok) throw new Error("offline_failed");
@@ -387,9 +386,8 @@ export function DriverWorkspace({
         lastSent = now;
         void (async () => {
           try {
-            await fetch("/api/driver/availability", {
+            await nexrideApiFetch("/api/driver/availability", {
               method: "PATCH",
-              headers: await nexrideApiHeaders(true),
               body: JSON.stringify({
                 location: {
                   latitude: position.coords.latitude,
@@ -558,9 +556,8 @@ export function DriverWorkspace({
     }
 
     try {
-      const response = await fetch("/api/driver/availability", {
+      const response = await nexrideApiFetch("/api/driver/availability", {
         method: "PATCH",
-        headers: await nexrideApiHeaders(true),
         body: JSON.stringify({
           online: nextOnline,
           ...(location ? { location } : {}),

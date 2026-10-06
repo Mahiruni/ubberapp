@@ -7,7 +7,7 @@ import { Brand } from "../../../components/nexride/ui";
 import { supabase } from "../../../lib/supabase";
 import type { DriverReviewStatus } from "../../../lib/nexride-driver-verification";
 import { resolveSessionRole } from "../../../lib/nexride-account-role";
-import { nexrideApiHeaders } from "../../../lib/nexride-api-auth";
+import { nexrideApiFetch } from "../../../lib/nexride-api-auth";
 import "../auth/driver-auth.css";
 import "../onboarding/driver-onboarding.css";
 
@@ -149,9 +149,8 @@ export default function DriverVerificationPage() {
       return;
     }
 
-    const response = await fetch("/api/driver/verification", {
+    const response = await nexrideApiFetch("/api/driver/verification", {
       method: "POST",
-      headers: await nexrideApiHeaders(true),
       body: JSON.stringify({
         licenseNumber: licenseNumber.trim(),
         licenseExpiry,
