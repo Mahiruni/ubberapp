@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "../../components/nexride/ui";
+import { useOperationalTranslation } from "../../components/nexride/operational-i18n";
 import { supabase } from "../../lib/supabase";
 import "../nexride.css";
 import "./safety.css";
@@ -65,6 +66,7 @@ function readRiderSnapshot(): TripContext {
 
 export default function SafetyCenterPage() {
   const router = useRouter();
+  const op = useOperationalTranslation();
   const [view, setView] = useState<SafetyView>("home");
   const [role, setRole] = useState<SafetyRole>("rider");
   const [trip, setTrip] = useState<TripContext>(emptyTrip);
@@ -148,15 +150,15 @@ export default function SafetyCenterPage() {
     <main className="nr-app nr-safety-page" data-theme="dark" data-mode={role}>
       <div className="nr-safety-wrap">
         <header className="nr-safety-head">
-          <button className="nr-safety-back" onClick={back} aria-label={view === "home" ? "Back" : "Back to Safety Center"}>
+          <button className="nr-safety-back" onClick={back} aria-label={view === "home" ? op("Back") : op("Back to Safety Center")}>
             <Icon name="back" />
           </button>
           <div>
             <span>NEXRIDE SAFETY</span>
-            <h1>{view === "home" ? "Safety Center" : view === "sos" ? "Emergency SOS" : view === "share" ? "Share your trip" : view === "help" ? "Help Center" : "Report an issue"}</h1>
+            <h1>{view === "home" ? op("Safety Center") : view === "sos" ? op("Emergency SOS") : view === "share" ? op("Share your trip") : view === "help" ? op("Help Center") : op("Report an issue")}</h1>
           </div>
           <span className={`nr-safety-network ${online ? "online" : "offline"}`}>
-            <i /> {online ? "Online" : "Offline"}
+            <i /> {online ? op("Online") : op("Offline")}
           </span>
         </header>
 
@@ -197,6 +199,7 @@ function SafetyHome({
   loadingTrip: boolean;
   open: (view: SafetyView) => void;
 }) {
+  const op = useOperationalTranslation();
   return (
     <>
       <section className="nr-safety-intro">
@@ -211,29 +214,29 @@ function SafetyHome({
         <SafetyAction
           tone="danger"
           icon="phone"
-          title="Emergency SOS"
-          detail="Hold to open verified emergency call options. NexRide does not dispatch responders."
+          title={op("Emergency SOS")}
+          detail={op("Hold to open verified emergency call options. NexRide does not dispatch responders.")}
           onClick={() => open("sos")}
         />
         <SafetyAction
           tone="success"
           icon="share"
-          title="Share your trip"
-          detail="Review and share a one-time trip snapshot with someone you trust."
+          title={op("Share your trip")}
+          detail={op("Review and share a one-time trip snapshot with someone you trust.")}
           onClick={() => open("share")}
         />
         <SafetyAction
           tone="info"
           icon="chat"
-          title="Help Center"
-          detail="Get clear guidance for safety, trip, location, and connection issues."
+          title={op("Help Center")}
+          detail={op("Get clear guidance for safety, trip, location, and connection issues.")}
           onClick={() => open("help")}
         />
         <SafetyAction
           tone="neutral"
           icon="info"
-          title="Report an issue"
-          detail="Choose a category, add optional details, and include relevant trip context."
+          title={op("Report an issue")}
+          detail={op("Choose a category, add optional details, and include relevant trip context.")}
           onClick={() => open("report")}
         />
       </div>
@@ -244,8 +247,8 @@ function SafetyHome({
           <p>Checking active trip…</p>
         ) : trip.source !== "none" ? (
           <>
-            <strong>{role === "driver" ? "Driver trip context available" : "Rider trip context available"}</strong>
-            <p>{[trip.pickup, trip.destination].filter(Boolean).join(" → ") || "Trip reference available."}</p>
+            <strong>{role === "driver" ? op("Driver trip context available") : op("Rider trip context available")}</strong>
+            <p>{[trip.pickup, trip.destination].filter(Boolean).join(" → ") || op("Trip reference available.")}</p>
           </>
         ) : (
           <>
@@ -284,6 +287,7 @@ function SafetyAction({
 }
 
 function EmergencySOS() {
+  const op = useOperationalTranslation();
   const HOLD_MS = 1800;
   const [progress, setProgress] = useState(0);
   const [opened, setOpened] = useState(false);
@@ -337,24 +341,24 @@ function EmergencySOS() {
             aria-describedby="nr-sos-hold-note"
           >
             <span className="nr-sos-progress" style={{ width: `${progress}%` }} aria-hidden="true" />
-            <span>Hold to activate SOS options</span>
+            <span>{op("Hold to activate SOS options")}</span>
           </button>
           <div className="nr-sos-progress-label" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress)}>
-            {progress > 0 ? `${Math.round(progress)}% · release to cancel` : "Hold for about 2 seconds"}
+            {progress > 0 ? `${Math.round(progress)}% · release to cancel` : op("Hold for about 2 seconds")}
           </div>
           <p id="nr-sos-hold-note" className="nr-sos-accessible-note">You can release at any time before activation. For keyboard, switch-control, or other assistive access, use the button below.</p>
-          <button className="nr-sos-alternative" onClick={activate}>Open emergency options</button>
+          <button className="nr-sos-alternative" onClick={activate}>{op("Open emergency options")}</button>
         </>
       ) : (
         <div className="nr-sos-options" role="status">
           <div className="nr-sos-not-sent">
             <Icon name="info" size={18} />
-            <span><strong>No emergency alert has been sent.</strong> Choose a phone service below to place a call yourself.</span>
+            <span><strong>{op("No emergency alert has been sent.")}</strong> Choose a phone service below to place a call yourself.</span>
           </div>
           <a href="tel:991"><span>Addis Ababa Police</span><strong>991</strong></a>
           <a href="tel:912"><span>Fire service</span><strong>912</strong></a>
           <a href="tel:907"><span>Red Cross</span><strong>907</strong></a>
-          <button onClick={() => { setOpened(false); setProgress(0); }}>Close emergency options</button>
+          <button onClick={() => { setOpened(false); setProgress(0); }}>{op("Close emergency options")}</button>
         </div>
       )}
 
@@ -374,6 +378,7 @@ function TripShare({
   role: SafetyRole;
   online: boolean;
 }) {
+  const op = useOperationalTranslation();
   const [status, setStatus] = useState("");
 
   const shareText = useMemo(() => {
@@ -394,18 +399,18 @@ function TripShare({
     try {
       if (navigator.share) {
         await navigator.share({ title: "NexRide trip", text: shareText });
-        setStatus("Trip snapshot shared using your device share sheet.");
+        setStatus(op("Trip snapshot shared using your device share sheet."));
       } else if (navigator.clipboard) {
         await navigator.clipboard.writeText(shareText);
-        setStatus("Trip snapshot copied. Paste it into the app you want to use.");
+        setStatus(op("Trip snapshot copied. Paste it into the app you want to use."));
       } else {
-        setStatus("Sharing is not supported by this browser. You can manually copy the trip details shown below.");
+        setStatus(op("Sharing is not supported by this browser. You can manually copy the trip details shown below."));
       }
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") {
-        setStatus("Sharing cancelled. Nothing was sent by NexRide.");
+        setStatus(op("Sharing cancelled. Nothing was sent by NexRide."));
       } else {
-        setStatus("The device share action could not be completed.");
+        setStatus(op("The device share action could not be completed."));
       }
     }
   };
@@ -426,17 +431,17 @@ function TripShare({
           <p>No active trip details are available. The shared text will identify only your NexRide role.</p>
         ) : (
           <>
-            {trip.status && <ShareRow label="Status" value={trip.status} />}
-            {trip.category && <ShareRow label="Ride" value={trip.category} />}
-            {trip.pickup && <ShareRow label="Pickup" value={trip.pickup} />}
-            {trip.destination && <ShareRow label="Destination" value={trip.destination} />}
-            {trip.tripReference && <ShareRow label="Trip reference" value={trip.tripReference} />}
+            {trip.status && <ShareRow label={op("Status")} value={trip.status} />}
+            {trip.category && <ShareRow label={op("Ride")} value={trip.category} />}
+            {trip.pickup && <ShareRow label={op("Pickup")} value={trip.pickup} />}
+            {trip.destination && <ShareRow label={op("Destination")} value={trip.destination} />}
+            {trip.tripReference && <ShareRow label={op("Trip reference")} value={trip.tripReference} />}
           </>
         )}
       </div>
 
       {!online && <p className="nr-share-offline">You are offline. Device sharing or copying may still work, but no live NexRide data can refresh until you reconnect.</p>}
-      <button className="nr-share-primary" onClick={share}><Icon name="share" size={18} /> Share trip snapshot</button>
+      <button className="nr-share-primary" onClick={share}><Icon name="share" size={18} /> {op("Share trip snapshot")}</button>
       {status && <p className="nr-share-status" role="status">{status}</p>}
     </section>
   );
@@ -447,12 +452,13 @@ function ShareRow({ label, value }: { label: string; value: string }) {
 }
 
 function HelpCenter() {
+  const op = useOperationalTranslation();
   return (
     <section className="nr-help-panel">
       <div className="nr-help-intro">
         <span><Icon name="chat" size={22} /></span>
         <div>
-          <strong>Safety guidance</strong>
+          <strong>{op("Safety guidance")}</strong>
           <p>These help topics are available in-app. Live NexRide support chat is not currently connected, so the app will not pretend an agent is responding.</p>
         </div>
       </div>
@@ -487,6 +493,7 @@ function SafetyReport({
   online: boolean;
   userId: string;
 }) {
+  const op = useOperationalTranslation();
   const [category, setCategory] = useState<(typeof REPORT_CATEGORIES)[number][0]>("safety_concern");
   const [details, setDetails] = useState("");
   const [includeTrip, setIncludeTrip] = useState(trip.source !== "none");
@@ -515,7 +522,7 @@ function SafetyReport({
     setSuccess(false);
 
     if (!userId) {
-      setFeedback("Sign in to NexRide before submitting a report. Emergency phone options remain available without sign-in.");
+      setFeedback(op("Sign in to NexRide before submitting a report. Emergency phone options remain available without sign-in."));
       return;
     }
     if (!online) {
@@ -546,7 +553,7 @@ function SafetyReport({
       .single();
 
     if (error || !data) {
-      setFeedback("NexRide could not submit this report. Your draft is still saved on this device.");
+      setFeedback(op("NexRide could not submit this report. Your draft is still saved on this device."));
     } else {
       setSuccess(true);
       setFeedback(`Report submitted. Reference ${String(data.id).slice(0, 8).toUpperCase()}. No emergency responder has been dispatched by this report.`);
@@ -561,15 +568,15 @@ function SafetyReport({
       <div className="nr-report-context">
         <span><Icon name="shield" size={19} /></span>
         <div>
-          <strong>{includeTrip && trip.source !== "none" ? "Trip context will be included" : "General safety report"}</strong>
-          <p>{includeTrip && trip.source !== "none" ? [trip.pickup, trip.destination].filter(Boolean).join(" → ") || "Current trip reference" : "No trip-specific information will be attached."}</p>
+          <strong>{includeTrip && trip.source !== "none" ? op("Trip context will be included") : op("General safety report")}</strong>
+          <p>{includeTrip && trip.source !== "none" ? [trip.pickup, trip.destination].filter(Boolean).join(" → ") || op("Current trip reference") : op("No trip-specific information will be attached.")}</p>
         </div>
       </div>
 
       <label className="nr-safety-field">
         Category
         <select value={category} onChange={(event) => setCategory(event.target.value as typeof category)}>
-          {REPORT_CATEGORIES.map(([id, label]) => <option key={id} value={id}>{label}</option>)}
+          {REPORT_CATEGORIES.map(([id, label]) => <option key={id} value={id}>{op(label)}</option>)}
         </select>
       </label>
 
@@ -578,7 +585,7 @@ function SafetyReport({
         <textarea
           value={details}
           onChange={(event) => setDetails(event.target.value.slice(0, 4000))}
-          placeholder="Describe what happened or what you need help with."
+          placeholder={op("Describe what happened or what you need help with.")}
           rows={7}
         />
         <small>{details.length}/4000</small>
@@ -592,7 +599,7 @@ function SafetyReport({
       )}
 
       <button className="nr-report-submit" disabled={submitting || !online} onClick={submit}>
-        {submitting ? "Submitting…" : online ? "Submit report" : "Reconnect to submit"}
+        {submitting ? op("Submitting…") : online ? op("Submit report") : op("Reconnect to submit")}
       </button>
 
       {feedback && <div className={`nr-report-feedback ${success ? "success" : ""}`} role={success ? "status" : "alert"}><Icon name={success ? "check" : "info"} size={17} /><span>{feedback}</span></div>}
