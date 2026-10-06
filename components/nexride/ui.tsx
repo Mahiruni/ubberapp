@@ -28,7 +28,6 @@ const paths = {
   wallet: "M3 6h18v14H3ZM3 6V3h15v3M16 11h5v5h-5Z",
   card: "M3 6h18v12H3ZM3 10h18M7 15h4",
   user: "M20 21a8 8 0 0 0-16 0M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0",
-  car: "m4 11 3-6h10l3 6M3 11h18v7H3ZM6 18v3m12-3v3M6 14h2m8 0h2",
   shield: "m12 3 8 3v6c0 5-4 8-8 10-4-2-8-5-8-10V6ZM8 12l3 3 5-5",
   settings:
     "M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8M12 2v3m0 14v3M2 12h3m14 0h3M5 5l2 2m10 10 2 2M19 5l-2 2M7 17l-2 2",
