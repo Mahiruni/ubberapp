@@ -75,11 +75,14 @@ export async function PATCH(request: Request) {
     if (profileResult.data?.role !== "driver" || !driverResult.data)
       return reply({ status: "driver_required" }, 403);
 
-    if (profileResult.data.account_status !== "active")
-      return reply({ status: "account_inactive" }, 403);
-
     const current = driverResult.data;
+    const goingOffline = hasOnline && body.online === false;
     const wantsOnline = hasOnline ? body.online === true : current.is_online === true;
+
+    // Taking a driver offline is a safety cleanup operation. It must remain
+    // available even if the account was just suspended/inactivated.
+    if (!goingOffline && profileResult.data.account_status !== "active")
+      return reply({ status: "account_inactive" }, 403);
 
     if (wantsOnline && current.review_status !== "approved")
       return reply(
@@ -91,6 +94,13 @@ export async function PATCH(request: Request) {
         409,
       );
 
+    if (goingOffline && current.is_online !== true) {
+      return reply({
+        status: "ready",
+        driver: current,
+      });
+    }
+
     if (!hasOnline && current.is_online !== true)
       return reply({ status: "driver_offline" }, 409);
 
@@ -98,7 +108,13 @@ export async function PATCH(request: Request) {
     if (hasOnline) patch.is_online = body.online === true;
     if (location) patch.location = location;
 
-    const { data, error } = await admin
+    // Offline-only updates should run in the authenticated driver's RLS
+    // context. Besides enforcing ownership, this preserves auth.uid() for any
+    // database triggers that depend on the acting user. Location/online writes
+    // continue to use the server client because location is not a client-
+    // writable driver column.
+    const writeClient = goingOffline && !location ? authorized.client : admin;
+    const { data, error } = await writeClient
       .from("drivers")
       .update(patch)
       .eq("id", authorized.user.id)
@@ -106,6 +122,14 @@ export async function PATCH(request: Request) {
       .single();
 
     if (error || !data) {
+      console.error("driver_availability_update_failed", {
+        driverId: authorized.user.id,
+        operation: goingOffline ? "offline" : hasOnline ? "online" : "location",
+        code: error?.code || "",
+        message: error?.message || "",
+        details: error?.details || "",
+        hint: error?.hint || "",
+      });
       const message = error?.message || "";
       if (/approval|approved/i.test(message))
         return reply({ status: "driver_not_approved" }, 409);
