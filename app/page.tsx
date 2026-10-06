@@ -272,7 +272,7 @@ function AppWorkspace({
         ]
       : [
           { id: "home", label: t("home"), icon: "home" },
-          { id: "request", label: t("requests"), icon: "car" },
+          { id: "request", label: t("requests"), icon: "navigation" },
           { id: "earnings", label: t("earnings"), icon: "money" },
           { id: "profile", label: t("profile"), icon: "user" },
         ];
@@ -549,7 +549,7 @@ function AppWorkspace({
                     switchMode(mode === "rider" ? "driver" : "rider")
                   }
                 >
-                  <Icon name="car" />
+                  <Icon name="navigation" />
                   {t(mode === "rider" ? "switchDriver" : "switchRider")}
                 </Button>
               </Sheet>
