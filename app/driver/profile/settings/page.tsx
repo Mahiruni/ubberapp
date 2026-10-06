@@ -32,7 +32,7 @@ export default function DriverProfileSettingsPage() {
 
       const next = await loadDriverProfileData(session.user.id);
       if (next.role !== "driver") {
-        router.replace("/auth");
+        router.replace(next.role === "admin" ? "/admin" : "/");
         return;
       }
 

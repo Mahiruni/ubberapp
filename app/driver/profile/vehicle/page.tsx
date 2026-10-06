@@ -31,7 +31,7 @@ export default function DriverVehiclePage() {
       try {
         const next = await loadDriverProfileData(data.session.user.id);
         if (next.role !== "driver") {
-          router.replace("/auth");
+          router.replace(next.role === "admin" ? "/admin" : "/");
           return;
         }
         if (active) setProfile(next);

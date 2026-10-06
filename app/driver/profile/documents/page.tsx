@@ -45,7 +45,7 @@ export default function DriverDocumentsPage() {
   async function refresh(userId: string) {
     const next = await loadDriverProfileData(userId);
     if (next.role !== "driver") {
-      router.replace("/auth");
+      router.replace(next.role === "admin" ? "/admin" : "/");
       return null;
     }
     setProfile(next);

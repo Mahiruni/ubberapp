@@ -59,3 +59,41 @@
 @media(max-width:700px){.nr-driver-profile-columns{grid-template-columns:1fr}.nr-driver-profile-quick-grid{grid-template-columns:1fr 1fr}.nr-driver-profile-summary-v2{grid-template-columns:1fr 1fr}.nr-driver-verification-card{grid-template-columns:auto 1fr}.nr-driver-verification-card>button{grid-column:1/-1;justify-content:center}.nr-driver-profile-footer{align-items:flex-start;flex-direction:column}.nr-driver-profile-footer p{text-align:left}.nr-driver-profile-v2 .nr-driver-profile-signout{width:100%;justify-content:center}}
 @media(max-width:430px){.nr-driver-profile-hero-v2{grid-template-columns:auto minmax(0,1fr);padding:16px}.nr-driver-profile-v2 .nr-driver-profile-photo{width:64px;height:64px;border-radius:20px;font-size:19px}.nr-driver-profile-v2 .nr-driver-profile-identity h2{font-size:19px}.nr-driver-profile-edit{grid-column:1/-1;justify-content:center}.nr-driver-profile-quick small{display:none}}
 @media(prefers-reduced-motion:reduce){.nr-driver-profile-quick{transition:none}}
+
+
+/* Driver profile subpages — Account Center v2 */
+.nr-driver-profile-subpage{
+  background:
+    radial-gradient(circle at 85% -8%,rgba(0,200,120,.09),transparent 27%),
+    radial-gradient(circle at 8% -2%,rgba(39,98,132,.28),transparent 31%),
+    #041c30;
+  padding:24px 18px 64px;
+}
+.nr-driver-profile-subwrap{max-width:920px}
+.nr-profile-subhead{gap:14px;margin-bottom:18px;padding:2px 0}
+.nr-profile-subhead h1{font-size:clamp(25px,4vw,32px);line-height:1.04;letter-spacing:-.04em}
+.nr-profile-subhead p{margin-top:6px;color:#8fa8b8;font-size:11px;line-height:1.45}
+.nr-profile-panel{
+  padding:18px;
+  border:1px solid rgba(113,158,184,.18);
+  border-radius:20px;
+  background:linear-gradient(155deg,rgba(10,47,75,.96),rgba(7,36,58,.96));
+  box-shadow:0 16px 42px rgba(0,8,18,.14);
+}
+.nr-profile-panel+.nr-profile-panel{margin-top:12px}
+.nr-profile-panel-head h2{font-size:14px;letter-spacing:-.015em}
+.nr-profile-panel-head p{margin-top:5px;color:#829dad;font-size:10px;line-height:1.5}
+.nr-document-card{margin-top:11px;padding:15px;border:1px solid rgba(102,152,179,.17);border-radius:17px;background:rgba(8,42,67,.78)}
+.nr-document-card h3{font-size:12px}.nr-document-card small{font-size:9px}
+.nr-doc-status{padding:6px 8px;font-size:8px}
+.nr-document-meta{gap:9px;margin-top:12px}.nr-document-meta div{padding:11px;border-radius:12px;background:#07243a}.nr-document-meta span{font-size:9px}.nr-document-meta strong{font-size:10px}
+.nr-doc-actions{gap:9px;margin-top:12px}.nr-doc-actions button,.nr-doc-actions a{min-height:44px;border-radius:12px;font-size:10px}
+.nr-vehicle-detail-grid{gap:9px;margin-top:12px}.nr-vehicle-detail{padding:13px;border-radius:13px;background:#07243a}.nr-vehicle-detail span{font-size:9px}.nr-vehicle-detail strong{font-size:11px}
+.nr-profile-form{gap:13px}.nr-profile-form label{gap:7px;font-size:10px}.nr-profile-form input,.nr-profile-form select{min-height:47px;border-radius:12px;padding:0 12px;font-size:13px}.nr-profile-form button{min-height:48px;border-radius:13px;font-size:12px}
+.nr-profile-alert{gap:9px;margin-top:10px;padding:12px;border-radius:13px;font-size:10px;line-height:1.5}
+.nr-profile-locked-note{gap:9px;margin-top:12px;padding:12px;border-radius:13px;font-size:10px;line-height:1.5}
+.nr-payout-account-summary{padding:15px;border-radius:16px}.nr-payout-account-summary span{font-size:9px}.nr-payout-account-summary strong{font-size:13px}.nr-payout-account-summary small{font-size:10px}
+.nr-payout-status-list{gap:8px}.nr-payout-status-row{padding:12px;border-radius:13px}.nr-payout-status-row span{font-size:10px}.nr-payout-status-row strong{font-size:11px}.nr-payout-status-row small{font-size:9px}
+.nr-payout-refresh{min-height:38px;border-radius:10px;font-size:9px}
+@media(min-width:760px){.nr-driver-profile-subpage{padding:36px 24px 72px}.nr-profile-panel{padding:21px}}
+@media(max-width:520px){.nr-driver-profile-subpage{padding:18px 14px 44px}.nr-profile-subhead{align-items:flex-start}.nr-profile-panel{padding:15px;border-radius:18px}.nr-document-meta,.nr-vehicle-detail-grid{grid-template-columns:1fr}}

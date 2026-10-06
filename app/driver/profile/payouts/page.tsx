@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "../../../../components/nexride/ui";
-import { nexrideApiHeaders } from "../../../../lib/nexride-api-auth";
+import { nexrideApiFetch } from "../../../../lib/nexride-api-auth";
 import { supabase } from "../../../../lib/supabase";
 import { formatEtb } from "../../../../lib/nexride-driver-earnings";
 import { loadDriverProfileData } from "../../../../lib/nexride-driver-profile";
@@ -66,12 +66,9 @@ export default function DriverPayoutsPage() {
   const [payoutAmount, setPayoutAmount] = useState("");
 
   async function fetchSnapshot(includeBanks = true) {
-    const response = await fetch(
+    const response = await nexrideApiFetch(
       "/api/driver/payouts" + (includeBanks ? "?banks=1" : ""),
-      {
-        cache: "no-store",
-        headers: await nexrideApiHeaders(false),
-      },
+      { cache: "no-store" },
     );
     const body = await response.json().catch(() => null);
     if (!response.ok || body?.status !== "ready") {
@@ -105,7 +102,7 @@ export default function DriverPayoutsPage() {
       const profile = await loadDriverProfileData(session.user.id);
       if (!active) return;
       if (profile.role !== "driver") {
-        router.replace("/auth");
+        router.replace(profile.role === "admin" ? "/admin" : "/");
         return;
       }
 
@@ -160,10 +157,9 @@ export default function DriverPayoutsPage() {
     setError("");
     setNotice("");
     try {
-      const response = await fetch("/api/driver/payouts", {
+      const response = await nexrideApiFetch("/api/driver/payouts", {
         method: "PUT",
         cache: "no-store",
-        headers: await nexrideApiHeaders(true),
         body: JSON.stringify({
           bankCode,
           accountName: accountName.trim(),
@@ -215,17 +211,16 @@ export default function DriverPayoutsPage() {
     setError("");
     setNotice("");
     try {
-      const headers = await nexrideApiHeaders(true);
-      headers["Idempotency-Key"] =
+      const idempotencyKey =
         "payout-" +
         (typeof crypto !== "undefined" && crypto.randomUUID
           ? crypto.randomUUID()
           : Date.now().toString(36) + "-" + Math.random().toString(36).slice(2));
 
-      const response = await fetch("/api/driver/payouts", {
+      const response = await nexrideApiFetch("/api/driver/payouts", {
         method: "POST",
         cache: "no-store",
-        headers,
+        headers: { "Idempotency-Key": idempotencyKey },
         body: JSON.stringify({ amountEtb: value }),
       });
       const body = await response.json().catch(() => null);
@@ -271,10 +266,9 @@ export default function DriverPayoutsPage() {
     setError("");
     setNotice("");
     try {
-      const response = await fetch("/api/driver/payouts", {
+      const response = await nexrideApiFetch("/api/driver/payouts", {
         method: "PATCH",
         cache: "no-store",
-        headers: await nexrideApiHeaders(true),
         body: JSON.stringify({}),
       });
       const body = await response.json().catch(() => null);
