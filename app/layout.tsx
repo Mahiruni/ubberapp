@@ -8,7 +8,8 @@ import "./trip-experience.css";
 import "./final-polish.css";
 import "./brand-system.css";
 import "./flagship-system.css";
-import "./rider-flagship.css";\nimport "./redesign-award-winning.css";
+import "./rider-flagship.css";
+import "./redesign-award-winning.css";
 
 const description =
   "Book reliable rides across Addis Ababa with NexRide, a rider and driver mobility platform built for Ethiopia.";
