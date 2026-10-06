@@ -3,7 +3,7 @@ import { Icon, ListRow, useTranslation } from "./ui";
 import { placeKey, placeName, locality } from "../../lib/nexride-search";
 import { useContext } from "react";
 import { LanguageContext } from "./ui";
-import { places, type Place } from "../../lib/nexride-places";
+import { type Place } from "../../lib/nexride-places";
 import type { HomePlaces } from "../../lib/nexride-home";
 import type { LocationStatus, RiderLocation } from "../../lib/nexride-location";
 export function LocationMessage({
@@ -60,12 +60,7 @@ export function RiderHomePanel({
 }) {
   const t = useTranslation();
   const language = useContext(LanguageContext);
-  const rows = data.recent.length
-    ? data.recent.slice(0, 2)
-    : [
-        places.find((p) => p.name === "Bole Airport")!,
-        places.find((p) => p.name === "Meskel Square")!,
-      ];
+  const rows = data.recent.slice(0, 3);
   return (
     <section className="nr-rider-home-panel" aria-label={t("destination")}>
       <div className="nr-home-handle" aria-hidden="true" />
@@ -122,13 +117,15 @@ export function RiderHomePanel({
       <LocationMessage status={status} position={position} />
       <div className="nr-home-history-heading">
         <h2>{t("recentDestinations")}</h2>
-        <span>{t("preview")}</span>
       </div>
       {!data.recent.length && (
-        <p className="nr-home-empty">{t("emptyRecent")}</p>
-      )}
-      {!data.recent.length && (
-        <p className="nr-home-example-label">{t("previewDestinations")}</p>
+        <div className="nr-home-empty-state">
+          <span><Icon name="clock" size={19} /></span>
+          <div>
+            <strong>{t("emptyRecent")}</strong>
+            <small>Your real destinations will appear here after you start riding with NexRide.</small>
+          </div>
+        </div>
       )}
       <div className="nr-home-destinations">
         {rows.map((p) => (
