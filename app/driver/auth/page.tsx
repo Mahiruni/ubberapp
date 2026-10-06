@@ -12,6 +12,7 @@ import { driverResumeDestination } from "../../../lib/nexride-driver-verificatio
 import { resolveSessionRole } from "../../../lib/nexride-account-role";
 import "../driver-welcome.css";
 import "./driver-auth.css";
+import "../../auth-experience.css";
 
 export default function DriverAuth() {
   const router = useRouter();
