@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { NexRideLanguageProvider } from "../../components/nexride/language-provider";
 
 export const metadata: Metadata = {
   title: "Drive with NexRide",
@@ -7,5 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function DriverLayout({ children }: { children: React.ReactNode }) {
-  return children;
+  return <NexRideLanguageProvider>{children}</NexRideLanguageProvider>;
 }
