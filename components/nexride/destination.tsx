@@ -205,17 +205,28 @@ export function DestinationPanel({
         >
           <Icon name="back" />
         </button>
-        <h1>
-          {t(
-            shortcut === "home"
-              ? "saveHome"
-              : shortcut === "work"
-                ? "saveWork"
-                : picking
-                  ? "adjustMapLocation"
-                  : "destinationSearch",
-          )}
-        </h1>
+        <div className="nr-destination-title">
+          <span>
+            {language === "am"
+              ? picking
+                ? "ቦታውን በካርታ ያስተካክሉ"
+                : "ጉዞዎን ያቅዱ"
+              : picking
+                ? "Fine-tune on the map"
+                : "Plan your ride"}
+          </span>
+          <h1>
+            {t(
+              shortcut === "home"
+                ? "saveHome"
+                : shortcut === "work"
+                  ? "saveWork"
+                  : picking
+                    ? "adjustMapLocation"
+                    : "destinationSearch",
+            )}
+          </h1>
+        </div>
       </header>
       <div className="nr-destination-body">
         {!picking && (
