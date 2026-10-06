@@ -24,8 +24,7 @@
 
 .driver-welcome-media,
 .driver-welcome-gradient,
-.driver-city,
-.driver-car-photo {
+.driver-city {
   position: absolute;
   inset: 0;
 }
@@ -37,25 +36,14 @@
 .driver-city {
   object-fit: cover;
   object-position: center 48%;
-  opacity: .38;
+  opacity: .5;
   filter: saturate(.7) contrast(1.08) brightness(.72);
 }
 
-.driver-car-photo {
-  top: auto;
-  height: min(56vh, 560px);
-  background-image: url("https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1800&q=88");
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-position: center 64%;
-  opacity: .92;
-  mask-image: linear-gradient(to bottom, transparent 0%, black 28%, black 100%);
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 28%, black 100%);
-}
 
 .driver-welcome-gradient {
   background:
-    linear-gradient(180deg, rgba(4, 15, 23, .96) 0%, rgba(4, 15, 23, .7) 31%, rgba(4, 15, 23, .16) 57%, rgba(4, 15, 23, .9) 100%),
+    linear-gradient(180deg, rgba(4, 15, 23, .94) 0%, rgba(4, 15, 23, .7) 34%, rgba(4, 15, 23, .44) 62%, rgba(4, 15, 23, .94) 100%),
     linear-gradient(90deg, rgba(4, 15, 23, .24), transparent 55%, rgba(4, 15, 23, .35));
 }
 
@@ -223,7 +211,6 @@
 @media (min-width: 700px) {
   .driver-welcome { padding-left: 40px; padding-right: 40px; }
   .driver-welcome-content { min-height: calc(100svh - 70px); }
-  .driver-car-photo { height: 66vh; }
   .driver-welcome-copy { padding-top: 12vh; }
   .driver-welcome-actions { width: 390px; }
 }
