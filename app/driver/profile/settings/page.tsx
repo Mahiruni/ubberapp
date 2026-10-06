@@ -181,7 +181,7 @@ export default function DriverProfileSettingsPage() {
                   <Icon name="shield" size={16} /> Documents
                 </button>
                 <button className="nr-doc-secondary" onClick={() => router.push("/driver/profile/vehicle")}>
-                  <Icon name="car" size={16} /> Vehicle
+                  <Icon name="pin" size={16} /> Vehicle
                 </button>
               </div>
             </section>
