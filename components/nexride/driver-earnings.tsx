@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Icon } from "./ui";
+import { useOperationalTranslation } from "./operational-i18n";
 import {
   EARNINGS_PERIOD_STORAGE_KEY,
   earningsPeriodLabel,
@@ -63,6 +64,7 @@ export function DriverEarningsScreen({
   onBack: () => void;
   onOpenReport: () => void;
 }) {
+  const op = useOperationalTranslation();
   const [period, setPeriod] = useState<EarningsPeriod>("today");
   const [report, setReport] = useState<DriverEarningsReport | null>(null);
   const [loading, setLoading] = useState(true);
@@ -84,12 +86,12 @@ export function DriverEarningsScreen({
       .then((next) => {
         if (!active) return;
         setReport(next);
-        if (next.failed) setFailedMessage("NexRide could not load earnings, trip, or online-time reporting.");
+        if (next.failed) setFailedMessage(op("NexRide could not load earnings, trip, or online-time reporting."));
       })
       .catch(() => {
         if (!active) return;
         setReport(null);
-        setFailedMessage("NexRide could not load your earnings report.");
+        setFailedMessage(op("NexRide could not load your earnings report."));
       })
       .finally(() => active && setLoading(false));
 
@@ -118,14 +120,14 @@ export function DriverEarningsScreen({
       <header className="nr-earnings-head">
         <div>
           <span className="nr-driver-kicker">NEXRIDE DRIVER</span>
-          <h1>Earnings</h1>
+          <h1>{op("Earnings")}</h1>
         </div>
-        <button className="nr-driver-icon-btn" onClick={onBack} aria-label="Back to driver home">
+        <button className="nr-driver-icon-btn" onClick={onBack} aria-label={op("Back to driver home")}>
           <Icon name="back" />
         </button>
       </header>
 
-      <div className="nr-earnings-periods" role="group" aria-label="Reporting period">
+      <div className="nr-earnings-periods" role="group" aria-label={op("Reporting period")}>
         {PERIODS.map((item) => (
           <button
             key={item.id}
@@ -133,22 +135,22 @@ export function DriverEarningsScreen({
             onClick={() => changePeriod(item.id)}
             aria-pressed={period === item.id}
           >
-            {item.label}
+            {op(item.label)}
           </button>
         ))}
       </div>
 
       {loading ? (
-        <div className="nr-earnings-loading" aria-busy="true" aria-label="Loading earnings report">
+        <div className="nr-earnings-loading" aria-busy="true" aria-label={op("Loading earnings report")}>
           <span className="large" /><span /><span /><span />
         </div>
       ) : failedMessage ? (
         <section className="nr-earnings-state error" role="alert">
           <span><Icon name="info" size={22} /></span>
           <div>
-            <strong>Report unavailable</strong>
+            <strong>{op("Report unavailable")}</strong>
             <p>{failedMessage}</p>
-            <button onClick={() => setRetryNonce((value) => value + 1)}>Try again</button>
+            <button onClick={() => setRetryNonce((value) => value + 1)}>{op("Try again")}</button>
           </div>
         </section>
       ) : report ? (
@@ -157,9 +159,9 @@ export function DriverEarningsScreen({
             <div className="nr-earnings-total-top">
               <div>
                 <span>{earningsPeriodLabel(period)}</span>
-                <small>{report.earningsPartial ? "Recorded net driver earnings · partial" : "Net driver earnings"}</small>
+                <small>{report.earningsPartial ? op("Recorded net driver earnings · partial") : op("Net driver earnings")}</small>
               </div>
-              {report.partial && <span className="nr-earnings-partial-badge">PARTIAL DATA</span>}
+              {report.partial && <span className="nr-earnings-partial-badge">{op("PARTIAL DATA")}</span>}
             </div>
 
             <strong className="nr-earnings-total">
@@ -178,7 +180,7 @@ export function DriverEarningsScreen({
             <section className="nr-earnings-state empty">
               <span><Icon name="money" size={22} /></span>
               <div>
-                <strong>No activity in this period</strong>
+                <strong>{op("No activity in this period")}</strong>
                 <p>No completed trips, earnings entries, or recorded online time were found for {earningsPeriodLabel(period).toLowerCase()}.</p>
               </div>
             </section>
@@ -186,7 +188,7 @@ export function DriverEarningsScreen({
             <section className="nr-earnings-state partial">
               <span><Icon name="info" size={20} /></span>
               <div>
-                <strong>Earnings data is incomplete</strong>
+                <strong>{op("Earnings data is incomplete")}</strong>
                 <p>Completed trips exist in this period, but one or more finalized driver-earning entries are not yet recorded. NexRide is not substituting estimated fares.</p>
               </div>
             </section>
@@ -194,20 +196,20 @@ export function DriverEarningsScreen({
             <section className="nr-earnings-state partial">
               <span><Icon name="info" size={20} /></span>
               <div>
-                <strong>Some report data is unavailable</strong>
+                <strong>{op("Some report data is unavailable")}</strong>
                 <p>Unavailable: {report.sourceErrors.join(", ")}. Available metrics below are still live.</p>
               </div>
             </section>
           ) : null}
 
           <div className="nr-earnings-metrics">
-            <MetricCard label="Trips completed" value={report.completedTrips === null ? "—" : String(report.completedTrips)} hint="Completed in period" icon="car" />
-            <MetricCard label="Online time" value={formatOnlineTime(report.onlineSeconds)} hint="Recorded sessions" icon="clock" />
-            <MetricCard label="Avg. per trip" value={report.averagePerTripEtb === null ? "—" : `${formatEtb(report.averagePerTripEtb)} ETB`} hint={report.earningsPartial ? "Unavailable while partial" : "Net earnings"} icon="money" />
+            <MetricCard label={op("Trips completed")} value={report.completedTrips === null ? "—" : String(report.completedTrips)} hint={op("Completed in period")} icon="car" />
+            <MetricCard label={op("Online time")} value={formatOnlineTime(report.onlineSeconds)} hint={op("Recorded sessions")} icon="clock" />
+            <MetricCard label={op("Avg. per trip")} value={report.averagePerTripEtb === null ? "—" : `${formatEtb(report.averagePerTripEtb)} ETB`} hint={report.earningsPartial ? "Unavailable while partial" : "Net earnings"} icon="money" />
           </div>
 
           <button className="nr-earnings-report-action" onClick={onOpenReport}>
-            <span><Icon name="wallet" size={19} /><strong>View detailed report</strong></span>
+            <span><Icon name="wallet" size={19} /><strong>{op("View detailed report")}</strong></span>
             <Icon name="chevron" size={17} />
           </button>
         </>
@@ -262,8 +264,8 @@ function EarningsChart({
   return (
     <figure className="nr-earnings-chart">
       <div className="nr-earnings-chart-head">
-        <span>Recorded earnings trend</span>
-        <small>{report.earningsPartial ? "Partial" : "Finalized entries"}</small>
+        <span>{op("Recorded earnings trend")}</span>
+        <small>{report.earningsPartial ? op("Partial") : op("Finalized entries")}</small>
       </div>
       {values.every((value) => value === 0) ? (
         <div className="nr-earnings-chart-empty">No recorded earnings entries to plot.</div>
