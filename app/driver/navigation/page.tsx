@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DriverNavigationMap, type NavigationCoordinate } from "../../../components/nexride/driver-navigation-map";
 import { Icon } from "../../../components/nexride/ui";
+import { useOperationalTranslation } from "../../../components/nexride/operational-i18n";
 import { supabase } from "../../../lib/supabase";
 import { nexrideApiFetch } from "../../../lib/nexride-api-auth";
 import { resolveSessionRole } from "../../../lib/nexride-account-role";
@@ -88,6 +89,7 @@ function positionDistanceMeters(a: VehiclePosition | null, b: VehiclePosition | 
 
 export default function DriverNavigationPage() {
   const router = useRouter();
+  const op = useOperationalTranslation();
   const [driverId, setDriverId] = useState("");
   const [trip, setTrip] = useState<NavigationData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -285,7 +287,7 @@ export default function DriverNavigationPage() {
           .from("ride_driver_locations")
           .upsert(payload, { onConflict: "ride_request_id" });
         if (shareError) {
-          setLocationShareError("Live location could not be shared with your rider. Check your connection.");
+          setLocationShareError(op("Live location could not be shared with your rider. Check your connection."));
           return;
         }
         lastSharedAtRef.current = Date.now();
@@ -358,9 +360,9 @@ export default function DriverNavigationPage() {
         if (!response.ok || body?.status !== "ready") {
           if (response.status === 503 || body?.status === "provider_unavailable") {
             routeBackoffUntilRef.current = Date.now() + 60000;
-            setNativeRouteNotice("NexRide road guidance is temporarily unavailable. Google Maps remains available.");
+            setNativeRouteNotice(op("NexRide road guidance is temporarily unavailable. Google Maps remains available."));
           } else if (response.status !== 409) {
-            setNativeRouteNotice("Road guidance could not refresh. The last route and Google Maps remain available.");
+            setNativeRouteNotice(op("Road guidance could not refresh. The last route and Google Maps remain available."));
           }
           return;
         }
@@ -420,7 +422,7 @@ export default function DriverNavigationPage() {
         routeBackoffUntilRef.current = 0;
         setNativeRouteNotice("");
       } catch {
-        setNativeRouteNotice("Road guidance could not refresh. Google Maps remains available.");
+        setNativeRouteNotice(op("Road guidance could not refresh. Google Maps remains available."));
       } finally {
         routePendingRef.current = false;
       }
@@ -447,7 +449,7 @@ export default function DriverNavigationPage() {
   const activeRoute =
     nativeRoute && nativeRoute.target === stage?.target ? nativeRoute : null;
   const nextGuidance = activeRoute?.steps[0];
-  const guidanceTitle = nextGuidance?.instruction || stage?.title || "Navigation";
+  const guidanceTitle = nextGuidance?.instruction || (stage?.title ? op(stage.title) : op("Navigation"));
   const guidanceDistance =
     nextGuidance && nextGuidance.distanceMeters > 0
       ? metersLabel(nextGuidance.distanceMeters)
@@ -498,8 +500,8 @@ export default function DriverNavigationPage() {
   if (message && !trip) return (
     <main className="nr-app nr-driver-navigation-page" data-mode="driver" data-theme="dark">
       <section className="nr-nav-unavailable">
-        <span><Icon name="info" size={25} /></span><h1>Navigation unavailable</h1><p>{message}</p>
-        <button onClick={() => router.replace("/driver/home")}>Back to Driver Home</button>
+        <span><Icon name="info" size={25} /></span><h1>{op("Navigation unavailable")}</h1><p>{message}</p>
+        <button onClick={() => router.replace("/driver/home")}>{op("Back to Driver Home")}</button>
       </section>
     </main>
   );
@@ -510,55 +512,55 @@ export default function DriverNavigationPage() {
     <main className="nr-app nr-driver-navigation-page" data-mode="driver" data-theme="dark">
       <DriverNavigationMap vehicle={position} pickup={trip.pickupCoordinate} destination={trip.destinationCoordinate} route={nativeRoute?.target === stage.target ? nativeRoute.geometry : []} target={stage.target} view={mapView} gpsState={gpsState} heading={position?.heading ?? null} />
 
-      <button className="nr-nav-home" onClick={() => router.replace("/driver/home")} aria-label="Driver home"><Icon name="home" size={19} /></button>
+      <button className="nr-nav-home" onClick={() => router.replace("/driver/home")} aria-label={op("Driver home")}><Icon name="home" size={19} /></button>
 
       <section className="nr-nav-guidance" aria-live="polite">
         <span className="nr-nav-guidance-icon"><Icon name="navigation" size={30} /></span>
-        <div><small>{stage.badge}</small><strong>{guidanceTitle}</strong>{canNavigate && <em>{nativeRoute?.target === stage.target ? "Live NexRide road guidance" : "Google Maps fallback available"}</em>}</div>
+        <div><small>{stage.badge}</small><strong>{guidanceTitle}</strong>{canNavigate && <em>{nativeRoute?.target === stage.target ? op("Live NexRide road guidance") : op("Google Maps fallback available")}</em>}</div>
         <span className="nr-nav-guidance-distance">{guidanceDistance}</span>
       </section>
 
       <div className="nr-nav-map-controls" aria-label="Map controls">
         <button onClick={() => setMapView("vehicle")} className={mapView === "vehicle" ? "active" : ""} disabled={!position} aria-label="Recenter on vehicle" aria-pressed={mapView === "vehicle"}><Icon name="locate" size={20} /></button>
         <button onClick={() => setMapView("overview")} className={mapView === "overview" ? "active" : ""} aria-label="Show route overview" aria-pressed={mapView === "overview"}><Icon name="globe" size={20} /></button>
-        <button onClick={() => router.push(`/trip/chat?ride=${trip.requestId}&role=driver&offer=${trip.offerId}`)} aria-label="Open rider chat"><Icon name="chat" size={20} /></button>
-        <button onClick={() => router.push(`/safety?role=driver&ride=${trip.requestId}`)} aria-label="Open Safety Center"><Icon name="shield" size={20} /></button>
+        <button onClick={() => router.push(`/trip/chat?ride=${trip.requestId}&role=driver&offer=${trip.offerId}`)} aria-label={op("Open rider chat")}><Icon name="chat" size={20} /></button>
+        <button onClick={() => router.push(`/safety?role=driver&ride=${trip.requestId}`)} aria-label={op("Open Safety Center")}><Icon name="shield" size={20} /></button>
       </div>
 
       {(gpsState !== "fresh" || routeNotice || locationShareError || nativeRouteNotice) && (
         <div className={`nr-nav-status ${gpsState === "lost" || locationShareError ? "danger" : gpsState === "stale" || nativeRouteNotice ? "warning" : ""}`}>
           <Icon name={gpsState === "fresh" && !locationShareError && !nativeRouteNotice ? "check" : "info"} size={16} />
-          <span>{locationShareError || routeNotice || nativeRouteNotice || gpsMessage || "Acquiring GPS location…"}</span>
+          <span>{locationShareError || routeNotice || nativeRouteNotice || gpsMessage || op("Acquiring GPS location…")}</span>
         </div>
       )}
 
       <section className="nr-nav-bottom-card">
         <div className="nr-nav-trip-meta"><span>{trip.rideCategory}</span><span>{stage.badge}</span></div>
         <div className="nr-nav-current-destination">
-          <small>{stage.target === "pickup" ? "CURRENT PICKUP" : "CURRENT DESTINATION"}</small>
+          <small>{stage.target === "pickup" ? op("CURRENT PICKUP") : op("CURRENT DESTINATION")}</small>
           <h1>{stage.destination}</h1>
-          <p>{routeEtaMinutes === null ? "Arrival estimate unavailable" : routeEtaMinutes === 0 ? "You are at this stop" : `Estimated arrival in ~${routeEtaMinutes} min`}</p>
+          <p>{routeEtaMinutes === null ? op("Arrival estimate unavailable") : routeEtaMinutes === 0 ? op("You are at this stop") : `Estimated arrival in ~${routeEtaMinutes} min`}</p>
         </div>
 
         {message && <div className="nr-nav-action-error" role="alert"><Icon name="info" size={16} /><span>{message}</span></div>}
 
         {invalidTrip ? (
-          <button className="nr-nav-stage-primary" onClick={() => router.replace("/driver/home")}>Back to Driver Home</button>
+          <button className="nr-nav-stage-primary" onClick={() => router.replace("/driver/home")}>{op("Back to Driver Home")}</button>
         ) : trip.status === "accepted" ? (
           <div className="nr-nav-stage-actions">
-            <a className="nr-nav-stage-primary" href={mapsUrl} target="_blank" rel="noreferrer"><Icon name="navigation" size={19} /> Open Google Maps</a>
-            <button className="nr-nav-stage-secondary" disabled={busy} onClick={() => transition("arrived_pickup")}>{busy ? "Updating…" : "Arrived at pickup"}</button>
+            <a className="nr-nav-stage-primary" href={mapsUrl} target="_blank" rel="noreferrer"><Icon name="navigation" size={19} /> {op("Open Google Maps")}</a>
+            <button className="nr-nav-stage-secondary" disabled={busy} onClick={() => transition("arrived_pickup")}>{busy ? op("Updating…") : op("Arrived at pickup")}</button>
           </div>
         ) : trip.status === "arrived_pickup" ? (
-          <button className="nr-nav-stage-primary" disabled={busy} onClick={() => transition("in_trip")}><Icon name="car" size={19} /> {busy ? "Starting…" : "Start trip"}</button>
+          <button className="nr-nav-stage-primary" disabled={busy} onClick={() => transition("in_trip")}><Icon name="car" size={19} /> {busy ? op("Starting…") : op("Start trip")}</button>
         ) : trip.status === "in_trip" ? (
           <div className="nr-nav-stage-actions">
-            <a className="nr-nav-stage-primary" href={mapsUrl} target="_blank" rel="noreferrer"><Icon name="navigation" size={19} /> Open Google Maps</a>
-            <button className="nr-nav-stage-secondary complete" disabled={busy} onClick={() => transition("completed")}>{busy ? "Completing…" : "Complete trip"}</button>
+            <a className="nr-nav-stage-primary" href={mapsUrl} target="_blank" rel="noreferrer"><Icon name="navigation" size={19} /> {op("Open Google Maps")}</a>
+            <button className="nr-nav-stage-secondary complete" disabled={busy} onClick={() => transition("completed")}>{busy ? op("Completing…") : op("Complete trip")}</button>
           </div>
         ) : (
           <div className="nr-nav-stage-actions">
-            <button className="nr-nav-stage-primary" onClick={() => router.replace("/driver/home?screen=earnings")}><Icon name="money" size={19} /> View earnings</button>
+            <button className="nr-nav-stage-primary" onClick={() => router.replace("/driver/home?screen=earnings")}><Icon name="money" size={19} /> {op("View earnings")}</button>
             <button className="nr-nav-stage-secondary" onClick={() => router.replace("/driver/home")}><Icon name="home" size={18} /> Driver Home</button>
           </div>
         )}
