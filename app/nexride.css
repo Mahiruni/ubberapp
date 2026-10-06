@@ -891,16 +891,6 @@
   border-color: var(--green);
   background: var(--green-wash);
 }
-.nr-vehicle {
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-  width: 45px;
-  height: 42px;
-  background: var(--surface-alt);
-  border-radius: 10px;
-  color: var(--muted);
-}
 .nr-ride-copy {
   flex: 1;
   min-width: 0;
@@ -1841,9 +1831,6 @@
   .nr-ride-card {
     gap: 7px;
     padding: 12px 8px;
-  }
-  .nr-vehicle {
-    width: 36px;
   }
   .nr-ride-copy small {
     font-size: 12px;
