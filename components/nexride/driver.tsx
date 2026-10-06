@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Icon } from "./ui";
+import { Icon, useTranslation } from "./ui";
 import { RiderMap } from "./rider-map";
 import { useRiderLocation } from "../../lib/nexride-location";
 import { DriverEarningsScreen } from "./driver-earnings";
@@ -799,12 +799,13 @@ function Metric({ label, value, suffix, hint, loading }: { label: string; value:
 }
 
 function DriverBottomNav({ screen, navigate }: { screen: DriverScreen; navigate: (screen: DriverScreen) => void }) {
+  const t = useTranslation();
   const items: { id: "home" | "earnings" | "activity" | "support" | "profile"; label: string; icon: "home" | "money" | "clock" | "chat" | "user" }[] = [
-    { id: "home", label: "Home", icon: "home" },
-    { id: "earnings", label: "Earnings", icon: "money" },
-    { id: "activity", label: "Activity", icon: "clock" },
-    { id: "support", label: "Support", icon: "chat" },
-    { id: "profile", label: "Account", icon: "user" },
+    { id: "home", label: t("home"), icon: "home" },
+    { id: "earnings", label: t("earnings"), icon: "money" },
+    { id: "activity", label: t("activity"), icon: "clock" },
+    { id: "support", label: t("help"), icon: "chat" },
+    { id: "profile", label: t("account"), icon: "user" },
   ];
 
   const activate = (id: (typeof items)[number]["id"]) => {
