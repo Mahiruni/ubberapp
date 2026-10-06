@@ -799,12 +799,42 @@ function Metric({ label, value, suffix, hint, loading }: { label: string; value:
 }
 
 function DriverBottomNav({ screen, navigate }: { screen: DriverScreen; navigate: (screen: DriverScreen) => void }) {
-  const items: { id: DriverScreen; label: string; icon: "home" | "money" | "navigation" | "user" }[] = [
+  const items: { id: "home" | "earnings" | "activity" | "support" | "profile"; label: string; icon: "home" | "money" | "clock" | "chat" | "user" }[] = [
     { id: "home", label: "Home", icon: "home" },
     { id: "earnings", label: "Earnings", icon: "money" },
-    { id: "map", label: "Map", icon: "navigation" },
-    { id: "profile", label: "Profile", icon: "user" },
+    { id: "activity", label: "Activity", icon: "clock" },
+    { id: "support", label: "Support", icon: "chat" },
+    { id: "profile", label: "Account", icon: "user" },
   ];
 
-  return <nav className="nr-driver-bottom-nav" aria-label="Driver navigation">{items.map((item) => <button key={item.id} className={screen === item.id ? "active" : ""} onClick={() => navigate(item.id)} aria-current={screen === item.id ? "page" : undefined}><Icon name={item.icon} size={19} /><span>{item.label}</span></button>)}</nav>;
+  const activate = (id: (typeof items)[number]["id"]) => {
+    if (id === "activity") {
+      window.location.assign("/driver/earnings/report");
+      return;
+    }
+    if (id === "support") {
+      window.location.assign("/support?role=driver");
+      return;
+    }
+    navigate(id);
+  };
+
+  return (
+    <nav className="nr-driver-bottom-nav" aria-label="Driver navigation">
+      {items.map((item) => {
+        const active = screen === item.id;
+        return (
+          <button
+            key={item.id}
+            className={active ? "active" : ""}
+            onClick={() => activate(item.id)}
+            aria-current={active ? "page" : undefined}
+          >
+            <Icon name={item.icon} size={19} />
+            <span>{item.label}</span>
+          </button>
+        );
+      })}
+    </nav>
+  );
 }
