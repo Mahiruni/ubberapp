@@ -17,9 +17,14 @@ export default function DriverAuth() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
 
   useEffect(() => {
     let active = true;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("confirmed") === "1") {
+      setNotice("Email confirmed. Opening your Driver account…");
+    }
     supabase.auth.getSession().then(async ({ data }) => {
       if (!active || !data.session) return;
       const role = await resolveSessionRole(data.session);
@@ -84,6 +89,7 @@ export default function DriverAuth() {
           <label>Email<input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username" required /></label>
           <label>Password<input type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" required /></label>
           {error && <div className="driver-auth-error" role="alert">{error}</div>}
+          {notice && <div className="driver-auth-notice" role="status">{notice}</div>}
           <button className="driver-auth-submit" type="submit" disabled={busy}>{busy ? "Signing in…" : "Sign in as Driver"}</button>
         </form>
 

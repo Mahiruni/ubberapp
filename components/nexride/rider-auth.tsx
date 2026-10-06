@@ -14,24 +14,9 @@ import {
 import { driverResumeDestination } from "../../lib/nexride-driver-verification";
 import { resolveSessionRole } from "../../lib/nexride-account-role";
 import { ensureRiderProfile, RiderProfileBootstrapError } from "../../lib/nexride-rider-profile-bootstrap";
+import { nexrideAuthRedirectUrl } from "../../lib/nexride-auth-url";
 
 export type RiderAuthMode = "signin" | "signup" | "forgot" | "reset";
-
-function authRedirectUrl(path: string) {
-  const configuredAppUrl = process.env.NEXT_PUBLIC_APP_URL?.trim();
-  const browserOrigin = typeof window !== "undefined" ? window.location.origin : "";
-
-  const origin =
-    process.env.NODE_ENV === "production" && configuredAppUrl
-      ? configuredAppUrl
-      : browserOrigin || configuredAppUrl;
-
-  if (!origin) {
-    throw new Error("Unable to resolve the NexRide application URL.");
-  }
-
-  return new URL(path, origin.endsWith("/") ? origin : `${origin}/`).toString();
-}
 
 export function RiderAuthScreen({ mode }: { mode: RiderAuthMode }) {
   return (
@@ -252,7 +237,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
         email: email.trim(),
         password,
         options: {
-          emailRedirectTo: authRedirectUrl("/rider/sign-in?confirmed=1"),
+          emailRedirectTo: nexrideAuthRedirectUrl("/rider/sign-in?confirmed=1"),
           data: {
             role: "rider",
             full_name: name,
@@ -298,7 +283,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
     try {
       const { error: recoveryError } = await supabase.auth.resetPasswordForEmail(
         email.trim(),
-        { redirectTo: authRedirectUrl("/rider/reset-password") },
+        { redirectTo: nexrideAuthRedirectUrl("/rider/reset-password") },
       );
 
       if (recoveryError) {

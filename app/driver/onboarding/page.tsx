@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Brand } from "../../../components/nexride/ui";
 import { supabase } from "../../../lib/supabase";
+import { nexrideAuthRedirectUrl } from "../../../lib/nexride-auth-url";
 import "../auth/driver-auth.css";
 import "./driver-onboarding.css";
 
@@ -69,6 +70,7 @@ export default function DriverOnboarding() {
       email: email.trim(),
       password,
       options: {
+        emailRedirectTo: nexrideAuthRedirectUrl("/driver/auth?confirmed=1"),
         data: {
           role: "driver",
           full_name: name.trim(),

@@ -13,7 +13,7 @@ export const publicConfig = {
   appUrl: requireEnv(
     'NEXT_PUBLIC_APP_URL',
     process.env.NEXT_PUBLIC_APP_URL,
-    'https://nexride.vercel.app',
+    'https://ubberapp.vercel.app',
   ),
   supabaseUrl: requireEnv(
     'NEXT_PUBLIC_SUPABASE_URL',
