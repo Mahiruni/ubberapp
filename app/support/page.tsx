@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "../../components/nexride/ui";
+import { useOperationalTranslation } from "../../components/nexride/operational-i18n";
 import { supabase } from "../../lib/supabase";
 import "../nexride.css";
 import "../rider/supporting.css";
@@ -54,6 +55,7 @@ type Category = "trip_issue" | "payment" | "driver" | "app" | "lost_item" | "oth
 
 export default function HelpSupportPage() {
   const router = useRouter();
+  const op = useOperationalTranslation();
   const [userId, setUserId] = useState("");
   const [rides, setRides] = useState<RideOption[]>([]);
   const [search, setSearch] = useState("");
@@ -132,8 +134,12 @@ export default function HelpSupportPage() {
   const topics = useMemo(() => {
     const query = search.trim().toLowerCase();
     if (!query) return TOPICS;
-    return TOPICS.filter((topic) => (topic.title + " " + topic.body + " " + topic.tags).toLowerCase().includes(query));
-  }, [search]);
+    return TOPICS.filter((topic) =>
+      (op(topic.title) + " " + op(topic.body) + " " + topic.tags)
+        .toLowerCase()
+        .includes(query),
+    );
+  }, [search, op]);
 
   const activeRide = rides.find((ride) =>
     ["accepted", "arrived_pickup", "in_trip"].includes(ride.status),
@@ -146,13 +152,13 @@ export default function HelpSupportPage() {
     const clean = details.trim();
     if (!clean) {
       setSuccess(false);
-      setFeedback("Describe the issue before submitting.");
+      setFeedback(op("Describe the issue before submitting."));
       return;
     }
 
     if (!online) {
       setSuccess(false);
-      setFeedback("You are offline. Your unfinished report remains saved on this device.");
+      setFeedback(op("You are offline. Your unfinished report remains saved on this device."));
       return;
     }
 
@@ -171,7 +177,7 @@ export default function HelpSupportPage() {
       .single();
 
     if (error || !data) {
-      setFeedback("Support request could not be submitted. Your draft remains saved on this device.");
+      setFeedback(op("Support request could not be submitted. Your draft remains saved on this device."));
     } else {
       setSuccess(true);
       setFeedback("Support request submitted. Reference " + String(data.id).slice(0, 8).toUpperCase() + ".");
@@ -188,13 +194,13 @@ export default function HelpSupportPage() {
     <main className="nr-app nr-support-page" data-theme="dark">
       <div className="nr-support-wrap">
         <header className="nr-support-head">
-          <button className="nr-support-back" onClick={() => window.history.length > 1 ? router.back() : router.replace("/")} aria-label="Back">
+          <button className="nr-support-back" onClick={() => window.history.length > 1 ? router.back() : router.replace("/")} aria-label={op("Back")}>
             <Icon name="back" />
           </button>
           <div>
             <span className="kicker">NEXRIDE SUPPORT</span>
-            <h1>Help & Support</h1>
-            <p>{online ? "Support tools available" : "Offline · report draft preserved"}</p>
+            <h1>{op("Help & Support")}</h1>
+            <p>{online ? op("Support tools available") : op("Offline · report draft preserved")}</p>
           </div>
           <span />
         </header>
@@ -204,17 +210,17 @@ export default function HelpSupportPage() {
           <input
             type="search"
             value={search}
-            placeholder="Search help topics"
-            aria-label="Search help topics"
+            placeholder={op("Search help topics")}
+            aria-label={op("Search help topics")}
             onChange={(event) => setSearch(event.target.value)}
           />
         </div>
 
-        <section aria-label="Help topics">
+        <section aria-label={op("Help topics")}>
           {topics.length ? topics.map((topic, index) => (
             <details className="nr-help-topic" key={topic.title} open={index === 0 && !search}>
-              <summary>{topic.title}</summary>
-              <p>{topic.body}</p>
+              <summary>{op(topic.title)}</summary>
+              <p>{op(topic.body)}</p>
             </details>
           )) : (
             <div className="nr-help-empty">No help topic matches “{search}”. You can still submit a support request below.</div>
@@ -224,18 +230,18 @@ export default function HelpSupportPage() {
         <section className="nr-support-card nr-support-channels">
           <a className="nr-support-channel" href="/safety?role=rider">
             <span><Icon name="shield" size={17} /></span>
-            <span><strong>Safety Center</strong><small>Emergency calling, sharing and safety reporting</small></span>
+            <span><strong>{op("Safety Center")}</strong><small>Emergency calling, sharing and safety reporting</small></span>
             <Icon name="chevron" size={15} />
           </a>
           <a className="nr-support-channel" href="/rider/trips">
             <span><Icon name="clock" size={17} /></span>
-            <span><strong>Trip history</strong><small>Open receipts and trip-specific support</small></span>
+            <span><strong>{op("Trip history")}</strong><small>Open receipts and trip-specific support</small></span>
             <Icon name="chevron" size={15} />
           </a>
           {activeRide && (
             <a className="nr-support-channel" href={"/trip/chat?ride=" + encodeURIComponent(activeRide.id) + "&role=rider"}>
               <span><Icon name="chat" size={17} /></span>
-              <span><strong>Message your driver</strong><small>Available for the active assigned trip</small></span>
+              <span><strong>{op("Message your driver")}</strong><small>Available for the active assigned trip</small></span>
               <Icon name="chevron" size={15} />
             </a>
           )}
@@ -244,7 +250,7 @@ export default function HelpSupportPage() {
         <form className="nr-support-card nr-support-form" onSubmit={submit}>
           <div className="nr-profile-panel-head">
             <div>
-              <h2>Contact NexRide support</h2>
+              <h2>{op("Contact NexRide support")}</h2>
               <p>Submit an in-app support request. Live agent chat, SMS and phone support are not currently connected.</p>
             </div>
           </div>
@@ -278,7 +284,7 @@ export default function HelpSupportPage() {
             <textarea
               value={details}
               maxLength={4000}
-              placeholder="Tell us what happened and what outcome you need."
+              placeholder={op("Tell us what happened and what outcome you need.")}
               onChange={(event) => setDetails(event.target.value)}
               required
             />
@@ -286,7 +292,7 @@ export default function HelpSupportPage() {
           </label>
 
           <button className="nr-support-submit" type="submit" disabled={submitting || !online || !details.trim()}>
-            {submitting ? "Submitting…" : online ? "Submit support request" : "Reconnect to submit"}
+            {submitting ? op("Submitting…") : online ? op("Submit support request") : op("Reconnect to submit")}
           </button>
 
           {feedback && (
