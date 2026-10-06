@@ -465,3 +465,166 @@
   .nr-driver-metric-grid{grid-template-columns:1fr 1fr}
   .nr-driver-metric-grid .nr-metric:last-child{grid-column:1/-1}
 }
+
+
+/* 2026 premium driver navigation dock */
+.nr-driver-bottom-nav{
+  position:fixed;
+  left:50%;
+  bottom:calc(9px + env(safe-area-inset-bottom));
+  z-index:950;
+  width:min(520px,calc(100% - 20px));
+  transform:translateX(-50%) translateZ(0);
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:3px;
+  padding:5px;
+  border:1px solid rgba(174,202,217,.16);
+  border-radius:24px;
+  background:linear-gradient(180deg,rgba(7,35,55,.86),rgba(3,25,42,.92));
+  box-shadow:
+    0 18px 48px rgba(0,8,18,.34),
+    inset 0 1px 0 rgba(255,255,255,.055);
+  backdrop-filter:blur(28px) saturate(1.35);
+  -webkit-backdrop-filter:blur(28px) saturate(1.35);
+  isolation:isolate;
+}
+.nr-driver-bottom-nav::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  border-radius:inherit;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 50% -40%,rgba(0,200,120,.10),transparent 42%),
+    linear-gradient(180deg,rgba(255,255,255,.025),transparent 45%);
+}
+.nr-driver-bottom-nav button{
+  position:relative;
+  min-width:0;
+  min-height:59px;
+  padding:5px 3px 4px;
+  border:0;
+  border-radius:19px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:3px;
+  overflow:hidden;
+  background:transparent;
+  color:#819bab;
+  font:inherit;
+  cursor:pointer;
+  transition:
+    color 200ms cubic-bezier(.2,.8,.2,1),
+    background-color 220ms cubic-bezier(.2,.8,.2,1),
+    transform 180ms cubic-bezier(.2,.8,.2,1);
+}
+.nr-driver-bottom-nav button::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  bottom:2px;
+  width:4px;
+  height:4px;
+  border-radius:999px;
+  background:#66e6af;
+  opacity:0;
+  transform:translate(-50%,5px) scale(.45);
+  transition:
+    opacity 180ms ease,
+    transform 220ms cubic-bezier(.2,.8,.2,1);
+}
+.nr-driver-nav-icon{
+  width:38px;
+  height:31px;
+  display:grid;
+  place-items:center;
+  flex:none;
+  border:1px solid transparent;
+  border-radius:12px;
+  transition:
+    color 200ms cubic-bezier(.2,.8,.2,1),
+    background-color 220ms cubic-bezier(.2,.8,.2,1),
+    border-color 220ms cubic-bezier(.2,.8,.2,1),
+    box-shadow 220ms cubic-bezier(.2,.8,.2,1),
+    transform 220ms cubic-bezier(.2,.8,.2,1);
+}
+.nr-driver-nav-label{
+  max-width:100%;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:9.5px;
+  line-height:1.1;
+  font-weight:750;
+  letter-spacing:.005em;
+}
+.nr-driver-bottom-nav button.active{
+  color:#f5fbf8;
+  background:rgba(255,255,255,.028);
+}
+.nr-driver-bottom-nav button.active .nr-driver-nav-icon{
+  color:#03271d;
+  background:#00c878;
+  border-color:#37d99b;
+  box-shadow:
+    0 7px 18px rgba(0,200,120,.20),
+    inset 0 1px 0 rgba(255,255,255,.34);
+  transform:translateY(-1px);
+}
+.nr-driver-bottom-nav button.active::after{
+  opacity:1;
+  transform:translate(-50%,0) scale(1);
+}
+.nr-driver-bottom-nav button:hover:not(.active){
+  color:#c2d1da;
+  background:rgba(255,255,255,.035);
+}
+.nr-driver-bottom-nav button:active{
+  transform:scale(.965);
+}
+.nr-driver-bottom-nav button:focus-visible{
+  outline:2px solid rgba(84,173,255,.78);
+  outline-offset:-2px;
+}
+.nr-driver-page{
+  padding-bottom:max(118px,calc(108px + env(safe-area-inset-bottom)));
+}
+@media(min-width:760px){
+  .nr-driver-bottom-nav{
+    width:480px;
+    bottom:18px;
+    border-radius:25px;
+  }
+  .nr-driver-bottom-nav button{min-height:61px}
+  .nr-driver-nav-label{font-size:10px}
+}
+@media(max-width:390px){
+  .nr-driver-bottom-nav{
+    width:calc(100% - 14px);
+    bottom:calc(6px + env(safe-area-inset-bottom));
+    padding:4px;
+    border-radius:21px;
+  }
+  .nr-driver-bottom-nav button{
+    min-height:56px;
+    border-radius:17px;
+  }
+  .nr-driver-nav-icon{
+    width:35px;
+    height:29px;
+    border-radius:11px;
+  }
+  .nr-driver-nav-label{font-size:9px}
+  .nr-driver-page{
+    padding-bottom:max(108px,calc(100px + env(safe-area-inset-bottom)));
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .nr-driver-bottom-nav button,
+  .nr-driver-bottom-nav button::after,
+  .nr-driver-nav-icon{transition:none!important}
+}
