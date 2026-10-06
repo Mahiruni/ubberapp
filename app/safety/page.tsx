@@ -444,7 +444,7 @@ function TripShare({
       </div>
 
       {!online && <p className="nr-share-offline">You are offline. Device sharing or copying may still work, but no live NexRide data can refresh until you reconnect.</p>}
-      <button className="nr-share-primary" onClick={share}><Icon name="share" size={18} /> {op("{op("Share trip")}")}</button>
+      <button className="nr-share-primary" onClick={share}><Icon name="share" size={18} /> {op("Share trip")}</button>
       {status && <p className="nr-share-status" role="status">{status}</p>}
     </section>
   );
