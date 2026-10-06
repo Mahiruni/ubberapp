@@ -27,3 +27,43 @@
 .nr-payment-issue-main:focus-visible,.nr-payment-pay-button:focus-visible{outline:3px solid rgba(47,140,255,.32);outline-offset:2px}
 .nr-payment-pay-button{flex:0 0 auto;border-radius:10px;padding:8px 10px;background:#12c982;color:#032519;font-size:9px;font-weight:900}
 .nr-payment-pay-button:disabled{opacity:.5}
+
+
+/* Shared rider light-theme parity for standalone screens. */
+.nr-support-page[data-theme="light"]{background:linear-gradient(180deg,#f7faf9,#f1f5f6);color:#102334}
+.nr-support-page[data-theme="light"] .nr-support-head span.kicker,
+.nr-support-page[data-theme="light"] .nr-support-head p,
+.nr-support-page[data-theme="light"] .nr-support-state p,
+.nr-support-page[data-theme="light"] .nr-history-copy small,
+.nr-support-page[data-theme="light"] .nr-history-status,
+.nr-support-page[data-theme="light"] .nr-wallet-balance small,
+.nr-support-page[data-theme="light"] .nr-wallet-balance p,
+.nr-support-page[data-theme="light"] .nr-payment-method small,
+.nr-support-page[data-theme="light"] .nr-payment-notice,
+.nr-support-page[data-theme="light"] .nr-help-topic p,
+.nr-support-page[data-theme="light"] .nr-support-form small,
+.nr-support-page[data-theme="light"] .nr-support-channel small,
+.nr-support-page[data-theme="light"] .nr-receipt-value span,
+.nr-support-page[data-theme="light"] .nr-receipt-value small{color:#667587}
+.nr-support-page[data-theme="light"] .nr-support-back,
+.nr-support-page[data-theme="light"] .nr-support-icon-btn,
+.nr-support-page[data-theme="light"] .nr-support-card,
+.nr-support-page[data-theme="light"] .nr-support-state,
+.nr-support-page[data-theme="light"] .nr-support-loading,
+.nr-support-page[data-theme="light"] .nr-history-row,
+.nr-support-page[data-theme="light"] .nr-receipt-value,
+.nr-support-page[data-theme="light"] .nr-help-search input,
+.nr-support-page[data-theme="light"] .nr-help-topic,
+.nr-support-page[data-theme="light"] .nr-support-form select,
+.nr-support-page[data-theme="light"] .nr-support-form textarea,
+.nr-support-page[data-theme="light"] .nr-support-channel{background:#fff;color:#102334;border-color:#dfe7eb;box-shadow:none}
+.nr-support-page[data-theme="light"] .nr-history-row,
+.nr-support-page[data-theme="light"] .nr-help-topic summary,
+.nr-support-page[data-theme="light"] .nr-support-channel{color:#102334}
+.nr-support-page[data-theme="light"] .nr-history-icon{background:#edf4f5;color:#476474}
+.nr-support-page[data-theme="light"] .nr-history-icon.completed,
+.nr-support-page[data-theme="light"] .nr-payment-method-icon{background:#e8f8f0;color:#087d50}
+.nr-support-page[data-theme="light"] .nr-receipt-route,
+.nr-support-page[data-theme="light"] .nr-payment-notice{color:#526b79}
+.nr-support-page[data-theme="light"] .nr-rating-stars button{background:#f5f7f9;border-color:#dce5e9;color:#6b7e89}
+.nr-support-page[data-theme="light"] .nr-rating-panel textarea{background:#fff;color:#102334;border-color:#dce5e9}

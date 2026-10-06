@@ -52,6 +52,10 @@ const paths = {
   sun: "M12 2v2m0 16v2M2 12h2m16 0h2M5 5l2 2m10 10 2 2M19 5l-2 2M7 17l-2 2M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0",
   bag: "M4 7h16v14H4ZM8 7V3h8v4",
   power: "M12 2v10M6 5a9 9 0 1 0 12 0",
+  moon: "M20 15.5A8.5 8.5 0 0 1 8.5 4 8.5 8.5 0 1 0 20 15.5Z",
+  refresh: "M20 7v5h-5M4 17v-5h5M6.1 8.2A7 7 0 0 1 18.6 6L20 12M4 12l1.4 6A7 7 0 0 0 17.9 15.8",
+  users: "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75",
+  more: "M5 12h.01M12 12h.01M19 12h.01",
 } as const;
 export type IconName = keyof typeof paths;
 export function Icon({ name, size = 20 }: { name: IconName; size?: number }) {

@@ -33,6 +33,7 @@ import { useMatching } from "../lib/nexride-use-matching";
 import { useJourney } from "../lib/nexride-journey";
 import { useRiderLocation } from "../lib/nexride-location";
 import { RiderWorkspace, type RiderScreen } from "../components/nexride/rider";
+import { RiderBottomNavigation } from "../components/nexride/rider-bottom-nav";
 import {
   DriverWorkspace,
   type DriverScreen,
@@ -213,6 +214,10 @@ function AppWorkspace({
   }, []);
   const [riderScreen, setRiderScreen] = useState<RiderScreen>("home");
   const [driverScreen, setDriverScreen] = useState<DriverScreen>("home");
+  useEffect(() => {
+    const requested = new URLSearchParams(window.location.search).get("screen");
+    if (requested === "profile") setRiderScreen("profile");
+  }, []);
   const [panel, setPanel] = useState<Panel>(null);
   const [serviceTitle, setServiceTitle] = useState("");
   const [offline, setOffline] = useState(false);
@@ -252,8 +257,6 @@ function AppWorkspace({
   const riderMapView =
     mode === "rider" && ["home", "destination", "rides", "finding"].includes(screen);
   const riderSearch = mode === "rider" && screen === "destination";
-  const riderOperationalFlow =
-    mode === "rider" && ["destination", "rides", "finding", "trip", "live"].includes(screen);
   useEffect(() => {
     if (riderScreen === "rides" && !journey.canContinue)
       setRiderScreen("destination");
@@ -278,7 +281,7 @@ function AppWorkspace({
           { id: "profile", label: t("account"), icon: "user" },
         ];
   const navigate = (id: string) => {
-    if (bookingLock.current) return;
+    if (bookingLock.current && id !== "safety") return;
     if (mode === "rider" && id === "trips") {
       setPanel(null);
       window.location.assign("/rider/trips");
@@ -423,6 +426,16 @@ function AppWorkspace({
               <Icon name="globe" size={17} />
               <span>{language === "en" ? "አማርኛ" : "EN"}</span>
             </button>
+            {mode === "rider" && (
+              <button
+                className="nr-theme-button"
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                aria-label={theme === "dark" ? "Use light theme" : "Use dark theme"}
+                aria-pressed={theme === "dark"}
+              >
+                <Icon name={theme === "dark" ? "sun" : "moon"} size={19} />
+              </button>
+            )}
             <button
               className="nr-avatar-button"
               aria-label={t(mode === "rider" ? "profileNav" : "profile")}
@@ -601,8 +614,20 @@ function AppWorkspace({
             )}
           </div>
         </div>
-        {!riderOperationalFlow && (
-          <div className="nr-mobile-nav" aria-label="Primary rider navigation">
+        {mode === "rider" ? (
+          <RiderBottomNavigation
+            active={
+              ["home", "saved", "destination", "rides", "finding", "trip", "live", "summary"].includes(riderScreen)
+                ? "home"
+                : riderScreen === "wallet"
+                  ? "profile"
+                  : riderScreen
+            }
+            onNavigate={(id) => navigate(id)}
+            locked={requestPending || matching.active}
+          />
+        ) : (
+          <div className="nr-mobile-nav" aria-label="Primary driver navigation">
             <Navigation items={navItems} active={screen} onNavigate={navigate} />
           </div>
         )}

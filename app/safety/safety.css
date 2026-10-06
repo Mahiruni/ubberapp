@@ -49,3 +49,35 @@
 .nr-report-disclaimer{margin:10px 0 0;color:#66889c;font-size:8px;line-height:1.55}
 @media(min-width:760px){.nr-safety-page{padding-top:38px}.nr-safety-actions{grid-template-columns:1fr 1fr}.nr-safety-action{min-height:92px}.nr-sos-panel,.nr-share-panel,.nr-help-panel,.nr-report-panel{padding:20px}}
 @media(prefers-reduced-motion:reduce){.nr-sos-progress{transition:none}}
+
+
+/* Rider safety follows the same persisted light/dark appearance. */
+.nr-safety-page[data-theme="light"]{background:linear-gradient(180deg,#f7faf9,#f1f5f6);color:#102334}
+.nr-safety-page[data-theme="light"] .nr-safety-back,
+.nr-safety-page[data-theme="light"] .nr-safety-network,
+.nr-safety-page[data-theme="light"] .nr-safety-intro,
+.nr-safety-page[data-theme="light"] .nr-safety-action,
+.nr-safety-page[data-theme="light"] .nr-safety-context,
+.nr-safety-page[data-theme="light"] .nr-sos-panel,
+.nr-safety-page[data-theme="light"] .nr-share-panel,
+.nr-safety-page[data-theme="light"] .nr-help-panel,
+.nr-safety-page[data-theme="light"] .nr-report-panel,
+.nr-safety-page[data-theme="light"] .nr-share-preview,
+.nr-safety-page[data-theme="light"] .nr-report-context,
+.nr-safety-page[data-theme="light"] .nr-safety-check,
+.nr-safety-page[data-theme="light"] .nr-safety-field select,
+.nr-safety-page[data-theme="light"] .nr-safety-field textarea{background:#fff;color:#102334;border-color:#dfe7eb;box-shadow:none}
+.nr-safety-page[data-theme="light"] .nr-safety-head>div>span,
+.nr-safety-page[data-theme="light"] .nr-safety-intro p,
+.nr-safety-page[data-theme="light"] .nr-safety-action small,
+.nr-safety-page[data-theme="light"] .nr-safety-context p,
+.nr-safety-page[data-theme="light"] .nr-sos-explainer p,
+.nr-safety-page[data-theme="light"] .nr-share-note p,
+.nr-safety-page[data-theme="light"] .nr-help-intro p,
+.nr-safety-page[data-theme="light"] .nr-report-context p,
+.nr-safety-page[data-theme="light"] .nr-help-panel details p,
+.nr-safety-page[data-theme="light"] .nr-share-row span,
+.nr-safety-page[data-theme="light"] .nr-safety-field>span,
+.nr-safety-page[data-theme="light"] .nr-safety-check small{color:#667587}
+.nr-safety-page[data-theme="light"] .nr-help-panel summary,
+.nr-safety-page[data-theme="light"] .nr-share-row strong{color:#102334}

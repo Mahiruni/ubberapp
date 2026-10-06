@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "../../components/nexride/ui";
+import { RiderBottomNavigation, usePersistedRiderTheme } from "../../components/nexride/rider-bottom-nav";
 import { useOperationalTranslation } from "../../components/nexride/operational-i18n";
 import { supabase } from "../../lib/supabase";
 import "../nexride.css";
@@ -56,6 +57,8 @@ type Category = "trip_issue" | "payment" | "driver" | "app" | "lost_item" | "oth
 export default function HelpSupportPage() {
   const router = useRouter();
   const op = useOperationalTranslation();
+  const theme = usePersistedRiderTheme();
+  const [role, setRole] = useState<"rider" | "driver">("rider");
   const [userId, setUserId] = useState("");
   const [rides, setRides] = useState<RideOption[]>([]);
   const [search, setSearch] = useState("");
@@ -71,6 +74,8 @@ export default function HelpSupportPage() {
   useEffect(() => {
     setOnline(navigator.onLine);
     const params = new URLSearchParams(window.location.search);
+    const requestedRole = params.get("role") === "driver" ? "driver" : "rider";
+    setRole(requestedRole);
     const requestedRide = params.get("ride") || "";
 
     const onOnline = () => setOnline(true);
@@ -191,7 +196,7 @@ export default function HelpSupportPage() {
   }
 
   return (
-    <main className="nr-app nr-support-page" data-theme="dark">
+    <main className="nr-app nr-support-page" data-theme={role === "rider" ? theme : "dark"} data-mode={role}>
       <div className="nr-support-wrap">
         <header className="nr-support-head">
           <button className="nr-support-back" onClick={() => window.history.length > 1 ? router.back() : router.replace("/")} aria-label={op("Back")}>
@@ -303,6 +308,7 @@ export default function HelpSupportPage() {
           )}
         </form>
       </div>
+      {role === "rider" && <RiderBottomNavigation active="messages" />}
     </main>
   );
 }

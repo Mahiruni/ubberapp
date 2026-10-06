@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "../../../components/nexride/ui";
+import { RiderBottomNavigation, usePersistedRiderTheme } from "../../../components/nexride/rider-bottom-nav";
 import { useOperationalTranslation } from "../../../components/nexride/operational-i18n";
 import { supabase } from "../../../lib/supabase";
 import { nexrideApiHeaders } from "../../../lib/nexride-api-auth";
@@ -29,6 +30,7 @@ const money = (value: number | string | null) => {
 
 export default function RiderWalletPage() {
   const router = useRouter();
+  const theme = usePersistedRiderTheme();
   const op = useOperationalTranslation();
   const [issues, setIssues] = useState<PaymentIssue[]>([]);
   const [loading, setLoading] = useState(true);
@@ -131,7 +133,7 @@ export default function RiderWalletPage() {
   }
 
   return (
-    <main className="nr-app nr-support-page" data-theme="dark" data-mode="rider">
+    <main className="nr-app nr-support-page" data-theme={theme} data-mode="rider">
       <div className="nr-support-wrap">
         <header className="nr-support-head">
           <button className="nr-support-back" onClick={() => router.replace("/")} aria-label="Back to NexRide">
@@ -232,6 +234,7 @@ export default function RiderWalletPage() {
           </>
         )}
       </div>
+      <RiderBottomNavigation active="profile" />
     </main>
   );
 }

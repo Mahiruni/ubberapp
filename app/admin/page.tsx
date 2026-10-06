@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
+import { Brand, Icon, type IconName } from "../../components/nexride/ui";
 import { supabase } from "../../lib/supabase";
 import "./admin.css";
 
@@ -18,16 +19,16 @@ type Module =
 
 type Row = Record<string, any>;
 
-const nav: [Module, string, string][] = [
-  ["overview", "Overview", "⌂"],
-  ["rides", "Live rides", "↗"],
-  ["drivers", "Drivers", "◆"],
-  ["verification", "Verification", "✓"],
-  ["users", "Users", "●"],
-  ["finance", "Finance", "₿"],
-  ["safety", "Safety", "!"],
-  ["support", "Support", "?"],
-  ["audit", "Audit log", "◷"],
+const nav: [Module, string, IconName][] = [
+  ["overview", "Overview", "home"],
+  ["rides", "Live rides", "navigation"],
+  ["drivers", "Drivers", "user"],
+  ["verification", "Verification", "check"],
+  ["users", "Users", "users"],
+  ["finance", "Finance", "money"],
+  ["safety", "Safety", "shield"],
+  ["support", "Support", "chat"],
+  ["audit", "Audit log", "clock"],
 ];
 
 export default function AdminPage() {
@@ -45,6 +46,20 @@ export default function AdminPage() {
   const [range, setRange] = useState<"today" | "7d" | "30d">("today");
   const [notice, setNotice] = useState("");
   const [refreshing, setRefreshing] = useState(false);
+  const [theme, setTheme] = useState<"light" | "dark">("dark");
+  const [navOpen, setNavOpen] = useState(false);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("nexride.admin.theme");
+      if (saved === "light" || saved === "dark") setTheme(saved);
+      else if (window.matchMedia("(prefers-color-scheme: light)").matches) setTheme("light");
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    try { localStorage.setItem("nexride.admin.theme", theme); } catch {}
+  }, [theme]);
 
   const toast = (message: string) => {
     setNotice(message);
@@ -352,6 +367,20 @@ export default function AdminPage() {
   const openSafety = Number(metrics.open_safety || 0);
   const openSupport = Number(metrics.open_support || 0);
   const pendingReviews = Number(metrics.pending_driver_reviews || 0);
+  const activeTitle = module === "overview" ? "Dashboard" : nav.find((item) => item[0] === module)?.[1] || "Admin";
+  const adminInitials = String(admin?.full_name || session?.user?.email || "Admin")
+    .trim()
+    .split(/\s+|@/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
+  const selectModule = (next: Module) => {
+    setModule(next);
+    setQuery("");
+    setNavOpen(false);
+  };
 
   if (loading) {
     return (
@@ -410,14 +439,17 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="admin-app">
-      <aside className="admin-sidebar">
+    <div className="admin-app" data-theme={theme}>
+      <button
+        className={`admin-sidebar-scrim ${navOpen ? "open" : ""}`}
+        onClick={() => setNavOpen(false)}
+        aria-label="Close admin navigation"
+        tabIndex={navOpen ? 0 : -1}
+      />
+      <aside className={`admin-sidebar ${navOpen ? "open" : ""}`}>
         <div className="admin-brand">
-          <div className="admin-mark">N</div>
-          <div>
-            <b>NexRide</b>
-            <small>Control Center</small>
-          </div>
+          <Brand />
+          <span className="admin-brand-role">Admin</span>
         </div>
 
         <nav>
@@ -425,12 +457,9 @@ export default function AdminPage() {
             <button
               key={id}
               className={module === id ? "active" : ""}
-              onClick={() => {
-                setModule(id);
-                setQuery("");
-              }}
+              onClick={() => selectModule(id)}
             >
-              <i>{icon}</i>
+              <i><Icon name={icon} size={20} /></i>
               <span>{label}</span>
               {id === "safety" && openSafety > 0 ? (
                 <em>{openSafety}</em>
@@ -453,34 +482,35 @@ export default function AdminPage() {
 
       <section className="admin-main">
         <header className="admin-header">
-          <div>
-            <span className="admin-kicker">
-              NEXRIDE / {module.toUpperCase()}
-            </span>
-            <h2>
-              {module === "overview"
-                ? "Operations overview"
-                : nav.find((item) => item[0] === module)?.[1]}
-            </h2>
+          <div className="admin-header-left">
+            <button
+              className="admin-menu-trigger"
+              onClick={() => setNavOpen((open) => !open)}
+              aria-label="Open admin navigation"
+              aria-expanded={navOpen}
+            >
+              <Icon name="menu" size={21} />
+            </button>
+            <div className="admin-header-brand"><Brand /></div>
+            <div className="admin-header-context">
+              <span className="admin-kicker">NEXRIDE ADMIN</span>
+              <h2>{activeTitle}</h2>
+            </div>
           </div>
           <div className="header-actions">
-            <span className="live-pill">
-              <i />
-              Live
-            </span>
-            <button
-              className="header-icon"
-              onClick={() => {
-                void loadMetrics();
-                void loadRows();
-              }}
-              aria-label="Refresh admin data"
-            >
-              ↻
+            {module !== "overview" && (
+              <button className="header-icon admin-search-trigger" onClick={() => document.getElementById("admin-module-search")?.focus()} aria-label={`Search ${activeTitle}`}>
+                <Icon name="search" size={20} />
+              </button>
+            )}
+            <span className="live-pill" aria-label="Live database connected"><i /><span>Live</span></span>
+            <button className="header-icon" onClick={() => { void loadMetrics(); void loadRows(); }} aria-label="Refresh admin data">
+              <Icon name="refresh" size={20} />
             </button>
-            <button className="theme-pill" disabled>
-              ● Dark
+            <button className="header-icon" onClick={() => setTheme(theme === "dark" ? "light" : "dark")} aria-label={theme === "dark" ? "Use light theme" : "Use dark theme"} aria-pressed={theme === "dark"}>
+              <Icon name={theme === "dark" ? "sun" : "moon"} size={20} />
             </button>
+            <button className="admin-header-avatar" onClick={() => setNavOpen(true)} aria-label="Open administrator account menu">{adminInitials}</button>
           </div>
         </header>
 
@@ -523,6 +553,22 @@ export default function AdminPage() {
           />
         )}
       </section>
+
+      <nav className="admin-mobile-nav" aria-label="Admin primary navigation">
+        {([
+          ["overview", "Home", "home"],
+          ["rides", "Rides", "navigation"],
+          ["drivers", "Drivers", "user"],
+          ["support", "Support", "chat"],
+        ] as [Module, string, IconName][]).map(([id, label, icon]) => (
+          <button key={id} className={module === id ? "active" : ""} onClick={() => selectModule(id)} aria-current={module === id ? "page" : undefined}>
+            <Icon name={icon} size={21} /><span>{label}</span>
+          </button>
+        ))}
+        <button className={!["overview", "rides", "drivers", "support"].includes(module) || navOpen ? "active" : ""} onClick={() => setNavOpen(true)} aria-expanded={navOpen}>
+          <Icon name="more" size={21} /><span>More</span>
+        </button>
+      </nav>
 
       {notice && <div className="admin-toast">{notice}</div>}
     </div>
@@ -636,7 +682,7 @@ function Overview({
                 : "No pending driver reviews"
             }
             onClick={() => setModule("verification")}
-            icon="◆"
+            icon="check"
           />
           <Quick
             title="Safety desk"
@@ -646,7 +692,7 @@ function Overview({
                 : "No open reports"
             }
             onClick={() => setModule("safety")}
-            icon="!"
+            icon="shield"
           />
           <Quick
             title="Support inbox"
@@ -656,7 +702,7 @@ function Overview({
                 : "No open requests"
             }
             onClick={() => setModule("support")}
-            icon="?"
+            icon="chat"
           />
         </section>
       </div>
@@ -718,16 +764,16 @@ function Quick({
   title: string;
   value: string;
   onClick: () => void;
-  icon: string;
+  icon: IconName;
 }) {
   return (
     <button className="queue-row" onClick={onClick}>
-      <i>{icon}</i>
+      <i><Icon name={icon} size={17} /></i>
       <span>
         <b>{title}</b>
         <small>{value}</small>
       </span>
-      <strong>→</strong>
+      <Icon name="chevron" size={17} />
     </button>
   );
 }
@@ -860,12 +906,13 @@ function DataModule({
         </div>
         <div className="module-tools">
           <input
+            id="admin-module-search"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder={"Search " + title.toLowerCase() + "…"}
           />
           <button onClick={refresh} aria-label={"Refresh " + title}>
-            ↻
+            <Icon name="refresh" size={18} />
           </button>
         </div>
       </div>

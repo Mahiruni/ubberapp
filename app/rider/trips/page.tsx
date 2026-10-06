@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "../../../components/nexride/ui";
+import { RiderBottomNavigation, usePersistedRiderTheme } from "../../../components/nexride/rider-bottom-nav";
 import { supabase } from "../../../lib/supabase";
 import {
   formatRideStatus,
@@ -16,6 +17,7 @@ import "../supporting.css";
 
 export default function RiderTripsPage() {
   const router = useRouter();
+  const theme = usePersistedRiderTheme();
   const [rides, setRides] = useState<RiderRide[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -50,7 +52,7 @@ export default function RiderTripsPage() {
   }, [router]);
 
   return (
-    <main className="nr-app nr-support-page" data-theme="dark" data-mode="rider">
+    <main className="nr-app nr-support-page" data-theme={theme} data-mode="rider">
       <div className="nr-support-wrap">
         <header className="nr-support-head">
           <button className="nr-support-back" onClick={() => router.replace("/")} aria-label="Back to NexRide">
@@ -124,6 +126,7 @@ export default function RiderTripsPage() {
           </section>
         )}
       </div>
+      <RiderBottomNavigation active="trips" />
     </main>
   );
 }

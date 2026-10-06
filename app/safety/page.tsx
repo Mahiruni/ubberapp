@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "../../components/nexride/ui";
+import { RiderBottomNavigation, usePersistedRiderTheme } from "../../components/nexride/rider-bottom-nav";
 import { useOperationalTranslation } from "../../components/nexride/operational-i18n";
 import { supabase } from "../../lib/supabase";
 import "../nexride.css";
@@ -67,6 +68,7 @@ function readRiderSnapshot(): TripContext {
 export default function SafetyCenterPage() {
   const router = useRouter();
   const op = useOperationalTranslation();
+  const theme = usePersistedRiderTheme();
   const [view, setView] = useState<SafetyView>("home");
   const [role, setRole] = useState<SafetyRole>("rider");
   const [trip, setTrip] = useState<TripContext>(emptyTrip);
@@ -147,7 +149,7 @@ export default function SafetyCenterPage() {
   };
 
   return (
-    <main className="nr-app nr-safety-page" data-theme="dark" data-mode={role}>
+    <main className="nr-app nr-safety-page" data-theme={role === "rider" ? theme : "dark"} data-mode={role}>
       <div className="nr-safety-wrap">
         <header className="nr-safety-head">
           <button className="nr-safety-back" onClick={back} aria-label={view === "home" ? op("Back") : op("Back to Safety Center")}>
@@ -184,6 +186,7 @@ export default function SafetyCenterPage() {
           />
         )}
       </div>
+      {role === "rider" && <RiderBottomNavigation active="safety" />}
     </main>
   );
 }

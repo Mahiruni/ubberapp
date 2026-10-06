@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "../../../../components/nexride/ui";
+import { RiderBottomNavigation, usePersistedRiderTheme } from "../../../../components/nexride/rider-bottom-nav";
 import { supabase } from "../../../../lib/supabase";
 import {
   formatRideStatus,
@@ -18,6 +19,7 @@ import "../../supporting.css";
 
 export default function RiderReceiptPage() {
   const router = useRouter();
+  const theme = usePersistedRiderTheme();
   const [ride, setRide] = useState<RiderRide | null>(null);
   const [rating, setRating] = useState<RideRating | null>(null);
   const [userId, setUserId] = useState("");
@@ -100,7 +102,7 @@ export default function RiderReceiptPage() {
   const amount = ride ? rideAmount(ride) : null;
 
   return (
-    <main className="nr-app nr-support-page" data-theme="dark" data-mode="rider">
+    <main className="nr-app nr-support-page" data-theme={theme} data-mode="rider">
       <div className="nr-support-wrap">
         <header className="nr-support-head">
           <button className="nr-support-back" onClick={() => router.replace("/rider/trips")} aria-label="Back to trip history">
@@ -200,6 +202,7 @@ export default function RiderReceiptPage() {
           </>
         )}
       </div>
+      <RiderBottomNavigation active="trips" />
     </main>
   );
 }
