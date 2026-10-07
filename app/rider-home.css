@@ -480,28 +480,27 @@
   }
 }
 
-
-
-
-/* Rider Home 2026: map-first draggable sheet */
+/* Rider Home 2026: authoritative map + bottom-sheet interaction */
 @media (max-width: 800px) {
   .nr-app[data-mode="rider"] .rider-home-view {
     height:100dvh;
     min-height:100dvh;
     overflow:hidden;
   }
-  .nr-app[data-mode="rider"] .rider-home-view .nr-main{
+
+  .nr-app[data-mode="rider"] .rider-home-view .nr-main {
     position:relative;
     height:100dvh!important;
     min-height:100dvh!important;
     padding-bottom:0!important;
     overflow:hidden!important;
   }
-  .nr-app[data-mode="rider"] .rider-home-view .nr-topbar{
+
+  .nr-app[data-mode="rider"] .rider-home-view .nr-topbar {
     display:flex!important;
     position:absolute!important;
     inset:0 0 auto 0!important;
-    z-index:75!important;
+    z-index:100!important;
     height:calc(58px + env(safe-area-inset-top))!important;
     min-height:calc(58px + env(safe-area-inset-top))!important;
     padding:env(safe-area-inset-top) max(12px,env(safe-area-inset-right)) 0 max(12px,env(safe-area-inset-left))!important;
@@ -512,22 +511,32 @@
     backdrop-filter:none!important;
     pointer-events:none;
   }
-  .nr-app[data-mode="rider"] .rider-home-view .nr-topbar>*{pointer-events:auto}
+
+  .nr-app[data-mode="rider"] .rider-home-view .nr-topbar>* {
+    pointer-events:auto;
+  }
+
   .nr-app[data-mode="rider"] .rider-home-view .nr-topbar .nr-language-button,
-  .nr-app[data-mode="rider"] .rider-home-view .nr-topbar .nr-theme-button{display:none!important}
-  .nr-app[data-mode="rider"] .rider-home-view .nr-topbar>.nr-brand{
+  .nr-app[data-mode="rider"] .rider-home-view .nr-topbar .nr-theme-button {
+    display:none!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-home-view .nr-topbar>.nr-brand {
     position:absolute;
     left:50%;
     transform:translateX(-50%);
     color:#102334;
-    text-shadow:0 1px 2px rgba(255,255,255,.7);
+    text-shadow:0 1px 2px rgba(255,255,255,.72);
   }
-  .nr-app[data-mode="rider"][data-theme="dark"] .rider-home-view .nr-topbar>.nr-brand{
+
+  .nr-app[data-mode="rider"][data-theme="dark"] .rider-home-view .nr-topbar>.nr-brand {
     color:#f3f8fb;
-    text-shadow:0 1px 2px rgba(4,28,48,.7);
+    text-shadow:0 1px 2px rgba(4,28,48,.72);
   }
-  .nr-app[data-mode="rider"] .rider-home-view .nr-stage{
+
+  .nr-app[data-mode="rider"] .rider-home-view .nr-stage {
     position:relative!important;
+    isolation:isolate;
     display:block!important;
     width:100%;
     height:100%;
@@ -535,133 +544,232 @@
     padding:0!important;
     overflow:hidden!important;
   }
-  .nr-app[data-mode="rider"] .rider-home-view .nr-rider-map-surface{
+
+  .nr-app[data-mode="rider"] .rider-home-view .nr-rider-map-surface {
     position:absolute!important;
     inset:0!important;
+    z-index:0!important;
     width:100%!important;
     height:100%!important;
     border:0!important;
     border-radius:0!important;
+    pointer-events:auto!important;
   }
-  .nr-app[data-mode="rider"] .rider-home-view .nr-rider-map-top{
+
+  .nr-app[data-mode="rider"] .rider-home-view .nr-rider-map-top {
     top:calc(70px + env(safe-area-inset-top))!important;
     left:auto!important;
     right:14px!important;
     width:auto;
   }
+
   .nr-app[data-mode="rider"] .rider-home-view .nr-map-profile,
-  .nr-app[data-mode="rider"] .rider-home-view .nr-map-preview-chip{display:none!important}
-  .nr-app[data-mode="rider"] .rider-home-view .nr-map-attribution{
+  .nr-app[data-mode="rider"] .rider-home-view .nr-map-preview-chip {
+    display:none!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-home-view .nr-map-attribution {
     top:calc(64px + env(safe-area-inset-top));
     right:6px;
     bottom:auto;
     border-radius:6px;
   }
-  .nr-app[data-mode="rider"] .rider-home-view .nr-panel{
-    position:absolute!important;
-    z-index:50;
+
+  /* The legacy panel becomes layoutless on Home. The sheet itself is the only
+     positioned, transformed, painted and hit-tested surface. */
+  .nr-app[data-mode="rider"] .rider-home-view .nr-home-panel-host {
+    position:static!important;
+    z-index:auto!important;
+    width:0!important;
+    height:0!important;
+    min-width:0!important;
+    min-height:0!important;
+    max-width:none!important;
+    max-height:none!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:visible!important;
+    background:transparent!important;
+    border:0!important;
+    box-shadow:none!important;
+    pointer-events:none!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-home-view .nr-home-panel-host>div:not([hidden]) {
+    display:contents!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-home-view .nr-rider-home-sheet {
+    position:fixed!important;
     left:0!important;
     right:0!important;
-    top:auto!important;
     bottom:0!important;
+    top:auto!important;
+    z-index:90!important;
     width:100%!important;
-    height:75dvh!important;
-    max-height:75dvh!important;
-    min-height:0!important;
-    overflow:visible!important;
-    pointer-events:none;
-    align-self:auto!important;
-  }
-  .nr-app[data-mode="rider"] .rider-home-view .nr-panel>div:not([hidden]){
-    width:100%!important;
-    height:75dvh!important;
-    min-height:0!important;
-    max-height:75dvh!important;
-    overflow:visible!important;
-    border-radius:0!important;
-    pointer-events:none;
-  }
-  .nr-app[data-mode="rider"] .nr-rider-home-sheet{
-    width:100%;
     height:75dvh!important;
     min-height:75dvh!important;
     max-height:75dvh!important;
-    padding:0!important;
-    display:flex;
+    display:flex!important;
     flex-direction:column;
-    overflow:hidden;
+    padding:0!important;
+    overflow:hidden!important;
     border:0!important;
     border-top:1px solid var(--line)!important;
     border-radius:24px 24px 0 0!important;
     background:var(--surface)!important;
-    box-shadow:0 -10px 30px rgba(4,28,48,.10)!important;
-    transform:translate3d(0,var(--nr-home-sheet-offset,29dvh),0);
-    transition:transform 240ms cubic-bezier(.2,.8,.2,1);
+    color:var(--text)!important;
+    box-shadow:0 -12px 34px rgba(4,28,48,.12)!important;
+    transform:translate3d(0,var(--nr-home-sheet-offset,29dvh),0)!important;
+    transition:transform 360ms cubic-bezier(.16,1,.3,1)!important;
     will-change:transform;
-    pointer-events:auto;
+    backface-visibility:hidden;
+    -webkit-backface-visibility:hidden;
+    pointer-events:auto!important;
     touch-action:auto;
+    overscroll-behavior:contain;
   }
-  .nr-app[data-mode="rider"] .nr-rider-home-sheet[data-dragging]{
-    transition:none;
+
+  .nr-app[data-mode="rider"] .rider-home-view .nr-rider-home-sheet[data-dragging] {
+    transition:none!important;
     user-select:none;
+    -webkit-user-select:none;
   }
-  .nr-home-sheet-drag-zone{
+
+  .nr-app[data-mode="rider"] .rider-home-view .nr-home-sheet-grab-area {
+    position:relative;
+    z-index:2;
+    flex:0 0 auto;
+    min-height:88px;
+    padding:0 16px 10px;
+    background:var(--surface);
+    cursor:ns-resize;
+    touch-action:none!important;
+    user-select:none;
+    -webkit-user-select:none;
+  }
+
+  .nr-app[data-mode="rider"] .rider-home-view .nr-home-sheet-drag-zone {
     width:100%;
     height:34px;
     min-height:34px!important;
-    flex:0 0 34px;
     display:grid;
     place-items:center;
-    padding:0;
-    border:0;
-    background:transparent;
+    margin:0;
+    padding:0!important;
+    border:0!important;
+    border-radius:0!important;
+    background:transparent!important;
     color:var(--muted);
-    cursor:ns-resize;
-    touch-action:none;
+    box-shadow:none!important;
+    touch-action:none!important;
+    -webkit-tap-highlight-color:transparent;
   }
-  .nr-home-sheet-drag-zone:focus-visible{
+
+  .nr-app[data-mode="rider"] .rider-home-view .nr-home-sheet-drag-zone:focus-visible {
     outline:2px solid var(--green);
-    outline-offset:-4px;
-    border-radius:20px 20px 0 0;
+    outline-offset:-3px;
+    border-radius:18px!important;
   }
-  .nr-home-sheet-drag-zone .nr-home-handle{
+
+  .nr-app[data-mode="rider"] .rider-home-view .nr-home-sheet-drag-zone .nr-home-handle {
     display:block!important;
-    width:34px!important;
+    width:36px!important;
     height:4px!important;
     margin:0!important;
     border-radius:999px!important;
     background:color-mix(in srgb,var(--muted) 30%,transparent)!important;
   }
-  .nr-home-sheet-scroll{
-    flex:1;
+
+  .nr-app[data-mode="rider"] .rider-home-view .nr-home-sheet-grab-area .nr-rider-home-intro {
+    margin:0!important;
+    padding:0!important;
+    pointer-events:none;
+  }
+
+  .nr-app[data-mode="rider"] .rider-home-view .nr-home-sheet-scroll {
+    position:relative;
+    z-index:2;
+    flex:1 1 auto;
     min-height:0;
-    overflow-y:auto;
-    overscroll-behavior:contain;
-    -webkit-overflow-scrolling:touch;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
     padding:0 16px calc(18px + env(safe-area-inset-bottom));
+    background:var(--surface);
+    pointer-events:auto!important;
+    touch-action:pan-y!important;
+    overscroll-behavior-x:none;
+    overscroll-behavior-y:contain;
+    -webkit-overflow-scrolling:touch;
     scrollbar-width:thin;
   }
-  .nr-rider-home-sheet[data-snap="collapsed"] .nr-home-expandable{display:none}
-  .nr-rider-home-sheet[data-snap="collapsed"] .nr-home-city{display:none}
-  .nr-rider-home-sheet[data-snap="collapsed"] .nr-rider-home-intro{margin-bottom:10px!important}
-  .nr-rider-home-sheet[data-snap="collapsed"] .nr-rider-home-intro h2{font-size:20px!important}
-  .nr-rider-home-sheet .nr-home-search{min-height:56px!important}
-  .nr-rider-home-sheet .nr-home-shortcuts{margin:12px 0!important}
-  .nr-rider-home-sheet .nr-home-location{margin:10px 0 12px!important}
-  .nr-rider-home-sheet .nr-home-history-heading{margin-top:12px!important}
+
+  .nr-app[data-mode="rider"] .rider-home-view .nr-home-sheet-scroll :is(
+    button,a,input,textarea,select,[role="button"],.nr-list-row
+  ) {
+    position:relative;
+    z-index:3;
+    pointer-events:auto!important;
+    touch-action:manipulation!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-home-view .nr-rider-home-sheet[data-dragging] .nr-home-sheet-scroll {
+    overflow:hidden!important;
+    touch-action:none!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-home-view .nr-rider-home-sheet[data-snap="collapsed"] .nr-home-expandable {
+    display:none;
+  }
+
+  .nr-app[data-mode="rider"] .rider-home-view .nr-rider-home-sheet[data-snap="collapsed"] .nr-home-city {
+    display:none;
+  }
+
+  .nr-app[data-mode="rider"] .rider-home-view .nr-rider-home-sheet[data-snap="collapsed"] .nr-home-sheet-grab-area {
+    min-height:76px;
+    padding-bottom:8px;
+  }
+
+  .nr-app[data-mode="rider"] .rider-home-view .nr-rider-home-sheet[data-snap="collapsed"] .nr-rider-home-intro h2 {
+    font-size:20px!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-home-view .nr-rider-home-sheet .nr-home-search {
+    min-height:56px!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-home-view .nr-rider-home-sheet .nr-home-shortcuts {
+    margin:12px 0!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-home-view .nr-rider-home-sheet .nr-home-location {
+    margin:10px 0 12px!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-home-view .nr-rider-home-sheet .nr-home-history-heading {
+    margin-top:12px!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-home-view .nr-resume-trip {
+    position:fixed;
+    z-index:85;
+    top:calc(72px + env(safe-area-inset-top));
+    left:14px;
+    right:14px;
+  }
 }
+
 @media (max-width: 430px) {
-  .nr-app[data-mode="rider"] .nr-rider-home-sheet .nr-home-sheet-scroll{
+  .nr-app[data-mode="rider"] .rider-home-view .nr-home-sheet-grab-area,
+  .nr-app[data-mode="rider"] .rider-home-view .nr-home-sheet-scroll {
     padding-left:14px;
     padding-right:14px;
   }
 }
-@media (max-height: 600px) and (max-width: 800px) {
-  .nr-app[data-mode="rider"] .nr-rider-home-sheet{
-    height:75dvh!important;
-    min-height:75dvh!important;
-  }
-}
+
 @media (prefers-reduced-motion: reduce) {
-  .nr-app[data-mode="rider"] .nr-rider-home-sheet{transition:none!important}
+  .nr-app[data-mode="rider"] .rider-home-view .nr-rider-home-sheet {
+    transition:none!important;
+  }
 }
