@@ -536,7 +536,7 @@ function AppWorkspace({
             <Brand driver={mode === "driver"} />
             <p>{t("brandMessage")}</p>
           </div>
-          <div className="nr-panel">
+          <div className={`nr-panel ${riderHome ? "nr-home-panel-host" : ""}`}>
             {profileView && mode === "rider" ? <RiderProfile language={language} setLanguage={setLanguage} theme={theme} setTheme={setTheme} profile={profile} setProfile={setProfile} rides={() => setRiderScreen("trips")} saved={() => setRiderScreen("saved")} payments={() => setRiderScreen("wallet")} safety={() => openSafety(mode)} support={() => window.location.assign("/support")} switchDriver={() => switchMode("driver")} isAdmin={isAdmin} /> : profileView ? (
               <Sheet title={t("profile")}>
                 <div className="nr-profile-header">

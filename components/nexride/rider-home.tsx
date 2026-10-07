@@ -5,7 +5,6 @@ import {
   useEffect,
   useRef,
   useState,
-  type CSSProperties,
   type KeyboardEvent,
   type PointerEvent as ReactPointerEvent,
 } from "react";
@@ -100,11 +99,14 @@ export function RiderHomePanel({
     moved: false,
   });
 
+  const homeHost = () =>
+    sheetRef.current?.closest<HTMLElement>(".nr-home-panel-host") || null;
+
   const paintOffset = (next: number) => {
     offsetRef.current = next;
     if (frameRef.current !== null) return;
     frameRef.current = requestAnimationFrame(() => {
-      sheetRef.current?.style.setProperty(
+      homeHost()?.style.setProperty(
         "--nr-home-sheet-offset",
         `${offsetRef.current}px`,
       );
@@ -146,6 +148,7 @@ export function RiderHomePanel({
 
   const finishDrag = () => {
     if (!dragging) return;
+    homeHost()?.removeAttribute("data-home-dragging");
     setDragging(false);
     const order: HomeSheetSnap[] = ["expanded", "medium", "collapsed"];
     const nearest = nearestSnap(offsetRef.current);
@@ -172,6 +175,7 @@ export function RiderHomePanel({
       velocity: 0,
       moved: false,
     };
+    homeHost()?.setAttribute("data-home-dragging", "true");
     setDragging(true);
   };
 
@@ -230,9 +234,7 @@ export function RiderHomePanel({
       aria-label={t("destination")}
       data-snap={snap}
       data-dragging={dragging || undefined}
-      style={{
-        "--nr-home-sheet-offset": "29dvh",
-      } as CSSProperties}
+      style={undefined}
     >
       <button
         type="button"
