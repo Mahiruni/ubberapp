@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { NexRideLanguageProvider } from "../../components/nexride/language-provider";
+import { DriverAppShell } from "../../components/nexride/driver-app-shell";
+import "./driver-shell.css";
 
 export const metadata: Metadata = {
   title: "Drive with NexRide",
@@ -8,5 +10,9 @@ export const metadata: Metadata = {
 };
 
 export default function DriverLayout({ children }: { children: React.ReactNode }) {
-  return <NexRideLanguageProvider>{children}</NexRideLanguageProvider>;
+  return (
+    <NexRideLanguageProvider>
+      <DriverAppShell>{children}</DriverAppShell>
+    </NexRideLanguageProvider>
+  );
 }
