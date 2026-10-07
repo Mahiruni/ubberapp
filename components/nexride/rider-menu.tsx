@@ -7,12 +7,7 @@ import {
   useState,
   type KeyboardEvent as ReactKeyboardEvent,
 } from "react";
-import {
-  LANGUAGE_KEY,
-  PREVIEW_ENABLED_KEY,
-  PREVIEW_STORAGE_KEY,
-  retryStartup,
-} from "../../lib/nexride-startup";
+import { PREVIEW_STORAGE_KEY } from "../../lib/nexride-startup";
 import { resolveSessionRole } from "../../lib/nexride-account-role";
 import { supabase } from "../../lib/supabase";
 import {
@@ -93,70 +88,26 @@ export function RiderMenu({
   const language = useContext(LanguageContext);
   const say = (en: string, am: string) => (language === "am" ? am : en);
   const [open, setOpen] = useState(false);
-  const [identity, setIdentity] = useState({
-    name: say("NexRide Rider", "NexRide ተሳፋሪ"),
-    contact: "",
-  });
   const [isAdmin, setIsAdmin] = useState(Boolean(adminOverride));
-  const [signingOut, setSigningOut] = useState(false);
-  const [error, setError] = useState("");
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const drawerRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => setIsAdmin(Boolean(adminOverride)), [adminOverride]);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open || adminOverride !== undefined) return;
     let activeEffect = true;
-
-    try {
-      const preview = JSON.parse(
-        localStorage.getItem(PREVIEW_STORAGE_KEY) || "{}",
-      ) as {
-        profile?: { name?: unknown; phone?: unknown; email?: unknown };
-      };
-      const name =
-        typeof preview.profile?.name === "string"
-          ? preview.profile.name.trim()
-          : "";
-      const contact =
-        typeof preview.profile?.phone === "string" &&
-        preview.profile.phone.trim()
-          ? preview.profile.phone.trim()
-          : typeof preview.profile?.email === "string"
-            ? preview.profile.email.trim()
-            : "";
-      if (name || contact) {
-        setIdentity({
-          name: name || say("NexRide Rider", "NexRide ተሳፋሪ"),
-          contact,
-        });
-      }
-    } catch {}
 
     void supabase.auth.getSession().then(async ({ data }) => {
       if (!activeEffect || !data.session) return;
-      const user = data.session.user;
-      const meta = user.user_metadata || {};
-      const name =
-        (typeof meta.full_name === "string" && meta.full_name.trim()) ||
-        (typeof meta.name === "string" && meta.name.trim()) ||
-        user.email?.split("@")[0] ||
-        say("NexRide Rider", "NexRide ተሳፋሪ");
-      setIdentity({
-        name,
-        contact: user.email || "",
-      });
-      if (adminOverride === undefined) {
-        const role = await resolveSessionRole(data.session).catch(() => "");
-        if (activeEffect) setIsAdmin(role === "admin");
-      }
+      const role = await resolveSessionRole(data.session).catch(() => "");
+      if (activeEffect) setIsAdmin(role === "admin");
     });
 
     return () => {
       activeEffect = false;
     };
-  }, [open, adminOverride, language]);
+  }, [open, adminOverride]);
 
   useEffect(() => {
     if (!open) return;
@@ -243,62 +194,16 @@ export function RiderMenu({
       detail: say("Help with rides and your account", "ለጉዞና መለያ እገዛ"),
       icon: "chat",
     },
-    {
-      id: "profile",
-      label: say("Account", "መለያ"),
-      detail: say("Profile and personal information", "መገለጫ እና የግል መረጃ"),
-      icon: "user",
-    },
-    {
-      id: "settings",
-      label: say("Settings", "ቅንብሮች"),
-      detail: say("Language, appearance and alerts", "ቋንቋ፣ መልክ እና ማሳወቂያ"),
-      icon: "settings",
-    },
   ];
 
   const navigate = (id: RiderMenuId) => {
-    if (
-      locked &&
-      !["safety", "messages", "profile"].includes(id)
-    )
-      return;
+    if (locked && !["safety", "messages"].includes(id)) return;
     setOpen(false);
-    if (id === "settings" && onSettings) {
-      onSettings();
-      return;
-    }
     if (onNavigate) {
       onNavigate(id);
       return;
     }
     window.location.assign(hrefs[id]);
-  };
-
-  const signOut = async () => {
-    if (signingOut) return;
-    setSigningOut(true);
-    setError("");
-    try {
-      const result = await supabase.auth.signOut({ scope: "local" });
-      if (result.error) throw result.error;
-      try {
-        localStorage.removeItem(PREVIEW_ENABLED_KEY);
-        localStorage.removeItem(PREVIEW_STORAGE_KEY);
-        localStorage.removeItem("nexride-state");
-        localStorage.removeItem(LANGUAGE_KEY);
-      } catch {}
-      retryStartup();
-      window.location.replace("/rider/sign-in");
-    } catch {
-      setError(
-        say(
-          "Sign-out could not be confirmed. Please try again.",
-          "ከመለያ መውጣት አልተረጋገጠም። እንደገና ይሞክሩ።",
-        ),
-      );
-      setSigningOut(false);
-    }
   };
 
   const onTriggerKeyDown = (event: ReactKeyboardEvent<HTMLButtonElement>) => {
@@ -307,15 +212,6 @@ export function RiderMenu({
       setOpen(true);
     }
   };
-
-  const initials =
-    identity.name
-      .trim()
-      .split(/\s+/)
-      .slice(0, 2)
-      .map((part) => part[0])
-      .join("")
-      .toUpperCase() || "NR";
 
   return (
     <div className="nr-rider-menu-root">
@@ -362,16 +258,6 @@ export function RiderMenu({
               </button>
             </header>
 
-            <section className="nr-rider-drawer-profile">
-              <span className="nr-rider-drawer-avatar">{initials}</span>
-              <span>
-                <strong>{identity.name}</strong>
-                <small>
-                  {identity.contact ||
-                    say("Your NexRide account", "የNexRide መለያዎ")}
-                </small>
-              </span>
-            </section>
 
             <nav
               className="nr-rider-drawer-nav"
@@ -439,19 +325,6 @@ export function RiderMenu({
             </div>
 
             <footer className="nr-rider-drawer-footer">
-              {error && <p role="alert">{error}</p>}
-              <button
-                type="button"
-                className="nr-rider-drawer-signout"
-                disabled={signingOut}
-                aria-busy={signingOut || undefined}
-                onClick={() => void signOut()}
-              >
-                <Icon name="power" size={18} />
-                {signingOut
-                  ? say("Signing out…", "በመውጣት ላይ…")
-                  : say("Sign out", "ውጣ")}
-              </button>
               <small>NexRide · Better Rides. A Brighter Tomorrow.</small>
             </footer>
           </aside>
