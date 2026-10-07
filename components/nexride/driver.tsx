@@ -377,6 +377,10 @@ export function DriverWorkspace({
     return () => navigator.geolocation.clearWatch(watchId);
   }, [driverId, state.online]);
 
+  const initials = useMemo(
+    () => state.name.trim().split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "DR",
+    [state.name],
+  );
 
   const verified = state.reviewStatus === "approved";
   const locationReady = locationPermission === "granted";
