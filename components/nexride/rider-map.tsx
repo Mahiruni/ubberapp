@@ -701,7 +701,7 @@ export function RiderMap({
         if (!loadedRef.current && !cancelled) setMapStatus("unavailable");
       });
 
-      const markManual = (event: { originalEvent?: unknown }) => {
+      const markManual = (event: any) => {
         if (event?.originalEvent) manualView.current = true;
       };
       map.on("dragstart", markManual);
