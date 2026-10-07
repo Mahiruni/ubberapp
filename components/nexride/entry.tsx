@@ -34,14 +34,6 @@ export function EntryShell({
         <div className="nr-auth-page">
           <section className="nr-auth-shell nr-auth-shell-rider">
             <div className="nr-auth-hero" aria-hidden="true">
-              <Image
-                src="/images/addis-nexride-auth.webp"
-                alt=""
-                fill
-                priority
-                sizes="(max-width: 760px) 100vw, 760px"
-                quality={86}
-              />
               <div className="nr-auth-hero-wash" />
               <div className="nr-auth-hero-top">
                 <Brand />
