@@ -83,11 +83,15 @@ const endpointElement = (kind: "pickup" | "destination") => {
   return root;
 };
 
-const heartbeatElement = () => {
+const heartbeatElement = (label: string) => {
   const root = document.createElement("div");
   root.className = "nr-live-location-marker";
+  root.setAttribute("role", "img");
+  root.setAttribute("aria-label", label);
   root.innerHTML =
-    '<span class="nr-live-location-heart" aria-hidden="true"><i class="nr-live-location-core"></i></span>';
+    '<span class="nr-live-location-pulse nr-live-location-pulse-one" aria-hidden="true"></span>' +
+    '<span class="nr-live-location-pulse nr-live-location-pulse-two" aria-hidden="true"></span>' +
+    '<span class="nr-live-location-dot" aria-hidden="true"></span>';
   return root;
 };
 
@@ -370,8 +374,8 @@ function syncAccuracy(
     type: "fill",
     source: "nexride-live-accuracy",
     paint: {
-      "fill-color": "#e5484d",
-      "fill-opacity": 0.055,
+      "fill-color": "#078930",
+      "fill-opacity": 0.12,
     },
   });
   map.addLayer({
@@ -379,8 +383,8 @@ function syncAccuracy(
     type: "line",
     source: "nexride-live-accuracy",
     paint: {
-      "line-color": "#e5484d",
-      "line-opacity": 0.2,
+      "line-color": "#078930",
+      "line-opacity": 0.22,
       "line-width": 1,
     },
   });
@@ -479,6 +483,8 @@ export function RiderMap({
   const container = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapboxMap | null>(null);
   const liveMarker = useRef<MapboxMarker | null>(null);
+  const liveMarkerAnimation = useRef<number | null>(null);
+  const liveMarkerLngLat = useRef<[number, number] | null>(null);
   const pickupMarker = useRef<MapboxMarker | null>(null);
   const destinationMarker = useRef<MapboxMarker | null>(null);
   const searchMarker = useRef<MapboxMarker | null>(null);
@@ -514,6 +520,7 @@ export function RiderMap({
   const [bearing, setBearing] = useState(0);
   const [trafficVisible, setTrafficVisible] = useState(true);
   const [fasterNotice, setFasterNotice] = useState<number | null>(null);
+  const [gpsStale, setGpsStale] = useState(false);
   trafficVisibleRef.current = trafficVisible;
 
   const route =
@@ -694,8 +701,8 @@ export function RiderMap({
         if (!loadedRef.current && !cancelled) setMapStatus("unavailable");
       });
 
-      const markManual = () => {
-        manualView.current = true;
+      const markManual = (event: { originalEvent?: unknown }) => {
+        if (event?.originalEvent) manualView.current = true;
       };
       map.on("dragstart", markManual);
       map.on("zoomstart", markManual);
@@ -779,7 +786,12 @@ export function RiderMap({
       resizeObserver.current = null;
       pickupMarker.current?.remove();
       destinationMarker.current?.remove();
+      if (liveMarkerAnimation.current !== null) {
+        cancelAnimationFrame(liveMarkerAnimation.current);
+        liveMarkerAnimation.current = null;
+      }
       liveMarker.current?.remove();
+      liveMarkerLngLat.current = null;
       searchMarker.current?.remove();
       pickupMarker.current = null;
       destinationMarker.current = null;
@@ -871,42 +883,168 @@ export function RiderMap({
   }, [mounted]);
 
   useEffect(() => {
+    if (!position || status !== "ready") {
+      setGpsStale(false);
+      return;
+    }
+
+    const age = Math.max(0, Date.now() - position.timestamp);
+    if (age >= 15_000) {
+      setGpsStale(true);
+      return;
+    }
+
+    setGpsStale(false);
+    const timer = window.setTimeout(
+      () => setGpsStale(true),
+      Math.max(0, 15_000 - age),
+    );
+    return () => window.clearTimeout(timer);
+  }, [position?.timestamp, status]);
+
+  useEffect(() => {
+    const element = liveMarker.current?.getElement();
+    if (!element) return;
+    element.classList.toggle("is-stale", gpsStale);
+  }, [gpsStale, position, mounted]);
+
+  useEffect(() => {
+    if (!mounted) return;
+
+    const syncAnimationState = () => {
+      const element = liveMarker.current?.getElement();
+      if (!element) return;
+      const paused =
+        document.hidden ||
+        document.documentElement.hasAttribute("data-nr-data-saver");
+      element.classList.toggle("is-paused", paused);
+    };
+
+    syncAnimationState();
+    document.addEventListener("visibilitychange", syncAnimationState);
+    const observer = new MutationObserver(syncAnimationState);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-nr-data-saver"],
+    });
+
+    return () => {
+      document.removeEventListener("visibilitychange", syncAnimationState);
+      observer.disconnect();
+    };
+  }, [mounted, position]);
+
+  useEffect(() => {
     const map = mapRef.current;
     if (!mounted || !map || !map.isStyleLoaded()) return;
     syncAccuracy(map, position, status);
 
     if (!position || status !== "ready") {
+      if (liveMarkerAnimation.current !== null) {
+        cancelAnimationFrame(liveMarkerAnimation.current);
+        liveMarkerAnimation.current = null;
+      }
       liveMarker.current?.remove();
       liveMarker.current = null;
+      liveMarkerLngLat.current = null;
       return;
     }
 
     void import("mapbox-gl").then((mapboxgl) => {
-      if (!mapRef.current) return;
+      const currentMap = mapRef.current;
+      if (!currentMap) return;
+
+      const target: [number, number] = [position.lng, position.lat];
       const isNew = !liveMarker.current;
-      if (!liveMarker.current)
+
+      if (!liveMarker.current) {
+        const markerElement = heartbeatElement(
+          language === "am" ? "የእርስዎ አካባቢ" : "Your location",
+        );
+        markerElement.classList.toggle("is-stale", gpsStale);
+        markerElement.classList.toggle(
+          "is-paused",
+          document.hidden ||
+            document.documentElement.hasAttribute("data-nr-data-saver"),
+        );
+
         liveMarker.current = new mapboxgl.default.Marker({
-          element: heartbeatElement(),
+          element: markerElement,
           anchor: "center",
         })
-          .setLngLat([position.lng, position.lat])
-          .addTo(map);
-      else liveMarker.current.setLngLat([position.lng, position.lat]);
+          .setLngLat(target)
+          .addTo(currentMap);
+        liveMarkerLngLat.current = target;
+      } else {
+        const from = liveMarkerLngLat.current || target;
+        if (liveMarkerAnimation.current !== null) {
+          cancelAnimationFrame(liveMarkerAnimation.current);
+          liveMarkerAnimation.current = null;
+        }
+
+        const reducedMotion = matchMedia(
+          "(prefers-reduced-motion: reduce)",
+        ).matches;
+        const duration = reducedMotion ? 0 : 400;
+
+        if (duration === 0) {
+          liveMarker.current.setLngLat(target);
+          liveMarkerLngLat.current = target;
+        } else {
+          const startedAt = performance.now();
+          const animate = (now: number) => {
+            const marker = liveMarker.current;
+            if (!marker) return;
+            const progress = Math.min(1, (now - startedAt) / duration);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            const next: [number, number] = [
+              from[0] + (target[0] - from[0]) * eased,
+              from[1] + (target[1] - from[1]) * eased,
+            ];
+            marker.setLngLat(next);
+            liveMarkerLngLat.current = next;
+            if (progress < 1) {
+              liveMarkerAnimation.current = requestAnimationFrame(animate);
+            } else {
+              liveMarkerAnimation.current = null;
+              liveMarkerLngLat.current = target;
+            }
+          };
+          liveMarkerAnimation.current = requestAnimationFrame(animate);
+        }
+      }
 
       const recenterChanged = lastRecenter.current !== recenter;
       lastRecenter.current = recenter;
-      if (isNew || recenterChanged) {
-        manualView.current = false;
-        map.easeTo({
-          center: [position.lng, position.lat],
-          zoom: Math.max(map.getZoom(), 16),
+
+      if (isNew || recenterChanged) manualView.current = false;
+
+      if (!manualView.current) {
+        currentMap.easeTo({
+          center: target,
+          zoom:
+            isNew || recenterChanged
+              ? Math.max(currentMap.getZoom(), 16)
+              : currentMap.getZoom(),
           duration: matchMedia("(prefers-reduced-motion: reduce)").matches
             ? 0
-            : 300,
+            : isNew || recenterChanged
+              ? 300
+              : 400,
         });
       }
     });
-  }, [position, status, recenter, mounted]);
+  }, [
+    position?.lat,
+    position?.lng,
+    position?.accuracy,
+    position?.timestamp,
+    status,
+    recenter,
+    mounted,
+    language,
+    gpsStale,
+  ]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -1059,6 +1197,7 @@ export function RiderMap({
           aria-label={t("recenter")}
           title={t("recenter")}
           onClick={() => {
+            manualView.current = false;
             locate();
             if (position && mapRef.current)
               mapRef.current.easeTo({
@@ -1167,6 +1306,31 @@ export function RiderMap({
               {styleKey === key && <Icon name="check" size={17} />}
             </button>
           ))}
+        </div>
+      )}
+
+      {status === "denied" && (
+        <div className="nr-location-permission" role="alert">
+          <Icon name="locate" size={20} />
+          <div className="nr-location-permission-copy">
+            <strong>
+              {language === "am" ? "አካባቢ ፈቃድ ጠፍቷል" : "Location is off"}
+            </strong>
+            <span>
+              {language === "am"
+                ? "የአካባቢ ፈቃድን በመሣሪያዎ ቅንብር ውስጥ ያንቁ።"
+                : "Enable location permission in your device settings, then try again."}
+            </span>
+          </div>
+          <button type="button" onClick={locate}>
+            {language === "am" ? "እንደገና" : "Retry"}
+          </button>
+        </div>
+      )}
+
+      {gpsStale && position && status === "ready" && (
+        <div className="nr-gps-status" role="status" aria-live="polite">
+          {language === "am" ? "GPS በመፈለግ ላይ" : "Searching for GPS"}
         </div>
       )}
 
