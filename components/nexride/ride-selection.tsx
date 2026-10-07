@@ -2,6 +2,7 @@
 import { useContext, useEffect, useState } from "react";
 import { Button, Dialog, Icon, LanguageContext, useTranslation } from "./ui";
 import { endpointName } from "./destination";
+import { RiderSheetHandle } from "./rider-sheet";
 import {
   fareTotal,
   rideCategories,
@@ -41,7 +42,13 @@ export function RideSelection({
       : null;
   return (
     <section className="nr-ride-selection" aria-label={t("chooseRide")}>
-      <div className="nr-ride-handle" />
+      <RiderSheetHandle
+        label={language === "am" ? "የጉዞ አማራጭ ፓነሉን አስፋ ወይም አሳንስ" : "Resize ride options panel"}
+        defaultRatio={0.62}
+        snaps={[0.28, 0.62, 0.75]}
+        scrollSelector=".nr-ride-selection-body"
+        storageKey="nexride.rider.sheet.rides"
+      />
       <header>
         <div className="nr-ride-heading-copy">
           <span>{language === "am" ? "ለዚህ ጉዞ የሚገኙ አማራጮች" : "Best options for this trip"}</span>

@@ -2,6 +2,7 @@
 import { useContext, useEffect, useRef, useState } from 'react';
 import { Button, Dialog, Icon, LanguageContext, useTranslation } from './ui';
 import { endpointName } from './destination';
+import { RiderSheetHandle } from './rider-sheet';
 import { fareTotal } from '../../lib/nexride-booking';
 import type { Matching } from '../../lib/nexride-use-matching';
 export function DriverMatching({ model, changeCategory, previewAssigned, home }: {
@@ -28,7 +29,13 @@ export function DriverMatching({ model, changeCategory, previewAssigned, home }:
     else void model.action('cancel', snapshot.version);
   };
   return <section className="nr-driver-matching" data-matching-state={connectionLost ? 'connection_lost' : status} aria-label={t('matchingScreen')}>
-    <div className="nr-ride-handle" />
+    <RiderSheetHandle
+      label={language === "am" ? "የአሽከርካሪ ማዛመጃ ፓነሉን አስፋ ወይም አሳንስ" : "Resize driver matching panel"}
+      defaultRatio={0.54}
+      snaps={[0.28, 0.54, 0.75]}
+      scrollSelector=".nr-matching-body"
+      storageKey="nexride.rider.sheet.matching"
+    />
     <div className="nr-matching-body">
       <div className={`nr-matching-symbol ${searching ? 'searching' : ''}`} aria-hidden="true"><Icon name={status === 'assigned' || status === 'cancelled' ? 'check' : connectionLost ? 'globe' : 'locate'} size={28} /></div>
       <header className="nr-matching-heading">

@@ -5,6 +5,7 @@ import { mergeTrip, type TripSnapshot } from '../../lib/nexride-trip-data';
 import { readRiderTrip, sendTripMessage, submitRiderRating } from '../../lib/nexride-trip-service';
 import type { PreviewTrip } from '../../lib/nexride-preview';
 import type { RiderScreen } from './rider';
+import { RiderSheetHandle } from './rider-sheet';
 export function TripExperience({ screen, tripId, userId, preview, navigate, setPreview, safety }: {
   screen: 'trip' | 'live' | 'summary'; tripId: string | null; userId: string | null; preview: PreviewTrip | null;
   navigate: (s: RiderScreen) => void; setPreview: (p: PreviewTrip) => void; safety: () => void;
@@ -96,7 +97,19 @@ export function TripExperience({ screen, tripId, userId, preview, navigate, setP
     return () => { stopped = true; ready.current = false; window.removeEventListener('message', receive); window.removeEventListener('offline', offline); window.removeEventListener('online', online); if (interval) clearInterval(interval); if (channel) void supabase.removeChannel(channel); };
   }, [tripId, userId, live, file, screen]);
   if (tripId && !userId) return <section className="nr-trip-experience"><p role="status">Sign in to view this trip.</p><button onClick={() => navigate("home")}>Back to home</button></section>;
+  const defaultRatio = screen === 'summary' ? 0.66 : screen === 'live' ? 0.46 : 0.52;
+  const snaps = screen === 'summary'
+    ? [0.32, 0.66, 0.75] as const
+    : screen === 'live'
+      ? [0.28, 0.46, 0.72] as const
+      : [0.28, 0.52, 0.75] as const;
   return <section className="nr-trip-experience" aria-label={screen === 'summary' ? 'Trip receipt and rating' : 'Your trip'}>
+    <RiderSheetHandle
+      label={screen === 'summary' ? 'Resize trip summary panel' : screen === 'live' ? 'Resize active trip panel' : 'Resize driver panel'}
+      defaultRatio={defaultRatio}
+      snaps={snaps}
+      storageKey={`nexride.rider.sheet.${screen}`}
+    />
     <div className="nr-trip-toolbar">
       <button onClick={() => window.location.assign('/rider/trips')}>Activity</button>
       <span role="status">{live ? connection : 'Preview ride'}</span>

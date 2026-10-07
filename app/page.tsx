@@ -50,6 +50,7 @@ import "./matching.css";
 import "./rider-flow.css";
 import "./rider-profile.css";
 import "./detail-system.css";
+import "./rider-sheet-standard.css";
 const STORAGE_KEY = PREVIEW_STORAGE_KEY;
 type Mode = "rider" | "driver";
 type Panel =
@@ -269,6 +270,8 @@ function AppWorkspace({
     mode === "rider" &&
     ["home", "destination", "rides", "finding", "trip", "live", "summary"].includes(screen);
   const riderSearch = mode === "rider" && screen === "destination";
+  const riderAssigned = mode === "rider" && screen === "trip";
+  const riderLive = mode === "rider" && screen === "live";
   const riderSummary = mode === "rider" && screen === "summary";
   useEffect(() => {
     if (riderScreen === "rides" && !journey.canContinue)
@@ -368,7 +371,7 @@ function AppWorkspace({
             } as React.CSSProperties)
           : undefined
       }
-      className={`nr-workspace ${profileView && mode === "rider" ? "rider-profile-view" : ""} ${riderTripView ? "rider-trip-view" : ""} ${riderHome ? "rider-home-view" : ""} ${riderMapView ? "rider-map-flow" : ""} ${riderSearch ? "rider-search-view" : ""} ${mode === "rider" && screen === "rides" ? "rider-ride-view" : ""} ${mode === "rider" && screen === "finding" ? "rider-matching-view" : ""} ${riderSummary ? "rider-summary-view" : ""}`}
+      className={`nr-workspace ${profileView && mode === "rider" ? "rider-profile-view" : ""} ${riderTripView ? "rider-trip-view" : ""} ${riderHome ? "rider-home-view" : ""} ${riderMapView ? "rider-map-flow" : ""} ${riderSearch ? "rider-search-view" : ""} ${mode === "rider" && screen === "rides" ? "rider-ride-view" : ""} ${mode === "rider" && screen === "finding" ? "rider-matching-view" : ""} ${riderAssigned ? "rider-assigned-view" : ""} ${riderLive ? "rider-live-view" : ""} ${riderSummary ? "rider-summary-view" : ""}`}
     >
       <aside className="nr-sidebar" inert={requestPending || matching.active}>
         <Brand driver={mode === "driver"} />

@@ -151,11 +151,13 @@ export function RiderHomePanel({
       window.visualViewport?.removeEventListener("resize", update);
       if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
       flowRoot()?.style.removeProperty("--nr-flow-sheet-height");
+      flowRoot()?.removeAttribute("data-sheet-dragging");
     };
   }, [snap]);
 
   const applySnap = (next: HomeSheetSnap) => {
     dragActive.current = false;
+    flowRoot()?.removeAttribute("data-sheet-dragging");
     setDragging(false);
     setSnap(next);
     paintHeight(snapHeight(next, viewportHeight));
@@ -180,6 +182,7 @@ export function RiderHomePanel({
       moved: false,
     };
     dragActive.current = true;
+    flowRoot()?.setAttribute("data-sheet-dragging", "true");
     setDragging(true);
   };
 
