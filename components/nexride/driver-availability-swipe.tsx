@@ -8,11 +8,13 @@ export function DriverAvailabilitySwipe({
   online,
   updating,
   disabled,
+  labelOverride,
   onToggle,
 }: {
   online: boolean;
   updating: boolean;
   disabled: boolean;
+  labelOverride?: string;
   onToggle: () => void | Promise<void>;
 }) {
   const language = useContext(LanguageContext);
@@ -102,13 +104,14 @@ export function DriverAvailabilitySwipe({
     void onToggle();
   };
 
-  const label = updating
+  const defaultLabel = updating
     ? online
       ? say("Going offline…", "ከመስመር ውጭ በመውጣት ላይ…")
       : say("Going online…", "ወደ መስመር በመግባት ላይ…")
     : online
       ? say("Swipe left to go offline", "ከመስመር ውጭ ለመውጣት ወደ ግራ ያንሸራትቱ")
       : say("Swipe right to go online", "ወደ መስመር ለመግባት ወደ ቀኝ ያንሸራትቱ");
+  const label = labelOverride || defaultLabel;
 
   return (
     <button

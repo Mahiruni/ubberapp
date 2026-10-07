@@ -489,7 +489,7 @@ export function DriverWorkspace({
 
   const toggleAvailability = async () => {
     if (!driverId || updating) return;
-    if (!state.online && !canGoOnline) return;
+    if (!state.online && !verified) return;
 
     setUpdating(true);
     setError("");
@@ -670,6 +670,16 @@ export function DriverWorkspace({
     );
   }
 
+  const swipeFeedback = !verified
+    ? say("Verification required", "ማረጋገጫ ያስፈልጋል")
+    : error
+      ? error.toLowerCase().includes("active trip")
+        ? say("Finish active trip first", "መጀመሪያ ንቁ ጉዞውን ያጠናቅቁ")
+        : error.toLowerCase().includes("location") || error.toLowerCase().includes("gps")
+          ? say("Location required · swipe to retry", "አካባቢ ያስፈልጋል · ለመድገም ያንሸራትቱ")
+          : say("Try again", "እንደገና ይሞክሩ")
+      : undefined;
+
   return (
     <div className="nr-driver-page nr-driver-home-cockpit">
       <section
@@ -691,63 +701,24 @@ export function DriverWorkspace({
           showNativeControls={false}
         />
 
-        <div className="nr-driver-home-status-chip" role="status" aria-live="polite" data-online={state.online ? "true" : "false"}>
-          <span className="nr-driver-home-status-dot" aria-hidden="true" />
-          <span>{state.online ? say("Online · Ready for requests", "መስመር ላይ · ለጉዞ ጥያቄዎች ዝግጁ") : say("Offline", "ከመስመር ውጭ")}</span>
-        </div>
+        <button
+          type="button"
+          className="nr-driver-home-profile"
+          onClick={() => navigate("profile")}
+          aria-label={say("Open Driver profile", "የአሽከርካሪ መለያን ክፈት")}
+        >
+          {state.avatarUrl ? <img src={state.avatarUrl} alt="" /> : <Icon name="user" size={22} />}
+        </button>
 
-        <section className="nr-driver-availability-dock" aria-label="Driver availability">
-          <div className="nr-driver-availability-dock-head">
-            <div>
-              <small>{say("DRIVER AVAILABILITY", "የአሽከርካሪ ዝግጁነት")}</small>
-              <strong>{state.online ? say("Online", "መስመር ላይ") : say("Offline", "ከመስመር ውጭ")}</strong>
-            </div>
-            <span className="nr-driver-availability-state" data-online={state.online ? "true" : "false"}>
-              <i aria-hidden="true" />
-              {state.online ? say("Active", "ንቁ") : say("Not accepting rides", "ጉዞዎችን አይቀበልም")}
-            </span>
-          </div>
-
+        <div className="nr-driver-home-swipe">
           <DriverAvailabilitySwipe
             online={state.online}
             updating={updating}
-            disabled={loading || (!state.online && !canGoOnline)}
+            disabled={loading || (!state.online && !verified)}
+            labelOverride={swipeFeedback}
             onToggle={toggleAvailability}
           />
-
-          <p className="nr-driver-availability-help">
-            {updating
-              ? state.online
-                ? say("Going offline…", "ከመስመር ውጭ በመውጣት ላይ…")
-                : say("Going online…", "ወደ መስመር በመግባት ላይ…")
-              : state.online
-                ? say("You’re searchable by eligible riders nearby. Your live location is shared while you’re online.", "በአቅራቢያ ያሉ ተሳፋሪዎች ሊያገኙዎት ይችላሉ። መስመር ላይ ሲሆኑ ቀጥታ አካባቢዎ ይጋራል።")
-                : verified
-                  ? say("Swipe right when you’re ready to receive ride requests.", "የጉዞ ጥያቄዎችን ለመቀበል ዝግጁ ሲሆኑ ወደ ቀኝ ያንሸራትቱ።")
-                  : say("Complete Driver verification before going online.", "ወደ መስመር ከመግባትዎ በፊት የአሽከርካሪ ማረጋገጫን ያጠናቅቁ።")}
-          </p>
-
-          {error && (
-            <div className="nr-driver-availability-message error" role="alert">
-              <Icon name="info" size={17} />
-              <div>
-                <strong>{driverErrorTitle(error)}</strong>
-                <span>{error}</span>
-              </div>
-            </div>
-          )}
-
-          {!loading && block && (
-            <div className={`nr-driver-availability-message ${block.tone}`}>
-              <Icon name={verified ? "navigation" : "shield"} size={17} />
-              <div>
-                <strong>{block.title}</strong>
-                <span>{block.body}</span>
-              </div>
-              {block.action && <button type="button" onClick={resolveBlock}>{block.action}</button>}
-            </div>
-          )}
-        </section>
+        </div>
       </section>
     </div>
   );

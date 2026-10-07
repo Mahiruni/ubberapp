@@ -287,3 +287,28 @@ html[lang="am"] .nr-driver-menu-section-label,
 html[lang="am"] .nr-driver-menu-footer :where(strong,small,span,button,p){
   letter-spacing:0!important;
 }
+
+/* Borderless Driver home + menu refinement */
+.nr-driver-home-menu-host .nr-driver-menu-trigger{
+  border:0!important;
+  background:color-mix(in srgb,var(--driver-surface) 91%,transparent)!important;
+  box-shadow:0 7px 22px rgba(2,18,29,.18)!important;
+}
+.nr-driver-menu-panel,
+.nr-driver-menu-row,
+.nr-driver-menu-row-icon,
+.nr-driver-menu-utility,
+.nr-driver-theme-selector,
+.nr-driver-menu-language,
+.nr-driver-menu-footer,
+.nr-driver-menu-logout{
+  border:0!important;
+}
+.nr-driver-menu-panel{box-shadow:-18px 0 48px rgba(0,13,23,.18)}
+.nr-driver-menu-row[data-active="true"]{
+  background:color-mix(in srgb,var(--driver-accent) 10%,var(--driver-surface));
+}
+.nr-driver-theme-selector button[data-active="true"],
+.nr-driver-menu-language button[data-active="true"]{
+  box-shadow:none!important;
+}
