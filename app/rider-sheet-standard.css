@@ -219,6 +219,73 @@
   }
 }
 
+
+  /* Keyboard-open destination search is a single visual-viewport surface.
+     Keep only a compact topbar spacer; do not reserve a dead map row below
+     the form. The searchable body owns all remaining space above the IME. */
+  .nr-app[data-mode="rider"] .rider-map-flow[data-keyboard="true"].rider-search-view
+    .nr-stage.with-map {
+    grid-template-rows:
+      calc(64px + env(safe-area-inset-top))
+      minmax(0,1fr)!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow[data-keyboard="true"].rider-search-view
+    .nr-rider-map-surface {
+    grid-row:1!important;
+    min-height:0!important;
+    height:100%!important;
+    visibility:hidden!important;
+    pointer-events:none!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow[data-keyboard="true"].rider-search-view
+    .nr-rider-flow-panel,
+  .nr-app[data-mode="rider"] .rider-map-flow[data-keyboard="true"].rider-search-view
+    .nr-panel {
+    grid-row:2!important;
+    height:100%!important;
+    min-height:0!important;
+    overflow:hidden!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow[data-keyboard="true"].rider-search-view
+    .nr-destination-panel {
+    height:100%!important;
+    min-height:0!important;
+    max-height:100%!important;
+    border-radius:20px 20px 0 0!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow[data-keyboard="true"].rider-search-view
+    .nr-flow-sheet-handle {
+    display:none!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow[data-keyboard="true"].rider-search-view
+    .nr-destination-panel > header {
+    padding-top:12px!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow[data-keyboard="true"].rider-search-view
+    .nr-destination-body {
+    flex:1 1 auto!important;
+    min-height:0!important;
+    overflow-y:auto!important;
+    padding-bottom:18px!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow[data-keyboard="true"].rider-search-view
+    .nr-search-discovery {
+    min-height:max-content;
+    padding-bottom:24px!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow[data-keyboard="true"].rider-search-view
+    .nr-destination-panel footer {
+    display:none!important;
+  }
+
 @media (max-width: 390px) and (max-height: 720px) {
   .nr-app[data-mode="rider"] .rider-map-flow.rider-ride-view {
     --nr-flow-sheet-height: 64dvh;
