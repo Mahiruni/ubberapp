@@ -15,7 +15,7 @@ import "../nexride.css";
 import "../detail-system.css";
 export default function Onboarding() {
   return (
-    <EntryShell photoCredit>
+    <EntryShell>
       <Welcome />
     </EntryShell>
   );
