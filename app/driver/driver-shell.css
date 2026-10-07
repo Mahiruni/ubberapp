@@ -171,3 +171,119 @@ html[lang="am"] .nr-driver-global-header-title :where(span,strong,small){letter-
   --driver-text-primary:#102334;--driver-text-secondary:#667587
 }
 html[lang="am"] .nr-driver-menu-panel :where(strong,small,span,button,a){letter-spacing:0!important}
+
+
+/* Driver home: no header bar, one official floating hamburger */
+.nr-driver-home-menu-host{
+  position:fixed;
+  z-index:var(--driver-z-header);
+  top:calc(env(safe-area-inset-top,0px) + 10px);
+  right:max(12px,env(safe-area-inset-right,0px));
+  pointer-events:auto;
+}
+.nr-driver-home-menu-host .nr-driver-menu-trigger{
+  border:1px solid var(--driver-border);
+  background:color-mix(in srgb,var(--driver-surface) 90%,transparent);
+  box-shadow:0 8px 24px rgba(2,18,29,.16);
+  backdrop-filter:blur(16px) saturate(1.15);
+  -webkit-backdrop-filter:blur(16px) saturate(1.15);
+}
+.nr-driver-home-menu-host .nr-driver-menu-trigger:hover{
+  background:var(--driver-surface);
+}
+.nr-driver-home-menu-host .nr-driver-menu-layer{pointer-events:auto}
+
+/* Professional grouped Driver drawer */
+.nr-driver-menu-section-label{
+  margin:13px 9px 5px;
+  color:var(--driver-text-secondary);
+  font-size:8px;
+  font-weight:850;
+  letter-spacing:.13em;
+  text-transform:uppercase;
+}
+.nr-driver-menu-section-label:first-of-type{margin-top:4px}
+.nr-driver-menu-preferences{
+  margin-top:0;
+  padding-top:0;
+}
+.nr-driver-menu-footer{
+  margin-top:14px;
+  padding:14px;
+  border:1px solid rgba(255,255,255,.09);
+  border-radius:18px;
+  background:#06283f;
+  color:#f7fbfd;
+  box-shadow:0 14px 34px rgba(0,12,22,.20);
+}
+.nr-driver-menu-footer-brand{
+  display:grid;
+  grid-template-columns:40px minmax(0,1fr);
+  align-items:center;
+  gap:10px;
+}
+.nr-driver-menu-footer-brand>span{
+  width:40px;
+  height:40px;
+  display:grid;
+  place-items:center;
+  border-radius:13px;
+  background:#00c878;
+  color:#03251b;
+  font-size:17px;
+  font-weight:900;
+  letter-spacing:-.04em;
+}
+.nr-driver-menu-footer-brand>div{
+  min-width:0;
+  display:grid;
+  gap:3px;
+}
+.nr-driver-menu-footer-brand strong{
+  font-size:14px;
+  font-weight:830;
+  letter-spacing:-.025em;
+}
+.nr-driver-menu-footer-brand small{
+  color:#a8bdc9;
+  font-size:9.5px;
+  line-height:1.35;
+}
+.nr-driver-menu-logout{
+  width:100%;
+  min-height:46px;
+  margin-top:13px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:12px;
+  background:rgba(255,255,255,.08);
+  color:#fff;
+  font:inherit;
+  font-size:12px;
+  font-weight:790;
+  cursor:pointer;
+  transition:background-color var(--driver-motion-fast) ease,transform var(--driver-motion-fast) ease,border-color var(--driver-motion-fast) ease;
+}
+.nr-driver-menu-logout:hover{
+  background:rgba(255,255,255,.13);
+  border-color:rgba(255,255,255,.19);
+}
+.nr-driver-menu-logout:active{transform:scale(.985)}
+.nr-driver-menu-logout:disabled{opacity:.56;cursor:wait}
+.nr-driver-menu-logout:focus-visible{
+  outline:3px solid rgba(0,200,120,.38);
+  outline-offset:2px;
+}
+.nr-driver-menu-footer>p{
+  margin:9px 0 0;
+  color:#ffb8c2;
+  font-size:9.5px;
+  line-height:1.4;
+}
+html[lang="am"] .nr-driver-menu-section-label,
+html[lang="am"] .nr-driver-menu-footer :where(strong,small,span,button,p){
+  letter-spacing:0!important;
+}
