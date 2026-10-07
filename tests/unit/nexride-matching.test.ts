@@ -28,4 +28,13 @@ describe('confirmed matching snapshots', () => {
   });
   it('ignores stale updates and cannot regress assignment to searching', () => {
     const assigned = snapshot('assigned', 3);
-    expect(newerMatch(assigned, snapshot('searching', 2))).toBe(a...[truncated]
+    expect(newerMatch(assigned, snapshot('searching', 2))).toBe(assigned);
+    expect(newerMatch(assigned, snapshot('searching', 4))).toBe(assigned);
+    expect(newerMatch(assigned, snapshot('cancelled', 4)).status).toBe('cancelled');
+  });
+  it('never revives a confirmed cancelled request', () => {
+    const cancelled = snapshot('cancelled', 5);
+    expect(newerMatch(cancelled, snapshot('searching', 6))).toBe(cancelled);
+    expect(newerMatch(snapshot(), { ...snapshot('delayed', 2), requestId: 'other' }).status).toBe('searching');
+  });
+});
