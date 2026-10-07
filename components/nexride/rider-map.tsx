@@ -290,7 +290,8 @@ export function RiderMap({
 
       const geocoder = new MapboxGeocoder({
         accessToken: token,
-        mapboxgl: mapboxgl.default,
+        mapboxgl:
+          mapboxgl.default as unknown as typeof import("mapbox-gl"),
         marker: false,
         countries: "et",
         language,
