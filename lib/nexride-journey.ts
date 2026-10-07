@@ -50,6 +50,9 @@ export type RouteState = {
     | "coverage"
     | "same";
   route?: RouteResult;
+  alternatives?: RouteResult[];
+  selectedIndex?: number;
+  updatedAt?: number;
   coverage?: { kind: "preview" | "configured" };
 };
 export function useJourney(position: RiderLocation | null, language: Language = "en") {
@@ -232,54 +235,125 @@ export function useJourney(position: RiderLocation | null, language: Language = 
       setResult({ key, status: "idle" });
       return;
     }
+
     let active = true;
-    const controller = new AbortController();
-    setResult({ key, status: "loading" });
-    fetch("/api/rider/route", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        pickup: { lat: pickup.lat, lng: pickup.lng },
-        destination: { lat: destination.lat, lng: destination.lng },
-      }),
-      signal: AbortSignal.any([controller.signal, AbortSignal.timeout(10000)]),
-      cache: "no-store",
-    })
-      .then((r) => r.json())
-      .then((data) => {
+    let controller: AbortController | null = null;
+
+    const validRoute = (route: RouteResult | undefined) =>
+      !!route &&
+      Number.isFinite(route.distanceMeters) &&
+      route.distanceMeters >= 0 &&
+      Number.isFinite(route.durationSeconds) &&
+      route.durationSeconds >= 0 &&
+      route.provider === "mapbox" &&
+      Array.isArray(route.geometry) &&
+      route.geometry.length >= 2 &&
+      route.geometry.every((coordinate) =>
+        validPoint({ lat: coordinate?.[0], lng: coordinate?.[1] }),
+      );
+
+    const load = async (background = false) => {
+      controller?.abort();
+      controller = new AbortController();
+      if (!background)
+        setResult((current) =>
+          current.key === key && current.status === "ready"
+            ? current
+            : { key, status: "loading" },
+        );
+
+      try {
+        const response = await fetch("/api/rider/route", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            pickup: { lat: pickup.lat, lng: pickup.lng },
+            destination: { lat: destination.lat, lng: destination.lng },
+          }),
+          signal: AbortSignal.any([
+            controller.signal,
+            AbortSignal.timeout(10000),
+          ]),
+          cache: "no-store",
+        });
+        const data = await response.json();
         if (!active) return;
+
         if (
           !["ready", "unavailable", "error", "coverage", "same"].includes(
             data.status,
           )
         )
           throw new Error("Invalid route response");
-        if (
-          data.status === "ready" &&
-          (!Number.isFinite(data.route?.distanceMeters) ||
-            data.route.distanceMeters < 0 ||
-            !Number.isFinite(data.route?.durationSeconds) ||
-            data.route.durationSeconds < 0 ||
-            data.route?.provider !== "mapbox" ||
-            !Array.isArray(data.route?.geometry) ||
-            data.route.geometry.length < 2 ||
-            !data.route.geometry.every((c: number[]) =>
-              validPoint({ lat: c?.[0], lng: c?.[1] }),
-            ))
-        )
+
+        if (data.status !== "ready") {
+          setResult({ ...data, key });
+          return;
+        }
+
+        const alternatives = (
+          Array.isArray(data.alternatives)
+            ? data.alternatives
+            : [data.route]
+        ).filter((route: RouteResult | undefined): route is RouteResult =>
+          validRoute(route),
+        );
+
+        if (!alternatives.length || !validRoute(data.route))
           throw new Error("Invalid route");
-        setResult({ ...data, key });
-      })
-      .catch(() => {
-        if (active) setResult({ key, status: "error" });
-      });
+
+        alternatives.sort(
+          (a, b) =>
+            a.durationSeconds - b.durationSeconds ||
+            a.distanceMeters - b.distanceMeters,
+        );
+
+        setResult((current) => {
+          const previousIndex =
+            current.key === key && current.status === "ready"
+              ? current.selectedIndex || 0
+              : 0;
+          const selectedIndex = Math.min(
+            previousIndex,
+            alternatives.length - 1,
+          );
+          return {
+            ...data,
+            key,
+            status: "ready",
+            alternatives,
+            selectedIndex,
+            route: alternatives[selectedIndex],
+            updatedAt:
+              Number.isFinite(Number(data.updatedAt))
+                ? Number(data.updatedAt)
+                : Date.now(),
+          };
+        });
+      } catch {
+        if (!active) return;
+        setResult((current) =>
+          background && current.key === key && current.status === "ready"
+            ? current
+            : { key, status: "error" },
+        );
+      }
+    };
+
+    void load(false);
+    const timer = window.setInterval(() => {
+      void load(true);
+    }, 60_000);
+
     return () => {
       active = false;
-      controller.abort();
+      window.clearInterval(timer);
+      controller?.abort();
     };
-    // Only coordinates and confirmation affect the route; reverse labels don't.
+    // Only coordinates, confirmation, and explicit retry affect the route.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key, valid, retry]);
+
   useEffect(() => {
     const update = () => {
       const height = window.visualViewport?.height || window.innerHeight;
@@ -328,6 +402,21 @@ export function useJourney(position: RiderLocation | null, language: Language = 
     },
     invalidatePickup: () => setDragging(true),
     retryRoute: () => setRetry((v) => v + 1),
+    selectRoute: (index: number) =>
+      setResult((current) => {
+        if (
+          current.status !== "ready" ||
+          !current.alternatives?.length ||
+          index < 0 ||
+          index >= current.alternatives.length
+        )
+          return current;
+        return {
+          ...current,
+          selectedIndex: index,
+          route: current.alternatives[index],
+        };
+      }),
     sheetRatio,
     setSheetRatio,
     viewport,

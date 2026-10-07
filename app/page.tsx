@@ -518,6 +518,11 @@ function AppWorkspace({
               topLabel={authenticated ? t("city") : t("preview")}
               back={screen === "rides" ? () => navigate("destination") : undefined}
               locked={requestPending}
+              onStartRoute={
+                screen === "destination" && journey.canContinue
+                  ? () => navigate("rides")
+                  : undefined
+              }
             />
           ) : (
             <RiderMap

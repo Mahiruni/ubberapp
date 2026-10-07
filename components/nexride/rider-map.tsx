@@ -11,7 +11,12 @@ import { Icon, LanguageContext, Spinner, useTranslation } from "./ui";
 import { endpointName } from "./destination";
 import type { Journey } from "../../lib/nexride-journey";
 import type { LocationStatus, RiderLocation } from "../../lib/nexride-location";
-import { formatDistance, formatDuration } from "../../lib/location";
+import {
+  formatDistance,
+  formatDuration,
+  type RouteResult,
+  type TrafficLevel,
+} from "../../lib/location";
 import "mapbox-gl/dist/mapbox-gl.css";
 import "@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css";
 
@@ -94,63 +99,249 @@ const searchAreaElement = () => {
   return root;
 };
 
-function routeData(journey: Journey | undefined) {
-  const geometry =
-    journey?.routeState.status === "ready"
-      ? journey.routeState.route?.geometry
-      : undefined;
-  if (!geometry?.length) return emptyFeatureCollection;
-  return {
+const routeCollection = (
+  routes: RouteResult[],
+  selectedIndex: number,
+) => ({
+  type: "FeatureCollection" as const,
+  features: routes.flatMap((route, routeIndex) =>
+    route.geometry?.length
+      ? [
+          {
+            type: "Feature" as const,
+            properties: {
+              routeIndex,
+              selected: routeIndex === selectedIndex,
+            },
+            geometry: {
+              type: "LineString" as const,
+              coordinates: route.geometry.map(
+                ([lat, lng]) => [lng, lat] as [number, number],
+              ),
+            },
+          },
+        ]
+      : [],
+  ),
+});
+
+const segmentCollection = (route: RouteResult | undefined) => ({
+  type: "FeatureCollection" as const,
+  features: (route?.segments || []).map((segment, index) => ({
     type: "Feature" as const,
-    properties: {},
+    id: index,
+    properties: {
+      congestion: segment.congestion || "unknown",
+    },
     geometry: {
       type: "LineString" as const,
-      coordinates: geometry.map(
-        ([lat, lng]) => [lng, lat] as [number, number],
-      ),
+      coordinates: [
+        [segment.from[1], segment.from[0]],
+        [segment.to[1], segment.to[0]],
+      ],
     },
-  };
-}
+  })),
+});
 
-function syncRoute(map: MapboxMap, journey: Journey | undefined) {
+function syncRoutes(map: MapboxMap, journey: Journey | undefined) {
   if (!map.isStyleLoaded()) return;
-  const data = routeData(journey);
-  const hasRoute = data.type === "Feature";
-  const source = map.getSource("nexride-route") as GeoJSONSource | undefined;
+  const state = journey?.routeState;
+  const routes =
+    state?.status === "ready"
+      ? state.alternatives?.length
+        ? state.alternatives
+        : state.route
+          ? [state.route]
+          : []
+      : [];
+  const selectedIndex =
+    state?.status === "ready" ? state.selectedIndex || 0 : 0;
+  const selectedRoute = routes[selectedIndex];
+  const routesData = routeCollection(routes, selectedIndex);
+  const segmentsData = segmentCollection(selectedRoute);
 
-  if (source) {
-    source.setData(data);
-  } else if (hasRoute) {
-    map.addSource("nexride-route", { type: "geojson", data });
-  }
+  const routeSource = map.getSource("nexride-routes") as
+    | GeoJSONSource
+    | undefined;
+  if (routeSource) routeSource.setData(routesData);
+  else if (routes.length)
+    map.addSource("nexride-routes", {
+      type: "geojson",
+      data: routesData,
+    });
 
-  if (hasRoute && !map.getLayer("nexride-route-casing")) {
+  const segmentSource = map.getSource("nexride-route-segments") as
+    | GeoJSONSource
+    | undefined;
+  if (segmentSource) segmentSource.setData(segmentsData);
+  else if (routes.length)
+    map.addSource("nexride-route-segments", {
+      type: "geojson",
+      data: segmentsData,
+    });
+
+  if (routes.length && !map.getLayer("nexride-route-casing")) {
     map.addLayer({
       id: "nexride-route-casing",
       type: "line",
-      source: "nexride-route",
+      source: "nexride-routes",
       layout: { "line-cap": "round", "line-join": "round" },
       paint: {
         "line-color": "#ffffff",
-        "line-width": 9,
-        "line-opacity": 0.94,
+        "line-width": [
+          "case",
+          ["boolean", ["get", "selected"], false],
+          9,
+          7,
+        ],
+        "line-opacity": [
+          "case",
+          ["boolean", ["get", "selected"], false],
+          0.96,
+          0.62,
+        ],
       },
     });
   }
 
-  if (hasRoute && !map.getLayer("nexride-route-line")) {
+  if (routes.length && !map.getLayer("nexride-route-lines")) {
     map.addLayer({
-      id: "nexride-route-line",
+      id: "nexride-route-lines",
       type: "line",
-      source: "nexride-route",
+      source: "nexride-routes",
       layout: { "line-cap": "round", "line-join": "round" },
       paint: {
-        "line-color": "#246bc6",
-        "line-width": 5,
-        "line-opacity": 0.96,
+        "line-color": [
+          "case",
+          ["boolean", ["get", "selected"], false],
+          "#246bc6",
+          "#7f8d98",
+        ],
+        "line-width": [
+          "case",
+          ["boolean", ["get", "selected"], false],
+          5,
+          4,
+        ],
+        "line-opacity": [
+          "case",
+          ["boolean", ["get", "selected"], false],
+          0.96,
+          0.52,
+        ],
       },
     });
   }
+
+  if (routes.length && !map.getLayer("nexride-route-congestion")) {
+    map.addLayer({
+      id: "nexride-route-congestion",
+      type: "line",
+      source: "nexride-route-segments",
+      layout: { "line-cap": "round", "line-join": "round" },
+      paint: {
+        "line-color": [
+          "match",
+          ["get", "congestion"],
+          "low",
+          "#18a558",
+          "moderate",
+          "#e6b800",
+          "heavy",
+          "#f08a24",
+          "severe",
+          "#dc3f45",
+          "#246bc6",
+        ],
+        "line-width": 5.5,
+        "line-opacity": 0.98,
+      },
+    });
+  }
+
+  if (routes.length && !map.getLayer("nexride-route-hitbox")) {
+    map.addLayer({
+      id: "nexride-route-hitbox",
+      type: "line",
+      source: "nexride-routes",
+      layout: { "line-cap": "round", "line-join": "round" },
+      paint: {
+        "line-color": "#000000",
+        "line-width": 22,
+        "line-opacity": 0,
+      },
+    });
+  }
+}
+
+function firstSymbolLayer(map: MapboxMap) {
+  return map
+    .getStyle()
+    .layers?.find((layer) => layer.type === "symbol")?.id;
+}
+
+function addTraffic(map: MapboxMap) {
+  if (!map.isStyleLoaded()) return;
+  if (!map.getSource("nexride-traffic"))
+    map.addSource("nexride-traffic", {
+      type: "vector",
+      url: "mapbox://mapbox.mapbox-traffic-v1",
+    });
+  if (!map.getLayer("nexride-live-traffic")) {
+    map.addLayer(
+      {
+        id: "nexride-live-traffic",
+        type: "line",
+        source: "nexride-traffic",
+        "source-layer": "traffic",
+        layout: {
+          "line-cap": "round",
+          "line-join": "round",
+        },
+        paint: {
+          "line-color": [
+            "match",
+            ["get", "congestion"],
+            "low",
+            "#18a558",
+            "moderate",
+            "#e6b800",
+            "heavy",
+            "#f08a24",
+            "severe",
+            "#dc3f45",
+            "rgba(127,141,152,.38)",
+          ],
+          "line-width": [
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            8,
+            1.5,
+            12,
+            2.5,
+            16,
+            5,
+          ],
+          "line-opacity": 0.78,
+        },
+      },
+      firstSymbolLayer(map),
+    );
+  }
+}
+
+function removeTraffic(map: MapboxMap) {
+  if (map.getLayer("nexride-live-traffic"))
+    map.removeLayer("nexride-live-traffic");
+  if (map.getSource("nexride-traffic"))
+    map.removeSource("nexride-traffic");
+}
+
+function refreshTraffic(map: MapboxMap) {
+  if (!map.isStyleLoaded()) return;
+  removeTraffic(map);
+  addTraffic(map);
 }
 
 function syncAccuracy(
@@ -266,6 +457,7 @@ export function RiderMap({
   searching = false,
   readOnly = false,
   topLabel,
+  onStartRoute,
 }: {
   position: RiderLocation | null;
   status: LocationStatus;
@@ -280,6 +472,7 @@ export function RiderMap({
   searching?: boolean;
   readOnly?: boolean;
   topLabel?: string;
+  onStartRoute?: () => void;
 }) {
   const t = useTranslation();
   const language = useContext(LanguageContext);
@@ -294,10 +487,15 @@ export function RiderMap({
   const positionRef = useRef(position);
   const statusRef = useRef(status);
   const rideLabelRef = useRef(rideLabel);
+  const readOnlyRef = useRef(readOnly);
+  const trafficVisibleRef = useRef(false);
+  const lastTrafficRefresh = useRef(0);
+  const lastFastestDuration = useRef<number | null>(null);
   journeyRef.current = journey;
   positionRef.current = position;
   statusRef.current = status;
   rideLabelRef.current = rideLabel;
+  readOnlyRef.current = readOnly;
 
   const manualView = useRef(false);
   const mapGestureBlocked = useRef(false);
@@ -314,6 +512,9 @@ export function RiderMap({
   const [styleKey, setStyleKey] = useState<MapStyleKey>("streets");
   const [layerMenuOpen, setLayerMenuOpen] = useState(false);
   const [bearing, setBearing] = useState(0);
+  const [trafficVisible, setTrafficVisible] = useState(true);
+  const [fasterNotice, setFasterNotice] = useState<number | null>(null);
+  trafficVisibleRef.current = trafficVisible;
 
   const route =
     journey?.routeState.status === "ready"
@@ -405,10 +606,47 @@ export function RiderMap({
       });
       map.addControl(geocoder, "top-left");
 
+      geocoder.on("result", (event: any) => {
+        const result = event?.result;
+        const coordinates =
+          Array.isArray(result?.center) && result.center.length >= 2
+            ? result.center
+            : result?.geometry?.type === "Point" &&
+                Array.isArray(result.geometry.coordinates)
+              ? result.geometry.coordinates
+              : null;
+        const plan = journeyRef.current;
+        if (
+          !coordinates ||
+          !plan ||
+          readOnlyRef.current ||
+          !Number.isFinite(Number(coordinates[0])) ||
+          !Number.isFinite(Number(coordinates[1]))
+        )
+          return;
+        plan.select("destination", {
+          lng: Number(coordinates[0]),
+          lat: Number(coordinates[1]),
+          name:
+            typeof result?.text === "string"
+              ? result.text
+              : typeof result?.place_name === "string"
+                ? result.place_name
+                : "",
+          address:
+            typeof result?.place_name === "string"
+              ? result.place_name
+              : "",
+          source: "provider",
+          confirmed: true,
+        });
+      });
+
       const syncStyleData = () => {
         if (!map.isStyleLoaded()) return;
-        syncRoute(map, journeyRef.current);
+        syncRoutes(map, journeyRef.current);
         syncAccuracy(map, positionRef.current, statusRef.current);
+        if (trafficVisibleRef.current) addTraffic(map);
       };
 
       map.on("style.load", () => {
@@ -470,12 +708,59 @@ export function RiderMap({
           performance.now() < suppressMapClickUntil.current
         )
           return;
+
+        if (map.getLayer("nexride-route-hitbox")) {
+          const routeFeature = map.queryRenderedFeatures(event.point, {
+            layers: ["nexride-route-hitbox"],
+          })[0];
+          const routeIndex = Number(routeFeature?.properties?.routeIndex);
+          if (Number.isInteger(routeIndex) && routeIndex >= 0) {
+            suppressMapClickUntil.current = performance.now() + 350;
+            journeyRef.current?.selectRoute(routeIndex);
+            return;
+          }
+        }
+
         const plan = journeyRef.current;
-        if (plan?.pinMode)
+        if (!plan || readOnlyRef.current) return;
+
+        if (plan.pinMode) {
           plan.setPin(plan.pinMode, {
             lat: event.lngLat.lat,
             lng: event.lngLat.lng,
           });
+          return;
+        }
+
+        if (!plan.pickup?.confirmed) {
+          plan.select("pickup", {
+            lat: event.lngLat.lat,
+            lng: event.lngLat.lng,
+            name: "",
+            address: `${event.lngLat.lat.toFixed(5)}, ${event.lngLat.lng.toFixed(5)}`,
+            source: "pin",
+            confirmed: true,
+          });
+          return;
+        }
+
+        if (!plan.destination?.confirmed)
+          plan.select("destination", {
+            lat: event.lngLat.lat,
+            lng: event.lngLat.lng,
+            name: "",
+            address: `${event.lngLat.lat.toFixed(5)}, ${event.lngLat.lng.toFixed(5)}`,
+            source: "pin",
+            confirmed: true,
+          });
+      });
+
+      map.on("idle", () => {
+        if (!trafficVisibleRef.current || !map.isStyleLoaded()) return;
+        const now = Date.now();
+        if (now - lastTrafficRefresh.current < 30_000) return;
+        lastTrafficRefresh.current = now;
+        refreshTraffic(map);
       });
 
       resizeObserver.current = new ResizeObserver(() => {
@@ -516,6 +801,17 @@ export function RiderMap({
     setLayerMenuOpen(false);
     map.setStyle(STYLE_URLS[styleKey]);
   }, [styleKey, mounted]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!mounted || !map || !map.isStyleLoaded()) return;
+    if (trafficVisible) {
+      addTraffic(map);
+      lastTrafficRefresh.current = Date.now();
+    } else {
+      removeTraffic(map);
+    }
+  }, [trafficVisible, mounted, styleKey]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -665,7 +961,7 @@ export function RiderMap({
   useEffect(() => {
     const map = mapRef.current;
     if (!mounted || !map || !map.isStyleLoaded()) return;
-    syncRoute(map, journey);
+    syncRoutes(map, journey);
 
     if (
       !manualView.current &&
@@ -685,6 +981,29 @@ export function RiderMap({
     rideLabel,
     mounted,
   ]);
+
+  useEffect(() => {
+    const state = journey?.routeState;
+    if (state?.status !== "ready" || !state.updatedAt) return;
+    const routes = state.alternatives?.length
+      ? state.alternatives
+      : state.route
+        ? [state.route]
+        : [];
+    const fastest = routes[0];
+    if (!fastest) return;
+
+    const previousFastest = lastFastestDuration.current;
+    lastFastestDuration.current = fastest.durationSeconds;
+    if (
+      previousFastest !== null &&
+      fastest.durationSeconds + 30 < previousFastest
+    ) {
+      setFasterNotice(previousFastest - fastest.durationSeconds);
+      const timer = window.setTimeout(() => setFasterNotice(null), 8000);
+      return () => window.clearTimeout(timer);
+    }
+  }, [journey?.routeState.updatedAt]);
 
   useEffect(() => {
     searchMarker.current?.remove();
@@ -708,7 +1027,7 @@ export function RiderMap({
 
   return (
     <section
-      className="nr-rider-map-surface nr-mapbox-surface"
+      className={`nr-rider-map-surface nr-mapbox-surface ${route ? "nr-map-has-route" : ""}`}
       inert={locked}
       aria-label={t("streetMap")}
       data-map-status={mapStatus}
@@ -751,6 +1070,29 @@ export function RiderMap({
           disabled={status === "loading"}
         >
           {status === "loading" ? <Spinner /> : <Icon name="locate" size={21} />}
+        </button>
+
+        <button
+          type="button"
+          className="nr-map-touch-control nr-map-traffic-toggle"
+          aria-label={
+            language === "am"
+              ? trafficVisible
+                ? "ቀጥታ ትራፊክ ደብቅ"
+                : "ቀጥታ ትራፊክ አሳይ"
+              : trafficVisible
+                ? "Hide live traffic"
+                : "Show live traffic"
+          }
+          aria-pressed={trafficVisible}
+          title={trafficVisible ? "Hide live traffic" : "Show live traffic"}
+          onClick={() => setTrafficVisible((visible) => !visible)}
+        >
+          <span className="nr-traffic-control-icon" aria-hidden="true">
+            <i />
+            <i />
+            <i />
+          </span>
         </button>
 
         <button
@@ -885,27 +1227,133 @@ export function RiderMap({
         <span className="nr-map-preview-chip">{topLabel || t("preview")}</span>
       </div>
 
-      {route && (
-        <div
-          className="nr-map-route-summary"
-          data-traffic={route.traffic?.level || "unavailable"}
-          role="status"
-          aria-label={`${formatDuration(route.durationSeconds)}, ${formatDistance(
-            route.distanceMeters,
-          )}${trafficLabel ? `, ${trafficLabel}` : ""}`}
-        >
+      {fasterNotice !== null && (
+        <div className="nr-faster-route-notice" role="status" aria-live="polite">
+          <Icon name="refresh" size={16} />
           <span>
-            <Icon name="clock" size={16} />
-            <strong>{formatDuration(route.durationSeconds)}</strong>
+            {language === "am"
+              ? `ፈጣን መንገድ ተገኝቷል · ${formatDuration(fasterNotice)} ይቆጥቡ`
+              : `Faster route available · save ${formatDuration(fasterNotice)}`}
           </span>
-          <span>{formatDistance(route.distanceMeters)}</span>
-          {trafficLabel && (
-            <span className="nr-map-traffic">
-              <i aria-hidden="true" />
-              {trafficLabel}
-            </span>
-          )}
+          <button
+            onClick={() => {
+              journey?.selectRoute(0);
+              setFasterNotice(null);
+            }}
+          >
+            {language === "am" ? "ቀይር" : "Switch"}
+          </button>
         </div>
+      )}
+
+      {journey?.destination?.confirmed && (
+        <aside
+          className="nr-live-route-panel"
+          data-state={journey.routeState.status}
+          aria-label={language === "am" ? "የመንገድ መረጃ" : "Route information"}
+        >
+          <div className="nr-live-route-handle" aria-hidden="true" />
+          {journey.routeState.status === "loading" ? (
+            <div className="nr-live-route-state" role="status">
+              <Spinner />
+              <span>{language === "am" ? "መንገድ በመፈለግ ላይ…" : "Finding traffic-aware routes…"}</span>
+            </div>
+          ) : journey.routeState.status === "ready" && route ? (
+            <>
+              <div className="nr-live-route-head">
+                <div>
+                  <small>{language === "am" ? "ቀጥታ ትራፊክ" : "Live traffic"}</small>
+                  <strong>{formatDuration(route.durationSeconds)}</strong>
+                </div>
+                <div className="nr-live-route-metrics">
+                  <span>{formatDistance(route.distanceMeters)}</span>
+                  <span>
+                    {route.delaySeconds !== undefined
+                      ? route.delaySeconds > 30
+                        ? language === "am"
+                          ? `+${formatDuration(route.delaySeconds)} መዘግየት`
+                          : `+${formatDuration(route.delaySeconds)} delay`
+                        : language === "am"
+                          ? "መዘግየት የለም"
+                          : "No traffic delay"
+                      : language === "am"
+                        ? "መደበኛ ጊዜ የለም"
+                        : "Typical time unavailable"}
+                  </span>
+                </div>
+              </div>
+
+              {(journey.routeState.alternatives?.length || 0) > 1 && (
+                <div
+                  className="nr-route-alternative-tabs"
+                  role="radiogroup"
+                  aria-label={language === "am" ? "አማራጭ መንገዶች" : "Alternative routes"}
+                >
+                  {journey.routeState.alternatives!.slice(0, 3).map((option, index) => (
+                    <button
+                      key={index}
+                      type="button"
+                      role="radio"
+                      aria-checked={(journey.routeState.selectedIndex || 0) === index}
+                      onClick={() => {
+                        journey.selectRoute(index);
+                        manualView.current = false;
+                        window.setTimeout(() => {
+                          if (mapRef.current)
+                            fitJourney(mapRef.current, journeyRef.current, rideLabelRef.current);
+                        }, 0);
+                      }}
+                    >
+                      <span>{index === 0 ? (language === "am" ? "ፈጣን" : "Fastest") : `${language === "am" ? "መንገድ" : "Route"} ${index + 1}`}</span>
+                      <strong>{formatDuration(option.durationSeconds)}</strong>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              <div className="nr-live-route-actions">
+                <button
+                  type="button"
+                  className="nr-route-reroute"
+                  onClick={() => journey.retryRoute()}
+                >
+                  <Icon name="refresh" size={17} />
+                  {language === "am" ? "እንደገና አቅጣጫ" : "Re-route"}
+                </button>
+                {onStartRoute && !readOnly && (
+                  <button
+                    type="button"
+                    className="nr-route-start"
+                    onClick={onStartRoute}
+                  >
+                    {language === "am" ? "ጉዞ ይምረጡ" : "Choose ride"}
+                    <Icon name="arrow" size={17} />
+                  </button>
+                )}
+              </div>
+            </>
+          ) : (
+            <div className="nr-live-route-state error" role="alert">
+              <Icon name="info" size={18} />
+              <span>
+                {journey.routeState.status === "same"
+                  ? language === "am"
+                    ? "መነሻና መድረሻ በጣም ቅርብ ናቸው።"
+                    : "Origin and destination are too close."
+                  : journey.routeState.status === "coverage"
+                    ? language === "am"
+                      ? "ይህ መንገድ ከአገልግሎት ክልሉ ውጭ ነው።"
+                      : "This route is outside the current service area."
+                    : language === "am"
+                      ? "የትራፊክ መንገድ አልተገኘም።"
+                      : "No traffic-aware route is available."}
+              </span>
+              <button onClick={() => journey.retryRoute()}>
+                {language === "am" ? "እንደገና ሞክር" : "Try again"}
+              </button>
+            </div>
+          )}
+        </aside>
       )}
 
       {journey?.pinMode && (
