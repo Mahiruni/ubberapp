@@ -4,52 +4,83 @@
   font-display: swap;
   font-style: normal;
   font-weight: 700;
-  unicode-range:
-    U+1200-137F,
-    U+1380-139F,
-    U+2D80-2DDF,
-    U+AB00-AB2F;
+  unicode-range: U+1200-137F;
 }
 
 :root {
+  /* Existing NexRide English/Latin typography remains unchanged. */
   --nr-font-latin: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --nr-font-ethiopic: "Benaiah NexRide", "Noto Sans Ethiopic", "Abyssinica SIL", sans-serif;
+
+  /* Benaiah is used only for Ethiopic glyphs. Latin characters fall through
+     to NexRide's existing Latin stack before any Ethiopic fallback is tried. */
+  --nr-font-amharic:
+    "Benaiah NexRide",
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    "Noto Sans Ethiopic",
+    "Abyssinica SIL",
+    sans-serif;
+
+  --font-amharic: var(--nr-font-amharic);
 }
 
-/* Benaiah is used only when NexRide is in Amharic mode.
-   The webfont is Ethiopic-subsetted, so Latin brand names, numbers, and symbols
-   continue to fall through to the regular NexRide Latin font stack. */
+/* NexRideLanguageProvider updates <html lang> in real time, so the font switches
+   with the existing localization state and does not introduce parallel state. */
 html[lang="am"] body,
 html[lang="am"] button,
 html[lang="am"] input,
 html[lang="am"] textarea,
 html[lang="am"] select,
+html[lang="am"] option,
 html[lang="am"] .nr-app,
 html[lang="am"] .admin-app,
 html[lang="am"] .nr-auth-experience,
 html[lang="am"] .driver-auth-page,
 html[lang="am"] .driver-onboarding-page {
-  font-family: var(--nr-font-ethiopic), var(--nr-font-latin) !important;
+  font-family: var(--font-amharic) !important;
 }
 
+/* Ethiopic typography should not inherit Latin tracking. */
 html[lang="am"] :where(
-  h1,h2,h3,h4,h5,h6,p,span,small,strong,em,label,button,a,input,textarea,select,option
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  p,
+  span,
+  small,
+  strong,
+  em,
+  label,
+  button,
+  a,
+  input,
+  textarea,
+  select,
+  option
 ) {
   letter-spacing: 0 !important;
 }
 
-html[lang="am"] :where(p,small,label,input,textarea,select,button,a) {
+html[lang="am"] :where(p, small, label, input, textarea, select, option, button, a) {
   line-height: 1.55;
 }
 
-html[lang="am"] :where(h1,h2,h3,h4,h5,h6) {
+html[lang="am"] :where(h1, h2, h3, h4, h5, h6) {
   line-height: 1.28;
 }
 
-/* Keep NexRide's Latin wordmark and numerical transport data visually stable. */
+/* Keep NexRide branding and data-heavy Latin/numeric transport information
+   visually identical to the English design system. */
 html[lang="am"] :where(
   .nr-brand,
   .nr-brand *,
+  .nr-wordmark,
+  .nr-wordmark *,
   .nr-ride-price,
   .nr-request-total,
   .nr-metric,
@@ -57,7 +88,31 @@ html[lang="am"] :where(
   .nr-wallet-balance,
   .nr-receipt-value,
   .nr-driver-metric-grid,
-  .metric
+  .metric,
+  [data-nr-latin],
+  [data-nr-numeric]
 ) {
   font-family: var(--nr-font-latin) !important;
+  letter-spacing: normal;
+}
+
+/* Improve Ethiopic glyph rasterization without changing component dimensions. */
+html[lang="am"] :where(button, input, textarea, select) {
+  text-rendering: optimizeLegibility;
+}
+
+/* Small phones: allow long Amharic labels and Ethiopian place names to wrap
+   safely instead of forcing horizontal overflow. */
+@media (max-width: 390px) {
+  html[lang="am"] :where(
+    button,
+    input,
+    textarea,
+    select,
+    .nr-rider-flow-panel,
+    .nr-bottom-nav,
+    .nr-bottom-nav *
+  ) {
+    overflow-wrap: anywhere;
+  }
 }
