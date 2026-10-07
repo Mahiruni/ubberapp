@@ -3,6 +3,7 @@ import type { Session } from "@supabase/supabase-js";
 import {
   completedStartup,
   enterRider,
+  EXPLICIT_SIGNOUT_KEY,
   initializeRider,
   retryStartup,
   restorePreferences,
@@ -73,6 +74,19 @@ describe("rider initialization", () => {
     expect(startupDestination({ ...state, session })).toBe("/");
     expect(startupDestination({ ...state, previewEnabled: true })).toBe("/");
     expect(startupDestination({ ...state, returningPreview: true })).toBe("/");
+    expect(startupDestination({ ...state, session, signedOutRole: "rider" })).toBe("/rider/sign-in");
+    expect(startupDestination({ ...state, session, signedOutRole: "driver" })).toBe("/driver/auth");
+  });
+
+  it("does not restore a persisted session after an explicit logout", async () => {
+    values.set(EXPLICIT_SIGNOUT_KEY, "rider");
+    getSession.mockResolvedValue({ data: { session }, error: null });
+
+    const result = await initializeRider();
+
+    expect(result.destination).toBe("/rider/sign-in");
+    expect(result.session).toBeNull();
+    expect(getSession).not.toHaveBeenCalled();
   });
   it("discards stale preview state when a persisted rider session is restored", async () => {
     values.set(
