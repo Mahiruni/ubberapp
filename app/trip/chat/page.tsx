@@ -207,7 +207,7 @@ export default function TripChatPage() {
   }
 
   return (
-    <main className="nr-app nr-support-page" data-theme="dark">
+    <main className="nr-app nr-support-page" data-theme="dark" data-mode={role}>
       <div className="nr-support-wrap">
         <header className="nr-support-head">
           <button className="nr-support-back" onClick={back} aria-label={op("Back")}>

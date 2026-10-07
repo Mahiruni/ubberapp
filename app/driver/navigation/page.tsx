@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { DriverNavigationMap, type NavigationCoordinate } from "../../../components/nexride/driver-navigation-map";
+import { DriverNavigationMap, type NavigationCoordinate, type NavigationTrafficSegment } from "../../../components/nexride/driver-navigation-map";
+import { DriverBottomSheet } from "../../../components/nexride/driver-bottom-sheet";
 import { Button, Dialog, Icon } from "../../../components/nexride/ui";
 import { useOperationalTranslation } from "../../../components/nexride/operational-i18n";
 import { supabase } from "../../../lib/supabase";
@@ -33,6 +34,7 @@ type NativeRoute = {
   steps: GuidanceStep[];
   generatedAt: number;
   traffic: TrafficLevel | null;
+  segments: NavigationTrafficSegment[];
 };
 
 type NavigationData = {
@@ -413,6 +415,22 @@ export default function DriverNavigationPage() {
         ) return;
 
         const trafficLevel = body.route?.traffic?.level;
+        const trafficSegments = Array.isArray(body.route?.segments)
+          ? body.route.segments.map((segment: Record<string, unknown>) => {
+              const from = Array.isArray(segment.from) ? segment.from : [];
+              const to = Array.isArray(segment.to) ? segment.to : [];
+              const congestion = segment.congestion;
+              if (from.length < 2 || to.length < 2) return null;
+              const fromPoint = { lat: Number(from[0]), lng: Number(from[1]) };
+              const toPoint = { lat: Number(to[0]), lng: Number(to[1]) };
+              if (![fromPoint.lat, fromPoint.lng, toPoint.lat, toPoint.lng].every(Number.isFinite)) return null;
+              return {
+                from: fromPoint,
+                to: toPoint,
+                ...(congestion === "low" || congestion === "moderate" || congestion === "heavy" || congestion === "severe" ? { congestion } : {}),
+              } as NavigationTrafficSegment;
+            }).filter(Boolean) as NavigationTrafficSegment[]
+          : [];
         setNativeRoute({
           target,
           geometry,
@@ -420,6 +438,7 @@ export default function DriverNavigationPage() {
           distanceMeters,
           durationSeconds,
           generatedAt: Number(body.generatedAt) || Date.now(),
+          segments: trafficSegments,
           traffic:
             trafficLevel === "low" ||
             trafficLevel === "moderate" ||
@@ -543,7 +562,7 @@ export default function DriverNavigationPage() {
 
   return (
     <main className="nr-app nr-driver-navigation-page" data-mode="driver" data-theme="dark">
-      <DriverNavigationMap vehicle={position} pickup={trip.pickupCoordinate} destination={trip.destinationCoordinate} route={nativeRoute?.target === stage.target ? nativeRoute.geometry : []} target={stage.target} view={mapView} gpsState={gpsState} heading={position?.heading ?? null} />
+      <DriverNavigationMap vehicle={position} pickup={trip.pickupCoordinate} destination={trip.destinationCoordinate} route={nativeRoute?.target === stage.target ? nativeRoute.geometry : []} segments={nativeRoute?.target === stage.target ? nativeRoute.segments : []} target={stage.target} view={mapView} gpsState={gpsState} heading={position?.heading ?? null} />
 
       <button className="nr-nav-home" onClick={() => router.replace("/driver/home")} aria-label={op("Driver home")}><Icon name="home" size={19} /></button>
 
@@ -579,7 +598,7 @@ export default function DriverNavigationPage() {
         </div>
       )}
 
-      <section className="nr-nav-bottom-card">
+      <DriverBottomSheet className="nr-nav-bottom-card" label="Trip controls" defaultSnap="collapsed">
         <div className="nr-nav-trip-progress" aria-label={op("Trip progress")}>
           {[
             { label: op("Pickup"), icon: "pin" as const },
@@ -628,7 +647,7 @@ export default function DriverNavigationPage() {
         )}
 
         {canNavigate && <div className="nr-nav-handoff"><Icon name="info" size={15} /><span>{nativeRoute?.target === stage.target ? "NexRide keeps the route updated from your location. Google Maps is also available for turn-by-turn guidance." : "Route guidance is unavailable right now. Use Google Maps for turn-by-turn directions."}</span></div>}
-      </section>
+      </DriverBottomSheet>
 
       {confirmAction && (
         <Dialog

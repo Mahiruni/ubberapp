@@ -1,28 +1,45 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type * as Leaflet from "leaflet";
-import { Icon } from "./ui";
-import "leaflet/dist/leaflet.css";
+import type { GeoJSONSource, Map as MapboxMap, Marker as MapboxMarker } from "mapbox-gl";
+import { Icon, Spinner } from "./ui";
+import "mapbox-gl/dist/mapbox-gl.css";
 
 export type NavigationCoordinate = { lat: number; lng: number };
+export type NavigationTrafficSegment = {
+  from: NavigationCoordinate;
+  to: NavigationCoordinate;
+  congestion?: "low" | "moderate" | "heavy" | "severe";
+};
+
 type MapView = "overview" | "vehicle";
 type GpsState = "acquiring" | "fresh" | "stale" | "lost" | "unsupported";
+type MapStyleKey = "streets" | "satellite" | "dark";
+
+const STYLE_URLS: Record<MapStyleKey, string> = {
+  streets: process.env.NEXT_PUBLIC_MAPBOX_STYLE || "mapbox://styles/mapbox/streets-v12",
+  satellite: "mapbox://styles/mapbox/satellite-streets-v12",
+  dark: "mapbox://styles/mapbox/dark-v11",
+};
+
+const INITIAL: [number, number] = [
+  Number(process.env.NEXT_PUBLIC_MAPBOX_CENTER_LNG) || 38.775,
+  Number(process.env.NEXT_PUBLIC_MAPBOX_CENTER_LAT) || 9.008,
+];
 
 const valid = (point: NavigationCoordinate | null | undefined): point is NavigationCoordinate =>
-  Boolean(
-    point &&
-      Number.isFinite(point.lat) &&
-      Math.abs(point.lat) <= 90 &&
-      Number.isFinite(point.lng) &&
-      Math.abs(point.lng) <= 180,
-  );
+  Boolean(point && Number.isFinite(point.lat) && Math.abs(point.lat) <= 90 && Number.isFinite(point.lng) && Math.abs(point.lng) <= 180);
+
+const lngLat = (point: NavigationCoordinate): [number, number] => [point.lng, point.lat];
+
+const normalizedBearing = (bearing: number) => ((bearing + 180) % 360 + 360) % 360 - 180;
 
 export function DriverNavigationMap({
   vehicle,
   pickup,
   destination,
   route = [],
+  segments = [],
   target,
   view,
   gpsState,
@@ -32,183 +49,322 @@ export function DriverNavigationMap({
   pickup: NavigationCoordinate | null;
   destination: NavigationCoordinate | null;
   route?: NavigationCoordinate[];
+  segments?: NavigationTrafficSegment[];
   target: "pickup" | "destination";
   view: MapView;
   gpsState: GpsState;
   heading: number | null;
 }) {
   const container = useRef<HTMLDivElement>(null);
-  const map = useRef<Leaflet.Map | null>(null);
-  const library = useRef<typeof Leaflet | null>(null);
-  const routeLayer = useRef<Leaflet.Polyline | null>(null);
-  const routeCasing = useRef<Leaflet.Polyline | null>(null);
-  const markers = useRef<Leaflet.LayerGroup | null>(null);
-  const [mounted, setMounted] = useState(false);
-  const [tilesReady, setTilesReady] = useState(true);
+  const mapRef = useRef<MapboxMap | null>(null);
+  const markers = useRef<MapboxMarker[]>([]);
+  const manualView = useRef(false);
+  const loaded = useRef(false);
+  const trafficAvailable = useRef(true);
+  const [mountedRevision, setMountedRevision] = useState(0);
+  const [mapStatus, setMapStatus] = useState<"loading" | "ready" | "unavailable">("loading");
+  const [styleKey, setStyleKey] = useState<MapStyleKey>("streets");
+  const [layersOpen, setLayersOpen] = useState(false);
+  const [trafficVisible, setTrafficVisible] = useState(true);
+  const [trafficUnavailable, setTrafficUnavailable] = useState(false);
+  const [bearing, setBearing] = useState(0);
 
   useEffect(() => {
-    let active = true;
-    let resize: ResizeObserver | null = null;
-    import("leaflet")
-      .then((L) => {
-        if (!active || !container.current || map.current) return;
-        library.current = L;
-        const initial = valid(vehicle)
-          ? [vehicle.lat, vehicle.lng]
-          : valid(pickup)
-            ? [pickup.lat, pickup.lng]
-            : valid(destination)
-              ? [destination.lat, destination.lng]
-              : [9.008, 38.775];
-        const instance = L.map(container.current, {
-          zoomControl: false,
-          attributionControl: true,
-          preferCanvas: true,
-        }).setView(initial as Leaflet.LatLngExpression, valid(vehicle) || valid(pickup) || valid(destination) ? 14 : 12);
+    let cancelled = false;
 
-        const tiles = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-          maxZoom: 19,
-          attribution: "© OpenStreetMap",
-        });
-        tiles.on("tileerror", () => active && setTilesReady(false));
-        tiles.on("load", () => active && setTilesReady(true));
-        tiles.addTo(instance);
+    const boot = async () => {
+      if (!container.current) return;
+      const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN?.trim();
+      if (!token) {
+        setMapStatus("unavailable");
+        return;
+      }
 
-        markers.current = L.layerGroup().addTo(instance);
-        map.current = instance;
-        resize = new ResizeObserver(() => instance.invalidateSize());
-        resize.observe(container.current);
-        setMounted(true);
-      })
-      .catch(() => active && setTilesReady(false));
+      const mapboxgl = await import("mapbox-gl");
+      if (cancelled || !container.current) return;
+      mapboxgl.default.accessToken = token;
 
+      const map = new mapboxgl.default.Map({
+        container: container.current,
+        style: STYLE_URLS.streets,
+        center: INITIAL,
+        zoom: 13.5,
+        attributionControl: true,
+        cooperativeGestures: false,
+        logoPosition: "bottom-left",
+      });
+      mapRef.current = map;
+
+      const markManual = (event: any) => {
+        if (event?.originalEvent) manualView.current = true;
+      };
+      map.on("dragstart", markManual);
+      map.on("zoomstart", markManual);
+      map.on("rotatestart", markManual);
+      map.on("rotate", () => setBearing(map.getBearing()));
+      map.on("style.load", () => {
+        if (cancelled) return;
+        loaded.current = true;
+        setMapStatus("ready");
+        setMountedRevision((value) => value + 1);
+      });
+      map.on("load", () => {
+        if (cancelled) return;
+        loaded.current = true;
+        setMapStatus("ready");
+        setMountedRevision((value) => value + 1);
+      });
+      map.on("error", () => {
+        if (!loaded.current && !cancelled) setMapStatus("unavailable");
+      });
+    };
+
+    void boot();
     return () => {
-      active = false;
-      resize?.disconnect();
-      map.current?.remove();
-      map.current = null;
-      markers.current = null;
-      routeLayer.current = null;
-      routeCasing.current = null;
-      library.current = null;
+      cancelled = true;
+      markers.current.forEach((marker) => marker.remove());
+      markers.current = [];
+      mapRef.current?.remove();
+      mapRef.current = null;
     };
   }, []);
 
   useEffect(() => {
-    if (!mounted || !map.current || !library.current || !markers.current) return;
-    const L = library.current;
-    const instance = map.current;
-    markers.current.clearLayers();
-    routeLayer.current?.remove();
-    routeCasing.current?.remove();
-    routeLayer.current = null;
-    routeCasing.current = null;
+    const map = mapRef.current;
+    if (!map || !map.isStyleLoaded()) return;
+    map.setStyle(STYLE_URLS[styleKey]);
+  }, [styleKey]);
 
-    const known: Leaflet.LatLngExpression[] = [];
-    const makeMarker = (
-      point: NavigationCoordinate,
-      kind: "vehicle" | "pickup" | "destination",
-      activeTarget = false,
-    ) => {
-      const rotation = kind === "vehicle" && Number.isFinite(heading)
-        ? Math.round(Number(heading))
-        : 0;
-      const icon = L.divIcon({
-        className: "nr-live-nav-marker-wrap",
-        html:
-          '<span class="nr-live-nav-marker ' +
-          kind +
-          (activeTarget ? " target" : "") +
-          '" style="--nr-heading:' +
-          rotation +
-          'deg" aria-hidden="true"></span>',
-        iconSize: kind === "vehicle" ? [34, 34] : [28, 28],
-        iconAnchor: kind === "vehicle" ? [17, 17] : [14, 28],
-      });
-      const label = kind === "vehicle" ? "Your vehicle" : kind === "pickup" ? "Pickup" : "Destination";
-      L.marker([point.lat, point.lng], { icon, title: label, keyboard: false })
-        .bindTooltip(label, { direction: "top", offset: [0, -12] })
-        .addTo(markers.current!);
-      known.push([point.lat, point.lng]);
-    };
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !map.isStyleLoaded()) return;
 
-    if (valid(pickup)) makeMarker(pickup, "pickup", target === "pickup");
-    if (valid(destination)) makeMarker(destination, "destination", target === "destination");
-    if (valid(vehicle)) makeMarker(vehicle, "vehicle");
+    const sourceId = "nr-driver-live-traffic";
+    const layerId = "nr-driver-live-traffic-lines";
+    try {
+      if (map.getLayer(layerId)) map.removeLayer(layerId);
+      if (map.getSource(sourceId)) map.removeSource(sourceId);
+      setTrafficUnavailable(false);
+      trafficAvailable.current = true;
 
-    const road = route.filter(valid);
-    if (road.length >= 2) {
-      const points = road.map((point) => [point.lat, point.lng] as [number, number]);
-      routeCasing.current = L.polyline(points, {
-        color: "#ffffff",
-        weight: 10,
-        opacity: 0.92,
-        lineCap: "round",
-        lineJoin: "round",
-        interactive: false,
-      }).addTo(instance);
-      routeLayer.current = L.polyline(points, {
-        color: "#246bc6",
-        weight: 6,
-        opacity: 0.98,
-        lineCap: "round",
-        lineJoin: "round",
-        interactive: false,
-      }).addTo(instance);
-      known.push(...points);
-    }
-
-    requestAnimationFrame(() => {
-      instance.invalidateSize();
-      if (view === "vehicle" && valid(vehicle)) {
-        instance.setView([vehicle.lat, vehicle.lng], Math.max(instance.getZoom(), 16), { animate: true });
-        return;
-      }
-      if (known.length >= 2) {
-        instance.fitBounds(L.latLngBounds(known), {
-          paddingTopLeft: [34, 74],
-          paddingBottomRight: [34, 150],
-          maxZoom: 16,
-          animate: true,
+      if (trafficVisible) {
+        map.addSource(sourceId, { type: "vector", url: "mapbox://mapbox.mapbox-traffic-v1" });
+        map.addLayer({
+          id: layerId,
+          type: "line",
+          source: sourceId,
+          "source-layer": "traffic",
+          minzoom: 6,
+          paint: {
+            "line-width": ["interpolate", ["linear"], ["zoom"], 6, 1.2, 12, 2.4, 17, 5],
+            "line-opacity": 0.68,
+            "line-color": [
+              "match",
+              ["get", "congestion"],
+              "low", "#22a06b",
+              "moderate", "#d8a321",
+              "heavy", "#df7928",
+              "severe", "#d84a57",
+              "#8c9aa4",
+            ],
+          },
         });
-      } else if (known.length === 1) {
-        instance.setView(known[0], 15, { animate: true });
       }
-    });
-  }, [destination, gpsState, heading, mounted, pickup, route, target, vehicle, view]);
+    } catch {
+      trafficAvailable.current = false;
+      setTrafficUnavailable(true);
+    }
+  }, [trafficVisible, mountedRevision]);
 
-  const recenter = () => {
-    if (!map.current) return;
-    if (valid(vehicle)) {
-      map.current.setView([vehicle.lat, vehicle.lng], 16, { animate: true });
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !map.isStyleLoaded()) return;
+
+    const sourceId = "nr-driver-route-source";
+    const casingId = "nr-driver-route-casing";
+    const lineId = "nr-driver-route-line";
+
+    if (map.getLayer(lineId)) map.removeLayer(lineId);
+    if (map.getLayer(casingId)) map.removeLayer(casingId);
+    if (map.getSource(sourceId)) map.removeSource(sourceId);
+
+    const validRoute = route.filter(valid);
+    if (validRoute.length < 2) return;
+
+    const segmentFeatures = segments
+      .filter((segment) => valid(segment.from) && valid(segment.to))
+      .map((segment) => ({
+        type: "Feature" as const,
+        properties: { congestion: segment.congestion || "unknown" },
+        geometry: {
+          type: "LineString" as const,
+          coordinates: [lngLat(segment.from), lngLat(segment.to)],
+        },
+      }));
+
+    const features = segmentFeatures.length
+      ? segmentFeatures
+      : [{
+          type: "Feature" as const,
+          properties: { congestion: "unknown" },
+          geometry: { type: "LineString" as const, coordinates: validRoute.map(lngLat) },
+        }];
+
+    map.addSource(sourceId, {
+      type: "geojson",
+      data: { type: "FeatureCollection", features },
+    });
+    map.addLayer({
+      id: casingId,
+      type: "line",
+      source: sourceId,
+      paint: {
+        "line-color": styleKey === "dark" ? "#07131d" : "#f8fbfd",
+        "line-width": ["interpolate", ["linear"], ["zoom"], 10, 7, 16, 13],
+        "line-opacity": 0.96,
+      },
+      layout: { "line-cap": "round", "line-join": "round" },
+    });
+    map.addLayer({
+      id: lineId,
+      type: "line",
+      source: sourceId,
+      paint: {
+        "line-width": ["interpolate", ["linear"], ["zoom"], 10, 4, 16, 8],
+        "line-opacity": 0.98,
+        "line-color": [
+          "match",
+          ["get", "congestion"],
+          "low", "#19b874",
+          "moderate", "#d7a121",
+          "heavy", "#e17729",
+          "severe", "#d84a57",
+          "#2679d8",
+        ],
+      },
+      layout: { "line-cap": "round", "line-join": "round" },
+    });
+  }, [route, segments, mountedRevision, styleKey]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !map.isStyleLoaded()) return;
+
+    let cancelled = false;
+    void import("mapbox-gl").then((mapboxgl) => {
+      if (cancelled || !mapRef.current) return;
+      markers.current.forEach((marker) => marker.remove());
+      markers.current = [];
+
+      const addMarker = (point: NavigationCoordinate, kind: "vehicle" | "pickup" | "destination", active: boolean) => {
+        const element = document.createElement("div");
+        element.className = `nr-driver-map-marker ${kind}${active ? " active" : ""}${gpsState !== "fresh" && kind === "vehicle" ? " stale" : ""}`;
+        if (kind === "vehicle" && Number.isFinite(heading)) element.style.setProperty("--nr-heading", `${Math.round(Number(heading))}deg`);
+        element.setAttribute("aria-hidden", "true");
+        const marker = new mapboxgl.default.Marker({ element, anchor: "center" }).setLngLat(lngLat(point)).addTo(mapRef.current!);
+        markers.current.push(marker);
+      };
+
+      if (valid(vehicle)) addMarker(vehicle, "vehicle", false);
+      if (valid(pickup)) addMarker(pickup, "pickup", target === "pickup");
+      if (valid(destination)) addMarker(destination, "destination", target === "destination");
+    });
+
+    return () => { cancelled = true; };
+  }, [vehicle?.lat, vehicle?.lng, pickup?.lat, pickup?.lng, destination?.lat, destination?.lng, target, gpsState, heading, mountedRevision]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !map.isStyleLoaded()) return;
+    const points = route.filter(valid);
+    if (valid(vehicle)) points.push(vehicle);
+    const targetPoint = target === "pickup" ? pickup : destination;
+    if (valid(targetPoint)) points.push(targetPoint);
+
+    if (view === "vehicle" && valid(vehicle)) {
+      manualView.current = false;
+      map.easeTo({
+        center: lngLat(vehicle),
+        zoom: Math.max(15.8, map.getZoom()),
+        bearing: Number.isFinite(heading) ? Number(heading) : map.getBearing(),
+        pitch: 34,
+        duration: matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 260,
+      });
       return;
     }
-    const targetPoint = target === "pickup" ? pickup : destination;
-    if (valid(targetPoint)) map.current.setView([targetPoint.lat, targetPoint.lng], 15, { animate: true });
+
+    if (view === "overview" && points.length) {
+      manualView.current = false;
+      if (points.length === 1) {
+        map.easeTo({ center: lngLat(points[0]), zoom: 15, duration: 260 });
+        return;
+      }
+      const west = Math.min(...points.map((point) => point.lng));
+      const east = Math.max(...points.map((point) => point.lng));
+      const south = Math.min(...points.map((point) => point.lat));
+      const north = Math.max(...points.map((point) => point.lat));
+      map.fitBounds([[west, south], [east, north]], {
+        padding: { top: 110, right: 74, bottom: 220, left: 34 },
+        maxZoom: 16,
+        duration: matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 320,
+      });
+    }
+  }, [view, target, mountedRevision]);
+
+  const recenter = () => {
+    const map = mapRef.current;
+    if (!map) return;
+    manualView.current = false;
+    if (valid(vehicle)) {
+      map.easeTo({ center: lngLat(vehicle), zoom: Math.max(map.getZoom(), 16), duration: 260 });
+      return;
+    }
+    const point = target === "pickup" ? pickup : destination;
+    if (valid(point)) map.easeTo({ center: lngLat(point), zoom: 15, duration: 260 });
   };
 
+  const showCompass = Math.abs(normalizedBearing(bearing)) > 2;
+
   return (
-    <div
-      className="nr-navigation-map nr-live-navigation-map"
-      role="region"
-      aria-label="Live NexRide route map. Turn-by-turn directions can be opened in the external navigation app."
-      data-gps={gpsState}
-      data-target={target}
-    >
+    <div className="nr-navigation-map nr-live-navigation-map" role="region" aria-label="Live NexRide Mapbox route map" data-gps={gpsState} data-target={target}>
       <div ref={container} className="nr-live-navigation-canvas" />
-      {!tilesReady && (
-        <div className="nr-live-map-status" role="status">
-          Map tiles unavailable. Route details remain available below.
+
+      {mapStatus === "loading" && <div className="nr-driver-map-loading" role="status"><Spinner /> Loading live map…</div>}
+      {mapStatus === "unavailable" && (
+        <div className="nr-live-map-status route" role="alert">
+          Live map unavailable. Route details and stage controls remain available.
         </div>
       )}
-      {route.filter(valid).length < 2 && (
+      {route.filter(valid).length < 2 && mapStatus === "ready" && (
         <div className="nr-live-map-status route" role="status">
-          Road route is unavailable. NexRide will not draw an estimated straight-line route.
+          Road route is unavailable. NexRide will not draw a straight-line estimate.
         </div>
       )}
-      <button type="button" className="nr-live-map-recenter" onClick={recenter} aria-label="Recenter map">
-        <Icon name="locate" size={20} />
-      </button>
+      {trafficUnavailable && <div className="nr-driver-traffic-unavailable" role="status">Traffic data unavailable</div>}
+
+      <div className="nr-driver-map-controls" aria-label="Driver map controls">
+        <button type="button" onClick={recenter} aria-label="Recenter map"><Icon name="locate" size={21} /></button>
+        <button type="button" onClick={() => setLayersOpen((open) => !open)} aria-expanded={layersOpen} aria-label="Map layers"><Icon name="globe" size={21} /></button>
+        {showCompass && (
+          <button type="button" aria-label="Reset map north" onClick={() => mapRef.current?.easeTo({ bearing: 0, duration: 220 })}>
+            <span style={{ display: "grid", placeItems: "center", transform: `rotate(${-bearing}deg)` }}><Icon name="navigation" size={21} /></span>
+          </button>
+        )}
+      </div>
+
+      {layersOpen && (
+        <div className="nr-driver-layer-menu" role="menu" aria-label="Map style and traffic">
+          {(["streets", "satellite", "dark"] as MapStyleKey[]).map((key) => (
+            <button key={key} type="button" role="menuitemradio" aria-checked={styleKey === key} onClick={() => { setStyleKey(key); setLayersOpen(false); }}>
+              <span>{key === "streets" ? "Streets" : key === "satellite" ? "Satellite" : "Dark"}</span>
+              {styleKey === key && <Icon name="check" size={16} />}
+            </button>
+          ))}
+          <button type="button" role="menuitemcheckbox" aria-checked={trafficVisible} onClick={() => setTrafficVisible((visible) => !visible)}>
+            <span>Live traffic</span><span className={`nr-driver-traffic-switch ${trafficVisible ? "on" : ""}`} aria-hidden="true"><i /></span>
+          </button>
+        </div>
+      )}
     </div>
   );
 }
