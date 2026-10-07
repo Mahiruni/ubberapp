@@ -270,8 +270,14 @@ export function DestinationPanel({
     )
     .filter((item) => !shortcut || item.source === "preview")
     .slice(0, 8);
+  const keyboardOpen = j.viewport.keyboard;
   const showSuggestions =
-    searchActive || !!shortcut || !!typedQuery || !j.destination || !j.pickup;
+    keyboardOpen ||
+    searchActive ||
+    !!shortcut ||
+    !!typedQuery ||
+    !j.destination ||
+    !j.pickup;
   return (
     <section
       className="nr-destination-panel"
@@ -559,7 +565,7 @@ export function DestinationPanel({
         )}
         {!picking && j.valid && <RouteReview journey={j} />}
       </div>
-      {!shortcut && (!searchActive || j.canContinue || picking) && (
+      {!keyboardOpen && !shortcut && (!searchActive || j.canContinue || picking) && (
         <footer>
           {picking ? (
             <Button disabled={!pin} onClick={() => j.confirm(picking)}>
