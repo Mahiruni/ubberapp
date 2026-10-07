@@ -366,7 +366,15 @@ function AppWorkspace({
       style={
         riderSearch
           ? ({
-              "--nr-search-height": `${Math.max(110, Math.min((journey.viewport.height || 800) * journey.sheetRatio, (journey.viewport.height || 800) - 130))}px`,
+              "--nr-search-height": `${journey.viewport.keyboard
+                ? Math.max(280, (journey.viewport.height || 800) - 96)
+                : Math.max(
+                    110,
+                    Math.min(
+                      (journey.viewport.height || 800) * journey.sheetRatio,
+                      (journey.viewport.height || 800) - 130,
+                    ),
+                  )}px`,
               "--nr-viewport-height": `${journey.viewport.height || 800}px`,
             } as React.CSSProperties)
           : undefined
