@@ -151,20 +151,25 @@ export function RiderHomePanel({
     homeHost()?.removeAttribute("data-home-dragging");
     setDragging(false);
     const order: HomeSheetSnap[] = ["expanded", "medium", "collapsed"];
-    const nearest = nearestSnap(offsetRef.current);
-    const index = order.indexOf(nearest);
     const velocity = drag.current.velocity;
-    if (velocity < -0.45) {
+    const projected = Math.min(
+      snapOffset("collapsed", viewportHeight),
+      Math.max(0, offsetRef.current + velocity * 150),
+    );
+    const projectedSnap = nearestSnap(projected);
+    const index = order.indexOf(projectedSnap);
+    if (velocity < -0.22) {
       applySnap(order[Math.max(0, index - 1)]);
-    } else if (velocity > 0.45) {
+    } else if (velocity > 0.22) {
       applySnap(order[Math.min(order.length - 1, index + 1)]);
     } else {
-      applySnap(nearest);
+      applySnap(projectedSnap);
     }
   };
 
-  const onPointerDown = (event: ReactPointerEvent<HTMLButtonElement>) => {
+  const onPointerDown = (event: ReactPointerEvent<HTMLElement>) => {
     if (event.button !== 0 && event.pointerType === "mouse") return;
+    event.stopPropagation();
     event.currentTarget.setPointerCapture(event.pointerId);
     const now = performance.now();
     drag.current = {
@@ -179,8 +184,10 @@ export function RiderHomePanel({
     setDragging(true);
   };
 
-  const onPointerMove = (event: ReactPointerEvent<HTMLButtonElement>) => {
+  const onPointerMove = (event: ReactPointerEvent<HTMLElement>) => {
     if (!dragging) return;
+    event.preventDefault();
+    event.stopPropagation();
     const now = performance.now();
     const elapsed = Math.max(1, now - drag.current.lastAt);
     drag.current.velocity = (event.clientY - drag.current.lastY) / elapsed;
@@ -234,29 +241,35 @@ export function RiderHomePanel({
       aria-label={t("destination")}
       data-snap={snap}
       data-dragging={dragging || undefined}
-      style={undefined}
+      onPointerDown={(event) => event.stopPropagation()}
+      onPointerMove={(event) => event.stopPropagation()}
+      onClick={(event) => event.stopPropagation()}
     >
-      <button
-        type="button"
-        className="nr-home-sheet-drag-zone"
-        aria-label={
-          language === "am"
-            ? "የመነሻ ፓነሉን አስፋ ወይም አሳንስ"
-            : "Expand or collapse ride panel"
-        }
-        aria-expanded={snap !== "collapsed"}
-        onClick={toggleSnap}
+      <div className="nr-home-sheet-touch-shield" aria-hidden="true" />
+
+      <div
+        className="nr-home-sheet-grab-area"
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={finishDrag}
         onPointerCancel={finishDrag}
         onLostPointerCapture={finishDrag}
-        onKeyDown={onHandleKeyDown}
       >
-        <span className="nr-home-handle" aria-hidden="true" />
-      </button>
+        <button
+          type="button"
+          className="nr-home-sheet-drag-zone"
+          aria-label={
+            language === "am"
+              ? "የመነሻ ፓነሉን አስፋ ወይም አሳንስ"
+              : "Expand or collapse ride panel"
+          }
+          aria-expanded={snap !== "collapsed"}
+          onClick={toggleSnap}
+          onKeyDown={onHandleKeyDown}
+        >
+          <span className="nr-home-handle" aria-hidden="true" />
+        </button>
 
-      <div className="nr-home-sheet-scroll">
         <div className="nr-rider-home-intro">
           <div>
             <span className="nr-home-kicker">NEXRIDE</span>
@@ -271,7 +284,14 @@ export function RiderHomePanel({
             {t("city")}
           </span>
         </div>
+      </div>
 
+      <div
+        className="nr-home-sheet-scroll"
+        onPointerDown={(event) => event.stopPropagation()}
+        onPointerMove={(event) => event.stopPropagation()}
+        onTouchStart={(event) => event.stopPropagation()}
+      >
         <h1 className="nr-sr-only">{t("where")}</h1>
         <button
           className="nr-home-search"
