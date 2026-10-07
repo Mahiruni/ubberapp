@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Icon } from "./ui";
+import { Icon, LanguageContext } from "./ui";
 import { useDriverTheme } from "./driver-app-shell";
 import { RiderMap } from "./rider-map";
 import { useRiderLocation } from "../../lib/nexride-location";
@@ -114,6 +114,8 @@ export function DriverWorkspace({
   onSafety: () => void;
 }) {
   const router = useRouter();
+  const language = useContext(LanguageContext);
+  const say = (en: string, am: string) => (language === "am" ? am : en);
   const { resolvedTheme } = useDriverTheme();
   const [state, setState] = useState<DriverState>(emptyState);
   const [driverId, setDriverId] = useState("");
@@ -691,18 +693,18 @@ export function DriverWorkspace({
 
         <div className="nr-driver-home-status-chip" role="status" aria-live="polite" data-online={state.online ? "true" : "false"}>
           <span className="nr-driver-home-status-dot" aria-hidden="true" />
-          <span>{state.online ? "Online · Ready for requests" : "Offline"}</span>
+          <span>{state.online ? say("Online · Ready for requests", "መስመር ላይ · ለጉዞ ጥያቄዎች ዝግጁ") : say("Offline", "ከመስመር ውጭ")}</span>
         </div>
 
         <section className="nr-driver-availability-dock" aria-label="Driver availability">
           <div className="nr-driver-availability-dock-head">
             <div>
-              <small>DRIVER AVAILABILITY</small>
-              <strong>{state.online ? "Online" : "Offline"}</strong>
+              <small>{say("DRIVER AVAILABILITY", "የአሽከርካሪ ዝግጁነት")}</small>
+              <strong>{state.online ? say("Online", "መስመር ላይ") : say("Offline", "ከመስመር ውጭ")}</strong>
             </div>
             <span className="nr-driver-availability-state" data-online={state.online ? "true" : "false"}>
               <i aria-hidden="true" />
-              {state.online ? "Active" : "Not accepting rides"}
+              {state.online ? say("Active", "ንቁ") : say("Not accepting rides", "ጉዞዎችን አይቀበልም")}
             </span>
           </div>
 
@@ -716,13 +718,13 @@ export function DriverWorkspace({
           <p className="nr-driver-availability-help">
             {updating
               ? state.online
-                ? "Going offline…"
-                : "Going online…"
+                ? say("Going offline…", "ከመስመር ውጭ በመውጣት ላይ…")
+                : say("Going online…", "ወደ መስመር በመግባት ላይ…")
               : state.online
-                ? "You’re searchable by eligible riders nearby. Your live location is shared while you’re online."
+                ? say("You’re searchable by eligible riders nearby. Your live location is shared while you’re online.", "በአቅራቢያ ያሉ ተሳፋሪዎች ሊያገኙዎት ይችላሉ። መስመር ላይ ሲሆኑ ቀጥታ አካባቢዎ ይጋራል።")
                 : verified
-                  ? "Swipe right when you’re ready to receive ride requests."
-                  : "Complete Driver verification before going online."}
+                  ? say("Swipe right when you’re ready to receive ride requests.", "የጉዞ ጥያቄዎችን ለመቀበል ዝግጁ ሲሆኑ ወደ ቀኝ ያንሸራትቱ።")
+                  : say("Complete Driver verification before going online.", "ወደ መስመር ከመግባትዎ በፊት የአሽከርካሪ ማረጋገጫን ያጠናቅቁ።")}
           </p>
 
           {error && (
