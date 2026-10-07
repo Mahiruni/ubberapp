@@ -24,10 +24,19 @@ export function DriverMatching({ model, changeCategory, previewAssigned, home }:
   const terms = snapshot?.cancellation;
   const total = fareTotal(request.fare);
   const money = (n: number) => new Intl.NumberFormat(language === 'am' ? 'am-ET' : 'en-ET', { maximumFractionDigits: 2 }).format(n);
+  const completeCancel = async (version?: number) => {
+    const next = await model.action('cancel', version);
+    if (next?.status === 'cancelled') home();
+  };
   const cancel = () => {
-    if (!snapshot || !terms?.allowed || busy) return;
+    if (busy || reconnecting) return;
+    if (!snapshot) {
+      if (!preview) void completeCancel();
+      return;
+    }
+    if (!terms?.allowed) return;
     if (terms.requiresConfirmation || (terms.fee !== null && terms.fee > 0)) setConfirmVersion(snapshot.version);
-    else void model.action('cancel', snapshot.version);
+    else void completeCancel(snapshot.version);
   };
   return <section className="nr-driver-matching" data-matching-state={connectionLost ? 'connection_lost' : degraded ? 'sync_problem' : status} aria-label={t('matchingScreen')}>
     <RiderSheetHandle
@@ -86,18 +95,18 @@ export function DriverMatching({ model, changeCategory, previewAssigned, home }:
       </details>}
     </div>
     <footer>
-      {(connectionLost || degraded) && <Button disabled={busy || reconnecting} loading={reconnecting} onClick={model.reconnect}>{t(reconnecting ? 'matchingReconnecting' : 'matchingReconnect')}</Button>}
+      {(connectionLost || degraded) && <Button disabled={busy || reconnecting} loading={reconnecting} onClick={() => void model.reconnect()}>{t(reconnecting ? 'matchingReconnecting' : 'matchingReconnect')}</Button>}
       {!connectionLost && snapshot?.canRetry && <Button disabled={busy} loading={busy} onClick={() => void model.action('retry')}>{t(busy ? 'matchingUpdating' : 'matchingRetry')}</Button>}
       {['cancelled', 'no_drivers'].includes(status) && <Button variant="ghost" disabled={busy} onClick={home}>{t('home')}</Button>}
       {snapshot?.canChangeCategory && <Button variant="secondary" disabled={busy} onClick={changeCategory}>{t('matchingChangeCategory')}</Button>}
-      {!['cancelled', 'no_drivers'].includes(status) && <Button variant="ghost" disabled={busy || reconnecting || connectionLost || !terms?.allowed} onClick={cancel}>{t(busy ? 'matchingUpdating' : preview ? 'cancel' : 'matchingCancel')}</Button>}
+      {!['cancelled', 'no_drivers'].includes(status) && <Button variant="ghost" disabled={busy || reconnecting || (preview ? !terms?.allowed : terms?.allowed === false)} onClick={cancel}>{t(busy ? 'matchingUpdating' : preview ? 'cancel' : 'matchingCancel')}</Button>}
       {!preview && !snapshot && <small className="nr-match-terms-note">{t('matchingTermsPending')}</small>}
     </footer>
     {confirmVersion !== null && terms && <Dialog title={t('matchingCancelConfirm')} onClose={() => setConfirmVersion(null)}>
       <p>{t('matchingCancelWarning')}</p>
       {terms.reason && <p>{terms.reason}</p>}
       {terms.fee !== null && <p className="nr-cancellation-fee">{t('matchingCancelFee')}: <strong>{money(terms.fee)} ETB</strong></p>}
-      <Button onClick={() => { const version = confirmVersion; setConfirmVersion(null); void model.action('cancel', version); }}>{t('matchingConfirmCancel')}</Button>
+      <Button onClick={() => { const version = confirmVersion; setConfirmVersion(null); void completeCancel(version); }}>{t('matchingConfirmCancel')}</Button>
       <Button variant="secondary" onClick={() => setConfirmVersion(null)}>{t('matchingKeep')}</Button>
     </Dialog>}
   </section>;
