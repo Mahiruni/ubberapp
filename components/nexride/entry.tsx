@@ -37,7 +37,7 @@ export function EntryShell({
           <section className="nr-auth-shell nr-auth-shell-rider">
             <div className="nr-auth-hero" aria-hidden="true">
               <Image
-                src="/images/addis-splash-city.jpg"
+                src="/images/addis-nexride-auth.webp"
                 alt=""
                 fill
                 priority
@@ -85,8 +85,8 @@ export function EntryPhoto() {
   return (
     <div className="nr-entry-photo">
       <Image
-        src="/images/addis-splash-city.jpg"
-        alt="Addis Ababa skyline from Sheger Park"
+        src="/images/addis-nexride-auth.webp"
+        alt="Addis Ababa city skyline and boulevard"
         fill
         sizes="440px"
         quality={85}
