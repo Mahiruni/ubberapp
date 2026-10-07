@@ -6,6 +6,7 @@ import { Icon } from "../../../../components/nexride/ui";
 import { useOperationalTranslation } from "../../../../components/nexride/operational-i18n";
 import { RiderMenu, usePersistedRiderTheme } from "../../../../components/nexride/rider-menu";
 import { supabase } from "../../../../lib/supabase";
+import { emitNexRideFeedback } from "../../../../lib/nexride-feedback";
 import {
   formatRideStatus,
   loadRideRating,
@@ -36,7 +37,9 @@ export default function RiderReceiptPage() {
   useEffect(() => {
     let active = true;
     (async () => {
-      const rideId = new URLSearchParams(window.location.search).get("ride") || "";
+      const params = new URLSearchParams(window.location.search);
+      const rideId = params.get("ride") || "";
+      const paymentReturn = params.get("payment") || "";
       const { data } = await supabase.auth.getSession();
       const session = data.session;
       if (!active) return;
@@ -63,6 +66,15 @@ export default function RiderReceiptPage() {
         if (!active) return;
         setRide(nextRide);
         setRating(nextRating);
+        if (paymentReturn === "paid" && nextRide.paymentStatus === "paid") {
+          emitNexRideFeedback({
+            event: "payment_success",
+            id: nextRide.id,
+            title: "Payment confirmed",
+            body: "Your NexRide payment was successfully verified.",
+            url: `/rider/trips/receipt?ride=${encodeURIComponent(nextRide.id)}`,
+          });
+        }
         if (nextRating) {
           setDraftScore(nextRating.score);
           setFeedback(nextRating.feedback);
