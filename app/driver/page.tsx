@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Brand } from "../../components/nexride/ui";
 import { supabase } from "../../lib/supabase";
-import { enterDriver } from "../../lib/nexride-startup";
+import { enterDriver, explicitSignOutRole } from "../../lib/nexride-startup";
 import { driverResumeDestination } from "../../lib/nexride-driver-verification";
 import "./driver-welcome.css";
 import "../detail-system.css";
@@ -17,6 +17,10 @@ export default function DriverWelcome() {
 
   useEffect(() => {
     let active = true;
+    if (explicitSignOutRole(window.localStorage)) {
+      setChecking(false);
+      return () => { active = false; };
+    }
     supabase.auth.getSession().then(async ({ data }) => {
       if (!active) return;
       const session = data.session;
