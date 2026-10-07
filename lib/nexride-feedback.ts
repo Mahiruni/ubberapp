@@ -291,13 +291,32 @@ export function emitNexRideFeedback(input: {
   if (title && body) void showSystemNotification(title, body, dedupeKey, url);
 }
 
+function amharicNavigationCue(text: string) {
+  const clean = text.trim();
+  const lower = clean.toLowerCase();
+  if (lower.includes("navigate to pickup")) return "ወደ መነሻ ቦታ ይሂዱ";
+  if (lower.includes("navigate to destination")) return "ወደ መድረሻ ይሂዱ";
+  if (lower.includes("arrived") || lower.includes("destination is on")) return "መድረሻዎ ላይ ደርሰዋል";
+  if (lower.includes("u-turn") || lower.includes("u turn")) return "ዩ ተርን ያድርጉ";
+  if (lower.includes("keep left")) return "ወደ ግራ ይቆዩ";
+  if (lower.includes("keep right")) return "ወደ ቀኝ ይቆዩ";
+  if (lower.includes("turn left")) return "ወደ ግራ ይታጠፉ";
+  if (lower.includes("turn right")) return "ወደ ቀኝ ይታጠፉ";
+  if (lower.includes("slight left")) return "ትንሽ ወደ ግራ ይዙ";
+  if (lower.includes("slight right")) return "ትንሽ ወደ ቀኝ ይዙ";
+  if (lower.includes("continue") || lower.includes("straight")) return "ቀጥታ ይቀጥሉ";
+  if (lower.includes("roundabout")) return "ወደ ክብ መንገዱ ይግቡ እና የመንገድ ምልክቶችን ይከተሉ";
+  return "የአሰሳ መመሪያ። " + clean;
+}
+
 export function speakNexRideNavigation(text: string, language?: "en" | "am") {
   if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
   const preferences = readNexRideFeedbackPreferences();
   if (!preferences.navigationVoice) return;
-  const clean = text.trim();
-  if (!clean) return;
+  const raw = text.trim();
+  if (!raw) return;
   const lang = language || preferences.navigationLanguage;
+  const clean = lang === "am" ? amharicNavigationCue(raw) : raw;
   const key = lang + ":" + clean;
   if (key === spokenKey) return;
   spokenKey = key;
