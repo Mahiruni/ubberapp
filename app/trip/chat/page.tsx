@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "../../../components/nexride/ui";
-import { DriverBottomNav, usePersistedDriverTheme } from "../../../components/nexride/driver-app-shell";
+import { DriverStandaloneMenu, usePersistedDriverTheme } from "../../../components/nexride/driver-app-shell";
 import { useOperationalTranslation } from "../../../components/nexride/operational-i18n";
 import { supabase } from "../../../lib/supabase";
 import {
@@ -307,7 +307,7 @@ export default function TripChatPage() {
           </>
         )}
       </div>
-      {role === "driver" && <DriverBottomNav activeOverride="messages" subdued />}
+      {role === "driver" && <DriverStandaloneMenu activeOverride="messages" />}
     </main>
   );
 }

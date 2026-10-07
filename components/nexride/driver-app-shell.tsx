@@ -12,6 +12,7 @@ import {
 } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Icon, LanguageContext, type IconName } from "./ui";
+import { announceLanguage } from "./language-provider";
 import { supabase } from "../../lib/supabase";
 
 export type DriverThemePreference = "system" | "light" | "dark";
@@ -115,37 +116,155 @@ export function driverNavForPath(pathname: string): DriverNavId {
   return "home";
 }
 
-export function DriverBottomNav({ activeOverride, subdued = false }: { activeOverride?: DriverNavId; subdued?: boolean }) {
+const NAV_DETAILS: Record<DriverNavId, { en: string; am: string }> = {
+  home: { en: "Map and availability", am: "ካርታ እና ዝግጁነት" },
+  requests: { en: "Ride requests and activity", am: "የጉዞ ጥያቄዎች እና እንቅስቃሴ" },
+  earnings: { en: "Income and payout reporting", am: "ገቢ እና የክፍያ ሪፖርት" },
+  messages: { en: "Trip messages and support", am: "የጉዞ መልዕክቶች እና ድጋፍ" },
+  account: { en: "Profile, vehicle and documents", am: "መለያ፣ ተሽከርካሪ እና ሰነዶች" },
+};
+
+function DriverHamburgerMenu({ activeOverride }: { activeOverride?: DriverNavId }) {
   const pathname = usePathname();
   const language = useContext(LanguageContext);
+  const theme = useDriverTheme();
+  const [open, setOpen] = useState(false);
+  const [identity, setIdentity] = useState({ name: "Driver", avatarUrl: "" });
+  const closeRef = useRef<HTMLButtonElement>(null);
   const active = activeOverride || driverNavForPath(pathname);
 
+  useEffect(() => {
+    let mounted = true;
+    void supabase.auth.getSession().then(({ data }) => {
+      if (!mounted || !data.session) return;
+      const metadata = data.session.user.user_metadata || {};
+      const name =
+        (typeof metadata.full_name === "string" && metadata.full_name.trim()) ||
+        (typeof metadata.name === "string" && metadata.name.trim()) ||
+        "Driver";
+      const avatarUrl =
+        (typeof metadata.avatar_url === "string" && metadata.avatar_url) ||
+        (typeof metadata.avatarUrl === "string" && metadata.avatarUrl) ||
+        "";
+      setIdentity({ name, avatarUrl });
+    });
+    return () => { mounted = false; };
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    const priorOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    window.requestAnimationFrame(() => closeRef.current?.focus());
+    return () => {
+      document.body.style.overflow = priorOverflow;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  const initials = useMemo(
+    () => identity.name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "DR",
+    [identity.name],
+  );
+
   return (
-    <nav
-      className="nr-driver-global-nav"
-      aria-label={language === "am" ? "የአሽከርካሪ ዋና አሰሳ" : "Driver primary navigation"}
-      data-subdued={subdued ? "true" : "false"}
-    >
-      <div className="nr-driver-global-nav-inner">
-        {NAV_ITEMS.map((item) => {
-          const selected = active === item.id;
-          const label = language === "am" ? item.am : item.en;
-          return (
-            <Link
-              key={item.id}
-              href={item.href}
-              className="nr-driver-global-nav-item"
-              data-active={selected ? "true" : "false"}
-              aria-current={selected ? "page" : undefined}
-              aria-label={label}
-            >
-              <span className="nr-driver-global-nav-icon" aria-hidden="true"><Icon name={item.icon} size={22} /></span>
-              <span className="nr-driver-global-nav-label">{label}</span>
-            </Link>
-          );
-        })}
+    <>
+      <button
+        type="button"
+        className="nr-driver-menu-trigger"
+        data-open={open ? "true" : "false"}
+        onClick={() => setOpen((value) => !value)}
+        aria-expanded={open}
+        aria-controls="nr-driver-menu"
+        aria-label={language === "am" ? (open ? "ምናሌን ዝጋ" : "የአሽከርካሪ ምናሌን ክፈት") : (open ? "Close driver menu" : "Open driver menu")}
+      >
+        <span aria-hidden="true" />
+        <span aria-hidden="true" />
+        <span aria-hidden="true" />
+      </button>
+
+      {open && (
+        <div className="nr-driver-menu-layer" role="presentation">
+          <button className="nr-driver-menu-backdrop" type="button" aria-label={language === "am" ? "ምናሌን ዝጋ" : "Close menu"} onClick={() => setOpen(false)} />
+          <aside id="nr-driver-menu" className="nr-driver-menu-panel" role="dialog" aria-modal="true" aria-labelledby="nr-driver-menu-title">
+            <div className="nr-driver-menu-head">
+              <div className="nr-driver-menu-identity">
+                <div className="nr-driver-menu-avatar">
+                  {identity.avatarUrl ? <img src={identity.avatarUrl} alt="" /> : <span>{initials}</span>}
+                </div>
+                <div>
+                  <small>{language === "am" ? "NEXRIDE · አሽከርካሪ" : "NEXRIDE · DRIVER"}</small>
+                  <strong id="nr-driver-menu-title">{identity.name}</strong>
+                </div>
+              </div>
+              <button ref={closeRef} type="button" className="nr-driver-menu-close" onClick={() => setOpen(false)} aria-label={language === "am" ? "ዝጋ" : "Close"}>
+                <Icon name="close" size={21} />
+              </button>
+            </div>
+
+            <nav className="nr-driver-menu-nav" aria-label={language === "am" ? "የአሽከርካሪ ዋና አሰሳ" : "Driver primary navigation"}>
+              {NAV_ITEMS.map((item) => {
+                const selected = active === item.id;
+                const label = language === "am" ? item.am : item.en;
+                const detail = language === "am" ? NAV_DETAILS[item.id].am : NAV_DETAILS[item.id].en;
+                return (
+                  <Link
+                    key={item.id}
+                    href={item.href}
+                    className="nr-driver-menu-row"
+                    data-active={selected ? "true" : "false"}
+                    aria-current={selected ? "page" : undefined}
+                    onClick={() => setOpen(false)}
+                  >
+                    <span className="nr-driver-menu-row-icon"><Icon name={item.icon} size={21} /></span>
+                    <span className="nr-driver-menu-row-copy"><strong>{label}</strong><small>{detail}</small></span>
+                    {selected ? <span className="nr-driver-menu-active-dot" aria-hidden="true" /> : <Icon name="chevron" size={16} />}
+                  </Link>
+                );
+              })}
+            </nav>
+
+            <div className="nr-driver-menu-divider" />
+
+            <div className="nr-driver-menu-utilities">
+              <Link href="/safety?role=driver" className="nr-driver-menu-utility" onClick={() => setOpen(false)}>
+                <Icon name="shield" size={19} /><span>{language === "am" ? "ደህንነት" : "Safety Center"}</span><Icon name="chevron" size={15} />
+              </Link>
+              <Link href="/driver/profile/settings" className="nr-driver-menu-utility" onClick={() => setOpen(false)}>
+                <Icon name="settings" size={19} /><span>{language === "am" ? "ቅንብሮች" : "Settings"}</span><Icon name="chevron" size={15} />
+              </Link>
+            </div>
+
+            <div className="nr-driver-menu-preferences">
+              <div className="nr-driver-menu-pref-head">
+                <span>{language === "am" ? "ገጽታ" : "Appearance"}</span>
+                <small>{theme.preference === "system" ? (language === "am" ? "ስርዓት" : "System") : theme.preference === "light" ? (language === "am" ? "ብርሃን" : "Light") : (language === "am" ? "ጨለማ" : "Dark")}</small>
+              </div>
+              <DriverThemeSelector />
+              <div className="nr-driver-menu-language" role="group" aria-label={language === "am" ? "ቋንቋ" : "Language"}>
+                <button type="button" data-active={language === "en" ? "true" : "false"} aria-pressed={language === "en"} onClick={() => announceLanguage("en")}>English</button>
+                <button type="button" data-active={language === "am" ? "true" : "false"} aria-pressed={language === "am"} onClick={() => announceLanguage("am")}>አማርኛ</button>
+              </div>
+            </div>
+          </aside>
+        </div>
+      )}
+    </>
+  );
+}
+
+export function DriverStandaloneMenu({ activeOverride }: { activeOverride?: DriverNavId }) {
+  const theme = usePersistedDriverTheme();
+  return (
+    <DriverThemeContext.Provider value={theme}>
+      <div className="nr-driver-standalone-menu" data-theme={theme.resolvedTheme}>
+        <DriverHamburgerMenu activeOverride={activeOverride} />
       </div>
-    </nav>
+    </DriverThemeContext.Provider>
   );
 }
 
@@ -193,27 +312,6 @@ function isTripFocusPath(pathname: string) {
   );
 }
 
-function DriverThemeButton() {
-  const { preference, resolvedTheme, setPreference } = useDriverTheme();
-  const language = useContext(LanguageContext);
-  const label =
-    preference === "system"
-      ? language === "am" ? "ገጽታ፦ ስርዓት" : "Theme: System"
-      : preference === "light"
-        ? language === "am" ? "ገጽታ፦ ብርሃን" : "Theme: Light"
-        : language === "am" ? "ገጽታ፦ ጨለማ" : "Theme: Dark";
-
-  const cycle = () => {
-    setPreference(preference === "system" ? "light" : preference === "light" ? "dark" : "system");
-  };
-
-  return (
-    <button type="button" className="nr-driver-theme-button" onClick={cycle} aria-label={label} title={label}>
-      <Icon name={preference === "system" ? "globe" : resolvedTheme === "dark" ? "moon" : "sun"} size={20} />
-    </button>
-  );
-}
-
 export function DriverThemeSelector() {
   const { preference, setPreference } = useDriverTheme();
   const language = useContext(LanguageContext);
@@ -244,55 +342,28 @@ export function DriverThemeSelector() {
 function DriverHeader({ pathname }: { pathname: string }) {
   const router = useRouter();
   const language = useContext(LanguageContext);
-  const [identity, setIdentity] = useState({ name: "Driver", avatarUrl: "" });
   const [online, setOnline] = useState(true);
   const home = pathname === "/driver/home";
   const backTarget = backTargetForPath(pathname);
   const title = titleForPath(pathname, language);
 
   useEffect(() => {
-    let active = true;
     setOnline(navigator.onLine);
     const onOnline = () => setOnline(true);
     const onOffline = () => setOnline(false);
     window.addEventListener("online", onOnline);
     window.addEventListener("offline", onOffline);
-
-    void supabase.auth.getSession().then(({ data }) => {
-      if (!active || !data.session) return;
-      const metadata = data.session.user.user_metadata || {};
-      const name =
-        (typeof metadata.full_name === "string" && metadata.full_name.trim()) ||
-        (typeof metadata.name === "string" && metadata.name.trim()) ||
-        "Driver";
-      const avatarUrl =
-        (typeof metadata.avatar_url === "string" && metadata.avatar_url) ||
-        (typeof metadata.avatarUrl === "string" && metadata.avatarUrl) ||
-        "";
-      setIdentity({ name, avatarUrl });
-    });
-
     return () => {
-      active = false;
       window.removeEventListener("online", onOnline);
       window.removeEventListener("offline", onOffline);
     };
   }, []);
 
-  const initials = useMemo(
-    () => identity.name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "DR",
-    [identity.name],
-  );
-
   return (
     <header className="nr-driver-global-header" data-map={home || isTripFocusPath(pathname) ? "true" : "false"}>
       <div className="nr-driver-global-header-inner">
         <div className="nr-driver-global-header-side nr-driver-global-header-left">
-          {home ? (
-            <button type="button" className="nr-driver-global-avatar" onClick={() => router.push("/driver/profile")} aria-label={language === "am" ? "የአሽከርካሪ መለያ ክፈት" : "Open driver account"}>
-              {identity.avatarUrl ? <img src={identity.avatarUrl} alt="" /> : <span>{initials}</span>}
-            </button>
-          ) : backTarget ? (
+          {backTarget ? (
             <button type="button" className="nr-driver-global-icon-button" onClick={() => router.push(backTarget)} aria-label={language === "am" ? "ተመለስ" : "Back"}>
               <Icon name="back" size={21} />
             </button>
@@ -314,7 +385,9 @@ function DriverHeader({ pathname }: { pathname: string }) {
           {!online && <em>{language === "am" ? "ከመስመር ውጭ" : "Offline"}</em>}
         </div>
 
-        <div className="nr-driver-global-header-side nr-driver-global-header-right"><DriverThemeButton /></div>
+        <div className="nr-driver-global-header-side nr-driver-global-header-right">
+          <DriverHamburgerMenu />
+        </div>
       </div>
     </header>
   );
@@ -331,7 +404,6 @@ function DriverShellChrome({ children }: { children: ReactNode }) {
     <div className="nr-driver-app-shell" data-theme={resolvedTheme} data-theme-preference={preference} data-trip-focus={tripFocus ? "true" : "false"}>
       <DriverHeader pathname={pathname} />
       <div className="nr-driver-shell-content" data-trip-focus={tripFocus ? "true" : "false"}>{children}</div>
-      <DriverBottomNav subdued={tripFocus} />
     </div>
   );
 }

@@ -8,7 +8,6 @@ import { RiderMap } from "./rider-map";
 import { useRiderLocation } from "../../lib/nexride-location";
 import { DriverEarningsScreen } from "./driver-earnings";
 import { DriverProfileScreen } from "./driver-profile";
-import { formatOnlineTime, loadDriverEarningsReport } from "../../lib/nexride-driver-earnings";
 import { supabase } from "../../lib/supabase";
 import { resolveSessionRole } from "../../lib/nexride-account-role";
 import { nexrideApiFetch } from "../../lib/nexride-api-auth";
@@ -26,9 +25,6 @@ type DriverState = {
   reviewStatus: ReviewStatus;
   rejectionReason: string;
   rating: number | null;
-  earnings: number | null;
-  trips: number | null;
-  onlineSeconds: number | null;
   activeTrip: { pickup: string; destination: string; status: string } | null;
 };
 
@@ -39,9 +35,6 @@ const emptyState: DriverState = {
   reviewStatus: "draft",
   rejectionReason: "",
   rating: null,
-  earnings: null,
-  trips: null,
-  onlineSeconds: null,
   activeTrip: null,
 };
 
@@ -65,9 +58,6 @@ function mergeDriverState(current: DriverState, record: Record<string, unknown> 
   };
 }
 
-function formatEarnings(value: number | null) {
-  return value === null ? "—" : new Intl.NumberFormat("en-ET", { maximumFractionDigits: 0 }).format(value);
-}
 
 function driverErrorTitle(message: string) {
   const value = message.toLowerCase();
@@ -148,8 +138,6 @@ export function DriverWorkspace({
     let active = true;
     let driverChannel: ReturnType<typeof supabase.channel> | null = null;
     let offerChannel: ReturnType<typeof supabase.channel> | null = null;
-    let earningsChannel: ReturnType<typeof supabase.channel> | null = null;
-    let tripsChannel: ReturnType<typeof supabase.channel> | null = null;
 
     (async () => {
       const { data, error: sessionError } = await supabase.auth.getSession();
@@ -194,23 +182,6 @@ export function DriverWorkspace({
       setState(mergeDriverState(base, driver as Record<string, unknown> | null));
       setLoading(false);
 
-      const refreshTodaySummary = async () => {
-        try {
-          const report = await loadDriverEarningsReport(id, "today");
-          if (!active) return;
-          setState((current) => ({
-            ...current,
-            earnings: report.netDriverEarningsEtb,
-            trips: report.completedTrips,
-            onlineSeconds: report.onlineSeconds,
-          }));
-        } catch {
-          if (!active) return;
-          setState((current) => ({ ...current, earnings: null, trips: null, onlineSeconds: null }));
-        }
-      };
-
-      void refreshTodaySummary();
 
       driverChannel = supabase
         .channel(`driver-dashboard-${id}`)
@@ -265,23 +236,6 @@ export function DriverWorkspace({
         router.push(`/driver/request?offer=${pendingOffer.id}`);
       }
 
-      earningsChannel = supabase
-        .channel(`driver-home-earnings-${id}`)
-        .on(
-          "postgres_changes",
-          { event: "*", schema: "public", table: "driver_earnings_ledger", filter: `driver_id=eq.${id}` },
-          () => { void refreshTodaySummary(); },
-        )
-        .subscribe();
-
-      tripsChannel = supabase
-        .channel(`driver-home-trips-${id}`)
-        .on(
-          "postgres_changes",
-          { event: "UPDATE", schema: "public", table: "ride_requests", filter: `assigned_driver_id=eq.${id}` },
-          () => { void refreshTodaySummary(); },
-        )
-        .subscribe();
 
       offerChannel = supabase
         .channel(`driver-ride-offers-${id}`)
@@ -308,8 +262,6 @@ export function DriverWorkspace({
       active = false;
       if (driverChannel) supabase.removeChannel(driverChannel);
       if (offerChannel) supabase.removeChannel(offerChannel);
-      if (earningsChannel) supabase.removeChannel(earningsChannel);
-      if (tripsChannel) supabase.removeChannel(tripsChannel);
     };
   }, [router]);
 
@@ -425,11 +377,6 @@ export function DriverWorkspace({
     return () => navigator.geolocation.clearWatch(watchId);
   }, [driverId, state.online]);
 
-  const firstName = useMemo(() => state.name.trim().split(/\s+/)[0] || "Driver", [state.name]);
-  const initials = useMemo(
-    () => state.name.trim().split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "DR",
-    [state.name],
-  );
 
   const verified = state.reviewStatus === "approved";
   const locationReady = locationPermission === "granted";
@@ -695,22 +642,6 @@ export function DriverWorkspace({
 
   return (
     <div className="nr-driver-page">
-      <header className="nr-driver-header">
-        <div className="nr-driver-brand-pill"><Icon name="navigation" size={15} /><span>NexRide Driver</span></div>
-        <button type="button" className="nr-driver-avatar nr-driver-avatar-button" onClick={() => navigate("profile")} aria-label="Open driver profile">
-          {state.avatarUrl ? <img src={state.avatarUrl} alt="" /> : initials}
-        </button>
-        <div>
-          <span className="nr-driver-kicker">DRIVER HOME</span>
-          <h1>{state.online ? "You’re online" : `Ready to drive, ${firstName}?`}</h1>
-          <p>{state.online ? "Waiting for ride requests" : "Go online when you’re ready to receive requests."}</p>
-          <div className="nr-driver-header-meta">
-            <span className={`nr-driver-header-status ${state.online ? "is-online" : ""}`}><span className="nr-status-dot" aria-hidden="true" />{state.online ? "Online" : "Offline"}</span>
-            {state.rating !== null && <span className="nr-driver-rating">★ {state.rating.toFixed(1)}</span>}
-          </div>
-        </div>
-      </header>
-
       <section className={`nr-driver-operational-map ${state.online ? "is-online" : ""}`} aria-label="Driver operational map">
         <RiderMap
           position={mapLocation.position}
@@ -760,11 +691,6 @@ export function DriverWorkspace({
         </div>
       )}
 
-      <div className="nr-driver-metric-grid" aria-label="Driver summary">
-        <Metric label="Today’s earnings" value={state.earnings === null ? "—" : formatEarnings(state.earnings)} suffix="ETB" hint={state.earnings === null ? "Unavailable" : "Today"} loading={loading} />
-        <Metric label="Completed trips" value={state.trips === null ? "—" : String(state.trips)} hint={state.trips === null ? "Unavailable" : "Today"} loading={loading} />
-        <Metric label="Online time" value={state.onlineSeconds === null ? "—" : formatOnlineTime(state.onlineSeconds)} hint={state.onlineSeconds === null ? "Unavailable" : "Today"} loading={loading} />
-      </div>
 
       {loading ? (
         <section className="nr-driver-card nr-driver-loading">
@@ -788,19 +714,6 @@ export function DriverWorkspace({
         </section>
       )}
 
-      <button className="nr-driver-action-row" onClick={onSafety}><Icon name="shield" /><span>Safety & Support</span><Icon name="chevron" /></button>
     </div>
-  );
-}
-
-function Metric({ label, value, suffix, hint, loading }: { label: string; value: string; suffix?: string; hint: string; loading: boolean }) {
-  return (
-    <section className="nr-driver-card nr-metric">
-      {loading ? <><span className="nr-driver-skeleton" /><span className="nr-driver-skeleton wide" /></> : <>
-        <span>{label}</span>
-        <strong>{value} {suffix && <small>{suffix}</small>}</strong>
-        <em>{hint}</em>
-      </>}
-    </section>
   );
 }
