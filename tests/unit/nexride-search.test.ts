@@ -83,7 +83,7 @@ describe("destination and provider boundaries", () => {
     expect(data.status).toBe("ready");
     expect(data.route.geometry[0]).toEqual([9.008, 38.775]);
     expect(data.route.durationSeconds).toBe(960);
-    expect(fetch.mock.calls[0][0]).toContain("directions/v5/mapbox/driving/");
+    expect(fetch.mock.calls[0][0]).toContain("directions/v5/mapbox/driving-traffic/");
   });
   it("never presents malformed or failed provider responses as a route", async () => {
     vi.stubEnv("MAPBOX_ACCESS_TOKEN", "test-token");
