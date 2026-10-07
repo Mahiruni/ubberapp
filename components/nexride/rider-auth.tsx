@@ -7,7 +7,9 @@ import { EntryShell } from "./entry";
 import { Button, Icon, InputField, StatusBanner, useTranslation } from "./ui";
 import { supabase } from "../../lib/supabase";
 import {
+  clearExplicitSignOut,
   enterRider,
+  explicitSignOutRole,
   ONBOARDING_KEY,
   PREVIEW_ENABLED_KEY,
 } from "../../lib/nexride-startup";
@@ -47,6 +49,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
     const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
     const confirmationLanding = mode === "signin" && params.get("confirmed") === "1";
     const authErrorDescription = hashParams.get("error_description");
+    const signedOutRole = explicitSignOutRole(window.localStorage);
 
     if (mode === "signin") {
       router.prefetch("/");
@@ -101,7 +104,9 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
       }
     };
 
-    supabase.auth
+    if (signedOutRole && !confirmationLanding && mode !== "reset") {
+      if (mode === "signin") setCheckingSession(false);
+    } else supabase.auth
       .getSession()
       .then(({ data, error: sessionError }) => {
         if (!active || mode === "reset") return;
@@ -128,6 +133,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
       }
 
       if (event === "SIGNED_IN" && confirmationLanding && session) {
+        clearExplicitSignOut();
         setCheckingSession(true);
         void restoreSession(session);
       }
@@ -167,6 +173,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
         return;
       }
 
+      clearExplicitSignOut();
       const role = await resolveSessionRole(data.session);
       if (role === "driver") {
         navigating = true;
