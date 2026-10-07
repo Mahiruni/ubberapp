@@ -6,6 +6,7 @@ import { Icon } from "../../../components/nexride/ui";
 import { DriverStandaloneMenu, usePersistedDriverTheme } from "../../../components/nexride/driver-app-shell";
 import { useOperationalTranslation } from "../../../components/nexride/operational-i18n";
 import { supabase } from "../../../lib/supabase";
+import { emitNexRideFeedback } from "../../../lib/nexride-feedback";
 import {
   formatRideStatus,
   isRideChatActive,
@@ -121,6 +122,15 @@ export default function TripChatPage() {
                 createdAt: String(row.created_at || new Date().toISOString()),
               };
               setMessages((current) => current.some((message) => message.id === incoming.id) ? current : [...current, incoming]);
+              if (incoming.senderId && incoming.senderId !== session.user.id) {
+                emitNexRideFeedback({
+                  event: "message",
+                  id: incoming.id,
+                  title: requestedRole === "driver" ? "New message from your rider" : "New message from your driver",
+                  body: "Open NexRide to view your trip message.",
+                  url: `/trip/chat?ride=${encodeURIComponent(rideId)}&role=${requestedRole}${requestedRole === "driver" && offerId ? `&offer=${encodeURIComponent(offerId)}` : ""}`,
+                });
+              }
             },
           )
           .subscribe();
