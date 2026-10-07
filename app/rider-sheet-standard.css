@@ -1032,3 +1032,28 @@
   position:relative;
   z-index:1;
 }
+
+
+/* Rider chrome must never pass touches to Mapbox.
+   The actual exposed map remains interactive; header/control wrappers own their hit area. */
+@media (max-width:800px) {
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-topbar {
+    pointer-events:auto!important;
+    touch-action:none!important;
+    overscroll-behavior:contain!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-topbar > * {
+    pointer-events:auto!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-rider-map-top {
+    pointer-events:auto!important;
+    touch-action:none!important;
+    overscroll-behavior:contain!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-rider-map-top > * {
+    pointer-events:auto!important;
+  }
+}
