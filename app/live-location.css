@@ -1,0 +1,205 @@
+/* NexRide live rider location marker */
+.nr-live-location-marker {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  user-select: none;
+  contain: layout paint style;
+  z-index: 4;
+}
+
+.nr-live-location-dot,
+.nr-live-location-pulse {
+  position: absolute;
+  inset: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  transform-origin: center;
+  will-change: transform, opacity;
+}
+
+.nr-live-location-dot {
+  box-sizing: border-box;
+  background: #078930;
+  border: 3px solid #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .3);
+  animation: nr-live-dot-beat 2.4s ease-out infinite;
+}
+
+.nr-live-location-pulse {
+  background: rgba(7, 137, 48, .45);
+  animation: nr-live-location-heartbeat 2.4s ease-out infinite;
+}
+
+.nr-live-location-pulse-two {
+  animation-delay: .4s;
+}
+
+@keyframes nr-live-location-heartbeat {
+  0% {
+    transform: scale(1);
+    opacity: .5;
+  }
+  60% {
+    transform: scale(3.2);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(3.2);
+    opacity: 0;
+  }
+}
+
+@keyframes nr-live-dot-beat {
+  0%, 18%, 100% {
+    transform: scale(1);
+  }
+  8% {
+    transform: scale(1.12);
+  }
+}
+
+.nr-live-location-marker.is-stale .nr-live-location-dot {
+  background: #7b8791;
+  animation: none;
+}
+
+.nr-live-location-marker.is-stale .nr-live-location-pulse {
+  opacity: 0;
+  animation: none;
+}
+
+.nr-live-location-marker.is-paused .nr-live-location-dot,
+html[data-nr-data-saver] .nr-live-location-marker .nr-live-location-dot {
+  animation: none;
+}
+
+.nr-live-location-marker.is-paused .nr-live-location-pulse,
+html[data-nr-data-saver] .nr-live-location-marker .nr-live-location-pulse {
+  animation: none;
+  transform: scale(1.55);
+  opacity: .14;
+}
+
+.nr-live-location-marker.is-paused .nr-live-location-pulse-two,
+html[data-nr-data-saver] .nr-live-location-marker .nr-live-location-pulse-two {
+  display: none;
+}
+
+.nr-gps-status,
+.nr-location-permission {
+  position: absolute;
+  z-index: 24;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #102334;
+  background: rgba(255, 255, 255, .94);
+  border: 1px solid rgba(16, 35, 52, .1);
+  box-shadow: 0 10px 28px rgba(4, 28, 48, .16);
+  backdrop-filter: blur(14px) saturate(125%);
+  -webkit-backdrop-filter: blur(14px) saturate(125%);
+}
+
+.nr-gps-status {
+  top: calc(76px + env(safe-area-inset-top));
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  line-height: 1.2;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.nr-gps-status::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #7b8791;
+  box-shadow: 0 0 0 4px rgba(123, 135, 145, .14);
+}
+
+.nr-location-permission {
+  top: calc(72px + env(safe-area-inset-top));
+  width: min(calc(100% - 28px), 390px);
+  display: grid;
+  grid-template-columns: 36px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 10px 10px 12px;
+  border-radius: 18px;
+}
+
+.nr-location-permission-copy {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.nr-location-permission-copy strong {
+  font-size: 13px;
+  line-height: 1.2;
+  font-weight: 800;
+}
+
+.nr-location-permission-copy span {
+  font-size: 11.5px;
+  line-height: 1.35;
+  color: #667587;
+}
+
+.nr-location-permission button {
+  min-width: 44px;
+  min-height: 40px;
+  border: 0;
+  border-radius: 12px;
+  padding: 0 12px;
+  background: #078930;
+  color: #fff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.nr-location-permission button:focus-visible {
+  outline: 3px solid rgba(7, 137, 48, .28);
+  outline-offset: 2px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .nr-gps-status,
+  .nr-location-permission {
+    color: #f7fbf9;
+    background: rgba(4, 28, 48, .92);
+    border-color: rgba(255, 255, 255, .1);
+  }
+
+  .nr-location-permission-copy span {
+    color: rgba(247, 251, 249, .72);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nr-live-location-dot,
+  .nr-live-location-pulse {
+    animation: none !important;
+  }
+
+  .nr-live-location-pulse {
+    transform: scale(1.55);
+    opacity: .14;
+  }
+
+  .nr-live-location-pulse-two {
+    display: none;
+  }
+}
