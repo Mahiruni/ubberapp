@@ -65,27 +65,34 @@ export async function routeBetween(
   }
   const coords = points.map((p) => p.lng + "," + p.lat).join(";");
   const profile = options.profile || "driving-traffic";
-  const res = await fetch(
-    MAPBOX +
-      "/directions/v5/mapbox/" +
-      profile +
-      "/" +
-      coords +
-      "?alternatives=false&geometries=geojson&overview=full&steps=" +
-      (options.steps ? "true" : "false") +
-      (profile === "driving-traffic" ? "&annotations=congestion" : "") +
-      "&language=en&radiuses=" +
-      points.map(() => 100).join(";") +
-      "&access_token=" +
-      encodeURIComponent(t),
-    {
-      headers: { Accept: "application/json" },
-      signal: options.signal || AbortSignal.timeout(8000),
-      cache: "no-store",
-    },
-  );
-  if (!res.ok) throw new Error("routing_unavailable:" + res.status);
-  const j = await res.json();
+  const requestRoute = async (snapRadius: number) => {
+    const res = await fetch(
+      MAPBOX +
+        "/directions/v5/mapbox/" +
+        profile +
+        "/" +
+        coords +
+        "?alternatives=false&geometries=geojson&overview=full&steps=" +
+        (options.steps ? "true" : "false") +
+        (profile === "driving-traffic" ? "&annotations=congestion" : "") +
+        "&language=en&radiuses=" +
+        points.map(() => snapRadius).join(";") +
+        "&access_token=" +
+        encodeURIComponent(t),
+      {
+        headers: { Accept: "application/json" },
+        signal: options.signal || AbortSignal.timeout(8000),
+        cache: "no-store",
+      },
+    );
+    if (!res.ok) throw new Error("routing_unavailable:" + res.status);
+    return res.json();
+  };
+
+  let j = await requestRoute(100);
+  if (!j.routes?.[0] && j.code === "NoSegment") {
+    j = await requestRoute(500);
+  }
   const r = j.routes?.[0];
   if (!r) throw new Error("route_not_found");
   if (
