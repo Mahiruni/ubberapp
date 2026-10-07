@@ -202,7 +202,20 @@
   }
 
   .nr-app[data-mode="rider"] .rider-map-flow[data-keyboard="true"].rider-search-view {
-    --nr-flow-sheet-height: min(60dvh, calc(100dvh - 96px));
+    --nr-flow-sheet-height: min(
+      var(--nr-search-height, calc(var(--nr-viewport-height, 100dvh) - 96px)),
+      calc(var(--nr-viewport-height, 100dvh) - 96px)
+    );
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow[data-keyboard="true"].rider-search-view
+    .nr-destination-panel[data-search-active="true"] {
+    min-height: var(--nr-flow-sheet-height);
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow[data-keyboard="true"].rider-search-view
+    .nr-destination-panel[data-search-active="true"] .nr-destination-body {
+    padding-bottom: calc(18px + env(safe-area-inset-bottom));
   }
 }
 
