@@ -1,11 +1,10 @@
 "use client";
 
-import { useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import type {
   GeoJSONSource,
   Map as MapboxMap,
   Marker as MapboxMarker,
-  Popup as MapboxPopup,
 } from "mapbox-gl";
 import MapboxGeocoder from "@mapbox/mapbox-gl-geocoder";
 import { Icon, LanguageContext, Spinner, useTranslation } from "./ui";
@@ -13,19 +12,10 @@ import { endpointName } from "./destination";
 import type { Journey } from "../../lib/nexride-journey";
 import type { LocationStatus, RiderLocation } from "../../lib/nexride-location";
 import { formatDistance, formatDuration } from "../../lib/location";
-import { places } from "../../lib/nexride-places";
 import "mapbox-gl/dist/mapbox-gl.css";
 import "@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css";
 
 type MapStyleKey = "streets" | "satellite" | "dark";
-type FeatureDetail = {
-  id: string;
-  title: string;
-  details: string;
-  category: string;
-  lat: number;
-  lng: number;
-};
 
 const STYLE_URLS: Record<MapStyleKey, string> = {
   streets:
@@ -48,37 +38,10 @@ const INITIAL_ZOOM = envNumber(process.env.NEXT_PUBLIC_MAPBOX_ZOOM, 13);
 const INITIAL_PITCH = envNumber(process.env.NEXT_PUBLIC_MAPBOX_PITCH, 0);
 const INITIAL_BEARING = envNumber(process.env.NEXT_PUBLIC_MAPBOX_BEARING, 0);
 
-const placesGeoJson = {
+const emptyFeatureCollection = {
   type: "FeatureCollection" as const,
-  features: places.map((place, index) => ({
-    type: "Feature" as const,
-    id: index,
-    properties: {
-      id: `nexride-place-${index}`,
-      title: place.name,
-      details: place.address,
-      category: place.category || "place",
-      subcity: place.subcity || "",
-    },
-    geometry: {
-      type: "Point" as const,
-      coordinates: [place.lng, place.lat] as [number, number],
-    },
-  })),
+  features: [],
 };
-
-const escapeHtml = (value: string) =>
-  value.replace(
-    /[&<>"']/g,
-    (character) =>
-      ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#039;",
-      })[character] || character,
-  );
 
 const accuracyPolygon = (
   lat: number,
@@ -131,6 +94,164 @@ const searchAreaElement = () => {
   return root;
 };
 
+function routeData(journey: Journey | undefined) {
+  const geometry =
+    journey?.routeState.status === "ready"
+      ? journey.routeState.route?.geometry
+      : undefined;
+  if (!geometry?.length) return emptyFeatureCollection;
+  return {
+    type: "Feature" as const,
+    properties: {},
+    geometry: {
+      type: "LineString" as const,
+      coordinates: geometry.map(
+        ([lat, lng]) => [lng, lat] as [number, number],
+      ),
+    },
+  };
+}
+
+function syncRoute(map: MapboxMap, journey: Journey | undefined) {
+  if (!map.isStyleLoaded()) return;
+  const data = routeData(journey);
+  const hasRoute = data.type === "Feature";
+  const source = map.getSource("nexride-route") as GeoJSONSource | undefined;
+
+  if (source) {
+    source.setData(data);
+  } else if (hasRoute) {
+    map.addSource("nexride-route", { type: "geojson", data });
+  }
+
+  if (hasRoute && !map.getLayer("nexride-route-casing")) {
+    map.addLayer({
+      id: "nexride-route-casing",
+      type: "line",
+      source: "nexride-route",
+      layout: { "line-cap": "round", "line-join": "round" },
+      paint: {
+        "line-color": "#ffffff",
+        "line-width": 9,
+        "line-opacity": 0.94,
+      },
+    });
+  }
+
+  if (hasRoute && !map.getLayer("nexride-route-line")) {
+    map.addLayer({
+      id: "nexride-route-line",
+      type: "line",
+      source: "nexride-route",
+      layout: { "line-cap": "round", "line-join": "round" },
+      paint: {
+        "line-color": "#246bc6",
+        "line-width": 5,
+        "line-opacity": 0.96,
+      },
+    });
+  }
+}
+
+function syncAccuracy(
+  map: MapboxMap,
+  position: RiderLocation | null,
+  status: LocationStatus,
+) {
+  if (!map.isStyleLoaded()) return;
+  const data =
+    position && status === "ready"
+      ? accuracyPolygon(position.lat, position.lng, position.accuracy)
+      : emptyFeatureCollection;
+  const source = map.getSource("nexride-live-accuracy") as
+    | GeoJSONSource
+    | undefined;
+
+  if (source) {
+    source.setData(data);
+    return;
+  }
+
+  if (!position || status !== "ready") return;
+  map.addSource("nexride-live-accuracy", { type: "geojson", data });
+  map.addLayer({
+    id: "nexride-live-accuracy-fill",
+    type: "fill",
+    source: "nexride-live-accuracy",
+    paint: {
+      "fill-color": "#e5484d",
+      "fill-opacity": 0.055,
+    },
+  });
+  map.addLayer({
+    id: "nexride-live-accuracy-outline",
+    type: "line",
+    source: "nexride-live-accuracy",
+    paint: {
+      "line-color": "#e5484d",
+      "line-opacity": 0.2,
+      "line-width": 1,
+    },
+  });
+}
+
+function fitJourney(
+  map: MapboxMap,
+  journey: Journey | undefined,
+  rideLabel: boolean,
+) {
+  const pickup = journey?.pickup;
+  const destination = journey?.destination;
+  if (!pickup?.confirmed || !destination?.confirmed) return;
+
+  const geometry =
+    journey.routeState.status === "ready"
+      ? journey.routeState.route?.geometry
+      : undefined;
+  const points =
+    geometry?.length
+      ? geometry
+      : [
+          [pickup.lat, pickup.lng],
+          [destination.lat, destination.lng],
+        ];
+
+  let west = Infinity;
+  let south = Infinity;
+  let east = -Infinity;
+  let north = -Infinity;
+  for (const [lat, lng] of points) {
+    west = Math.min(west, lng);
+    east = Math.max(east, lng);
+    south = Math.min(south, lat);
+    north = Math.max(north, lat);
+  }
+
+  map.fitBounds(
+    [
+      [west, south],
+      [east, north],
+    ],
+    {
+      padding: {
+        top: rideLabel ? 88 : 68,
+        right: 72,
+        bottom: 54,
+        left: 28,
+      },
+      maxZoom: 16,
+      duration: matchMedia("(prefers-reduced-motion: reduce)").matches
+        ? 0
+        : 320,
+    },
+  );
+}
+
+const normalizedBearing = (bearing: number) => {
+  const normalized = ((bearing + 180) % 360 + 360) % 360 - 180;
+  return normalized;
+};
+
 export function RiderMap({
   position,
   status,
@@ -168,16 +289,21 @@ export function RiderMap({
   const pickupMarker = useRef<MapboxMarker | null>(null);
   const destinationMarker = useRef<MapboxMarker | null>(null);
   const searchMarker = useRef<MapboxMarker | null>(null);
-  const popupRef = useRef<MapboxPopup | null>(null);
   const resizeObserver = useRef<ResizeObserver | null>(null);
-  const planRef = useRef(journey);
-  planRef.current = journey;
+  const journeyRef = useRef(journey);
+  const positionRef = useRef(position);
+  const statusRef = useRef(status);
+  const rideLabelRef = useRef(rideLabel);
+  journeyRef.current = journey;
+  positionRef.current = position;
+  statusRef.current = status;
+  rideLabelRef.current = rideLabel;
+
   const manualView = useRef(false);
   const mapGestureBlocked = useRef(false);
   const suppressMapClickUntil = useRef(0);
   const loadedRef = useRef(false);
   const lastRecenter = useRef(recenter);
-  const hoveredFeature = useRef<string | number | null>(null);
   const activeStyleRef = useRef<MapStyleKey>("streets");
 
   const [mapStatus, setMapStatus] = useState<
@@ -186,17 +312,16 @@ export function RiderMap({
   const [attempt, setAttempt] = useState(0);
   const [mounted, setMounted] = useState(false);
   const [styleKey, setStyleKey] = useState<MapStyleKey>("streets");
-  const [selectedFeature, setSelectedFeature] =
-    useState<FeatureDetail | null>(null);
+  const [layerMenuOpen, setLayerMenuOpen] = useState(false);
+  const [bearing, setBearing] = useState(0);
 
   const route =
     journey?.routeState.status === "ready"
       ? journey.routeState.route
       : undefined;
-  const geometry = route?.geometry;
   const pickup = journey?.pickup;
   const destination = journey?.destination;
-
+  const geometry = route?.geometry;
   const trafficLabel = route?.traffic
     ? t(
         route.traffic.level === "low"
@@ -208,22 +333,7 @@ export function RiderMap({
               : "trafficSevere",
       )
     : "";
-
-  const placesBounds = useMemo(() => {
-    if (!placesGeoJson.features.length) return null;
-    let west = Infinity,
-      south = Infinity,
-      east = -Infinity,
-      north = -Infinity;
-    for (const feature of placesGeoJson.features) {
-      const [lng, lat] = feature.geometry.coordinates;
-      west = Math.min(west, lng);
-      east = Math.max(east, lng);
-      south = Math.min(south, lat);
-      north = Math.max(north, lat);
-    }
-    return [west, south, east, north] as [number, number, number, number];
-  }, []);
+  const showCompass = Math.abs(normalizedBearing(bearing)) > 2;
 
   useEffect(() => {
     let cancelled = false;
@@ -262,29 +372,21 @@ export function RiderMap({
       map.doubleClickZoom.enable();
       map.scrollZoom.enable();
 
-      const nav = new mapboxgl.default.NavigationControl({
-        visualizePitch: true,
-        showCompass: true,
+      const navigation = new mapboxgl.default.NavigationControl({
+        showCompass: false,
         showZoom: true,
       });
-      const geolocate = new mapboxgl.default.GeolocateControl({
-        positionOptions: { enableHighAccuracy: true },
-        trackUserLocation: false,
-        showUserLocation: false,
-        showAccuracyCircle: false,
+      const fullscreen = new mapboxgl.default.FullscreenControl({
+        container:
+          container.current.closest<HTMLElement>(".nr-rider-map-surface") ||
+          undefined,
       });
       const scale = new mapboxgl.default.ScaleControl({
-        maxWidth: 100,
+        maxWidth: 92,
         unit: "metric",
       });
-      const fullscreen = new mapboxgl.default.FullscreenControl({
-        container: container.current.closest<HTMLElement>(
-          ".nr-rider-map-surface",
-        ) || undefined,
-      });
 
-      map.addControl(nav, "top-right");
-      map.addControl(geolocate, "top-right");
+      map.addControl(navigation, "top-right");
       map.addControl(fullscreen, "top-right");
       map.addControl(scale, "bottom-left");
 
@@ -303,183 +405,15 @@ export function RiderMap({
       });
       map.addControl(geocoder, "top-left");
 
-      geolocate.on("geolocate", () => locate());
-
-      const installPlaces = () => {
+      const syncStyleData = () => {
         if (!map.isStyleLoaded()) return;
-        if (!map.getSource("nexride-places")) {
-          map.addSource("nexride-places", {
-            type: "geojson",
-            data: placesGeoJson,
-            generateId: true,
-            cluster: true,
-            clusterMaxZoom: 14,
-            clusterRadius: 48,
-          });
-        }
-        if (!map.getLayer("nexride-place-clusters")) {
-          map.addLayer({
-            id: "nexride-place-clusters",
-            type: "circle",
-            source: "nexride-places",
-            filter: ["has", "point_count"],
-            paint: {
-              "circle-color": "#00c878",
-              "circle-radius": [
-                "step",
-                ["get", "point_count"],
-                18,
-                15,
-                23,
-                40,
-                29,
-              ],
-              "circle-stroke-color": "#ffffff",
-              "circle-stroke-width": 2,
-              "circle-opacity": 0.92,
-            },
-          });
-        }
-        if (!map.getLayer("nexride-place-cluster-count")) {
-          map.addLayer({
-            id: "nexride-place-cluster-count",
-            type: "symbol",
-            source: "nexride-places",
-            filter: ["has", "point_count"],
-            layout: {
-              "text-field": ["get", "point_count_abbreviated"],
-              "text-size": 12,
-              "text-font": ["DIN Offc Pro Medium", "Arial Unicode MS Bold"],
-            },
-            paint: { "text-color": "#041c30" },
-          });
-        }
-        if (!map.getLayer("nexride-place-points")) {
-          map.addLayer({
-            id: "nexride-place-points",
-            type: "circle",
-            source: "nexride-places",
-            filter: ["!", ["has", "point_count"]],
-            paint: {
-              "circle-radius": [
-                "case",
-                ["boolean", ["feature-state", "hover"], false],
-                9,
-                6,
-              ],
-              "circle-color": [
-                "case",
-                ["boolean", ["feature-state", "hover"], false],
-                "#041c30",
-                "#00c878",
-              ],
-              "circle-stroke-width": 2,
-              "circle-stroke-color": "#ffffff",
-            },
-          });
-        }
-      };
-
-      const installAccuracy = () => {
-        if (!map.isStyleLoaded() || !position || status !== "ready") return;
-        const data = accuracyPolygon(
-          position.lat,
-          position.lng,
-          position.accuracy,
-        );
-        const source = map.getSource(
-          "nexride-live-accuracy",
-        ) as GeoJSONSource | undefined;
-        if (source) source.setData(data);
-        else {
-          map.addSource("nexride-live-accuracy", {
-            type: "geojson",
-            data,
-          });
-          map.addLayer({
-            id: "nexride-live-accuracy-fill",
-            type: "fill",
-            source: "nexride-live-accuracy",
-            paint: {
-              "fill-color": "#e5484d",
-              "fill-opacity": 0.055,
-            },
-          });
-          map.addLayer({
-            id: "nexride-live-accuracy-outline",
-            type: "line",
-            source: "nexride-live-accuracy",
-            paint: {
-              "line-color": "#e5484d",
-              "line-opacity": 0.2,
-              "line-width": 1,
-            },
-          });
-        }
-      };
-
-      const installRoute = () => {
-        if (!map.isStyleLoaded()) return;
-        const plan = planRef.current;
-        const routeGeometry =
-          plan?.routeState.status === "ready"
-            ? plan.routeState.route?.geometry
-            : undefined;
-        const source = map.getSource(
-          "nexride-route",
-        ) as GeoJSONSource | undefined;
-        const data = {
-          type: "Feature" as const,
-          properties: {},
-          geometry: {
-            type: "LineString" as const,
-            coordinates: (routeGeometry || []).map(
-              ([lat, lng]) => [lng, lat] as [number, number],
-            ),
-          },
-        };
-        if (source) source.setData(data);
-        else if (routeGeometry?.length) {
-          map.addSource("nexride-route", { type: "geojson", data });
-        }
-        if (routeGeometry?.length && !map.getLayer("nexride-route-casing")) {
-          map.addLayer({
-            id: "nexride-route-casing",
-            type: "line",
-            source: "nexride-route",
-            layout: { "line-cap": "round", "line-join": "round" },
-            paint: {
-              "line-color": "#ffffff",
-              "line-width": 9,
-              "line-opacity": 0.94,
-            },
-          });
-        }
-        if (routeGeometry?.length && !map.getLayer("nexride-route-line")) {
-          map.addLayer({
-            id: "nexride-route-line",
-            type: "line",
-            source: "nexride-route",
-            layout: { "line-cap": "round", "line-join": "round" },
-            paint: {
-              "line-color": "#246bc6",
-              "line-width": 5,
-              "line-opacity": 0.96,
-            },
-          });
-        }
-      };
-
-      const installStyleData = () => {
-        hoveredFeature.current = null;
-        installPlaces();
-        installAccuracy();
-        installRoute();
+        syncRoute(map, journeyRef.current);
+        syncAccuracy(map, positionRef.current, statusRef.current);
       };
 
       map.on("style.load", () => {
         if (cancelled) return;
-        installStyleData();
+        syncStyleData();
         setMapStatus("ready");
       });
 
@@ -488,21 +422,8 @@ export function RiderMap({
         loadedRef.current = true;
         setMounted(true);
         setMapStatus("ready");
-        installStyleData();
-
-        if (placesBounds) {
-          map.fitBounds(
-            [
-              [placesBounds[0], placesBounds[1]],
-              [placesBounds[2], placesBounds[3]],
-            ],
-            {
-              padding: { top: 92, right: 44, bottom: 46, left: 44 },
-              maxZoom: 13,
-              duration: 0,
-            },
-          );
-        }
+        syncStyleData();
+        setBearing(map.getBearing());
 
         const input = container.current
           ?.closest(".nr-rider-map-surface")
@@ -511,102 +432,37 @@ export function RiderMap({
           "aria-label",
           language === "am" ? "ቦታ ይፈልጉ" : "Search places",
         );
+
+        if (
+          journeyRef.current?.pickup?.confirmed &&
+          journeyRef.current.destination?.confirmed
+        ) {
+          fitJourney(map, journeyRef.current, rideLabelRef.current);
+        } else if (
+          positionRef.current &&
+          statusRef.current === "ready"
+        ) {
+          map.jumpTo({
+            center: [
+              positionRef.current.lng,
+              positionRef.current.lat,
+            ],
+            zoom: 16,
+          });
+        }
       });
 
       map.on("error", () => {
         if (!loadedRef.current && !cancelled) setMapStatus("unavailable");
       });
 
-      map.on("dragstart", () => {
+      const markManual = () => {
         manualView.current = true;
-      });
-      map.on("zoomstart", () => {
-        manualView.current = true;
-      });
-
-      map.on("click", "nexride-place-clusters", (event) => {
-        const feature = event.features?.[0];
-        const clusterId = Number(feature?.properties?.point_count
-          ? feature.properties.cluster_id
-          : feature?.properties?.cluster_id);
-        const coordinates =
-          feature?.geometry.type === "Point"
-            ? feature.geometry.coordinates
-            : undefined;
-        if (!coordinates || !Number.isFinite(clusterId)) return;
-        const source = map.getSource("nexride-places") as GeoJSONSource;
-        source.getClusterExpansionZoom(clusterId, (error, zoom) => {
-          if (error || zoom === null || zoom === undefined) return;
-          map.easeTo({
-            center: coordinates as [number, number],
-            zoom,
-            duration: 350,
-          });
-        });
-      });
-
-      map.on("click", "nexride-place-points", (event) => {
-        const feature = event.features?.[0];
-        if (!feature || feature.geometry.type !== "Point") return;
-        const coordinates = feature.geometry.coordinates as [number, number];
-        const properties = feature.properties || {};
-        const detail: FeatureDetail = {
-          id: String(properties.id || feature.id || ""),
-          title: String(properties.title || "Place"),
-          details: String(properties.details || ""),
-          category: String(properties.category || "place"),
-          lng: coordinates[0],
-          lat: coordinates[1],
-        };
-        setSelectedFeature(detail);
-        popupRef.current?.remove();
-        const popup = new mapboxgl.default.Popup({
-          closeButton: true,
-          closeOnClick: true,
-          offset: 14,
-          maxWidth: "280px",
-        })
-          .setLngLat(coordinates)
-          .setHTML(
-            `<div class="nr-map-popup"><strong>${escapeHtml(
-              detail.title,
-            )}</strong><p>${escapeHtml(
-              detail.details,
-            )}</p><a href="#nr-map-feature-details">View details</a></div>`,
-          )
-          .addTo(map);
-        popupRef.current = popup;
-      });
-
-      const pointerOn = () => {
-        map.getCanvas().style.cursor = "pointer";
       };
-      const pointerOff = () => {
-        map.getCanvas().style.cursor = "";
-      };
-      map.on("mouseenter", "nexride-place-clusters", pointerOn);
-      map.on("mouseleave", "nexride-place-clusters", pointerOff);
-      map.on("mouseenter", "nexride-place-points", (event) => {
-        pointerOn();
-        const feature = event.features?.[0];
-        if (feature?.id === undefined || feature.id === null) return;
-        hoveredFeature.current = feature.id;
-        map.setFeatureState(
-          { source: "nexride-places", id: feature.id },
-          { hover: true },
-        );
-      });
-      map.on("mouseleave", "nexride-place-points", () => {
-        pointerOff();
-        if (hoveredFeature.current === null) return;
-        try {
-          map.setFeatureState(
-            { source: "nexride-places", id: hoveredFeature.current },
-            { hover: false },
-          );
-        } catch {}
-        hoveredFeature.current = null;
-      });
+      map.on("dragstart", markManual);
+      map.on("zoomstart", markManual);
+      map.on("rotatestart", markManual);
+      map.on("rotate", () => setBearing(map.getBearing()));
 
       map.on("click", (event) => {
         if (
@@ -614,7 +470,7 @@ export function RiderMap({
           performance.now() < suppressMapClickUntil.current
         )
           return;
-        const plan = planRef.current;
+        const plan = journeyRef.current;
         if (plan?.pinMode)
           plan.setPin(plan.pinMode, {
             lat: event.lngLat.lat,
@@ -636,8 +492,6 @@ export function RiderMap({
       cancelled = true;
       resizeObserver.current?.disconnect();
       resizeObserver.current = null;
-      popupRef.current?.remove();
-      popupRef.current = null;
       pickupMarker.current?.remove();
       destinationMarker.current?.remove();
       liveMarker.current?.remove();
@@ -659,6 +513,7 @@ export function RiderMap({
     if (activeStyleRef.current === styleKey) return;
     activeStyleRef.current = styleKey;
     setMapStatus("loading");
+    setLayerMenuOpen(false);
     map.setStyle(STYLE_URLS[styleKey]);
   }, [styleKey, mounted]);
 
@@ -722,9 +577,7 @@ export function RiderMap({
   useEffect(() => {
     const map = mapRef.current;
     if (!mounted || !map || !map.isStyleLoaded()) return;
-    const source = map.getSource("nexride-live-accuracy") as
-      | GeoJSONSource
-      | undefined;
+    syncAccuracy(map, position, status);
 
     if (!position || status !== "ready") {
       liveMarker.current?.remove();
@@ -732,44 +585,16 @@ export function RiderMap({
       return;
     }
 
-    const accuracy = accuracyPolygon(
-      position.lat,
-      position.lng,
-      position.accuracy,
-    );
-    if (source) source.setData(accuracy);
-    else {
-      map.addSource("nexride-live-accuracy", {
-        type: "geojson",
-        data: accuracy,
-      });
-      map.addLayer({
-        id: "nexride-live-accuracy-fill",
-        type: "fill",
-        source: "nexride-live-accuracy",
-        paint: { "fill-color": "#e5484d", "fill-opacity": 0.055 },
-      });
-      map.addLayer({
-        id: "nexride-live-accuracy-outline",
-        type: "line",
-        source: "nexride-live-accuracy",
-        paint: {
-          "line-color": "#e5484d",
-          "line-opacity": 0.2,
-          "line-width": 1,
-        },
-      });
-    }
-
-    const mapboxglPromise = import("mapbox-gl");
-    void mapboxglPromise.then((mapboxgl) => {
+    void import("mapbox-gl").then((mapboxgl) => {
       if (!mapRef.current) return;
       const isNew = !liveMarker.current;
       if (!liveMarker.current)
         liveMarker.current = new mapboxgl.default.Marker({
           element: heartbeatElement(),
           anchor: "center",
-        }).setLngLat([position.lng, position.lat]).addTo(map);
+        })
+          .setLngLat([position.lng, position.lat])
+          .addTo(map);
       else liveMarker.current.setLngLat([position.lng, position.lat]);
 
       const recenterChanged = lastRecenter.current !== recenter;
@@ -781,7 +606,7 @@ export function RiderMap({
           zoom: Math.max(map.getZoom(), 16),
           duration: matchMedia("(prefers-reduced-motion: reduce)").matches
             ? 0
-            : 350,
+            : 300,
         });
       }
     });
@@ -807,10 +632,10 @@ export function RiderMap({
           .setLngLat([pickup.lng, pickup.lat])
           .addTo(map);
         if (!readOnly) {
-          marker.on("dragstart", () => planRef.current?.invalidatePickup());
+          marker.on("dragstart", () => journeyRef.current?.invalidatePickup());
           marker.on("dragend", () => {
             const point = marker.getLngLat();
-            planRef.current?.setPin("pickup", {
+            journeyRef.current?.setPin("pickup", {
               lat: point.lat,
               lng: point.lng,
             });
@@ -818,6 +643,7 @@ export function RiderMap({
         }
         pickupMarker.current = marker;
       }
+
       if (destination)
         destinationMarker.current = new mapboxgl.default.Marker({
           element: endpointElement("destination"),
@@ -839,69 +665,14 @@ export function RiderMap({
   useEffect(() => {
     const map = mapRef.current;
     if (!mounted || !map || !map.isStyleLoaded()) return;
+    syncRoute(map, journey);
 
-    const data = {
-      type: "Feature" as const,
-      properties: {},
-      geometry: {
-        type: "LineString" as const,
-        coordinates: (geometry || []).map(
-          ([lat, lng]) => [lng, lat] as [number, number],
-        ),
-      },
-    };
-    const source = map.getSource("nexride-route") as GeoJSONSource | undefined;
-    if (source) source.setData(data);
-    else if (geometry?.length) {
-      map.addSource("nexride-route", { type: "geojson", data });
-      map.addLayer({
-        id: "nexride-route-casing",
-        type: "line",
-        source: "nexride-route",
-        layout: { "line-cap": "round", "line-join": "round" },
-        paint: {
-          "line-color": "#ffffff",
-          "line-width": 9,
-          "line-opacity": 0.94,
-        },
-      });
-      map.addLayer({
-        id: "nexride-route-line",
-        type: "line",
-        source: "nexride-route",
-        layout: { "line-cap": "round", "line-join": "round" },
-        paint: {
-          "line-color": "#246bc6",
-          "line-width": 5,
-          "line-opacity": 0.96,
-        },
-      });
-    }
-
-    if (!manualView.current && pickup?.confirmed && destination?.confirmed) {
-      const mapboxglPromise = import("mapbox-gl");
-      void mapboxglPromise.then((mapboxgl) => {
-        if (!mapRef.current) return;
-        const bounds = new mapboxgl.default.LngLatBounds();
-        if (geometry?.length)
-          geometry.forEach(([lat, lng]) => bounds.extend([lng, lat]));
-        else {
-          bounds.extend([pickup.lng, pickup.lat]);
-          bounds.extend([destination.lng, destination.lat]);
-        }
-        map.fitBounds(bounds, {
-          padding: {
-            top: rideLabel ? 90 : 72,
-            right: 34,
-            bottom: 40,
-            left: 34,
-          },
-          maxZoom: 16,
-          duration: matchMedia("(prefers-reduced-motion: reduce)").matches
-            ? 0
-            : 350,
-        });
-      });
+    if (
+      !manualView.current &&
+      pickup?.confirmed &&
+      destination?.confirmed
+    ) {
+      fitJourney(map, journey, rideLabel);
     }
   }, [
     geometry,
@@ -947,43 +718,115 @@ export function RiderMap({
         className="nr-geographic-map nr-mapbox-map"
         role="region"
         aria-label={t("streetMap")}
+        tabIndex={0}
+        onKeyDown={(event) => {
+          if (event.key !== "Enter" || !journey?.pinMode || !mapRef.current)
+            return;
+          const center = mapRef.current.getCenter();
+          journey.setPin(journey.pinMode, {
+            lat: center.lat,
+            lng: center.lng,
+          });
+        }}
       />
 
       <div
-        className="nr-map-style-switcher"
-        role="group"
-        aria-label={language === "am" ? "የካርታ ቅጥ" : "Map style"}
+        className="nr-map-control-stack"
+        aria-label={language === "am" ? "የካርታ መቆጣጠሪያዎች" : "Map controls"}
       >
-        {(["streets", "satellite", "dark"] as MapStyleKey[]).map((key) => (
+        <button
+          type="button"
+          className="nr-map-touch-control"
+          aria-label={t("recenter")}
+          title={t("recenter")}
+          onClick={() => {
+            locate();
+            if (position && mapRef.current)
+              mapRef.current.easeTo({
+                center: [position.lng, position.lat],
+                zoom: Math.max(mapRef.current.getZoom(), 16),
+                duration: 280,
+              });
+          }}
+          disabled={status === "loading"}
+        >
+          {status === "loading" ? <Spinner /> : <Icon name="locate" size={21} />}
+        </button>
+
+        <button
+          type="button"
+          className="nr-map-touch-control"
+          aria-label={language === "am" ? "የካርታ ቅጥ" : "Map style"}
+          aria-expanded={layerMenuOpen}
+          aria-controls="nr-map-layer-menu"
+          onClick={() => setLayerMenuOpen((open) => !open)}
+        >
+          <Icon name="globe" size={21} />
+        </button>
+
+        {showCompass && (
           <button
-            key={key}
             type="button"
-            aria-pressed={styleKey === key}
-            aria-label={
-              language === "am"
-                ? key === "streets"
-                  ? "የመንገድ ካርታ"
-                  : key === "satellite"
-                    ? "የሳተላይት ካርታ"
-                    : "ጨለማ ካርታ"
-                : `${key[0].toUpperCase() + key.slice(1)} map`
-            }
-            onClick={() => setStyleKey(key)}
+            className="nr-map-touch-control nr-map-compass-control"
+            aria-label={language === "am" ? "ካርታውን ወደ ሰሜን መልስ" : "Reset map north"}
+            onClick={() => {
+              const map = mapRef.current;
+              if (!map) return;
+              map.easeTo({
+                bearing: 0,
+                duration: matchMedia("(prefers-reduced-motion: reduce)").matches
+                  ? 0
+                  : 220,
+              });
+            }}
           >
-            {key === "streets"
-              ? language === "am"
-                ? "መንገድ"
-                : "Streets"
-              : key === "satellite"
-                ? language === "am"
-                  ? "ሳተላይት"
-                  : "Satellite"
-                : language === "am"
-                  ? "ጨለማ"
-                  : "Dark"}
+            <span
+              aria-hidden="true"
+              style={{
+                display: "grid",
+                placeItems: "center",
+                transform: `rotate(${-bearing}deg)`,
+              }}
+            >
+              <Icon name="navigation" size={21} />
+            </span>
           </button>
-        ))}
+        )}
       </div>
+
+      {layerMenuOpen && (
+        <div
+          id="nr-map-layer-menu"
+          className="nr-map-layer-menu"
+          role="menu"
+          aria-label={language === "am" ? "የካርታ ቅጥ ይምረጡ" : "Choose map style"}
+        >
+          {(["streets", "satellite", "dark"] as MapStyleKey[]).map((key) => (
+            <button
+              key={key}
+              type="button"
+              role="menuitemradio"
+              aria-checked={styleKey === key}
+              onClick={() => setStyleKey(key)}
+            >
+              <span>
+                {key === "streets"
+                  ? language === "am"
+                    ? "መንገድ"
+                    : "Streets"
+                  : key === "satellite"
+                    ? language === "am"
+                      ? "ሳተላይት"
+                      : "Satellite"
+                    : language === "am"
+                      ? "ጨለማ"
+                      : "Dark"}
+              </span>
+              {styleKey === key && <Icon name="check" size={17} />}
+            </button>
+          ))}
+        </div>
+      )}
 
       {mapStatus === "unavailable" && (
         <div className="nr-map-unavailable" role="alert">
@@ -994,65 +837,12 @@ export function RiderMap({
           </button>
         </div>
       )}
+
       {mapStatus === "loading" && (
         <div className="nr-map-loading" role="status" aria-live="polite">
           <Spinner />
           {t("mapLoading")}
         </div>
-      )}
-      {mapStatus === "ready" && placesGeoJson.features.length === 0 && (
-        <div className="nr-map-empty" role="status">
-          <Icon name="pin" size={22} />
-          <span>
-            {language === "am"
-              ? "ምንም የካርታ ቦታዎች አልተገኙም።"
-              : "No map places are available."}
-          </span>
-        </div>
-      )}
-
-      {selectedFeature && (
-        <aside
-          id="nr-map-feature-details"
-          className="nr-map-feature-sheet"
-          aria-label={
-            language === "am" ? "የቦታ ዝርዝር" : "Place details"
-          }
-        >
-          <div className="nr-map-feature-handle" aria-hidden="true" />
-          <button
-            className="nr-map-feature-close"
-            onClick={() => {
-              setSelectedFeature(null);
-              popupRef.current?.remove();
-            }}
-            aria-label={t("close")}
-          >
-            ×
-          </button>
-          <small>{selectedFeature.category}</small>
-          <strong>{selectedFeature.title}</strong>
-          <p>{selectedFeature.details}</p>
-          {journey && !readOnly && (
-            <button
-              className="nr-map-feature-action"
-              onClick={() => {
-                journey.select("destination", {
-                  lat: selectedFeature.lat,
-                  lng: selectedFeature.lng,
-                  name: selectedFeature.title,
-                  address: selectedFeature.details,
-                  source: "preview",
-                  confirmed: true,
-                });
-                setSelectedFeature(null);
-                popupRef.current?.remove();
-              }}
-            >
-              {language === "am" ? "መድረሻ አድርግ" : "Use as destination"}
-            </button>
-          )}
-        </aside>
       )}
 
       {rideLabel && (
@@ -1093,22 +883,6 @@ export function RiderMap({
           {initials === "NR" ? <Icon name="user" size={21} /> : initials}
         </button>
         <span className="nr-map-preview-chip">{topLabel || t("preview")}</span>
-        <button
-          className="nr-recenter"
-          aria-label={t("recenter")}
-          onClick={() => {
-            locate();
-            if (position && mapRef.current)
-              mapRef.current.easeTo({
-                center: [position.lng, position.lat],
-                zoom: Math.max(mapRef.current.getZoom(), 16),
-                duration: 280,
-              });
-          }}
-          disabled={status === "loading"}
-        >
-          <Icon name="locate" size={21} />
-        </button>
       </div>
 
       {route && (
