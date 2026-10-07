@@ -461,6 +461,7 @@ export function RiderMap({
   searching = false,
   readOnly = false,
   topLabel,
+  showProfile = true,
   onStartRoute,
 }: {
   position: RiderLocation | null;
@@ -476,6 +477,7 @@ export function RiderMap({
   searching?: boolean;
   readOnly?: boolean;
   topLabel?: string;
+  showProfile?: boolean;
   onStartRoute?: () => void;
 }) {
   const t = useTranslation();
@@ -1381,13 +1383,15 @@ export function RiderMap({
       )}
 
       <div className="nr-rider-map-top">
-        <button
-          className="nr-map-profile"
-          aria-label={t("profileNav")}
-          onClick={onProfile}
-        >
-          {initials === "NR" ? <Icon name="user" size={21} /> : initials}
-        </button>
+        {showProfile && (
+          <button
+            className="nr-map-profile"
+            aria-label={t("profileNav")}
+            onClick={onProfile}
+          >
+            {initials === "NR" ? <Icon name="user" size={21} /> : initials}
+          </button>
+        )}
         <span className="nr-map-preview-chip">{topLabel || t("preview")}</span>
       </div>
 

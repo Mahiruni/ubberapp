@@ -7,7 +7,7 @@ import { RiderMap } from "./rider-map";
 import { useRiderLocation } from "../../lib/nexride-location";
 import { DriverEarningsScreen } from "./driver-earnings";
 import { DriverProfileScreen } from "./driver-profile";
-import { loadDriverEarningsReport } from "../../lib/nexride-driver-earnings";
+import { formatOnlineTime, loadDriverEarningsReport } from "../../lib/nexride-driver-earnings";
 import { supabase } from "../../lib/supabase";
 import { resolveSessionRole } from "../../lib/nexride-account-role";
 import { nexrideApiFetch } from "../../lib/nexride-api-auth";
@@ -27,6 +27,7 @@ type DriverState = {
   rating: number | null;
   earnings: number | null;
   trips: number | null;
+  onlineSeconds: number | null;
   activeTrip: { pickup: string; destination: string; status: string } | null;
 };
 
@@ -39,6 +40,7 @@ const emptyState: DriverState = {
   rating: null,
   earnings: null,
   trips: null,
+  onlineSeconds: null,
   activeTrip: null,
 };
 
@@ -198,10 +200,11 @@ export function DriverWorkspace({
             ...current,
             earnings: report.netDriverEarningsEtb,
             trips: report.completedTrips,
+            onlineSeconds: report.onlineSeconds,
           }));
         } catch {
           if (!active) return;
-          setState((current) => ({ ...current, earnings: null, trips: null }));
+          setState((current) => ({ ...current, earnings: null, trips: null, onlineSeconds: null }));
         }
       };
 
@@ -628,9 +631,10 @@ export function DriverWorkspace({
             <h1>Driver map</h1>
             <p>{state.online ? "You’re online and ready for ride requests." : "Go online when you’re ready to receive requests."}</p>
           </div>
-          <button className="nr-driver-icon-btn" onClick={() => navigate("profile")} aria-label="Open driver profile">
-            <Icon name="user" />
-          </button>
+          <span className={`nr-driver-header-status ${state.online ? "is-online" : ""}`} role="status">
+            <span className="nr-status-dot" aria-hidden="true" />
+            {state.online ? "Online" : "Offline"}
+          </span>
         </header>
 
         <section className="nr-driver-live-map-shell" aria-label="Driver live map">
@@ -644,6 +648,7 @@ export function DriverWorkspace({
             locked={loading}
             readOnly
             topLabel={state.online ? "ONLINE" : "OFFLINE"}
+            showProfile={false}
           />
 
           <div className="nr-driver-map-float">
@@ -692,13 +697,18 @@ export function DriverWorkspace({
     <div className="nr-driver-page">
       <header className="nr-driver-header">
         <div className="nr-driver-brand-pill"><Icon name="navigation" size={15} /><span>NexRide Driver</span></div>
-        <div className="nr-driver-avatar">{state.avatarUrl ? <img src={state.avatarUrl} alt="" /> : initials}</div>
+        <button type="button" className="nr-driver-avatar nr-driver-avatar-button" onClick={() => navigate("profile")} aria-label="Open driver profile">
+          {state.avatarUrl ? <img src={state.avatarUrl} alt="" /> : initials}
+        </button>
         <div>
           <span className="nr-driver-kicker">DRIVER HOME</span>
           <h1>{state.online ? "You’re online" : `Ready to drive, ${firstName}?`}</h1>
-          <p>{state.online ? "Ready for ride requests." : "Go online to receive ride requests."}</p>
+          <p>{state.online ? "Waiting for ride requests" : "Go online when you’re ready to receive requests."}</p>
+          <div className="nr-driver-header-meta">
+            <span className={`nr-driver-header-status ${state.online ? "is-online" : ""}`}><span className="nr-status-dot" aria-hidden="true" />{state.online ? "Online" : "Offline"}</span>
+            {state.rating !== null && <span className="nr-driver-rating">★ {state.rating.toFixed(1)}</span>}
+          </div>
         </div>
-        <button className="nr-driver-icon-btn" onClick={() => navigate("profile")} aria-label="Open driver profile"><Icon name="user" /></button>
       </header>
 
       <section className={`nr-driver-operational-map ${state.online ? "is-online" : ""}`} aria-label="Driver operational map">
@@ -712,6 +722,7 @@ export function DriverWorkspace({
           locked={loading}
           readOnly
           topLabel={state.online ? "ONLINE" : "OFFLINE"}
+            showProfile={false}
         />
         <div className="nr-driver-operational-card">
           <div className="nr-driver-operational-status">
@@ -751,7 +762,7 @@ export function DriverWorkspace({
       <div className="nr-driver-metric-grid" aria-label="Driver summary">
         <Metric label="Today’s earnings" value={state.earnings === null ? "—" : formatEarnings(state.earnings)} suffix="ETB" hint={state.earnings === null ? "Unavailable" : "Today"} loading={loading} />
         <Metric label="Completed trips" value={state.trips === null ? "—" : String(state.trips)} hint={state.trips === null ? "Unavailable" : "Today"} loading={loading} />
-        <Metric label="Rating" value={state.rating === null ? "—" : state.rating.toFixed(1)} suffix={state.rating === null ? "" : "★"} hint={state.rating === null ? "No rating yet" : "Driver rating"} loading={loading} />
+        <Metric label="Online time" value={state.onlineSeconds === null ? "—" : formatOnlineTime(state.onlineSeconds)} hint={state.onlineSeconds === null ? "Unavailable" : "Today"} loading={loading} />
       </div>
 
       {loading ? (
@@ -804,14 +815,12 @@ function DriverBottomNav({ screen, navigate }: { screen: DriverScreen; navigate:
   const items: {
     id: string;
     label: string;
-    icon: "home" | "clock" | "money" | "chat" | "user";
-    screen?: DriverScreen;
-    href?: string;
+    icon: "home" | "money" | "navigation" | "user";
+    screen: DriverScreen;
   }[] = [
     { id: "home", label: t("home"), icon: "home", screen: "home" },
-    { id: "requests", label: t("requests"), icon: "clock", href: "/driver/activity" },
     { id: "earnings", label: t("earnings"), icon: "money", screen: "earnings" },
-    { id: "messages", label: t("messages"), icon: "chat", href: "/support?role=driver" },
+    { id: "map", label: t("map"), icon: "navigation", screen: "map" },
     { id: "account", label: t("account"), icon: "user", screen: "profile" },
   ];
 
@@ -824,7 +833,7 @@ function DriverBottomNav({ screen, navigate }: { screen: DriverScreen; navigate:
             type="button"
             key={item.id}
             className={active ? "active" : ""}
-            onClick={() => item.href ? router.push(item.href) : item.screen && navigate(item.screen)}
+            onClick={() => navigate(item.screen)}
             aria-current={active ? "page" : undefined}
             aria-label={item.label}
           >

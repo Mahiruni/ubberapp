@@ -628,3 +628,321 @@
   .nr-driver-bottom-nav button::after,
   .nr-driver-nav-icon{transition:none!important}
 }
+
+
+/* NexRide Driver Command Center v3 — map-first, production mobile shell */
+.nr-driver-shell,
+.nr-driver-page{
+  background:#041c30;
+}
+.nr-driver-page{
+  width:min(100%,900px);
+  max-width:900px;
+  padding:18px 18px max(92px,calc(80px + env(safe-area-inset-bottom)));
+}
+.nr-driver-header{
+  grid-template-columns:48px minmax(0,1fr);
+  padding-top:max(26px,env(safe-area-inset-top));
+  gap:14px;
+  margin-bottom:14px;
+}
+.nr-driver-avatar-button{
+  border:1px solid rgba(123,171,195,.28);
+  padding:0;
+  cursor:pointer;
+  min-width:48px;
+  min-height:48px;
+}
+.nr-driver-avatar-button:focus-visible,
+.nr-driver-primary:focus-visible,
+.nr-driver-bottom-nav button:focus-visible{
+  outline:3px solid rgba(92,180,255,.82);
+  outline-offset:2px;
+}
+.nr-driver-header>div:nth-child(3){min-width:0}
+.nr-driver-header-meta{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-top:8px;
+}
+.nr-driver-header-status,
+.nr-driver-rating{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  min-height:28px;
+  padding:5px 9px;
+  border:1px solid rgba(130,168,190,.22);
+  border-radius:999px;
+  background:rgba(8,43,69,.72);
+  color:#a8becb;
+  font-size:10px;
+  font-weight:800;
+  font-variant-numeric:tabular-nums;
+}
+.nr-driver-header-status.is-online{
+  border-color:rgba(0,200,120,.3);
+  color:#8debc2;
+  background:rgba(0,200,120,.07);
+}
+.nr-driver-header-status .nr-status-dot{
+  width:7px;
+  height:7px;
+  box-shadow:none;
+}
+.nr-driver-header-status.is-online .nr-status-dot{background:#00d081}
+.nr-driver-operational-map{
+  position:relative;
+  height:clamp(370px,52dvh,570px);
+  min-height:370px;
+  overflow:hidden;
+  border:1px solid rgba(154,188,207,.18);
+  border-radius:26px;
+  background:#082238;
+  box-shadow:0 22px 52px rgba(0,8,18,.28);
+}
+.nr-driver-operational-map .nr-rider-map-surface,
+.nr-driver-live-map-shell .nr-rider-map-surface{
+  width:100%;
+  height:100%;
+  min-height:100%;
+  border:0;
+  border-radius:0;
+}
+.nr-driver-operational-map .nr-rider-map-top,
+.nr-driver-live-map-shell .nr-rider-map-top{
+  justify-content:flex-end;
+  inset:14px 14px auto;
+}
+.nr-driver-operational-map .nr-map-preview-chip,
+.nr-driver-live-map-shell .nr-map-preview-chip{
+  min-height:34px;
+  display:inline-flex;
+  align-items:center;
+  padding:0 11px;
+  border:1px solid rgba(255,255,255,.22);
+  border-radius:999px;
+  background:rgba(4,29,47,.88);
+  color:#edf7f2;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.08em;
+  box-shadow:0 8px 22px rgba(0,0,0,.18);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+}
+.nr-driver-operational-map .nr-map-control-stack,
+.nr-driver-live-map-shell .nr-map-control-stack{
+  right:14px;
+  top:64px;
+  gap:8px;
+}
+.nr-driver-operational-map .nr-map-touch-control,
+.nr-driver-live-map-shell .nr-map-touch-control{
+  width:48px;
+  height:48px;
+  min-width:48px;
+  min-height:48px;
+  border-radius:15px;
+  border:1px solid rgba(156,190,209,.24);
+  background:rgba(4,29,47,.9);
+  color:#f1f7fa;
+  box-shadow:0 10px 24px rgba(0,0,0,.22);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+}
+.nr-driver-operational-map .nr-map-layer-menu,
+.nr-driver-live-map-shell .nr-map-layer-menu{
+  right:72px;
+  top:64px;
+  border-radius:16px;
+  border:1px solid rgba(156,190,209,.22);
+  background:rgba(4,29,47,.96);
+  color:#f3f8fb;
+  box-shadow:0 16px 34px rgba(0,0,0,.28);
+}
+.nr-driver-operational-card{
+  position:absolute;
+  z-index:500;
+  left:14px;
+  right:14px;
+  bottom:14px;
+  display:flex;
+  align-items:center;
+  gap:14px;
+  padding:13px;
+  border:1px solid rgba(183,209,222,.17);
+  border-radius:20px;
+  background:rgba(4,29,47,.92);
+  color:#f4f8fb;
+  box-shadow:0 16px 36px rgba(0,8,18,.3);
+  backdrop-filter:blur(18px) saturate(1.15);
+  -webkit-backdrop-filter:blur(18px) saturate(1.15);
+}
+.nr-driver-operational-status{
+  display:flex;
+  align-items:center;
+  gap:11px;
+  min-width:0;
+  flex:1;
+}
+.nr-driver-operational-status>div{
+  display:grid;
+  gap:2px;
+  min-width:0;
+}
+.nr-driver-operational-status small{
+  color:#7897aa;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.11em;
+}
+.nr-driver-operational-status strong{font-size:15px}
+.nr-driver-operational-status span:last-child{
+  color:#a7bdca;
+  font-size:10px;
+  line-height:1.4;
+}
+.nr-driver-operational-card .nr-driver-primary{
+  flex:none;
+  min-width:126px;
+  min-height:50px;
+}
+.nr-driver-metric-grid{
+  overflow:hidden;
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:0;
+  margin:12px 0;
+  padding:0;
+  border:1px solid rgba(120,163,187,.18);
+  border-radius:20px;
+  background:rgba(7,38,61,.78);
+  box-shadow:0 12px 32px rgba(0,8,18,.14);
+}
+.nr-driver-metric-grid .nr-metric{
+  min-height:88px;
+  padding:14px;
+  border:0;
+  border-right:1px solid rgba(120,163,187,.12);
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+}
+.nr-driver-metric-grid .nr-metric:last-child{border-right:0}
+.nr-driver-metric-grid .nr-metric strong{
+  margin-top:7px;
+  font-size:20px;
+  font-variant-numeric:tabular-nums;
+}
+.nr-driver-metric-grid .nr-metric>span{font-size:10px}
+.nr-driver-metric-grid .nr-metric em{margin-top:4px}
+.nr-driver-bottom-nav{
+  left:0;
+  bottom:0;
+  transform:none;
+  width:100%;
+  max-width:none;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:0;
+  padding:5px max(8px,env(safe-area-inset-left)) calc(5px + env(safe-area-inset-bottom));
+  border:0;
+  border-top:1px solid rgba(151,184,202,.17);
+  border-radius:0;
+  background:rgba(3,25,42,.96);
+  box-shadow:0 -12px 30px rgba(0,8,18,.18);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+}
+.nr-driver-bottom-nav::before{display:none}
+.nr-driver-bottom-nav button{
+  min-height:58px;
+  border-radius:14px;
+}
+.nr-driver-bottom-nav button.active{
+  background:transparent;
+  color:#67e1ae;
+}
+.nr-driver-bottom-nav button.active .nr-driver-nav-icon{
+  color:#67e1ae;
+  background:rgba(0,200,120,.1);
+  border-color:rgba(0,200,120,.18);
+  box-shadow:none;
+}
+.nr-driver-bottom-nav button::after{display:none}
+.nr-driver-nav-icon{
+  width:38px;
+  height:30px;
+}
+.nr-driver-nav-label{font-size:10px}
+.nr-driver-live-map-shell{
+  height:calc(100dvh - 154px);
+  min-height:480px;
+}
+.nr-driver-map-header{
+  min-height:56px;
+  padding-top:max(4px,env(safe-area-inset-top));
+}
+@media(min-width:760px){
+  .nr-driver-page{padding:26px 26px 112px}
+  .nr-driver-bottom-nav{
+    left:50%;
+    bottom:18px;
+    transform:translateX(-50%);
+    width:min(520px,calc(100% - 32px));
+    padding:6px;
+    border:1px solid rgba(151,184,202,.17);
+    border-radius:22px;
+    box-shadow:0 16px 42px rgba(0,8,18,.28);
+  }
+}
+@media(max-width:560px){
+  .nr-driver-page{padding:14px 12px max(88px,calc(76px + env(safe-area-inset-bottom)))}
+  .nr-driver-header{padding-top:max(24px,env(safe-area-inset-top))}
+  .nr-driver-header h1{font-size:22px}
+  .nr-driver-operational-map{
+    height:clamp(360px,55dvh,520px);
+    min-height:360px;
+    border-radius:22px;
+  }
+  .nr-driver-operational-card{
+    left:10px;
+    right:10px;
+    bottom:10px;
+    align-items:stretch;
+    flex-direction:column;
+    gap:10px;
+    padding:12px;
+  }
+  .nr-driver-operational-card .nr-driver-primary{
+    width:100%;
+    min-height:50px;
+  }
+  .nr-driver-operational-status span:last-child{
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .nr-driver-metric-grid .nr-metric{
+    min-height:82px;
+    padding:12px 9px;
+  }
+  .nr-driver-metric-grid .nr-metric strong{font-size:17px}
+  .nr-driver-metric-grid .nr-metric>span{font-size:9px}
+  .nr-driver-live-map-shell{
+    height:calc(100dvh - 138px);
+    min-height:420px;
+    border-radius:0;
+  }
+  .nr-driver-map-page{padding:10px 0 78px}
+  .nr-driver-map-header{padding:0 14px}
+}
+@media(max-width:360px){
+  .nr-driver-metric-grid .nr-metric strong{font-size:15px}
+  .nr-driver-nav-label{font-size:9px}
+}
+@media(prefers-reduced-motion:reduce){
+  .nr-driver-operational-map *,
+  .nr-driver-bottom-nav *{transition:none!important;animation:none!important}
+}
