@@ -6,6 +6,7 @@ import { EntryPhoto, EntryShell } from "../../components/nexride/entry";
 import { Button, Icon, StatusBanner, useTranslation } from "../../components/nexride/ui";
 import {
   enterRider,
+  explicitSignOutRole,
   ONBOARDING_KEY,
   PREVIEW_ENABLED_KEY,
 } from "../../lib/nexride-startup";
@@ -31,6 +32,10 @@ function RiderWelcome() {
 
   useEffect(() => {
     let active = true;
+    if (explicitSignOutRole(window.localStorage)) {
+      setCheckingSession(false);
+      return () => { active = false; };
+    }
     supabase.auth.getSession().then(async ({ data, error }) => {
       if (!active) return;
       if (error || !data.session) {
