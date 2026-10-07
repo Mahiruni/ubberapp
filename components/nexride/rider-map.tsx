@@ -205,7 +205,7 @@ function fitJourney(
   if (!pickup?.confirmed || !destination?.confirmed) return;
 
   const geometry =
-    journey.routeState.status === "ready"
+    journey?.routeState.status === "ready"
       ? journey.routeState.route?.geometry
       : undefined;
   const points =
