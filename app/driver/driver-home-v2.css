@@ -1,3 +1,29 @@
+
+/* Home viewport reset: defeat legacy Driver page padding so Mapbox is truly edge-to-edge */
+.nr-driver-app-shell[data-home="true"] .nr-app[data-mode="driver"] .nr-driver-page.nr-driver-home-cockpit{
+  width:100vw!important;
+  max-width:none!important;
+  min-width:0!important;
+  min-height:100dvh!important;
+  height:100dvh!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  overflow:hidden!important;
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-shell-content,
+.nr-driver-app-shell[data-home="true"] .nr-driver-shell-content>main.nr-app.nr-driver-shell{
+  width:100vw!important;
+  max-width:none!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+}
+
 /* NexRide Driver Home — pure map + profile + hamburger + availability swipe */
 
 .nr-driver-app-shell[data-home="true"] .nr-driver-shell-content{
@@ -37,13 +63,75 @@
   border-radius:0!important;
   box-shadow:none!important;
 }
-.nr-driver-home-map-canvas .nr-map-control-stack,
-.nr-driver-home-map-canvas .nr-map-layer-menu,
 .nr-driver-home-map-canvas .nr-location-permission,
 .nr-driver-home-map-canvas .nr-gps-status,
 .nr-driver-home-map-canvas .nr-map-preview-chip,
 .nr-driver-home-map-canvas .mapboxgl-ctrl-scale{
   display:none!important;
+}
+.nr-driver-home-map-canvas .nr-map-control-stack{
+  display:flex!important;
+  position:absolute!important;
+  z-index:44!important;
+  top:calc(env(safe-area-inset-top,0px) + 66px)!important;
+  right:max(10px,env(safe-area-inset-right,0px))!important;
+  flex-direction:column!important;
+  gap:8px!important;
+}
+.nr-driver-home-map-canvas .nr-map-touch-control{
+  width:44px!important;
+  height:44px!important;
+  min-width:44px!important;
+  min-height:44px!important;
+  padding:0!important;
+  display:grid!important;
+  place-items:center!important;
+  border:0!important;
+  border-radius:50%!important;
+  background:rgba(255,255,255,.94)!important;
+  color:#102334!important;
+  box-shadow:0 6px 18px rgba(4,28,48,.14)!important;
+  backdrop-filter:blur(14px) saturate(1.12)!important;
+  -webkit-backdrop-filter:blur(14px) saturate(1.12)!important;
+}
+.nr-driver-app-shell[data-theme="dark"] .nr-driver-home-map-canvas .nr-map-touch-control{
+  background:rgba(8,40,63,.94)!important;
+  color:#f5fafc!important;
+}
+.nr-driver-home-map-canvas .nr-map-touch-control:active{
+  transform:scale(.96)!important;
+}
+.nr-driver-home-map-canvas .nr-map-layer-menu{
+  display:grid!important;
+  position:absolute!important;
+  z-index:46!important;
+  top:calc(env(safe-area-inset-top,0px) + 66px)!important;
+  right:max(62px,calc(env(safe-area-inset-right,0px) + 62px))!important;
+  width:150px!important;
+  gap:3px!important;
+  padding:6px!important;
+  border:0!important;
+  border-radius:16px!important;
+  background:rgba(255,255,255,.96)!important;
+  color:#102334!important;
+  box-shadow:0 12px 30px rgba(4,28,48,.16)!important;
+  backdrop-filter:blur(16px) saturate(1.12)!important;
+  -webkit-backdrop-filter:blur(16px) saturate(1.12)!important;
+}
+.nr-driver-app-shell[data-theme="dark"] .nr-driver-home-map-canvas .nr-map-layer-menu{
+  background:rgba(8,40,63,.96)!important;
+  color:#f5fafc!important;
+}
+.nr-driver-home-map-canvas .nr-map-layer-menu button{
+  min-height:42px!important;
+  border:0!important;
+  border-radius:11px!important;
+  background:transparent!important;
+  color:inherit!important;
+}
+.nr-driver-home-map-canvas .nr-map-layer-menu button:hover,
+.nr-driver-home-map-canvas .nr-map-layer-menu button[aria-checked="true"]{
+  background:rgba(0,200,120,.10)!important;
 }
 .nr-driver-home-map-canvas .mapboxgl-ctrl-bottom-left,
 .nr-driver-home-map-canvas .mapboxgl-ctrl-bottom-right{

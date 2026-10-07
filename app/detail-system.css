@@ -1501,3 +1501,14 @@ body{
   .nr-rider-drawer,
   .nr-rider-drawer-backdrop{animation:none!important}
 }
+
+
+.nr-app[data-mode="driver"] .nr-driver-home-cockpit .nr-rider-map-surface,
+.nr-app[data-mode="driver"] .nr-driver-home-cockpit .nr-mapbox-surface,
+.nr-app[data-mode="driver"] .nr-driver-home-cockpit .nr-geographic-map{
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  margin:0!important;
+  padding:0!important;
+}
