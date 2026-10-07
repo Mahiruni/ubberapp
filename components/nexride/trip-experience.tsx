@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { mergeTrip, type TripSnapshot } from '../../lib/nexride-trip-data';
 import { readRiderTrip, sendTripMessage, submitRiderRating } from '../../lib/nexride-trip-service';
+import { emitNexRideFeedback } from '../../lib/nexride-feedback';
 import type { PreviewTrip } from '../../lib/nexride-preview';
 import type { RiderScreen } from './rider';
 import { RiderSheetHandle } from './rider-sheet';
@@ -62,6 +63,7 @@ export function TripExperience({ screen, tripId, userId, preview, navigate, setP
     let channel: ReturnType<typeof supabase.channel> | null = null;
     ready.current = false;
     latest.current = tripId ? readCachedTrip(tripId) : null;
+    let feedbackStatus = latest.current?.status || "";
 
     const send = (message: unknown) => frame.current?.contentWindow?.postMessage(message, window.location.origin);
     const publish = () => { if (ready.current && latest.current) send({ type: 'nexride:snapshot', snapshot: latest.current }); };
@@ -95,6 +97,32 @@ export function TripExperience({ screen, tripId, userId, preview, navigate, setP
       try {
         const next = await readRiderTrip(tripId, userId, ++revision);
         if (stopped) return;
+        if (feedbackStatus && next.status && next.status !== feedbackStatus) {
+          const event =
+            next.status === "arrived_pickup" ? "driver_arrived"
+            : next.status === "in_trip" ? "trip_started"
+            : next.status === "completed" ? "trip_completed"
+            : next.status === "cancelled" || next.status === "withdrawn" ? "cancelled"
+            : null;
+          if (event) {
+            emitNexRideFeedback({
+              event,
+              id: `${tripId}:${next.status}`,
+              title:
+                next.status === "arrived_pickup" ? "Your driver is here"
+                : next.status === "in_trip" ? "Trip started"
+                : next.status === "completed" ? "Trip completed"
+                : "Ride cancelled",
+              body:
+                next.status === "arrived_pickup" ? "Your NexRide driver has arrived at the pickup point."
+                : next.status === "in_trip" ? "Your NexRide trip is now in progress."
+                : next.status === "completed" ? "You’ve arrived. Your trip is complete."
+                : "This ride is no longer active.",
+              url: "/",
+            });
+          }
+        }
+        feedbackStatus = next.status || feedbackStatus;
         latest.current = mergeTrip(latest.current, next);
         writeCachedTrip(tripId, latest.current);
         failures = 0;
