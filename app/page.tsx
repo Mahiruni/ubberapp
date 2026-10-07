@@ -528,6 +528,11 @@ function AppWorkspace({
               topLabel={authenticated ? t("city") : t("preview")}
               back={screen === "rides" ? () => navigate("destination") : undefined}
               locked={requestPending}
+              showNearbyDrivers={
+                authenticated &&
+                mode === "rider" &&
+                ["home", "destination", "rides", "finding"].includes(screen)
+              }
               onStartRoute={
                 screen === "destination" && journey.canContinue
                   ? () => navigate("rides")
@@ -544,6 +549,7 @@ function AppWorkspace({
               onProfile={() => navigate("profile")}
               readOnly
               locked={requestPending}
+              showNearbyDrivers={authenticated && mode === "rider"}
               topLabel={mode === "driver" ? t("driver") : undefined}
             />
           )}

@@ -11,6 +11,7 @@ import { Icon, LanguageContext, Spinner, useTranslation } from "./ui";
 import { endpointName } from "./destination";
 import type { Journey } from "../../lib/nexride-journey";
 import type { LocationStatus, RiderLocation } from "../../lib/nexride-location";
+import { nexrideApiFetch } from "../../lib/nexride-api-auth";
 import {
   formatDistance,
   formatDuration,
@@ -100,6 +101,32 @@ const searchAreaElement = () => {
   root.className = "nr-pickup-search-area";
   root.innerHTML =
     '<span class="nr-search-area-fill"></span><span class="nr-search-area-pulse"></span>';
+  return root;
+};
+
+type NearbyDriver = {
+  key: string;
+  lat: number;
+  lng: number;
+  updatedAt: string;
+  distanceMeters: number;
+};
+
+const nearbyVehicleElement = (label: string) => {
+  const root = document.createElement("div");
+  root.className = "nr-nearby-car-marker";
+  root.setAttribute("role", "img");
+  root.setAttribute("aria-label", label);
+  root.innerHTML =
+    '<span class="nr-nearby-car-brand" aria-hidden="true">NexRide</span>' +
+    '<span class="nr-nearby-car-body" aria-hidden="true">' +
+    '<svg viewBox="0 0 56 36" focusable="false">' +
+    '<path class="nr-nearby-car-shadow" d="M10 26c0 4 4 6 18 6s18-2 18-6H10Z"/>' +
+    '<path class="nr-nearby-car-shell" d="M8 21.5 12.2 12c1.2-2.8 3.2-4.2 6.2-4.2h19.2c3 0 5 1.4 6.2 4.2L48 21.5v7.2c0 1.7-1.3 3-3 3h-2.5c-1.7 0-3-1.3-3-3v-.8h-23v.8c0 1.7-1.3 3-3 3H11c-1.7 0-3-1.3-3-3v-7.2Z"/>' +
+    '<path class="nr-nearby-car-glass" d="m16.6 12.1-2.5 7h27.8l-2.5-7c-.4-1-1.2-1.5-2.3-1.5H18.9c-1.1 0-1.9.5-2.3 1.5Z"/>' +
+    '<path class="nr-nearby-car-accent" d="M12.4 22.1h7.2v3.1h-7.2zm24 0h7.2v3.1h-7.2z"/>' +
+    '<path class="nr-nearby-car-grille" d="M22.2 24.2h11.6c.8 0 1.4.6 1.4 1.4v.7H20.8v-.7c0-.8.6-1.4 1.4-1.4Z"/>' +
+    "</svg></span>";
   return root;
 };
 
@@ -465,6 +492,7 @@ export function RiderMap({
   preferredStyle,
   showSearch = true,
   showNativeControls = true,
+  showNearbyDrivers = false,
   onStartRoute,
 }: {
   position: RiderLocation | null;
@@ -484,6 +512,7 @@ export function RiderMap({
   preferredStyle?: "streets" | "dark";
   showSearch?: boolean;
   showNativeControls?: boolean;
+  showNearbyDrivers?: boolean;
   onStartRoute?: () => void;
 }) {
   const t = useTranslation();
@@ -496,6 +525,16 @@ export function RiderMap({
   const pickupMarker = useRef<MapboxMarker | null>(null);
   const destinationMarker = useRef<MapboxMarker | null>(null);
   const searchMarker = useRef<MapboxMarker | null>(null);
+  const nearbyDriverMarkers = useRef(
+    new Map<
+      string,
+      {
+        marker: MapboxMarker;
+        lngLat: [number, number];
+        animation: number | null;
+      }
+    >(),
+  );
   const resizeObserver = useRef<ResizeObserver | null>(null);
   const journeyRef = useRef(journey);
   const positionRef = useRef(position);
@@ -529,6 +568,7 @@ export function RiderMap({
   const [trafficVisible, setTrafficVisible] = useState(true);
   const [fasterNotice, setFasterNotice] = useState<number | null>(null);
   const [gpsStale, setGpsStale] = useState(false);
+  const [nearbyDrivers, setNearbyDrivers] = useState<NearbyDriver[]>([]);
   trafficVisibleRef.current = trafficVisible;
 
   const route =
@@ -805,6 +845,11 @@ export function RiderMap({
       liveMarker.current?.remove();
       liveMarkerLngLat.current = null;
       searchMarker.current?.remove();
+      for (const entry of nearbyDriverMarkers.current.values()) {
+        if (entry.animation !== null) cancelAnimationFrame(entry.animation);
+        entry.marker.remove();
+      }
+      nearbyDriverMarkers.current.clear();
       pickupMarker.current = null;
       destinationMarker.current = null;
       liveMarker.current = null;
@@ -1061,6 +1106,185 @@ export function RiderMap({
     language,
     gpsStale,
   ]);
+
+  useEffect(() => {
+    if (!showNearbyDrivers || !mounted || status !== "ready" || !position) {
+      setNearbyDrivers([]);
+      return;
+    }
+
+    let active = true;
+    let controller: AbortController | null = null;
+
+    const loadNearbyDrivers = async () => {
+      controller?.abort();
+      controller = new AbortController();
+      try {
+        const params = new URLSearchParams({
+          lat: String(position.lat),
+          lng: String(position.lng),
+        });
+        const response = await nexrideApiFetch(
+          "/api/rider/nearby-drivers?" + params.toString(),
+          { cache: "no-store", signal: controller.signal },
+        );
+        if (!active || !response.ok) return;
+        const payload = await response.json();
+        const raw = Array.isArray(payload?.vehicles) ? payload.vehicles : [];
+        const next = raw
+          .map((item: Record<string, unknown>) => ({
+            key: typeof item.key === "string" ? item.key : "",
+            lat: Number(item.lat),
+            lng: Number(item.lng),
+            updatedAt:
+              typeof item.updatedAt === "string" ? item.updatedAt : "",
+            distanceMeters: Number(item.distanceMeters),
+          }))
+          .filter(
+            (item: NearbyDriver) =>
+              !!item.key &&
+              Number.isFinite(item.lat) &&
+              Math.abs(item.lat) <= 90 &&
+              Number.isFinite(item.lng) &&
+              Math.abs(item.lng) <= 180 &&
+              Number.isFinite(item.distanceMeters) &&
+              item.distanceMeters >= 0,
+          )
+          .slice(0, 10);
+        setNearbyDrivers(next);
+      } catch (error) {
+        if (
+          active &&
+          !(error instanceof DOMException && error.name === "AbortError")
+        ) {
+          setNearbyDrivers([]);
+        }
+      }
+    };
+
+    void loadNearbyDrivers();
+    const timer = window.setInterval(() => {
+      if (document.visibilityState === "visible") void loadNearbyDrivers();
+    }, 6_000);
+    const onVisible = () => {
+      if (document.visibilityState === "visible") void loadNearbyDrivers();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+
+    return () => {
+      active = false;
+      controller?.abort();
+      window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [
+    showNearbyDrivers,
+    mounted,
+    status,
+    position?.lat,
+    position?.lng,
+  ]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!mounted || !map) return;
+
+    if (!showNearbyDrivers) {
+      for (const entry of nearbyDriverMarkers.current.values()) {
+        if (entry.animation !== null) cancelAnimationFrame(entry.animation);
+        entry.marker.remove();
+      }
+      nearbyDriverMarkers.current.clear();
+      return;
+    }
+
+    let disposed = false;
+    void import("mapbox-gl").then((mapboxgl) => {
+      if (disposed || !mapRef.current) return;
+      const currentMap = mapRef.current;
+      const visible = new Set(nearbyDrivers.map((driver) => driver.key));
+
+      for (const [key, entry] of nearbyDriverMarkers.current) {
+        if (visible.has(key)) continue;
+        if (entry.animation !== null) cancelAnimationFrame(entry.animation);
+        entry.marker.remove();
+        nearbyDriverMarkers.current.delete(key);
+      }
+
+      const reducedMotion = matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
+
+      for (const driver of nearbyDrivers) {
+        const target: [number, number] = [driver.lng, driver.lat];
+        const existing = nearbyDriverMarkers.current.get(driver.key);
+
+        if (!existing) {
+          const marker = new mapboxgl.default.Marker({
+            element: nearbyVehicleElement(
+              language === "am"
+                ? "NexRide ሹፌር በአቅራቢያ"
+                : "NexRide driver nearby",
+            ),
+            anchor: "bottom",
+          })
+            .setLngLat(target)
+            .addTo(currentMap);
+          nearbyDriverMarkers.current.set(driver.key, {
+            marker,
+            lngLat: target,
+            animation: null,
+          });
+          continue;
+        }
+
+        if (
+          existing.lngLat[0] === target[0] &&
+          existing.lngLat[1] === target[1]
+        )
+          continue;
+
+        if (existing.animation !== null)
+          cancelAnimationFrame(existing.animation);
+
+        if (reducedMotion) {
+          existing.marker.setLngLat(target);
+          existing.lngLat = target;
+          existing.animation = null;
+          continue;
+        }
+
+        const from = existing.lngLat;
+        const startedAt = performance.now();
+        const duration = 720;
+
+        const animate = (now: number) => {
+          const current = nearbyDriverMarkers.current.get(driver.key);
+          if (!current) return;
+          const progress = Math.min(1, (now - startedAt) / duration);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          const next: [number, number] = [
+            from[0] + (target[0] - from[0]) * eased,
+            from[1] + (target[1] - from[1]) * eased,
+          ];
+          current.marker.setLngLat(next);
+          current.lngLat = next;
+          if (progress < 1) {
+            current.animation = requestAnimationFrame(animate);
+          } else {
+            current.animation = null;
+            current.lngLat = target;
+          }
+        };
+
+        existing.animation = requestAnimationFrame(animate);
+      }
+    });
+
+    return () => {
+      disposed = true;
+    };
+  }, [nearbyDrivers, showNearbyDrivers, mounted, language]);
 
   useEffect(() => {
     const map = mapRef.current;

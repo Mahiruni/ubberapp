@@ -479,3 +479,86 @@
     animation: none;
   }
 }
+
+
+/* Live nearby NexRide supply: real eligible drivers only. */
+.nr-nearby-car-marker {
+  --nr-nearby-car-label-bg: rgba(255, 255, 255, 0.96);
+  --nr-nearby-car-label-text: #041c30;
+  position: relative;
+  width: 58px;
+  height: 55px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  pointer-events: none;
+  transform-origin: 50% 100%;
+  filter: drop-shadow(0 7px 10px rgba(4, 28, 48, 0.18));
+  will-change: transform;
+}
+.nr-nearby-car-brand {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 48px;
+  height: 19px;
+  padding: 0 7px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 999px;
+  background: var(--nr-nearby-car-label-bg);
+  color: var(--nr-nearby-car-label-text);
+  box-shadow: 0 3px 10px rgba(4, 28, 48, 0.14);
+  font-size: 9px;
+  line-height: 1;
+  font-weight: 820;
+  letter-spacing: -0.015em;
+  white-space: nowrap;
+}
+.nr-nearby-car-body {
+  width: 49px;
+  height: 33px;
+  display: grid;
+  place-items: center;
+}
+.nr-nearby-car-body svg {
+  width: 49px;
+  height: 32px;
+  overflow: visible;
+}
+.nr-nearby-car-shell { fill: #041c30; }
+.nr-nearby-car-glass { fill: #dcecf3; }
+.nr-nearby-car-accent { fill: #00c878; }
+.nr-nearby-car-grille { fill: #17364b; }
+.nr-nearby-car-shadow { fill: rgba(4, 28, 48, 0.2); }
+.nr-app[data-theme="dark"] .nr-nearby-car-marker {
+  --nr-nearby-car-label-bg: rgba(4, 28, 48, 0.96);
+  --nr-nearby-car-label-text: #f7fbfd;
+  filter: drop-shadow(0 7px 12px rgba(0, 0, 0, 0.32));
+}
+.nr-app[data-theme="dark"] .nr-nearby-car-shell { fill: #f5f8fa; }
+.nr-app[data-theme="dark"] .nr-nearby-car-glass { fill: #7d9aab; }
+.nr-app[data-theme="dark"] .nr-nearby-car-grille { fill: #b8c8d1; }
+@media (max-width: 800px) {
+  .nr-nearby-car-marker {
+    width: 54px;
+    height: 52px;
+  }
+  .nr-nearby-car-brand {
+    min-width: 45px;
+    height: 18px;
+    padding-inline: 6px;
+    font-size: 8.5px;
+  }
+  .nr-nearby-car-body,
+  .nr-nearby-car-body svg {
+    width: 46px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nr-nearby-car-marker { transition: none !important; }
+}
