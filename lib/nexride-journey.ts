@@ -303,7 +303,7 @@ export function useJourney(position: RiderLocation | null, language: Language = 
           throw new Error("Invalid route");
 
         alternatives.sort(
-          (a, b) =>
+          (a: RouteResult, b: RouteResult) =>
             a.durationSeconds - b.durationSeconds ||
             a.distanceMeters - b.distanceMeters,
         );
