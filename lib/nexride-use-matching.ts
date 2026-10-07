@@ -30,9 +30,14 @@ export function useMatching() {
   const snapshotRef = useRef(snapshot);
   const lock = useRef(false);
   const actionController = useRef<AbortController | null>(null);
+  const reconnectController = useRef<AbortController | null>(null);
+  const connectionLostRef = useRef(connectionLost);
+  const syncFailedRef = useRef(syncFailed);
 
   requestRef.current = request;
   snapshotRef.current = snapshot;
+  connectionLostRef.current = connectionLost;
+  syncFailedRef.current = syncFailed;
 
   const start = useCallback((value: MatchRequest) => {
     actionController.current?.abort();
@@ -79,14 +84,6 @@ export function useMatching() {
     const read = async () => {
       if (!active || lock.current) return;
 
-      if (!navigator.onLine) {
-        setConnectionLost(true);
-        setSyncFailed(false);
-        setReconnecting(false);
-        schedule();
-        return;
-      }
-
       controller?.abort();
       const localController = new AbortController();
       controller = localController;
@@ -124,178 +121,53 @@ export function useMatching() {
       }
     };
 
-    const reconnect = () => {
-      clearTimeout(timer);
-      setReconnecting(true);
-      setConnectionLost(false);
-      setSyncFailed(false);
-      void read();
-    };
-
-    const offline = () => {
-      controller?.abort();
-      setConnectionLost(true);
-      setSyncFailed(false);
-      setReconnecting(false);
-    };
-
-    const visible = () => {
-      if (document.visibilityState === "visible") reconnect();
-    };
-
-    void read();
-    window.addEventListener("online", reconnect);
-    window.addEventListener("offline", offline);
-    document.addEventListener("visibilitychange", visible);
-
-    return () => {
-      active = false;
-      clearTimeout(timer);
-      controller?.abort();
-      window.removeEventListener("online", reconnect);
-      window.removeEventListener("offline", offline);
-      document.removeEventListener("visibilitychange", visible);
-    };
-  }, [request, terminal, refresh, merge]);
-
-  useEffect(() => {
-    if (!request || request.source === "preview" || terminal) return;
-    const channel = supabase
-      .channel("rider-match-live:" + request.requestId)
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "ride_requests",
-          filter: "id=eq." + request.requestId,
-        },
-        () => setRefresh((n) => n + 1),
-      )
-      .subscribe();
-
-    return () => {
-      void supabase.removeChannel(channel);
-    };
-  }, [request, terminal]);
-
-  useEffect(() => () => actionController.current?.abort(), []);
-
-  const action = async (
-    kind: "cancel" | "retry",
-    expectedVersion?: number,
-  ) => {
-    const current = snapshotRef.current;
+    const reconnect = async (): Promise<MatchSnapshot | null> => {
     const selected = requestRef.current;
-
-    if (
-      !current ||
-      !selected ||
-      lock.current ||
-      (expectedVersion !== undefined &&
-        current.version !== expectedVersion) ||
-      (kind === "cancel"
-        ? !current.cancellation.allowed
-        : !current.canRetry)
-    )
-      return;
+    if (!selected || lock.current) return null;
 
     if (selected.source === "preview") {
-      const next = previewSnapshot(
-        selected.requestId,
-        kind === "cancel" ? "cancelled" : "searching",
-        current.version + 1,
-      );
-      snapshotRef.current = next;
-      setSnapshot(next);
-      setConnectionLost(false);
-      setSyncFailed(false);
-      setActionFailed(false);
-      return;
-    }
-
-    lock.current = true;
-    setBusy(true);
-    setActionFailed(false);
-    const controller = new AbortController();
-    actionController.current = controller;
-
-    try {
-      const value = await matchingAdapter.action(
-        current,
-        kind,
-        AbortSignal.any([
-          controller.signal,
-          AbortSignal.timeout(15000),
-        ]),
-      );
-
-      if (requestRef.current?.requestId === selected.requestId) {
-        merge(value);
-        setConnectionLost(false);
-        setSyncFailed(false);
-        if (
-          value.status !==
-          (kind === "cancel" ? "cancelled" : "searching")
-        )
-          setActionFailed(true);
-      }
-    } catch {
-      if (!controller.signal.aborted) {
-        const offline = !navigator.onLine;
-        setActionFailed(true);
-        setConnectionLost(offline);
-        setSyncFailed(!offline);
-      }
-    } finally {
-      lock.current = false;
-      setBusy(false);
-      setRefresh((n) => n + 1);
-    }
-  };
-
-  const previewState = (
-    status: Exclude<MatchStatus, "assigned"> | "connection_lost",
-  ) => {
-    if (request?.source !== "preview") return;
-    if (status === "connection_lost") {
-      setConnectionLost(true);
-      setSyncFailed(false);
-      return;
-    }
-    setConnectionLost(false);
-    setSyncFailed(false);
-    setSnapshot(
-      previewSnapshot(
-        request.requestId,
-        status,
-        (snapshot?.version || 0) + 1,
-      ),
-    );
-  };
-
-  const clear = () => {
-    if (busy) return;
-    setRequest(null);
-    setSnapshot(null);
-    setConnectionLost(false);
-    setSyncFailed(false);
-    setReconnecting(false);
-    setActionFailed(false);
-  };
-
-  const reconnect = () => {
-    if (request?.source === "preview") {
       setConnectionLost(false);
       setSyncFailed(false);
       setReconnecting(false);
-      return;
+      setActionFailed(false);
+      return snapshotRef.current;
     }
+
+    reconnectController.current?.abort();
+    const controller = new AbortController();
+    reconnectController.current = controller;
     setActionFailed(false);
     setSyncFailed(false);
     setReconnecting(true);
-    if (navigator.onLine) setConnectionLost(false);
-    setRefresh((n) => n + 1);
+
+    try {
+      const value = await matchingAdapter.read(
+        selected.requestId,
+        AbortSignal.any([
+          controller.signal,
+          AbortSignal.timeout(12000),
+        ]),
+      );
+      if (requestRef.current?.requestId !== selected.requestId) return null;
+      merge(value);
+      setConnectionLost(false);
+      setSyncFailed(false);
+      setActionFailed(false);
+      return value;
+    } catch {
+      if (!controller.signal.aborted) {
+        const offline =
+          typeof navigator !== "undefined" && navigator.onLine === false;
+        setConnectionLost(offline);
+        setSyncFailed(!offline);
+      }
+      return null;
+    } finally {
+      if (reconnectController.current === controller)
+        reconnectController.current = null;
+      setReconnecting(false);
+      setRefresh((n) => n + 1);
+    }
   };
 
   return {
