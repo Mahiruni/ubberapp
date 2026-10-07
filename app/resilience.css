@@ -1,0 +1,132 @@
+/* NexRide resilient-network system */
+.nr-network-live {
+  position: fixed;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.nr-network-banner {
+  position: fixed;
+  z-index: 2147483000;
+  top: calc(10px + env(safe-area-inset-top));
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(92vw, 520px);
+  min-height: 46px;
+  display: grid;
+  grid-template-columns: 10px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 8px 7px 12px;
+  border: 1px solid color-mix(in srgb, var(--line, #d9e0e3) 82%, transparent);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--surface, #fff) 88%, transparent);
+  color: var(--text, #102334);
+  box-shadow: 0 14px 36px rgba(4, 28, 48, .16);
+  backdrop-filter: blur(18px) saturate(135%);
+  -webkit-backdrop-filter: blur(18px) saturate(135%);
+  animation: nr-network-in .2s ease-out both;
+}
+
+.nr-network-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: #00a86b;
+  box-shadow: 0 0 0 4px rgba(0, 168, 107, .12);
+}
+
+.nr-network-banner[data-state="slow"] .nr-network-dot,
+.nr-network-banner[data-state="reconnecting"] .nr-network-dot {
+  background: #d6a400;
+  box-shadow: 0 0 0 4px rgba(214, 164, 0, .12);
+}
+
+.nr-network-banner[data-state="offline"] .nr-network-dot {
+  background: #d63b43;
+  box-shadow: 0 0 0 4px rgba(214, 59, 67, .12);
+}
+
+.nr-network-copy {
+  min-width: 0;
+  font-size: 12px;
+  line-height: 1.35;
+  font-weight: 680;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nr-data-saver-toggle {
+  min-width: 44px;
+  min-height: 34px;
+  padding: 6px 10px;
+  border: 1px solid color-mix(in srgb, var(--line, #d9e0e3) 90%, transparent);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--surface-alt, #f4f7f6) 92%, transparent);
+  color: inherit;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 780;
+  cursor: pointer;
+}
+
+.nr-data-saver-toggle:focus-visible {
+  outline: 3px solid color-mix(in srgb, #00a86b 42%, transparent);
+  outline-offset: 2px;
+}
+
+html[data-nr-data-saver] *,
+html[data-nr-data-saver] *::before,
+html[data-nr-data-saver] *::after {
+  animation-duration: .01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 80ms !important;
+}
+
+html[data-nr-data-saver] .nr-network-banner,
+html[data-nr-data-saver] [class*="glass"],
+html[data-nr-data-saver] [class*="backdrop"] {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html[data-nr-data-saver] .nr-mapbox-surface {
+  filter: saturate(.86) contrast(.98);
+}
+
+html[data-nr-network="offline"] .nr-mapbox-surface,
+html[data-nr-network="reconnecting"] .nr-mapbox-surface {
+  --nr-map-live-opacity: .7;
+}
+
+@keyframes nr-network-in {
+  from { opacity: 0; transform: translate(-50%, -8px) scale(.985); }
+  to { opacity: 1; transform: translate(-50%, 0) scale(1); }
+}
+
+@media (max-width: 520px) {
+  .nr-network-banner {
+    width: calc(100vw - 20px);
+    grid-template-columns: 9px 1fr auto;
+    gap: 8px;
+    border-radius: 16px;
+  }
+  .nr-network-copy {
+    font-size: 11.5px;
+  }
+  .nr-data-saver-toggle {
+    padding-inline: 8px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nr-network-banner {
+    animation: none !important;
+    transition: none !important;
+  }
+}
