@@ -3,8 +3,15 @@
   src: url("/fonts/Benaiah-Ethiopic.woff2") format("woff2");
   font-display: swap;
   font-style: normal;
-  font-weight: 700;
-  unicode-range: U+1200-137F;
+  /* The supplied Benaiah face is NexRide's single Ethiopic master.
+     Map it across UI weights so 400/500/600/700/800/900 requests do not
+     fall through to a system Ethiopic font. */
+  font-weight: 100 900;
+  unicode-range:
+    U+1200-139F,
+    U+2D80-2DDF,
+    U+AB00-AB2F,
+    U+1E7E0-1E7FF;
 }
 
 :root {
@@ -39,6 +46,25 @@ html[lang="am"] .admin-app,
 html[lang="am"] .nr-auth-experience,
 html[lang="am"] .driver-auth-page,
 html[lang="am"] .driver-onboarding-page {
+  font-family: var(--font-amharic) !important;
+}
+
+/* Force the dedicated Ethiopic face through every NexRide surface in
+   Amharic mode. Because the @font-face is unicode-ranged to Ethiopic,
+   Latin brand names, numbers, prices and map data still fall through to
+   the existing NexRide Latin stack automatically. */
+html[lang="am"] body :where(*) {
+  font-family: var(--font-amharic) !important;
+}
+
+html[lang="am"] .nr-driver-app-shell,
+html[lang="am"] .nr-driver-app-shell :where(*),
+html[lang="am"] .nr-auth-experience,
+html[lang="am"] .nr-auth-experience :where(*),
+html[lang="am"] .nr-rider-flow-panel,
+html[lang="am"] .nr-rider-flow-panel :where(*),
+html[lang="am"] .nr-driver-sheet,
+html[lang="am"] .nr-driver-sheet :where(*) {
   font-family: var(--font-amharic) !important;
 }
 
