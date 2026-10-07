@@ -469,13 +469,15 @@ function AppWorkspace({
                 <Icon name={theme === "dark" ? "sun" : "moon"} size={19} />
               </button>
             )}
-            <button
-              className="nr-avatar-button"
-              aria-label={t(mode === "rider" ? "profileNav" : "profile")}
-              onClick={() => navigate("profile")}
-            >
-              {initials}
-            </button>
+            {mode === "driver" && (
+              <button
+                className="nr-avatar-button"
+                aria-label={t("profile")}
+                onClick={() => navigate("profile")}
+              >
+                {initials}
+              </button>
+            )}
           </div>
         </header>
         {!authenticated && !liveTripShown && !profileView && <div className="nr-preview-banner">
