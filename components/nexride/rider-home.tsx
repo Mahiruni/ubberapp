@@ -1,11 +1,33 @@
 "use client";
+
+import {
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type KeyboardEvent,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
 import { Icon, ListRow, useTranslation } from "./ui";
 import { placeKey, placeName, locality } from "../../lib/nexride-search";
-import { useContext } from "react";
 import { LanguageContext } from "./ui";
 import { type Place } from "../../lib/nexride-places";
 import type { HomePlaces } from "../../lib/nexride-home";
 import type { LocationStatus, RiderLocation } from "../../lib/nexride-location";
+
+type HomeSheetSnap = "collapsed" | "medium" | "expanded";
+
+const visibleRatio: Record<HomeSheetSnap, number> = {
+  collapsed: 0.27,
+  medium: 0.46,
+  expanded: 0.75,
+};
+const maxRatio = 0.75;
+
+const snapOffset = (snap: HomeSheetSnap, viewportHeight: number) =>
+  Math.max(0, (maxRatio - visibleRatio[snap]) * viewportHeight);
+
 export function LocationMessage({
   status,
   position,
@@ -42,6 +64,7 @@ export function LocationMessage({
     </div>
   );
 }
+
 export function RiderHomePanel({
   navigate,
   choose,
@@ -62,95 +85,254 @@ export function RiderHomePanel({
   const t = useTranslation();
   const language = useContext(LanguageContext);
   const rows = data.recent.slice(0, 3);
+  const [snap, setSnap] = useState<HomeSheetSnap>("medium");
+  const [viewportHeight, setViewportHeight] = useState(800);
+  const [offset, setOffset] = useState(() => snapOffset("medium", 800));
+  const [dragging, setDragging] = useState(false);
+  const drag = useRef({
+    startY: 0,
+    startOffset: 0,
+    lastY: 0,
+    lastAt: 0,
+    velocity: 0,
+  });
+
+  useEffect(() => {
+    const update = () => {
+      const nextHeight = Math.max(520, window.innerHeight || 800);
+      setViewportHeight(nextHeight);
+      setOffset(snapOffset(snap, nextHeight));
+    };
+    update();
+    window.addEventListener("resize", update);
+    window.visualViewport?.addEventListener("resize", update);
+    return () => {
+      window.removeEventListener("resize", update);
+      window.visualViewport?.removeEventListener("resize", update);
+    };
+  }, [snap]);
+
+  const applySnap = (next: HomeSheetSnap) => {
+    setSnap(next);
+    setOffset(snapOffset(next, viewportHeight));
+  };
+
+  const nearestSnap = (value: number) =>
+    (Object.keys(visibleRatio) as HomeSheetSnap[]).reduce((best, candidate) =>
+      Math.abs(snapOffset(candidate, viewportHeight) - value) <
+      Math.abs(snapOffset(best, viewportHeight) - value)
+        ? candidate
+        : best,
+    );
+
+  const finishDrag = () => {
+    if (!dragging) return;
+    setDragging(false);
+    const order: HomeSheetSnap[] = ["expanded", "medium", "collapsed"];
+    const nearest = nearestSnap(offset);
+    const index = order.indexOf(nearest);
+    const velocity = drag.current.velocity;
+    if (velocity < -0.45) {
+      applySnap(order[Math.max(0, index - 1)]);
+    } else if (velocity > 0.45) {
+      applySnap(order[Math.min(order.length - 1, index + 1)]);
+    } else {
+      applySnap(nearest);
+    }
+  };
+
+  const onPointerDown = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    if (event.button !== 0 && event.pointerType === "mouse") return;
+    event.currentTarget.setPointerCapture(event.pointerId);
+    const now = performance.now();
+    drag.current = {
+      startY: event.clientY,
+      startOffset: offset,
+      lastY: event.clientY,
+      lastAt: now,
+      velocity: 0,
+    };
+    setDragging(true);
+  };
+
+  const onPointerMove = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    if (!dragging) return;
+    const now = performance.now();
+    const elapsed = Math.max(1, now - drag.current.lastAt);
+    drag.current.velocity = (event.clientY - drag.current.lastY) / elapsed;
+    drag.current.lastY = event.clientY;
+    drag.current.lastAt = now;
+    const next = Math.min(
+      snapOffset("collapsed", viewportHeight),
+      Math.max(0, drag.current.startOffset + event.clientY - drag.current.startY),
+    );
+    setOffset(next);
+  };
+
+  const toggleSnap = () => {
+    applySnap(
+      snap === "collapsed"
+        ? "medium"
+        : snap === "medium"
+          ? "expanded"
+          : "medium",
+    );
+  };
+
+  const onHandleKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
+    const order: HomeSheetSnap[] = ["expanded", "medium", "collapsed"];
+    const index = order.indexOf(snap);
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      applySnap(order[Math.max(0, index - 1)]);
+    } else if (event.key === "ArrowDown") {
+      event.preventDefault();
+      applySnap(order[Math.min(order.length - 1, index + 1)]);
+    } else if (event.key === "Home") {
+      event.preventDefault();
+      applySnap("expanded");
+    } else if (event.key === "End") {
+      event.preventDefault();
+      applySnap("collapsed");
+    }
+  };
+
   return (
-    <section className="nr-rider-home-panel" aria-label={t("destination")}>
-      <div className="nr-home-handle" aria-hidden="true" />
-      <div className="nr-rider-home-intro">
-        <div>
-          <span className="nr-home-kicker">NEXRIDE</span>
-          <h2>{language === "am" ? "ወዴት መሄድ ይፈልጋሉ?" : "Where are you going?"}</h2>
-        </div>
-        <span className="nr-home-city"><Icon name="pin" size={14} />{t("city")}</span>
-      </div>
-      <h1 className="nr-sr-only">{t("where")}</h1>
+    <section
+      className="nr-rider-home-panel nr-rider-home-sheet"
+      aria-label={t("destination")}
+      data-snap={snap}
+      data-dragging={dragging || undefined}
+      style={{ "--nr-home-sheet-offset": `${offset}px` } as CSSProperties}
+    >
       <button
-        className="nr-home-search"
-        onClick={navigate}
-        aria-label={t("destination")}
+        type="button"
+        className="nr-home-sheet-drag-zone"
+        aria-label={
+          language === "am"
+            ? "የመነሻ ፓነሉን አስፋ ወይም አሳንስ"
+            : "Expand or collapse ride panel"
+        }
+        aria-expanded={snap !== "collapsed"}
+        onClick={toggleSnap}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={finishDrag}
+        onPointerCancel={finishDrag}
+        onKeyDown={onHandleKeyDown}
       >
-        <Icon name="search" size={22} />
-        <span>{t("whereTo")}</span>
-        <span className="nr-search-arrow">
-          <Icon name="arrow" size={20} />
-        </span>
+        <span className="nr-home-handle" aria-hidden="true" />
       </button>
-      <div className="nr-home-shortcuts">
-        {(["home", "work", "saved"] as const).map((kind) => (
-          <button
-            key={kind}
-            onClick={() => shortcut(kind)}
-            aria-label={t(
-              kind === "home"
-                ? "home"
-                : kind === "work"
-                  ? "work"
-                  : "savedPlaces",
-            )}
-          >
-            <Icon
-              name={
-                kind === "home"
-                  ? "home"
-                  : kind === "work"
-                    ? "briefcase"
-                    : "star"
-              }
-              size={20}
-            />
-            <span>
-              {t(
-                kind === "home"
-                  ? "home"
-                  : kind === "work"
-                    ? "work"
-                    : "savedPlaces",
-              )}
-            </span>
-            {kind !== "saved" && data.saved[kind] && (
-              <i aria-hidden="true" title={t("shortcutSet")} />
-            )}
-          </button>
-        ))}
-      </div>
-      <LocationMessage status={status} position={position} label={locationLabel} />
-      <div className="nr-home-history-heading">
-        <h2>{t("recentDestinations")}</h2>
-      </div>
-      {!data.recent.length && (
-        <div className="nr-home-empty-state">
-          <span><Icon name="clock" size={19} /></span>
+
+      <div className="nr-home-sheet-scroll">
+        <div className="nr-rider-home-intro">
           <div>
-            <strong>{t("emptyRecent")}</strong>
-            <small>Places you ride to will appear here.</small>
+            <span className="nr-home-kicker">NEXRIDE</span>
+            <h2>
+              {language === "am"
+                ? "ወዴት መሄድ ይፈልጋሉ?"
+                : "Where are you going?"}
+            </h2>
+          </div>
+          <span className="nr-home-city">
+            <Icon name="pin" size={14} />
+            {t("city")}
+          </span>
+        </div>
+
+        <h1 className="nr-sr-only">{t("where")}</h1>
+        <button
+          className="nr-home-search"
+          onClick={navigate}
+          aria-label={t("destination")}
+        >
+          <Icon name="search" size={22} />
+          <span>{t("whereTo")}</span>
+          <span className="nr-search-arrow">
+            <Icon name="arrow" size={20} />
+          </span>
+        </button>
+
+        <div className="nr-home-expandable">
+          <div className="nr-home-shortcuts">
+            {(["home", "work", "saved"] as const).map((kind) => (
+              <button
+                key={kind}
+                onClick={() => shortcut(kind)}
+                aria-label={t(
+                  kind === "home"
+                    ? "home"
+                    : kind === "work"
+                      ? "work"
+                      : "savedPlaces",
+                )}
+              >
+                <Icon
+                  name={
+                    kind === "home"
+                      ? "home"
+                      : kind === "work"
+                        ? "briefcase"
+                        : "star"
+                  }
+                  size={20}
+                />
+                <span>
+                  {t(
+                    kind === "home"
+                      ? "home"
+                      : kind === "work"
+                        ? "work"
+                        : "savedPlaces",
+                  )}
+                </span>
+                {kind !== "saved" && data.saved[kind] && (
+                  <i aria-hidden="true" title={t("shortcutSet")} />
+                )}
+              </button>
+            ))}
+          </div>
+
+          <LocationMessage
+            status={status}
+            position={position}
+            label={locationLabel}
+          />
+
+          <div className="nr-home-history-heading">
+            <h2>{t("recentDestinations")}</h2>
+          </div>
+
+          {!data.recent.length && (
+            <div className="nr-home-empty-state">
+              <span>
+                <Icon name="clock" size={19} />
+              </span>
+              <div>
+                <strong>{t("emptyRecent")}</strong>
+                <small>Places you ride to will appear here.</small>
+              </div>
+            </div>
+          )}
+
+          <div className="nr-home-destinations">
+            {rows.map((p) => (
+              <ListRow
+                key={placeKey(p)}
+                icon="pin"
+                title={
+                  language === "en" && p.name === "Bole Airport"
+                    ? p.address
+                    : placeName(p, language)
+                }
+                detail={
+                  p.name === "Bole Airport" ? t("city") : locality(p, language)
+                }
+                onClick={() => choose(p)}
+              />
+            ))}
           </div>
         </div>
-      )}
-      <div className="nr-home-destinations">
-        {rows.map((p) => (
-          <ListRow
-            key={placeKey(p)}
-            icon="pin"
-            title={
-              language === "en" && p.name === "Bole Airport"
-                ? p.address
-                : placeName(p, language)
-            }
-            detail={
-              p.name === "Bole Airport" ? t("city") : locality(p, language)
-            }
-            onClick={() => choose(p)}
-          />
-        ))}
       </div>
     </section>
   );

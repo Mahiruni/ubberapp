@@ -1930,7 +1930,6 @@
 /* NexRide 2026 navigation system — compact, persistent and safe-area aware. */
 .nr-theme-button{width:44px;min-width:44px;height:44px;min-height:44px;display:grid;place-items:center;border:0;border-radius:50%;background:transparent;color:var(--muted)}
 .nr-theme-button:hover{background:var(--surface-alt);color:var(--text)}
-.nr-rider-bottom-nav{display:none}
 @media (max-width:800px){
   .nr-app[data-mode="rider"] .nr-topbar{position:sticky;top:0;z-index:40;height:calc(58px + env(safe-area-inset-top));padding:env(safe-area-inset-top) max(10px,env(safe-area-inset-right)) 0 max(10px,env(safe-area-inset-left));background:rgba(255,255,255,.91);border-bottom:1px solid color-mix(in srgb,var(--line) 88%,transparent);-webkit-backdrop-filter:blur(20px) saturate(140%);backdrop-filter:blur(20px) saturate(140%)}
   .nr-app[data-mode="rider"][data-theme="dark"] .nr-topbar{background:rgba(4,28,48,.91)}
@@ -1939,21 +1938,6 @@
   .nr-app[data-mode="rider"] .nr-language-button{min-width:44px;min-height:44px;justify-content:center;border-radius:50%}
   .nr-app[data-mode="rider"] .nr-language-button span{display:none}
   .nr-app[data-mode="rider"] .nr-avatar-button{width:44px;height:44px;min-width:44px;border:1px solid var(--line);background:var(--surface-alt)}
-  .nr-app[data-mode="rider"] .nr-stage{padding-bottom:calc(82px + env(safe-area-inset-bottom))}
-  .nr-rider-bottom-nav{position:fixed;z-index:80;left:0;right:0;bottom:0;display:block;border-top:1px solid rgba(16,35,52,.1);background:rgba(255,255,255,.94);-webkit-backdrop-filter:blur(22px) saturate(150%);backdrop-filter:blur(22px) saturate(150%);padding:4px max(8px,env(safe-area-inset-right)) env(safe-area-inset-bottom) max(8px,env(safe-area-inset-left));box-shadow:0 -8px 28px rgba(4,28,48,.06)}
-  .nr-app[data-theme="dark"] .nr-rider-bottom-nav{background:rgba(4,28,48,.94);border-top-color:rgba(255,255,255,.1);box-shadow:0 -8px 28px rgba(0,0,0,.18)}
-  .nr-rider-bottom-nav-inner{width:min(620px,100%);min-height:60px;margin:0 auto;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));align-items:stretch}
-  .nr-rider-bottom-nav button{position:relative;min-width:0;min-height:60px;padding:6px 2px 5px;border:0;border-radius:0;background:transparent;color:var(--muted);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:10px;font-weight:650;line-height:1.05;letter-spacing:-.01em}
-  .nr-rider-bottom-nav button::before{content:"";position:absolute;top:0;left:50%;width:18px;height:2px;border-radius:999px;background:transparent;transform:translateX(-50%)}
-  .nr-rider-bottom-nav button.active{color:var(--green-text);font-weight:800}
-  .nr-rider-bottom-nav button.active::before{background:var(--green)}
-  .nr-rider-bottom-nav button:active{background:var(--green-wash)}
-  .nr-rider-bottom-nav button:focus-visible{outline:2px solid var(--green);outline-offset:-3px;border-radius:10px}
-  .nr-rider-bottom-nav button:disabled{opacity:.38}
-  .nr-rider-nav-icon{width:28px;height:26px;display:grid;place-items:center}
-  .nr-rider-bottom-nav button.active .nr-rider-nav-icon svg{stroke-width:2.15}
-  .nr-rider-nav-label{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .nr-support-page[data-mode="rider"],.nr-safety-page[data-mode="rider"]{padding-bottom:calc(92px + env(safe-area-inset-bottom))}
 }
 @media (min-width:801px) and (max-width:1100px){
   .nr-app[data-mode="rider"] .nr-sidebar{width:200px;padding-left:14px;padding-right:14px}

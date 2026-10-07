@@ -33,7 +33,7 @@ import { useMatching } from "../lib/nexride-use-matching";
 import { useJourney } from "../lib/nexride-journey";
 import { useRiderLocation } from "../lib/nexride-location";
 import { RiderWorkspace, type RiderScreen } from "../components/nexride/rider";
-import { RiderBottomNavigation } from "../components/nexride/rider-bottom-nav";
+import { RiderMenu, type RiderMenuId } from "../components/nexride/rider-menu";
 import {
   DriverWorkspace,
   type DriverScreen,
@@ -205,7 +205,7 @@ function AppWorkspace({
 }) {
   const t = useTranslation();
   const riderLocation = useRiderLocation();
-  const journey = useJourney(riderLocation.position);
+  const journey = useJourney(riderLocation.position, language);
   const matching = useMatching();
   const bookingLock = useRef(false);
   const [requestPending, setRequestPending] = useState(false);
@@ -216,8 +216,17 @@ function AppWorkspace({
   const [riderScreen, setRiderScreen] = useState<RiderScreen>("home");
   const [driverScreen, setDriverScreen] = useState<DriverScreen>("home");
   useEffect(() => {
-    const requested = new URLSearchParams(window.location.search).get("screen");
-    if (requested === "profile") setRiderScreen("profile");
+    const params = new URLSearchParams(window.location.search);
+    const requested = params.get("screen");
+    if (
+      requested === "profile" ||
+      requested === "saved" ||
+      requested === "wallet" ||
+      requested === "trips"
+    ) {
+      setRiderScreen(requested as RiderScreen);
+    }
+    if (params.get("panel") === "settings") setPanel("settings");
   }, []);
   const [panel, setPanel] = useState<Panel>(null);
   const [serviceTitle, setServiceTitle] = useState("");
@@ -407,13 +416,30 @@ function AppWorkspace({
       </aside>
       <section className="nr-main">
         <header className="nr-topbar">
-          <button
-            className="nr-icon-button nr-mobile-menu"
-            onClick={() => setPanel("menu")}
-            aria-label={t("menu")}
-          >
-            <Icon name="menu" />
-          </button>
+          {mode === "rider" ? (
+            <RiderMenu
+              className="nr-rider-hamburger-inline"
+              active={
+                (["destination", "rides", "finding", "trip", "live", "summary"].includes(riderScreen)
+                  ? "home"
+                  : riderScreen === "wallet"
+                    ? "wallet"
+                    : riderScreen) as RiderMenuId
+              }
+              onNavigate={(id) => navigate(id)}
+              onSettings={() => setPanel("settings")}
+              isAdmin={isAdmin}
+              locked={requestPending || matching.active}
+            />
+          ) : (
+            <button
+              className="nr-icon-button nr-mobile-menu"
+              onClick={() => setPanel("menu")}
+              aria-label={t("menu")}
+            >
+              <Icon name="menu" />
+            </button>
+          )}
           <Brand driver={mode === "driver"} />
           <div className="nr-topbar-place">
             <Icon name="pin" size={17} />
@@ -616,19 +642,7 @@ function AppWorkspace({
             )}
           </div>
         </div>
-        {mode === "rider" ? (
-          <RiderBottomNavigation
-            active={
-              ["home", "saved", "destination", "rides", "finding", "trip", "live", "summary"].includes(riderScreen)
-                ? "home"
-                : riderScreen === "wallet"
-                  ? "profile"
-                  : riderScreen
-            }
-            onNavigate={(id) => navigate(id)}
-            locked={requestPending || matching.active}
-          />
-        ) : (
+        {mode === "driver" && (
           <div className="nr-mobile-nav" aria-label="Primary driver navigation">
             <Navigation items={navItems} active={screen} onNavigate={navigate} />
           </div>

@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "../../components/nexride/ui";
-import { RiderBottomNavigation, usePersistedRiderTheme } from "../../components/nexride/rider-bottom-nav";
+import { RiderMenu, usePersistedRiderTheme } from "../../components/nexride/rider-menu";
 import { useOperationalTranslation } from "../../components/nexride/operational-i18n";
 import { supabase } from "../../lib/supabase";
 import "../nexride.css";
@@ -187,7 +187,7 @@ export default function SafetyCenterPage() {
           />
         )}
       </div>
-      {role === "rider" && <RiderBottomNavigation active="safety" />}
+      {role === "rider" && <RiderMenu active="safety" />}
     </main>
   );
 }

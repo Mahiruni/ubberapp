@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "../../../components/nexride/ui";
 import { useOperationalTranslation } from "../../../components/nexride/operational-i18n";
-import { RiderBottomNavigation, usePersistedRiderTheme } from "../../../components/nexride/rider-bottom-nav";
+import { RiderMenu, usePersistedRiderTheme } from "../../../components/nexride/rider-menu";
 import { supabase } from "../../../lib/supabase";
 import {
   formatRideStatus,
@@ -129,7 +129,7 @@ export default function RiderTripsPage() {
           </section>
         )}
       </div>
-      <RiderBottomNavigation active="trips" />
+      <RiderMenu active="trips" />
     </main>
   );
 }

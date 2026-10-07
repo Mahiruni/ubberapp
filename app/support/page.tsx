@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "../../components/nexride/ui";
-import { RiderBottomNavigation, usePersistedRiderTheme } from "../../components/nexride/rider-bottom-nav";
+import { RiderMenu, usePersistedRiderTheme } from "../../components/nexride/rider-menu";
 import { useOperationalTranslation } from "../../components/nexride/operational-i18n";
 import { supabase } from "../../lib/supabase";
 import "../nexride.css";
@@ -309,7 +309,7 @@ export default function HelpSupportPage() {
           )}
         </form>
       </div>
-      {role === "rider" && <RiderBottomNavigation active="messages" />}
+      {role === "rider" && <RiderMenu active="messages" />}
     </main>
   );
 }

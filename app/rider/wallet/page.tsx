@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "../../../components/nexride/ui";
-import { RiderBottomNavigation, usePersistedRiderTheme } from "../../../components/nexride/rider-bottom-nav";
+import { RiderMenu, usePersistedRiderTheme } from "../../../components/nexride/rider-menu";
 import { useOperationalTranslation } from "../../../components/nexride/operational-i18n";
 import { supabase } from "../../../lib/supabase";
 import { nexrideApiHeaders } from "../../../lib/nexride-api-auth";
@@ -229,7 +229,7 @@ export default function RiderWalletPage() {
           </>
         )}
       </div>
-      <RiderBottomNavigation active="profile" />
+      <RiderMenu active="wallet" />
     </main>
   );
 }
