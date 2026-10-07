@@ -29,6 +29,7 @@ import type { RideCategory, RideFare } from "../../lib/nexride-booking";
 import { placeKey } from "../../lib/nexride-search";
 import type { Journey } from "../../lib/nexride-journey";
 import type { RiderLocation, LocationStatus } from "../../lib/nexride-location";
+import { emitNexRideFeedback } from "../../lib/nexride-feedback";
 export type RiderScreen =
   | "home"
   | "saved"
@@ -104,6 +105,13 @@ export function RiderWorkspace({
     )
       return;
     setSelectedTripId(matching.request.requestId);
+    emitNexRideFeedback({
+      event: "driver_assigned",
+      id: matching.request.requestId,
+      title: "Driver assigned",
+      body: "Your NexRide driver is on the way.",
+      url: "/",
+    });
     matching.clear();
     navigate("trip");
   }, [
