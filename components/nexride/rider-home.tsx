@@ -88,7 +88,9 @@ export function RiderHomePanel({
   const [viewportHeight, setViewportHeight] = useState(800);
   const [dragging, setDragging] = useState(false);
   const sheetRef = useRef<HTMLElement | null>(null);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
   const frameRef = useRef<number | null>(null);
+  const dragActiveRef = useRef(false);
   const offsetRef = useRef(snapOffset("medium", 800));
   const drag = useRef({
     startY: 0,
@@ -147,24 +149,17 @@ export function RiderHomePanel({
     );
 
   const finishDrag = () => {
-    if (!dragging) return;
+    if (!dragActiveRef.current) return;
+    dragActiveRef.current = false;
     homeHost()?.removeAttribute("data-home-dragging");
     setDragging(false);
-    const order: HomeSheetSnap[] = ["expanded", "medium", "collapsed"];
+    const max = snapOffset("collapsed", viewportHeight);
     const velocity = drag.current.velocity;
     const projected = Math.min(
-      snapOffset("collapsed", viewportHeight),
-      Math.max(0, offsetRef.current + velocity * 150),
+      max,
+      Math.max(0, offsetRef.current + velocity * 180),
     );
-    const projectedSnap = nearestSnap(projected);
-    const index = order.indexOf(projectedSnap);
-    if (velocity < -0.22) {
-      applySnap(order[Math.max(0, index - 1)]);
-    } else if (velocity > 0.22) {
-      applySnap(order[Math.min(order.length - 1, index + 1)]);
-    } else {
-      applySnap(projectedSnap);
-    }
+    applySnap(nearestSnap(projected));
   };
 
   const onPointerDown = (event: ReactPointerEvent<HTMLElement>) => {
@@ -180,12 +175,13 @@ export function RiderHomePanel({
       velocity: 0,
       moved: false,
     };
+    dragActiveRef.current = true;
     homeHost()?.setAttribute("data-home-dragging", "true");
     setDragging(true);
   };
 
   const onPointerMove = (event: ReactPointerEvent<HTMLElement>) => {
-    if (!dragging) return;
+    if (!dragActiveRef.current) return;
     event.preventDefault();
     event.stopPropagation();
     const now = performance.now();
@@ -201,6 +197,88 @@ export function RiderHomePanel({
     );
     paintOffset(next);
   };
+
+
+  useEffect(() => {
+    const scroller = scrollRef.current;
+    if (!scroller) return;
+
+    let startY = 0;
+    let lastY = 0;
+    let lastAt = 0;
+    let touchId = -1;
+    let handedToSheet = false;
+
+    const start = (event: TouchEvent) => {
+      event.stopPropagation();
+      if (event.touches.length !== 1) return;
+      const touch = event.touches[0];
+      touchId = touch.identifier;
+      startY = touch.clientY;
+      lastY = touch.clientY;
+      lastAt = performance.now();
+      handedToSheet = false;
+    };
+
+    const move = (event: TouchEvent) => {
+      event.stopPropagation();
+      const touch = Array.from(event.touches).find(
+        (item) => item.identifier === touchId,
+      );
+      if (!touch) return;
+
+      const distance = touch.clientY - startY;
+      if (!handedToSheet && scroller.scrollTop <= 1 && distance > 7) {
+        handedToSheet = true;
+        const now = performance.now();
+        drag.current = {
+          startY,
+          startOffset: offsetRef.current,
+          lastY: startY,
+          lastAt: now,
+          velocity: 0,
+          moved: true,
+        };
+        dragActiveRef.current = true;
+        homeHost()?.setAttribute("data-home-dragging", "true");
+        setDragging(true);
+      }
+
+      if (!handedToSheet) return;
+
+      event.preventDefault();
+      const now = performance.now();
+      const elapsed = Math.max(1, now - lastAt);
+      drag.current.velocity = (touch.clientY - lastY) / elapsed;
+      lastY = touch.clientY;
+      lastAt = now;
+      const next = Math.min(
+        snapOffset("collapsed", viewportHeight),
+        Math.max(0, drag.current.startOffset + touch.clientY - startY),
+      );
+      paintOffset(next);
+    };
+
+    const end = (event: TouchEvent) => {
+      event.stopPropagation();
+      if (!handedToSheet) return;
+      event.preventDefault();
+      handedToSheet = false;
+      finishDrag();
+    };
+
+    scroller.addEventListener("touchstart", start, { passive: true });
+    scroller.addEventListener("touchmove", move, { passive: false });
+    scroller.addEventListener("touchend", end, { passive: false });
+    scroller.addEventListener("touchcancel", end, { passive: false });
+
+    return () => {
+      scroller.removeEventListener("touchstart", start);
+      scroller.removeEventListener("touchmove", move);
+      scroller.removeEventListener("touchend", end);
+      scroller.removeEventListener("touchcancel", end);
+    };
+  }, [viewportHeight]);
 
   const toggleSnap = () => {
     if (drag.current.moved) {
@@ -235,6 +313,28 @@ export function RiderHomePanel({
   };
 
   return (
+    <>
+      <div
+        className="nr-home-map-guard"
+        aria-hidden="true"
+        onPointerDown={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+        }}
+        onPointerMove={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+        }}
+        onPointerUp={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+        }}
+        onTouchStart={(event) => event.stopPropagation()}
+        onTouchMove={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+        }}
+      />
     <section
       ref={sheetRef}
       className="nr-rider-home-panel nr-rider-home-sheet"
@@ -245,8 +345,6 @@ export function RiderHomePanel({
       onPointerMove={(event) => event.stopPropagation()}
       onClick={(event) => event.stopPropagation()}
     >
-      <div className="nr-home-sheet-touch-shield" aria-hidden="true" />
-
       <div
         className="nr-home-sheet-grab-area"
         onPointerDown={onPointerDown}
@@ -287,6 +385,7 @@ export function RiderHomePanel({
       </div>
 
       <div
+        ref={scrollRef}
         className="nr-home-sheet-scroll"
         onPointerDown={(event) => event.stopPropagation()}
         onPointerMove={(event) => event.stopPropagation()}
@@ -387,5 +486,6 @@ export function RiderHomePanel({
         </div>
       </div>
     </section>
+    </>
   );
 }
