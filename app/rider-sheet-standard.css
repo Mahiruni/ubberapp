@@ -221,3 +221,81 @@
     transition: none!important;
   }
 }
+
+
+/* Live rider location — red heartbeat marker */
+.nr-live-location-marker {
+  width:46px!important;
+  height:46px!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  pointer-events:none!important;
+}
+
+.nr-live-location-heart {
+  position:relative;
+  display:grid;
+  place-items:center;
+  width:46px;
+  height:46px;
+  pointer-events:none;
+}
+
+.nr-live-location-heart::before,
+.nr-live-location-heart::after {
+  content:"";
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:16px;
+  height:16px;
+  border:2px solid rgba(229,72,77,.66);
+  border-radius:50%;
+  transform:translate(-50%,-50%) scale(.78);
+  opacity:.72;
+  pointer-events:none;
+  animation:nr-live-location-heartbeat 1.85s cubic-bezier(.18,.72,.28,1) infinite;
+}
+
+.nr-live-location-heart::after {
+  animation-delay:.72s;
+}
+
+.nr-live-location-core {
+  position:relative;
+  z-index:2;
+  display:block;
+  width:15px;
+  height:15px;
+  border:3px solid #fff;
+  border-radius:50%;
+  background:#e5484d;
+  box-shadow:
+    0 1px 5px rgba(4,28,48,.24),
+    0 0 0 2px rgba(229,72,77,.16);
+}
+
+@keyframes nr-live-location-heartbeat {
+  0% {
+    transform:translate(-50%,-50%) scale(.72);
+    opacity:.7;
+  }
+  58% {
+    opacity:.16;
+  }
+  100% {
+    transform:translate(-50%,-50%) scale(2.45);
+    opacity:0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nr-live-location-heart::before,
+  .nr-live-location-heart::after {
+    animation:none!important;
+    transform:translate(-50%,-50%) scale(1.45);
+    opacity:.18;
+  }
+}

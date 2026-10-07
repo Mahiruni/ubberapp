@@ -295,22 +295,24 @@ export function RiderMap({
     marker.current = L.layerGroup([
       L.circle([position.lat, position.lng], {
         radius: position.accuracy,
-        color: "#2985e5",
+        color: "#e5484d",
         weight: 1,
-        opacity: 0.25,
-        fillColor: "#2985e5",
-        fillOpacity: 0.1,
+        opacity: 0.18,
+        fillColor: "#e5484d",
+        fillOpacity: 0.055,
         interactive: false,
         className: "nr-location-accuracy",
       }),
-      L.circleMarker([position.lat, position.lng], {
-        radius: 8,
-        color: "#ffffff",
-        weight: 3,
-        fillColor: "#2985e5",
-        fillOpacity: 1,
+      L.marker([position.lat, position.lng], {
         interactive: false,
-        className: "nr-user-location-dot",
+        keyboard: false,
+        zIndexOffset: 1200,
+        icon: L.divIcon({
+          className: "nr-live-location-marker",
+          html: '<span class="nr-live-location-heart" aria-hidden="true"><i class="nr-live-location-core"></i></span>',
+          iconSize: [46, 46],
+          iconAnchor: [23, 23],
+        }),
       }),
     ]).addTo(map.current);
     manualView.current = false;
