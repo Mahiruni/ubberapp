@@ -2,6 +2,7 @@ import { mapboxToken } from "../../../../lib/location";
 import {
   PREVIEW_BOUNDS,
   insideBounds,
+  searchPreviewPlaces,
   validPoint,
 } from "../../../../lib/nexride-search";
 
@@ -23,9 +24,9 @@ type Result = {
   lng: number;
   name: string;
   address: string;
-  source: "provider";
+  source: "provider" | "preview";
   confirmed: boolean;
-  provider: "mapbox";
+  provider: "mapbox" | "nexride";
   providerPlaceId?: string;
   category?: string;
 };
@@ -245,13 +246,25 @@ export async function GET(request: Request) {
   }
 
   try {
+    const local = searchPreviewPlaces(q).map<Result>((place) => ({
+      lat: place.lat,
+      lng: place.lng,
+      name: place.name,
+      address: place.address,
+      source: "preview",
+      confirmed: true,
+      provider: "nexride",
+      providerPlaceId: `nexride:${place.name}:${place.lat}:${place.lng}`,
+      category: place.category,
+    }));
+
     const [geocoded, pois] = await Promise.all([
       geocode(token, q, language, proximity).catch(() => []),
       searchPlaces(token, q, language, proximity).catch(() => []),
     ]);
 
     const results = rank(
-      dedupe([...pois, ...geocoded]),
+      dedupe([...local, ...pois, ...geocoded]),
       q,
       proximity,
     ).slice(0, 12);
@@ -268,7 +281,7 @@ export async function GET(request: Request) {
       status: "ready",
       results,
       coverage: "addis-ababa",
-      sources: ["mapbox-searchbox", "mapbox-geocoding"],
+      sources: ["nexride-local", "mapbox-searchbox", "mapbox-geocoding"],
     });
   } catch {
     return response({ status: "error", results: [] }, 502);
