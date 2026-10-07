@@ -294,3 +294,32 @@
   }
   .nr-driver-swipe-spinner{animation:none!important}
 }
+
+
+/* Driver availability wrapper — a small protected interaction island over the map. */
+.nr-driver-home-swipe{
+  box-sizing:border-box!important;
+  padding:6px!important;
+  border:0!important;
+  border-radius:999px!important;
+  background:rgba(255,255,255,.86)!important;
+  box-shadow:0 10px 28px rgba(2,18,29,.16)!important;
+  backdrop-filter:blur(16px) saturate(1.08)!important;
+  -webkit-backdrop-filter:blur(16px) saturate(1.08)!important;
+  pointer-events:auto!important;
+  touch-action:none!important;
+  isolation:isolate;
+}
+.nr-driver-app-shell[data-theme="dark"] .nr-driver-home-swipe{
+  background:rgba(8,40,63,.88)!important;
+}
+.nr-driver-home-swipe .nr-driver-availability-swipe{
+  position:relative;
+  z-index:1;
+  width:100%!important;
+}
+@media(max-width:430px){
+  .nr-driver-home-swipe{
+    padding:5px!important;
+  }
+}
