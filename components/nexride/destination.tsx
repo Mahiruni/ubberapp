@@ -1,6 +1,6 @@
 "use client";
 import { useContext, useEffect, useRef, useState } from "react";
-import { Button, Icon, LanguageContext, ListRow, useTranslation } from "./ui";
+import { Button, Icon, LanguageContext, useTranslation } from "./ui";
 import { LocationMessage } from "./rider-home";
 import { RiderSheetHandle } from "./rider-sheet";
 import {
@@ -29,6 +29,66 @@ export function endpointName(
       ? `${t("mapPin")}${p.name ? ` · ${p.name}` : ""}`
       : placeName(p, language);
 }
+const RECENT_SEARCHES_KEY = "nexride.rider.search.recent.v2";
+
+function restoreRecentSearches(): Endpoint[] {
+  try {
+    const raw = JSON.parse(localStorage.getItem(RECENT_SEARCHES_KEY) || "[]");
+    if (!Array.isArray(raw)) return [];
+    const results: Endpoint[] = [];
+    for (const value of raw) {
+      const lat = Number(value?.lat);
+      const lng = Number(value?.lng);
+      const source = value?.source === "provider" ? "provider" : value?.source === "preview" ? "preview" : null;
+      if (
+        !source ||
+        !Number.isFinite(lat) ||
+        Math.abs(lat) > 90 ||
+        !Number.isFinite(lng) ||
+        Math.abs(lng) > 180
+      ) continue;
+      const name = typeof value?.name === "string" ? value.name.slice(0, 180) : "";
+      const address = typeof value?.address === "string" ? value.address.slice(0, 320) : "";
+      if (!name && !address) continue;
+      results.push({
+        lat,
+        lng,
+        name,
+        address,
+        source,
+        confirmed: true,
+        ...(typeof value?.nameAm === "string" ? { nameAm: value.nameAm.slice(0, 180) } : {}),
+        ...(typeof value?.neighborhood === "string" ? { neighborhood: value.neighborhood.slice(0, 180) } : {}),
+        ...(typeof value?.subcity === "string" ? { subcity: value.subcity.slice(0, 180) } : {}),
+      });
+      if (results.length === 6) break;
+    }
+    return results;
+  } catch {
+    return [];
+  }
+}
+
+function storeRecentSearches(items: Endpoint[]) {
+  try {
+    localStorage.setItem(
+      RECENT_SEARCHES_KEY,
+      JSON.stringify(
+        items.slice(0, 6).map((item) => ({
+          lat: item.lat,
+          lng: item.lng,
+          name: item.name,
+          address: item.address,
+          source: item.source,
+          confirmed: true,
+          nameAm: item.nameAm,
+          neighborhood: item.neighborhood,
+          subcity: item.subcity,
+        })),
+      ),
+    );
+  } catch {}
+}
 export function DestinationPanel({
   journey: j,
   back,
@@ -54,6 +114,8 @@ export function DestinationPanel({
     language = useContext(LanguageContext);
   const [field, setField] = useState<"pickup" | "destination">("destination");
   const [query, setQuery] = useState({ pickup: "", destination: "" });
+  const [searchActive, setSearchActive] = useState(false);
+  const [recentSearches, setRecentSearches] = useState<Endpoint[]>([]);
   const [remote, setRemote] = useState<{ status: string; results: Endpoint[] }>(
     { status: "idle", results: [] },
   );
@@ -63,6 +125,11 @@ export function DestinationPanel({
     new Map<string, { at: number; results: Endpoint[] }>(),
   );
   const draftRestored = useRef(false);
+
+  useEffect(() => {
+    setRecentSearches(restoreRecentSearches());
+  }, []);
+
   useEffect(() => {
     try {
       const raw = sessionStorage.getItem("nexride.rider.destination.draft");
@@ -144,15 +211,30 @@ export function DestinationPanel({
     };
   }, [field, query, language, position?.lat, position?.lng]);
 
+  const rememberSearch = (point: Endpoint) => {
+    if (!["provider", "preview"].includes(point.source)) return;
+    setRecentSearches((current) => {
+      const next = [
+        point,
+        ...current.filter((item) => placeKey(item) !== placeKey(point)),
+      ].slice(0, 6);
+      storeRecentSearches(next);
+      return next;
+    });
+  };
+
   const select = (point: Endpoint) => {
     if (shortcut) {
       if (point.source === "preview") choose(point);
       return;
     }
+    rememberSearch(point);
     if (field === "destination" && point.source === "preview") choose(point);
     else j.select(field, point);
     setQuery((q) => ({ ...q, [field]: "" }));
     setRemote({ status: "idle", results: [] });
+    setSearchActive(false);
+    j.setSheetRatio(0.46);
     if (field === "pickup") setField("destination");
     document.activeElement instanceof HTMLElement &&
       document.activeElement.blur();
@@ -170,12 +252,31 @@ export function DestinationPanel({
       : j.destination && !j.destination.confirmed
         ? "destination"
         : null;
+  const typedQuery = query[field].trim();
+  const previewRecent = data.recent.map(previewEndpoint);
+  const recentChoices = [...recentSearches, ...previewRecent]
+    .filter(
+      (item, index, all) =>
+        all.findIndex((candidate) => placeKey(candidate) === placeKey(item)) === index,
+    )
+    .slice(0, 5);
+  const liveSuggestions = [
+    ...(!shortcut ? remote.results : []),
+    ...local.map(previewEndpoint),
+  ]
+    .filter(
+      (item, index, all) =>
+        all.findIndex((candidate) => placeKey(candidate) === placeKey(item)) === index,
+    )
+    .filter((item) => !shortcut || item.source === "preview")
+    .slice(0, 8);
   const showSuggestions =
-    !!shortcut || !!query[field] || !j.destination || !j.pickup;
+    searchActive || !!shortcut || !!typedQuery || !j.destination || !j.pickup;
   return (
     <section
       className="nr-destination-panel"
       aria-label={t("destinationSearch")}
+      data-search-active={searchActive || undefined}
     >
       <RiderSheetHandle
         label={t("resizeSheet")}
@@ -248,10 +349,15 @@ export function DestinationPanel({
                           query[target] ||
                           (point ? endpointName(point, language, t) : "")
                         }
-                        onFocus={() => setField(target)}
+                        onFocus={() => {
+                          setField(target);
+                          setSearchActive(true);
+                          if (j.sheetRatio < 0.75) j.setSheetRatio(0.75);
+                        }}
                         onChange={(e) => {
                           j.clear(target);
                           setField(target);
+                          setSearchActive(true);
                           setQuery((q) => ({ ...q, [target]: e.target.value }));
                         }}
                         onKeyDown={(e) => {
@@ -340,106 +446,120 @@ export function DestinationPanel({
           </div>
         )}
         {!picking && showSuggestions && (
-          <>
-            {!query[field] && (
+          <section className="nr-search-discovery" aria-live="polite">
+            {!typedQuery ? (
               <>
-                <h2>{t("savedPlaces")}</h2>
-                <div className="nr-search-saved">
-                  {(["home", "work"] as const).map((kind) => (
-                    <button
-                      key={kind}
-                      disabled={!data.saved[kind]}
-                      onClick={() => select(previewEndpoint(data.saved[kind]!))}
-                    >
-                      <Icon
-                        name={kind === "home" ? "home" : "briefcase"}
-                        size={18}
-                      />
-                      {t(kind)}
-                      <small>
-                        {data.saved[kind]
-                          ? placeName(data.saved[kind]!, language)
-                          : t("notSet")}
-                      </small>
-                    </button>
-                  ))}
-                </div>
+                {(data.saved.home || data.saved.work) && (
+                  <>
+                    <h2>{t("savedPlaces")}</h2>
+                    <div className="nr-search-saved">
+                      {(["home", "work"] as const).map((kind) => (
+                        <button
+                          key={kind}
+                          disabled={!data.saved[kind]}
+                          onClick={() => select(previewEndpoint(data.saved[kind]!))}
+                        >
+                          <Icon
+                            name={kind === "home" ? "home" : "briefcase"}
+                            size={18}
+                          />
+                          {t(kind)}
+                          <small>
+                            {data.saved[kind]
+                              ? placeName(data.saved[kind]!, language)
+                              : t("notSet")}
+                          </small>
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+
                 <h2>{t("recentSearches")}</h2>
-                {!data.recent.length && (
+                {recentChoices.length ? (
+                  <div className="nr-recent-place-list">
+                    {recentChoices.map((point, index) => (
+                      <button
+                        type="button"
+                        className="nr-place-suggestion"
+                        key={placeKey(point)}
+                        ref={index === 0 ? firstResult : undefined}
+                        onClick={() => select(point)}
+                      >
+                        <Icon name="clock" />
+                        <span>
+                          <strong>{endpointName(point, language, t)}</strong>
+                          <small>{point.address || locality(point, language)}</small>
+                        </span>
+                        <Icon name="chevron" size={16} />
+                      </button>
+                    ))}
+                  </div>
+                ) : (
                   <p className="nr-muted">{t("noRecentSearches")}</p>
                 )}
-                {data.recent.slice(0, 3).map((p) => (
-                  <ListRow
-                    key={placeKey(p)}
-                    icon="clock"
-                    title={placeName(p, language)}
-                    detail={`${locality(p, language)} · ${t("sample")}`}
-                    onClick={() => select(previewEndpoint(p))}
-                  />
-                ))}
-              </>
-            )}
-            {remote.status === "loading" && (
-              <p role="status" className="nr-muted">
-                {t("searchingPlaces")}
-              </p>
-            )}
-            {remote.results.length > 0 && !shortcut && (
-              <>
-                <h2>{t("providerResults")}</h2>
-                {remote.results.map((p, i) => (
+
+                <h2>{language === "am" ? "ታዋቂ ቦታዎች" : "Popular places"}</h2>
+                {local.slice(0, 4).map((p) => (
                   <button
+                    type="button"
                     className="nr-place-suggestion"
                     key={placeKey(p)}
-                    ref={i === 0 ? firstResult : undefined}
-                    onClick={() => select(p)}
+                    onClick={() => select(previewEndpoint(p))}
                   >
                     <Icon name="pin" />
                     <span>
-                      <strong>{p.name}</strong>
-                      <small>{p.address}</small>
+                      <strong>{placeName(p, language)}</strong>
+                      <small>{locality(p, language)}</small>
                     </span>
                     <Icon name="chevron" size={16} />
                   </button>
                 ))}
               </>
+            ) : (
+              <>
+                <div className="nr-search-results-heading">
+                  <h2>{language === "am" ? "የተጠቆሙ ቦታዎች" : "Suggested places"}</h2>
+                  {remote.status === "loading" && (
+                    <span role="status">{t("searchingPlaces")}</span>
+                  )}
+                </div>
+
+                {liveSuggestions.map((point, index) => (
+                  <button
+                    type="button"
+                    className="nr-place-suggestion"
+                    key={placeKey(point)}
+                    ref={index === 0 ? firstResult : undefined}
+                    onClick={() => select(point)}
+                  >
+                    <Icon name="pin" />
+                    <span>
+                      <strong>{endpointName(point, language, t)}</strong>
+                      <small>{point.address || locality(point, language)}</small>
+                    </span>
+                    <Icon name="chevron" size={16} />
+                  </button>
+                ))}
+
+                {!liveSuggestions.length && remote.status !== "loading" && (
+                  <p className="nr-empty-text" role="status">
+                    {t("noResults")}
+                  </p>
+                )}
+                {["error", "unavailable"].includes(remote.status) &&
+                  !liveSuggestions.length && (
+                    <p className="nr-muted" role="status">
+                      {t("geocodingUnavailable")}
+                    </p>
+                  )}
+              </>
             )}
-            <h2>{t("previewDestinations")}</h2>
-            <p className="nr-preview-search-label">{t("previewSearchNote")}</p>
-            {local.map((p, i) => (
-              <button
-                className="nr-place-suggestion"
-                key={placeKey(p)}
-                ref={
-                  i === 0 && !remote.results.length ? firstResult : undefined
-                }
-                onClick={() => select(previewEndpoint(p))}
-              >
-                <Icon name="pin" />
-                <span>
-                  <strong>{placeName(p, language)}</strong>
-                  <small>{locality(p, language)}</small>
-                </span>
-                <Icon name="chevron" size={16} />
-              </button>
-            ))}
-            {!local.length &&
-              !remote.results.length &&
-              remote.status !== "loading" && (
-                <p className="nr-empty-text" role="status">
-                  {t("noResults")}
-                </p>
-              )}
-            {["error", "unavailable"].includes(remote.status) && (
-              <p className="nr-muted" role="status">
-                {t("geocodingUnavailable")}
-              </p>
-            )}
-          </>
+          </section>
         )}
         {!picking && j.valid && <RouteReview journey={j} />}
       </div>
-      {!shortcut && (
+      {!shortcut && (!searchActive || j.canContinue || picking) && (
         <footer>
           {picking ? (
             <Button disabled={!pin} onClick={() => j.confirm(picking)}>
