@@ -304,7 +304,7 @@ export default function DriverPayoutsPage() {
     <main
       className="nr-app nr-driver-profile-subpage"
       data-mode="driver"
-      data-theme="dark"
+     
     >
       <div className="nr-driver-profile-subwrap">
         <header className="nr-profile-subhead">

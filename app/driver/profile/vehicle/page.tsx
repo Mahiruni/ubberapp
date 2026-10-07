@@ -51,7 +51,7 @@ export default function DriverVehiclePage() {
   const verification = profile ? verificationSummary(profile) : null;
 
   return (
-    <main className="nr-app nr-driver-profile-subpage" data-mode="driver" data-theme="dark">
+    <main className="nr-app nr-driver-profile-subpage" data-mode="driver">
       <div className="nr-driver-profile-subwrap">
         <header className="nr-profile-subhead">
           <button className="nr-driver-icon-btn" onClick={() => router.replace("/driver/home?screen=profile")} aria-label="Back to driver profile">
