@@ -176,7 +176,7 @@ export function useMatching() {
     return () => {
       void supabase.removeChannel(channel);
     };
-  }, [request, terminal]);
+  }, [request, terminal, refresh]);
 
   useEffect(
     () => () => {
