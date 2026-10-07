@@ -149,19 +149,20 @@ export function DriverBottomNav({ activeOverride, subdued = false }: { activeOve
   );
 }
 
-function titleForPath(pathname: string) {
-  if (pathname.startsWith("/driver/earnings/report")) return "Earnings report";
-  if (pathname.startsWith("/driver/earnings")) return "Earnings";
-  if (pathname.startsWith("/driver/request")) return "Ride request";
-  if (pathname.startsWith("/driver/activity")) return "Requests";
-  if (pathname.startsWith("/driver/navigation")) return "Trip navigation";
-  if (pathname.startsWith("/driver/pickup")) return "Pickup";
-  if (pathname.startsWith("/driver/profile/documents")) return "Documents";
-  if (pathname.startsWith("/driver/profile/vehicle")) return "Vehicle";
-  if (pathname.startsWith("/driver/profile/payouts")) return "Payouts";
-  if (pathname.startsWith("/driver/profile/settings")) return "Settings";
-  if (pathname.startsWith("/driver/profile")) return "Account";
-  return "NexRide Driver";
+function titleForPath(pathname: string, language: "en" | "am") {
+  const say = (en: string, am: string) => language === "am" ? am : en;
+  if (pathname.startsWith("/driver/earnings/report")) return say("Earnings report", "የገቢ ሪፖርት");
+  if (pathname.startsWith("/driver/earnings")) return say("Earnings", "ገቢ");
+  if (pathname.startsWith("/driver/request")) return say("Ride request", "የጉዞ ጥያቄ");
+  if (pathname.startsWith("/driver/activity")) return say("Requests", "ጥያቄዎች");
+  if (pathname.startsWith("/driver/navigation")) return say("Trip navigation", "የጉዞ አቅጣጫ");
+  if (pathname.startsWith("/driver/pickup")) return say("Pickup", "መነሻ");
+  if (pathname.startsWith("/driver/profile/documents")) return say("Documents", "ሰነዶች");
+  if (pathname.startsWith("/driver/profile/vehicle")) return say("Vehicle", "ተሽከርካሪ");
+  if (pathname.startsWith("/driver/profile/payouts")) return say("Payouts", "ክፍያዎች");
+  if (pathname.startsWith("/driver/profile/settings")) return say("Settings", "ቅንብሮች");
+  if (pathname.startsWith("/driver/profile")) return say("Account", "መለያ");
+  return language === "am" ? "NexRide አሽከርካሪ" : "NexRide Driver";
 }
 
 function backTargetForPath(pathname: string) {
@@ -247,7 +248,7 @@ function DriverHeader({ pathname }: { pathname: string }) {
   const [online, setOnline] = useState(true);
   const home = pathname === "/driver/home";
   const backTarget = backTargetForPath(pathname);
-  const title = titleForPath(pathname);
+  const title = titleForPath(pathname, language);
 
   useEffect(() => {
     let active = true;

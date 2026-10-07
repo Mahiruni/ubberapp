@@ -14,7 +14,7 @@ export default function LegacyDriverPickupPage() {
   }, [router]);
 
   return (
-    <main className="nr-app nr-driver-shell" data-mode="driver" data-theme="dark">
+    <main className="nr-app nr-driver-shell" data-mode="driver">
       <div className="nr-driver-page">
         <div className="nr-driver-card nr-driver-loading" aria-busy="true">
           <span className="nr-driver-skeleton wide" />

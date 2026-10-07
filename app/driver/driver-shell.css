@@ -84,7 +84,20 @@
 .nr-driver-language-selector button[data-active="true"]{background:var(--driver-surface-elevated);color:var(--driver-accent);box-shadow:inset 0 0 0 1px var(--driver-border)}
 html[lang="am"] .nr-driver-global-nav-label{font-family:var(--font-amharic);font-size:10px;letter-spacing:0!important}
 html[lang="am"] .nr-driver-global-header-title :where(span,strong,small){letter-spacing:0!important}
-.nr-support-page[data-mode="driver"],.nr-safety-page[data-mode="driver"]{padding-bottom:calc(80px + env(safe-area-inset-bottom,0px))!important}
+.nr-support-page[data-mode="driver"],.nr-safety-page[data-mode="driver"]{
+  --driver-bg:#041c30;--driver-surface:#08283f;--driver-surface-elevated:#0b2b43;
+  --driver-border:rgba(153,188,207,.18);--driver-text-primary:#f5fafc;--driver-text-secondary:#91a9b8;
+  --driver-accent:#00c878;--driver-success:#0aa56a;--driver-warning:#c98718;--driver-danger:#c54b5c;
+  --driver-nav-bg:rgba(4,28,48,.94);--driver-nav-height:64px;--driver-nav-total:calc(var(--driver-nav-height) + env(safe-area-inset-bottom,0px));
+  --driver-z-nav:80;--driver-motion-fast:160ms;
+  padding-bottom:calc(80px + env(safe-area-inset-bottom,0px))!important
+}
+.nr-support-page[data-mode="driver"][data-theme="light"],.nr-safety-page[data-mode="driver"][data-theme="light"]{
+  --driver-bg:#f5f7f9;--driver-surface:#fff;--driver-surface-elevated:#fff;
+  --driver-border:rgba(26,58,78,.13);--driver-text-primary:#102334;--driver-text-secondary:#667587;
+  --driver-nav-bg:rgba(255,255,255,.94);color-scheme:light
+}
+.nr-support-page[data-mode="driver"][data-theme="dark"],.nr-safety-page[data-mode="driver"][data-theme="dark"]{color-scheme:dark}
 @media(max-width:390px){.nr-driver-global-nav-inner{padding-left:2px;padding-right:2px}.nr-driver-global-nav-label{font-size:9.5px}}
 @media(min-width:900px){.nr-driver-global-header-inner{padding-left:22px;padding-right:22px}.nr-driver-global-nav{left:50%;right:auto;bottom:16px;width:min(620px,calc(100% - 36px));min-height:64px;padding-bottom:0;transform:translateX(-50%);border:1px solid var(--driver-border);border-radius:20px;box-shadow:var(--driver-shadow)}.nr-driver-global-nav-inner{height:62px}.nr-driver-shell-content{padding-bottom:82px}}
 @media(prefers-reduced-motion:reduce){.nr-driver-app-shell *,.nr-driver-global-nav *,.nr-driver-global-header *{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important}}
