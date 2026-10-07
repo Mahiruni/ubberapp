@@ -1,0 +1,123 @@
+/* NexRide Rider booking flow: map above, stateful wrapper below.
+   Home has its own draggable-sheet geometry in rider-home.css. */
+
+@media (max-width: 800px) {
+  .nr-app[data-mode="rider"] .rider-map-flow {
+    height:100dvh;
+    min-height:100dvh;
+    overflow:hidden;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-main {
+    height:100dvh;
+    min-height:100dvh;
+    overflow:hidden;
+    padding-bottom:0!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-stage.with-map {
+    position:relative;
+    isolation:isolate;
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    grid-template-rows:minmax(25dvh,1fr) minmax(0,min(58dvh,520px))!important;
+    width:100%;
+    height:100%;
+    min-height:0;
+    overflow:hidden;
+    padding:0!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow.rider-search-view .nr-stage.with-map {
+    grid-template-rows:minmax(25dvh,1fr) minmax(0,var(--nr-search-height,46dvh))!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-rider-map-surface {
+    position:relative!important;
+    inset:auto!important;
+    z-index:0!important;
+    grid-column:1;
+    grid-row:1;
+    width:100%!important;
+    height:100%!important;
+    min-height:0;
+    border:0!important;
+    border-radius:0!important;
+    pointer-events:auto!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-panel {
+    position:relative!important;
+    z-index:20!important;
+    grid-column:1;
+    grid-row:2;
+    width:100%;
+    height:100%!important;
+    min-height:0!important;
+    max-height:none!important;
+    align-self:stretch!important;
+    overflow:hidden;
+    pointer-events:auto!important;
+    touch-action:auto;
+    background:var(--surface);
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-panel>div:not([hidden]) {
+    height:100%;
+    min-height:0;
+    pointer-events:auto!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow :is(
+    .nr-destination-panel,
+    .nr-ride-selection,
+    .nr-driver-matching,
+    .nr-trip-experience
+  ) {
+    height:100%!important;
+    max-height:100%!important;
+    border-radius:24px 24px 0 0!important;
+    border-left:0!important;
+    border-right:0!important;
+    border-bottom:0!important;
+    overflow:hidden;
+    background:var(--surface);
+    pointer-events:auto!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-map-city,
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-map-wordmark {
+    display:none!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-mobile-nav {
+    display:none!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-map-attribution {
+    z-index:4;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-map-route-summary,
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-map-ride-label,
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-rider-map-top {
+    z-index:5;
+  }
+}
+
+@media (max-width: 800px) and (max-height: 680px) {
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-stage.with-map {
+    grid-template-rows:minmax(22dvh,1fr) minmax(0,58dvh)!important;
+  }
+}
+
+@media (min-width: 801px) {
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-rider-map-surface {
+    z-index:0;
+  }
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-panel {
+    position:relative;
+    z-index:2;
+    pointer-events:auto;
+  }
+}

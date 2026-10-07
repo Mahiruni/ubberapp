@@ -59,7 +59,7 @@ export function useJourney(position: RiderLocation | null, language: Language = 
   const [result, setResult] = useState<RouteState>({ key: "", status: "idle" });
   const [dragging, setDragging] = useState(false);
   const [retry, setRetry] = useState(0);
-  const [sheetRatio, setSheetRatio] = useState(0.62);
+  const [sheetRatio, setSheetRatio] = useState(0.46);
   const [viewport, setViewport] = useState({ height: 0, keyboard: false });
   const nextDevice = useRef(false);
   const [storageReady, setStorageReady] = useState(false);
@@ -317,14 +317,14 @@ export function useJourney(position: RiderLocation | null, language: Language = 
     },
     startPin: (field: "pickup" | "destination") => {
       setPinMode(field);
-      setSheetRatio(0.32);
+      setSheetRatio(0.28);
     },
     confirm: (field: "pickup" | "destination") => {
       (field === "pickup" ? setPickup : setDestination)(
         (p) => p && { ...p, confirmed: true },
       );
       setPinMode(null);
-      setSheetRatio(0.62);
+      setSheetRatio(0.46);
     },
     invalidatePickup: () => setDragging(true),
     retryRoute: () => setRetry((v) => v + 1),

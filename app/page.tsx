@@ -47,6 +47,7 @@ import "./rider-home.css";
 import "./destination.css";
 import "./ride-selection.css";
 import "./matching.css";
+import "./rider-flow.css";
 import "./rider-profile.css";
 import "./detail-system.css";
 const STORAGE_KEY = PREVIEW_STORAGE_KEY;
@@ -265,7 +266,8 @@ function AppWorkspace({
   const [liveTripShown, setLiveTripShown] = useState(false);
   const riderTripView = mode === "rider" && ["trip", "live", "summary"].includes(screen);
   const riderMapView =
-    mode === "rider" && ["home", "destination", "rides", "finding"].includes(screen);
+    mode === "rider" &&
+    ["home", "destination", "rides", "finding", "trip", "live", "summary"].includes(screen);
   const riderSearch = mode === "rider" && screen === "destination";
   useEffect(() => {
     if (riderScreen === "rides" && !journey.canContinue)
@@ -365,7 +367,7 @@ function AppWorkspace({
             } as React.CSSProperties)
           : undefined
       }
-      className={`nr-workspace ${profileView && mode === "rider" ? "rider-profile-view" : ""} ${riderTripView ? "rider-trip-view" : ""} ${riderMapView ? "rider-home-view" : ""} ${riderSearch ? "rider-search-view" : ""} ${mode === "rider" && screen === "rides" ? "rider-ride-view" : ""} ${mode === "rider" && ["finding", "trip", "live"].includes(screen) ? "rider-matching-view" : ""}`}
+      className={`nr-workspace ${profileView && mode === "rider" ? "rider-profile-view" : ""} ${riderTripView ? "rider-trip-view" : ""} ${riderHome ? "rider-home-view" : ""} ${riderMapView && !riderHome ? "rider-map-flow" : ""} ${riderSearch ? "rider-search-view" : ""} ${mode === "rider" && screen === "rides" ? "rider-ride-view" : ""} ${mode === "rider" && ["finding", "trip", "live", "summary"].includes(screen) ? "rider-matching-view" : ""}`}
     >
       <aside className="nr-sidebar" inert={requestPending || matching.active}>
         <Brand driver={mode === "driver"} />
@@ -491,7 +493,7 @@ function AppWorkspace({
         <div
           className={`nr-stage ${["home", "destination", "rides", "finding", "trip", "live", "request", "navigation"].includes(screen) ? "with-map" : "content-view"}`}
         >
-          {riderTripView ? null : riderMapView ? (
+          {riderMapView ? (
             <RiderMap
               position={riderLocation.position}
               status={riderLocation.status}
@@ -499,7 +501,13 @@ function AppWorkspace({
               recenter={riderLocation.recenter}
               initials={initials}
               onProfile={() => navigate("profile")}
-              journey={riderHome ? undefined : screen === 'finding' && matching.request ? { ...journey, ...matching.request.journey, pinMode: null } : journey}
+              journey={
+                riderHome
+                  ? undefined
+                  : screen === "finding" && matching.request
+                    ? { ...journey, ...matching.request.journey, pinMode: null }
+                    : journey
+              }
               readOnly={["finding", "trip", "live"].includes(screen)}
               searching={screen === 'finding' && !matching.connectionLost && ['searching', 'delayed'].includes(matching.snapshot?.status || 'searching')}
               rideLabel={["rides", "finding", "trip", "live"].includes(screen)}

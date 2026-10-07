@@ -81,7 +81,7 @@ export function DestinationPanel({
     try {
       sessionStorage.setItem("nexride.rider.destination.draft", JSON.stringify({ field, query }));
     } catch {}
-  }, [field, query]);
+  }, [field, query, language]);
   useEffect(() => {
     const q = query[field].trim();
     setRemote({ status: q.length >= 3 ? "loading" : "idle", results: [] });
@@ -90,13 +90,16 @@ export function DestinationPanel({
     const controller = new AbortController();
     const timer = setTimeout(() => {
       setRemote({ status: "loading", results: [] });
-      fetch(`/api/rider/search?q=${encodeURIComponent(q)}`, {
+      fetch(
+        `/api/rider/search?q=${encodeURIComponent(q)}&lang=${language}`,
+        {
         signal: AbortSignal.any([
           controller.signal,
           AbortSignal.timeout(10000),
         ]),
-        cache: "no-store",
-      })
+          cache: "no-store",
+        },
+      )
         .then((r) => r.json())
         .then((data) => {
           if (active)
@@ -114,7 +117,7 @@ export function DestinationPanel({
       clearTimeout(timer);
       controller.abort();
     };
-  }, [field, query]);
+  }, [field, query, language]);
   const select = (point: Endpoint) => {
     if (shortcut) {
       if (point.source === "preview") choose(point);
@@ -151,8 +154,8 @@ export function DestinationPanel({
       <button
         className="nr-sheet-drag"
         aria-label={t("resizeSheet")}
-        aria-valuemin={32}
-        aria-valuemax={80}
+        aria-valuemin={28}
+        aria-valuemax={75}
         aria-valuenow={Math.round(j.sheetRatio * 100)}
         role="slider"
         onKeyDown={(e) => {
@@ -160,13 +163,13 @@ export function DestinationPanel({
             e.preventDefault();
             j.setSheetRatio(
               e.key === "Home"
-                ? 0.32
+                ? 0.28
                 : e.key === "End"
-                  ? 0.8
+                  ? 0.75
                   : Math.min(
-                      0.8,
+                      0.75,
                       Math.max(
-                        0.32,
+                        0.28,
                         j.sheetRatio + (e.key === "ArrowUp" ? 0.1 : -0.1),
                       ),
                     ),
@@ -181,9 +184,9 @@ export function DestinationPanel({
           if (drag.current)
             j.setSheetRatio(
               Math.min(
-                0.8,
+                0.75,
                 Math.max(
-                  0.32,
+                  0.28,
                   drag.current.ratio +
                     (drag.current.start - e.clientY) /
                       (j.viewport.height || 800),
