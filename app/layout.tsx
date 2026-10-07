@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { ServiceWorkerRegistration } from "../components/nexride/service-worker";
+import { NexRideFeedbackBootstrap } from "../components/nexride/feedback-bootstrap";
 import { NexRideLanguageProvider } from "../components/nexride/language-provider";
 import { NexRideResilienceProvider } from "../components/nexride/resilience-provider";
 import { NEXRIDE_SITE_URL } from "../lib/nexride-site";
@@ -18,6 +19,7 @@ import "./ethiopic-font.css";
 import "./resilience.css";
 import "./live-location.css";
 import "./driver/driver-shell.css";
+import "./audio-system.css";
 
 const description =
   "Book reliable rides across Addis Ababa with NexRide, a rider and driver mobility platform built for Ethiopia.";
@@ -151,6 +153,7 @@ export default function RootLayout({
       <body>
         <NexRideLanguageProvider><NexRideResilienceProvider>{children}</NexRideResilienceProvider></NexRideLanguageProvider>
         <ServiceWorkerRegistration />
+        <NexRideFeedbackBootstrap />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
