@@ -8,6 +8,7 @@ import { Icon } from "../../../components/nexride/ui";
 import { useOperationalTranslation } from "../../../components/nexride/operational-i18n";
 import { supabase } from "../../../lib/supabase";
 import { resolveSessionRole } from "../../../lib/nexride-account-role";
+import { emitNexRideFeedback, stopRideRequestAlert } from "../../../lib/nexride-feedback";
 import "../../nexride.css";
 import "./driver-request.css";
 import "../../detail-system.css";
@@ -333,7 +334,29 @@ export default function DriverRideRequestPage() {
     return () => window.clearInterval(timer);
   }, [offer?.expires_at, offer?.status]);
 
-  const expiredByTime = offer?.status === "pending" && secondsRemaining === 0;
+  useEffect(() => {
+    if (!offer?.id || offer.status !== "pending") {
+      stopRideRequestAlert();
+      return;
+    }
+    emitNexRideFeedback({
+      event: "ride_request",
+      id: offer.id,
+      title: "New ride request",
+      body: "Review the pickup, destination, ETA and payout.",
+      url: `/driver/request?offer=${offer.id}`,
+    });
+    const expiresAt = offer.expires_at ? new Date(offer.expires_at).getTime() : null;
+    const timer = expiresAt && expiresAt > Date.now()
+      ? window.setTimeout(stopRideRequestAlert, expiresAt - Date.now())
+      : null;
+    return () => {
+      if (timer) window.clearTimeout(timer);
+      stopRideRequestAlert();
+    };
+  }, [offer?.id, offer?.status, offer?.expires_at]);
+
+    const expiredByTime = offer?.status === "pending" && secondsRemaining === 0;
   const visibleStatus: OfferStatus | "failed" =
     acceptFailure && offer?.status === "pending" && !expiredByTime
       ? "failed"
@@ -382,6 +405,14 @@ export default function DriverRideRequestPage() {
       return;
     }
 
+    stopRideRequestAlert();
+    emitNexRideFeedback({
+      event: "ride_accepted",
+      id: offer.id,
+      title: "Ride accepted",
+      body: "Navigate to the pickup point.",
+      url: `/driver/navigation?offer=${offer.id}`,
+    });
     setOffer((current) => current ? { ...current, status: "accepted" } : current);
     router.replace(`/driver/navigation?offer=${offer.id}`);
   }
@@ -407,6 +438,7 @@ export default function DriverRideRequestPage() {
       return;
     }
 
+    stopRideRequestAlert();
     setOffer((current) => current ? { ...current, status: "declined" } : current);
     setSubmitting(null);
   }
