@@ -6,7 +6,9 @@ export const PREVIEW_STORAGE_KEY = "nexride-preview-v2";
 export const ONBOARDING_KEY = "nexride:onboarding-complete";
 export const PREVIEW_ENABLED_KEY = "nexride:preview-enabled";
 export const LANGUAGE_KEY = "nexride:language";
-export type StartupDestination = "/" | "/onboarding" | "/rider/sign-in" | "/driver/onboarding" | "/driver/home";
+export const EXPLICIT_SIGNOUT_KEY = "nexride:explicit-signout";
+export type SignedOutRole = "rider" | "driver";
+export type StartupDestination = "/" | "/onboarding" | "/rider/sign-in" | "/driver/auth" | "/driver/onboarding" | "/driver/home";
 export type RestoredPreferences = { language: Language; mode: "rider" | "driver"; theme: "light" | "dark"; profile: PreviewProfile; trip: PreviewTrip | null };
 export type StartupResult = { preferences: RestoredPreferences; destination: StartupDestination; session: Session | null };
 export class StartupError extends Error { constructor(public readonly kind: "preferences" | "session") { super(kind === "preferences" ? "Unable to restore saved preferences." : "Unable to restore the session."); this.name = "StartupError"; } }
@@ -24,7 +26,26 @@ export function restorePreferences(storage: Pick<Storage, "getItem" | "removeIte
   if (trip && typeof trip.destination === "string" && typeof trip.amount === "number" && Number.isFinite(trip.amount) && ["economy", "comfort", "premium", "xl"].includes(trip.ride)) preferences.trip = { pickup: typeof trip.pickup === "string" ? trip.pickup : "", destination: trip.destination, ride: trip.ride, amount: trip.amount, completed: trip.completed === true, rating: typeof trip.rating === "number" ? Math.min(5, Math.max(0, trip.rating)) : 0 };
   try { storage.removeItem("nexride-state"); } catch {} return { preferences, returningPreview: Boolean(saved || legacy), onboardingComplete, previewEnabled };
 }
-export function startupDestination({ session, returningPreview, previewEnabled, onboardingComplete, accountRole }: { session: Session | null; returningPreview: boolean; previewEnabled: boolean; onboardingComplete: boolean; accountRole?: string | null }): StartupDestination {
+export function explicitSignOutRole(storage: Pick<Storage, "getItem">): SignedOutRole | null {
+  try {
+    const value = storage.getItem(EXPLICIT_SIGNOUT_KEY);
+    return value === "driver" ? "driver" : value === "rider" ? "rider" : null;
+  } catch {
+    return null;
+  }
+}
+export function markExplicitSignOut(role: SignedOutRole) {
+  pending = null;
+  completed = null;
+  if (typeof window === "undefined") return;
+  try { window.localStorage.setItem(EXPLICIT_SIGNOUT_KEY, role); } catch {}
+}
+export function clearExplicitSignOut() {
+  if (typeof window === "undefined") return;
+  try { window.localStorage.removeItem(EXPLICIT_SIGNOUT_KEY); } catch {}
+}
+export function startupDestination({ session, returningPreview, previewEnabled, onboardingComplete, accountRole, signedOutRole }: { session: Session | null; returningPreview: boolean; previewEnabled: boolean; onboardingComplete: boolean; accountRole?: string | null; signedOutRole?: SignedOutRole | null }): StartupDestination {
+  if (signedOutRole) return signedOutRole === "driver" ? "/driver/auth" : "/rider/sign-in";
   const role = accountRole || session?.user?.user_metadata?.role;
   if (role === "driver") return session?.user?.user_metadata?.driver_onboarding_complete === true ? "/driver/home" : "/driver/onboarding";
   if (session || returningPreview || previewEnabled) return "/";
@@ -48,6 +69,13 @@ export function initializeRider(): Promise<StartupResult> {
       restored = restorePreferences(window.localStorage);
     } catch (error) {
       if (error instanceof StartupError) throw error;
+    }
+
+    const signedOutRole = explicitSignOutRole(window.localStorage);
+    if (signedOutRole) {
+      const destination = startupDestination({ ...restored, session: null, signedOutRole });
+      completed = { preferences: restored.preferences, destination, session: null };
+      return completed;
     }
 
     let timer: ReturnType<typeof setTimeout> | undefined;
@@ -108,6 +136,7 @@ export function initializeRider(): Promise<StartupResult> {
   return pending;
 }
 export function enterRider(session: Session | null) {
+  clearExplicitSignOut();
   let preferences = defaults();
   try {
     preferences = restorePreferences(window.localStorage).preferences;
@@ -139,6 +168,6 @@ export function enterRider(session: Session | null) {
   completed = { preferences, destination: "/", session };
   pending = null;
 }
-export function enterDriver(session: Session) { let preferences = defaults(); try { preferences = restorePreferences(window.localStorage).preferences; } catch {} preferences.mode = "driver"; if (session.user.user_metadata?.full_name) preferences.profile.name = String(session.user.user_metadata.full_name); if (session.user.email) preferences.profile.email = session.user.email; if (session.user.user_metadata?.phone) preferences.profile.phone = String(session.user.user_metadata.phone); completed = { preferences, destination: "/driver/home", session }; pending = null; }
+export function enterDriver(session: Session) { clearExplicitSignOut(); let preferences = defaults(); try { preferences = restorePreferences(window.localStorage).preferences; } catch {} preferences.mode = "driver"; if (session.user.user_metadata?.full_name) preferences.profile.name = String(session.user.user_metadata.full_name); if (session.user.email) preferences.profile.email = session.user.email; if (session.user.user_metadata?.phone) preferences.profile.phone = String(session.user.user_metadata.phone); completed = { preferences, destination: "/driver/home", session }; pending = null; }
 export function updateStartupPreferences(preferences: RestoredPreferences) { if (completed) completed = { ...completed, preferences }; }
 export function retryStartup(resetPreferences = false) { pending = null; completed = null; if (resetPreferences) try { localStorage.removeItem(PREVIEW_STORAGE_KEY); localStorage.removeItem("nexride-state"); } catch {} }
