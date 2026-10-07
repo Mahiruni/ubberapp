@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Dialog, Icon, type IconName } from "./ui";
 import { supabase } from "../../lib/supabase";
-import { retryStartup } from "../../lib/nexride-startup";
+import { markExplicitSignOut, retryStartup } from "../../lib/nexride-startup";
 import { nexrideApiFetch } from "../../lib/nexride-api-auth";
 import {
   initialsFor,
@@ -140,10 +140,10 @@ export function DriverProfileScreen({
         return;
       }
 
+      markExplicitSignOut("driver");
       retryStartup(false);
       setSignOutOpen(false);
-      router.replace("/driver/auth");
-      router.refresh();
+      window.location.replace("/driver/auth?logged_out=1");
     } catch {
       setSignOutError("Sign out could not be completed. Please try again.");
     } finally {
