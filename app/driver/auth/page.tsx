@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Brand, Icon, useTranslation } from "../../../components/nexride/ui";
 import { supabase } from "../../../lib/supabase";
-import { enterDriver } from "../../../lib/nexride-startup";
+import { clearExplicitSignOut, enterDriver, explicitSignOutRole } from "../../../lib/nexride-startup";
 import { driverResumeDestination } from "../../../lib/nexride-driver-verification";
 import { resolveSessionRole } from "../../../lib/nexride-account-role";
 import { authErrorKey } from "../../../lib/nexride-auth-errors";
@@ -27,9 +27,12 @@ export default function DriverAuth() {
   useEffect(() => {
     let active = true;
     const params = new URLSearchParams(window.location.search);
-    if (params.get("confirmed") === "1") {
+    const confirmationLanding = params.get("confirmed") === "1";
+    if (confirmationLanding) {
       setNotice(t("emailConfirmed"));
+      clearExplicitSignOut();
     }
+    if (explicitSignOutRole(window.localStorage) && !confirmationLanding) return;
     supabase.auth.getSession().then(async ({ data }) => {
       if (!active || !data.session) return;
       const role = await resolveSessionRole(data.session);
@@ -66,6 +69,7 @@ export default function DriverAuth() {
       return;
     }
 
+    clearExplicitSignOut();
     const role = await resolveSessionRole(data.session);
     if (role === "admin") {
       router.replace("/admin");
