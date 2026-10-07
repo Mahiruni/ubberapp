@@ -15,6 +15,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { Icon, LanguageContext, type IconName } from "./ui";
 import { announceLanguage } from "./language-provider";
 import { supabase } from "../../lib/supabase";
+import { nexrideApiFetch } from "../../lib/nexride-api-auth";
+import { markExplicitSignOut, retryStartup } from "../../lib/nexride-startup";
 
 export type DriverThemePreference = "system" | "light" | "dark";
 export type DriverResolvedTheme = "light" | "dark";
@@ -131,6 +133,8 @@ function DriverHamburgerMenu({ activeOverride }: { activeOverride?: DriverNavId 
   const theme = useDriverTheme();
   const [open, setOpen] = useState(false);
   const [identity, setIdentity] = useState({ name: "Driver", avatarUrl: "" });
+  const [signingOut, setSigningOut] = useState(false);
+  const [signOutError, setSignOutError] = useState("");
   const closeRef = useRef<HTMLButtonElement>(null);
   const active = activeOverride || driverNavForPath(pathname);
 
@@ -172,6 +176,87 @@ function DriverHamburgerMenu({ activeOverride }: { activeOverride?: DriverNavId 
     [identity.name],
   );
 
+  const signOutDriver = async () => {
+    if (signingOut) return;
+    setSigningOut(true);
+    setSignOutError("");
+
+    try {
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) throw sessionError;
+      const session = sessionData.session;
+
+      if (session) {
+        const activeRide = await supabase
+          .from("ride_requests")
+          .select("id,status")
+          .eq("assigned_driver_id", session.user.id)
+          .in("status", ["accepted", "arrived_pickup", "in_trip"])
+          .limit(1)
+          .maybeSingle();
+
+        if (activeRide.error) {
+          setSignOutError(language === "am" ? "ንቁ ጉዞዎን ማረጋገጥ አልተቻለም። እንደገና ይሞክሩ።" : "NexRide could not verify your active-trip status. Try again.");
+          setSigningOut(false);
+          return;
+        }
+
+        if (activeRide.data) {
+          setSignOutError(language === "am" ? "ከመውጣትዎ በፊት ንቁ ጉዞዎን ያጠናቅቁ ወይም ይሰርዙ።" : "Finish or cancel your active trip before logging out.");
+          setSigningOut(false);
+          return;
+        }
+
+        const offlineResponse = await nexrideApiFetch("/api/driver/availability", {
+          method: "PATCH",
+          body: JSON.stringify({ online: false }),
+        });
+        if (!offlineResponse.ok && offlineResponse.status !== 409) {
+          setSignOutError(language === "am" ? "ከመውጣትዎ በፊት የአሽከርካሪ ሁኔታዎን ከመስመር ውጭ ማድረግ አልተቻለም።" : "NexRide could not take your Driver account offline. Try again.");
+          setSigningOut(false);
+          return;
+        }
+
+        const { error: authError } = await supabase.auth.signOut({ scope: "local" });
+        if (authError) throw authError;
+        const verified = await supabase.auth.getSession();
+        if (verified.error || verified.data.session) throw new Error("session_still_active");
+      }
+
+      markExplicitSignOut("driver");
+      retryStartup(false);
+      setOpen(false);
+      window.location.replace("/driver/auth?logged_out=1");
+    } catch {
+      setSignOutError(language === "am" ? "መውጣት አልተጠናቀቀም። እንደገና ይሞክሩ።" : "Log out could not be completed. Please try again.");
+      setSigningOut(false);
+    }
+  };
+
+  const driveItems = NAV_ITEMS.filter((item) => ["home", "requests", "earnings"].includes(item.id));
+  const accountItems = NAV_ITEMS.filter((item) => ["messages", "account"].includes(item.id));
+
+  const menuRows = (items: typeof NAV_ITEMS) =>
+    items.map((item) => {
+      const selected = active === item.id;
+      const label = language === "am" ? item.am : item.en;
+      const detail = language === "am" ? NAV_DETAILS[item.id].am : NAV_DETAILS[item.id].en;
+      return (
+        <Link
+          key={item.id}
+          href={item.href}
+          className="nr-driver-menu-row"
+          data-active={selected ? "true" : "false"}
+          aria-current={selected ? "page" : undefined}
+          onClick={() => setOpen(false)}
+        >
+          <span className="nr-driver-menu-row-icon"><Icon name={item.icon} size={21} /></span>
+          <span className="nr-driver-menu-row-copy"><strong>{label}</strong><small>{detail}</small></span>
+          {selected ? <span className="nr-driver-menu-active-dot" aria-hidden="true" /> : <Icon name="chevron" size={16} />}
+        </Link>
+      );
+    });
+
   return (
     <>
       <button
@@ -207,39 +292,25 @@ function DriverHamburgerMenu({ activeOverride }: { activeOverride?: DriverNavId 
               </button>
             </div>
 
-            <nav className="nr-driver-menu-nav" aria-label={language === "am" ? "የአሽከርካሪ ዋና አሰሳ" : "Driver primary navigation"}>
-              {NAV_ITEMS.map((item) => {
-                const selected = active === item.id;
-                const label = language === "am" ? item.am : item.en;
-                const detail = language === "am" ? NAV_DETAILS[item.id].am : NAV_DETAILS[item.id].en;
-                return (
-                  <Link
-                    key={item.id}
-                    href={item.href}
-                    className="nr-driver-menu-row"
-                    data-active={selected ? "true" : "false"}
-                    aria-current={selected ? "page" : undefined}
-                    onClick={() => setOpen(false)}
-                  >
-                    <span className="nr-driver-menu-row-icon"><Icon name={item.icon} size={21} /></span>
-                    <span className="nr-driver-menu-row-copy"><strong>{label}</strong><small>{detail}</small></span>
-                    {selected ? <span className="nr-driver-menu-active-dot" aria-hidden="true" /> : <Icon name="chevron" size={16} />}
-                  </Link>
-                );
-              })}
+            <div className="nr-driver-menu-section-label">{language === "am" ? "ማሽከርከር" : "DRIVE"}</div>
+            <nav className="nr-driver-menu-nav" aria-label={language === "am" ? "የመንዳት አሰሳ" : "Drive navigation"}>
+              {menuRows(driveItems)}
             </nav>
 
-            <div className="nr-driver-menu-divider" />
-
+            <div className="nr-driver-menu-section-label">{language === "am" ? "መለያ" : "ACCOUNT"}</div>
+            <nav className="nr-driver-menu-nav" aria-label={language === "am" ? "የመለያ አሰሳ" : "Account navigation"}>
+              {menuRows(accountItems)}
+            </nav>
             <div className="nr-driver-menu-utilities">
               <Link href="/safety?role=driver" className="nr-driver-menu-utility" onClick={() => setOpen(false)}>
-                <Icon name="shield" size={19} /><span>{language === "am" ? "ደህንነት" : "Safety Center"}</span><Icon name="chevron" size={15} />
+                <Icon name="shield" size={19} /><span>{language === "am" ? "የደህንነት ማዕከል" : "Safety Center"}</span><Icon name="chevron" size={15} />
               </Link>
               <Link href="/driver/profile/settings" className="nr-driver-menu-utility" onClick={() => setOpen(false)}>
                 <Icon name="settings" size={19} /><span>{language === "am" ? "ቅንብሮች" : "Settings"}</span><Icon name="chevron" size={15} />
               </Link>
             </div>
 
+            <div className="nr-driver-menu-section-label">{language === "am" ? "ምርጫዎች" : "PREFERENCES"}</div>
             <div className="nr-driver-menu-preferences">
               <div className="nr-driver-menu-pref-head">
                 <span>{language === "am" ? "ገጽታ" : "Appearance"}</span>
@@ -251,6 +322,21 @@ function DriverHamburgerMenu({ activeOverride }: { activeOverride?: DriverNavId 
                 <button type="button" data-active={language === "am" ? "true" : "false"} aria-pressed={language === "am"} onClick={() => announceLanguage("am")}>አማርኛ</button>
               </div>
             </div>
+
+            <footer className="nr-driver-menu-footer">
+              <div className="nr-driver-menu-footer-brand">
+                <span aria-hidden="true">N</span>
+                <div>
+                  <strong>NexRide</strong>
+                  <small>{language === "am" ? "የተሻለ ጉዞ። ብሩህ ነገ።" : "Better Rides. A Brighter Tomorrow."}</small>
+                </div>
+              </div>
+              <button type="button" className="nr-driver-menu-logout" onClick={() => void signOutDriver()} disabled={signingOut}>
+                <Icon name="power" size={18} />
+                <span>{signingOut ? (language === "am" ? "በመውጣት ላይ…" : "Logging out…") : (language === "am" ? "ውጣ" : "Log out")}</span>
+              </button>
+              {signOutError && <p role="alert">{signOutError}</p>}
+            </footer>
           </aside>
         </div>
       )}
@@ -360,8 +446,16 @@ function DriverHeader({ pathname }: { pathname: string }) {
     };
   }, []);
 
+  if (home) {
+    return (
+      <div className="nr-driver-home-menu-host">
+        <DriverHamburgerMenu />
+      </div>
+    );
+  }
+
   return (
-    <header className="nr-driver-global-header" data-map={home || isTripFocusPath(pathname) ? "true" : "false"}>
+    <header className="nr-driver-global-header" data-map={isTripFocusPath(pathname) ? "true" : "false"}>
       <div className="nr-driver-global-header-inner">
         <div className="nr-driver-global-header-side nr-driver-global-header-left">
           {backTarget ? (
@@ -400,9 +494,10 @@ function DriverShellChrome({ children }: { children: ReactNode }) {
   if (isPublicDriverPath(pathname)) return <>{children}</>;
 
   const tripFocus = isTripFocusPath(pathname);
+  const home = pathname === "/driver/home";
 
   return (
-    <div className="nr-driver-app-shell" data-theme={resolvedTheme} data-theme-preference={preference} data-trip-focus={tripFocus ? "true" : "false"}>
+    <div className="nr-driver-app-shell" data-theme={resolvedTheme} data-theme-preference={preference} data-trip-focus={tripFocus ? "true" : "false"} data-home={home ? "true" : "false"}>
       <DriverHeader pathname={pathname} />
       <div className="nr-driver-shell-content" data-trip-focus={tripFocus ? "true" : "false"}>{children}</div>
     </div>
