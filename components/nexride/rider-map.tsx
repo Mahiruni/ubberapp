@@ -66,6 +66,8 @@ export function RiderMap({
   const routeLine = useRef<Leaflet.Polyline | null>(null);
   const routeCasing = useRef<Leaflet.Polyline | null>(null);
   const manualView = useRef(false);
+  const mapGestureBlocked = useRef(false);
+  const suppressMapClickUntil = useRef(0);
   const [tiles, setTiles] = useState<"loading" | "ready" | "unavailable">(
     "loading",
   );
@@ -93,6 +95,11 @@ export function RiderMap({
         }).setView([9.008, 38.775], 14);
         map.current = view;
         view.on("click", (event: Leaflet.LeafletMouseEvent) => {
+          if (
+            mapGestureBlocked.current ||
+            performance.now() < suppressMapClickUntil.current
+          )
+            return;
           const plan = planRef.current;
           if (plan?.pinMode)
             plan.setPin(plan.pinMode, {
@@ -186,6 +193,98 @@ export function RiderMap({
       setMounted(false);
     };
   }, [attempt]);
+  useEffect(() => {
+    if (!mounted || !map.current || !container.current) return;
+    const view = map.current;
+    const stage = container.current.closest<HTMLElement>(".nr-stage");
+    if (!stage) return;
+
+    let activePointers = 0;
+
+    const setMapEnabled = (enabled: boolean) => {
+      const action = enabled ? "enable" : "disable";
+      view.dragging?.[action]();
+      view.touchZoom?.[action]();
+      view.doubleClickZoom?.[action]();
+      view.scrollWheelZoom?.[action]();
+      view.boxZoom?.[action]();
+      view.keyboard?.[action]();
+      mapGestureBlocked.current = !enabled;
+    };
+
+    const pointInsidePanel = (clientX: number, clientY: number) => {
+      const panel = stage.querySelector<HTMLElement>(".nr-rider-flow-panel");
+      if (!panel) return false;
+      const rect = panel.getBoundingClientRect();
+      return (
+        clientX >= rect.left &&
+        clientX <= rect.right &&
+        clientY >= rect.top &&
+        clientY <= rect.bottom
+      );
+    };
+
+    const onPointerDown = (event: PointerEvent) => {
+      if (!pointInsidePanel(event.clientX, event.clientY)) return;
+      activePointers += 1;
+      suppressMapClickUntil.current = performance.now() + 800;
+      setMapEnabled(false);
+    };
+
+    const finishPointer = () => {
+      if (!mapGestureBlocked.current) return;
+      activePointers = Math.max(0, activePointers - 1);
+      if (activePointers > 0) return;
+      suppressMapClickUntil.current = performance.now() + 500;
+      // Re-enable after the current browser gesture/click synthesis completes.
+      window.setTimeout(() => {
+        if (activePointers === 0) setMapEnabled(true);
+      }, 0);
+    };
+
+    const onTouchStart = (event: TouchEvent) => {
+      if (typeof PointerEvent !== "undefined") return;
+      const touch = event.changedTouches[0];
+      if (!touch || !pointInsidePanel(touch.clientX, touch.clientY)) return;
+      activePointers += 1;
+      suppressMapClickUntil.current = performance.now() + 800;
+      setMapEnabled(false);
+    };
+
+    const onTouchEnd = () => {
+      if (typeof PointerEvent !== "undefined") return;
+      finishPointer();
+    };
+
+    // Capture phase runs before Leaflet's target listeners. We do not stop
+    // propagation: sheet controls remain fully interactive.
+    document.addEventListener("pointerdown", onPointerDown, true);
+    document.addEventListener("pointerup", finishPointer, true);
+    document.addEventListener("pointercancel", finishPointer, true);
+    document.addEventListener("touchstart", onTouchStart, {
+      capture: true,
+      passive: true,
+    });
+    document.addEventListener("touchend", onTouchEnd, {
+      capture: true,
+      passive: true,
+    });
+    document.addEventListener("touchcancel", onTouchEnd, {
+      capture: true,
+      passive: true,
+    });
+
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown, true);
+      document.removeEventListener("pointerup", finishPointer, true);
+      document.removeEventListener("pointercancel", finishPointer, true);
+      document.removeEventListener("touchstart", onTouchStart, true);
+      document.removeEventListener("touchend", onTouchEnd, true);
+      document.removeEventListener("touchcancel", onTouchEnd, true);
+      setMapEnabled(true);
+    };
+  }, [mounted]);
+
   useEffect(() => {
     if (!mounted || !map.current || !library.current) return;
     marker.current?.remove();
