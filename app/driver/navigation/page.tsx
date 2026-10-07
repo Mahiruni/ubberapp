@@ -9,6 +9,7 @@ import { useOperationalTranslation } from "../../../components/nexride/operation
 import { supabase } from "../../../lib/supabase";
 import { nexrideApiFetch } from "../../../lib/nexride-api-auth";
 import { resolveSessionRole } from "../../../lib/nexride-account-role";
+import { emitNexRideFeedback, speakNexRideNavigation, stopNexRideNavigationVoice } from "../../../lib/nexride-feedback";
 import "../../nexride.css";
 import "./navigation.css";
 import "../../detail-system.css";
@@ -481,6 +482,16 @@ export default function DriverNavigationPage() {
     nativeRoute && nativeRoute.target === stage?.target ? nativeRoute : null;
   const nextGuidance = activeRoute?.steps[0];
   const guidanceTitle = nextGuidance?.instruction || (stage?.title ? op(stage.title) : op("Navigation"));
+
+  useEffect(() => {
+    if (!canNavigate || gpsState !== "fresh" || !guidanceTitle) {
+      stopNexRideNavigationVoice();
+      return;
+    }
+    speakNexRideNavigation(guidanceTitle);
+    return () => stopNexRideNavigationVoice();
+  }, [canNavigate, gpsState, guidanceTitle]);
+
   const guidanceDistance =
     nextGuidance && nextGuidance.distanceMeters > 0
       ? metersLabel(nextGuidance.distanceMeters)
@@ -543,7 +554,28 @@ export default function DriverNavigationPage() {
       return;
     }
     const status = normalizeStatus(data.status);
-    if (status) setTrip((current) => current ? { ...current, status } : current);
+    if (status) {
+      setTrip((current) => current ? { ...current, status } : current);
+      emitNexRideFeedback({
+        event:
+          status === "arrived_pickup" ? "driver_arrived"
+          : status === "in_trip" ? "trip_started"
+          : status === "completed" ? "trip_completed"
+          : "success",
+        id: `${trip.requestId}:${status}:driver`,
+        title:
+          status === "arrived_pickup" ? "Arrived at pickup"
+          : status === "in_trip" ? "Trip started"
+          : status === "completed" ? "Trip completed"
+          : "Trip updated",
+        body:
+          status === "arrived_pickup" ? "Pickup arrival confirmed."
+          : status === "in_trip" ? "The trip is now in progress."
+          : status === "completed" ? "Trip completion confirmed."
+          : "Trip status updated.",
+        url: `/driver/navigation?offer=${trip.offerId}`,
+      });
+    }
     setBusy(false);
   }
 
