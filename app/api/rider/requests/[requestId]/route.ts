@@ -35,4 +35,15 @@ export async function GET(request: Request, context: RouteContext) {
 }
 
 export async function POST(request: Request, context: RouteContext) {
-  const { requestId } ¶»§q«^
+  const { requestId } = await context.params;
+  if (!validId(requestId)) return reply({ status: "invalid" }, 400);
+  const authorized = await authorizedRequestSupabase(request);
+  if (!authorized) return reply({ status: "unavailable" }, 401);
+
+  try {
+    const body = await request.json();
+    const action = body?.action;
+    const expectedVersion = body?.expectedVersion;
+    if ((action !== "cancel" && action !== "retry") ||
+      !Number.isSafeInteger(expectedVersion) || expectedVersion < 0) {
+      return reply({ ...[truncated]

@@ -28,4 +28,12 @@ export function validMatch(value: unknown, requestId: string): value is MatchSna
     typeof v.canRetry === 'boolean' && typeof v.canChangeCategory === 'boolean' &&
     (!v.canChangeCategory || ['no_drivers', 'cancelled'].includes(v.status)) &&
     (!v.canRetry || v.status === 'no_drivers') && !!c && typeof c.allowed === 'boolean' &&
-    typeof c.requiresConfirmation === 'boolean' && (c.fee === null || Number.isFinit¶»§q«^
+    typeof c.requiresConfirmation === 'boolean' && (c.fee === null || Number.isFinite(c.fee) && c.fee >= 0) &&
+    (c.reason === null || typeof c.reason === 'string') &&
+    (v.status !== 'assigned' || !!d && typeof d.name === 'string' && !!d.name.trim() &&
+      typeof d.vehicle === 'string' && !!d.vehicle.trim() && typeof d.plate === 'string' && !!d.plate.trim() &&
+      (d.pickupMinutes === null || Number.isFinite(d.pickupMinutes) && d.pickupMinutes >= 0));
+}
+
+export function normalizeMatch(value: unknown, requestId: string): MatchSnapshot | null {
+  if (!value || typeof val...[truncated]

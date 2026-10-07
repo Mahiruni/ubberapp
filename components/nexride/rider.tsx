@@ -54,4 +54,21 @@ export function RiderWorkspace({
   journey,
   onBookingPending,
   matching,
- ¶»§q«^
+  onTripSource,
+}: {
+  screen: RiderScreen;
+  navigate: (s: RiderScreen) => void;
+  onSafety: () => void;
+  onUnavailable: (title: string) => void;
+  trip: PreviewTrip | null;
+  setTrip: (trip: PreviewTrip) => void;
+  position: RiderLocation | null;
+  locationStatus: LocationStatus;
+  locate: () => void;
+  journey: Journey;
+  onBookingPending: (pending: boolean) => void;
+  matching: Matching;
+  onTripSource: (live: boolean) => void;
+}) {
+  const t = useTranslation();
+  const language = useContext...[truncated]

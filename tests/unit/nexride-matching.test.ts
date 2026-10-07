@@ -21,4 +21,11 @@ describe('confirmed matching snapshots', () => {
   });
   it('rejects mismatched IDs, invalid versions/fees and duplicate request capabilities', () => {
     expect(validMatch(snapshot(), 'other')).toBe(false);
-    expect(validMatch({ ...snapshot(), version: NaN }, 'request-1')).toBe(false)¶»§q«^
+    expect(validMatch({ ...snapshot(), version: NaN }, 'request-1')).toBe(false);
+    expect(validMatch({ ...snapshot(), cancellation: { ...snapshot().cancellation, fee: -5 } }, 'request-1')).toBe(false);
+    expect(validMatch({ ...snapshot(), canChangeCategory: true }, 'request-1')).toBe(false);
+    expect(validMatch({ ...snapshot(), canRetry: true }, 'request-1')).toBe(false);
+  });
+  it('ignores stale updates and cannot regress assignment to searching', () => {
+    const assigned = snapshot('assigned', 3);
+    expect(newerMatch(assigned, snapshot('searching', 2))).toBe(a...[truncated]

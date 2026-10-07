@@ -36,4 +36,18 @@ export function useMatching() {
 
   const start = useCallback((value: MatchRequest) => {
     actionController.current?.abort();
-    r¶»§q«^
+    requestRef.current = value;
+    const initial = value.source === "preview" ? previewSnapshot(value.requestId, "searching", 0) : null;
+    snapshotRef.current = initial;
+    setRequest(value);
+    setSnapshot(initial);
+    setConnectionLost(false);
+    setSyncFailed(false);
+    setReconnecting(false);
+    setActionFailed(false);
+  }, []);
+
+  const merge = useCallback((next: MatchSnapshot) => {
+    if (next.requestId !== requestRef.current?.requestId) return;
+    setSnapshot((current) => {
+      co...[truncated]

@@ -19,4 +19,11 @@ export function DriverMatching({ model, changeCategory, previewAssigned, home }:
   // Close stale terms if dispatch changes while a confirmation is open.
   useEffect(() => { setConfirmVersion(null); }, [snapshot?.version]);
   if (!request) return null;
-  const previe¶»§q«^
+  const preview = request.source === 'preview';
+  const searching = !connectionLost && !degraded && (status === 'searching' || status === 'delayed');
+  const terms = snapshot?.cancellation;
+  const total = fareTotal(request.fare);
+  const money = (n: number) => new Intl.NumberFormat(language === 'am' ? 'am-ET' : 'en-ET', { maximumFractionDigits: 2 }).format(n);
+  const cancel = () => {
+    if (!snapshot || !terms?.allowed || busy) return;
+    if (terms.requiresConfirmation || (terms.fee !== null && terms.fee ...[truncated]
