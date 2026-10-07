@@ -1,0 +1,63 @@
+@font-face {
+  font-family: "Benaiah NexRide";
+  src: url("/fonts/Benaiah-Ethiopic.woff2") format("woff2");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 700;
+  unicode-range:
+    U+1200-137F,
+    U+1380-139F,
+    U+2D80-2DDF,
+    U+AB00-AB2F;
+}
+
+:root {
+  --nr-font-latin: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --nr-font-ethiopic: "Benaiah NexRide", "Noto Sans Ethiopic", "Abyssinica SIL", sans-serif;
+}
+
+/* Benaiah is used only when NexRide is in Amharic mode.
+   The webfont is Ethiopic-subsetted, so Latin brand names, numbers, and symbols
+   continue to fall through to the regular NexRide Latin font stack. */
+html[lang="am"] body,
+html[lang="am"] button,
+html[lang="am"] input,
+html[lang="am"] textarea,
+html[lang="am"] select,
+html[lang="am"] .nr-app,
+html[lang="am"] .admin-app,
+html[lang="am"] .nr-auth-experience,
+html[lang="am"] .driver-auth-page,
+html[lang="am"] .driver-onboarding-page {
+  font-family: var(--nr-font-ethiopic), var(--nr-font-latin) !important;
+}
+
+html[lang="am"] :where(
+  h1,h2,h3,h4,h5,h6,p,span,small,strong,em,label,button,a,input,textarea,select,option
+) {
+  letter-spacing: 0 !important;
+}
+
+html[lang="am"] :where(p,small,label,input,textarea,select,button,a) {
+  line-height: 1.55;
+}
+
+html[lang="am"] :where(h1,h2,h3,h4,h5,h6) {
+  line-height: 1.28;
+}
+
+/* Keep NexRide's Latin wordmark and numerical transport data visually stable. */
+html[lang="am"] :where(
+  .nr-brand,
+  .nr-brand *,
+  .nr-ride-price,
+  .nr-request-total,
+  .nr-metric,
+  .nr-earnings-total,
+  .nr-wallet-balance,
+  .nr-receipt-value,
+  .nr-driver-metric-grid,
+  .metric
+) {
+  font-family: var(--nr-font-latin) !important;
+}

@@ -1,0 +1,9 @@
+Font: Benaiah
+Designer: Abraham Fikadu
+Source: Font.et
+
+License Information:
+Unknown License
+
+No specific license information was provided in the supplied package.
+Please confirm production/commercial usage terms with the designer.
