@@ -81,3 +81,97 @@
 .nr-safety-page[data-theme="light"] .nr-safety-check small{color:#667587}
 .nr-safety-page[data-theme="light"] .nr-help-panel summary,
 .nr-safety-page[data-theme="light"] .nr-share-row strong{color:#102334}
+
+
+/* Driver Safety Center — Flagship v4. Rider appearance is intentionally untouched. */
+.nr-safety-page[data-mode="driver"]{
+  min-height:100dvh;
+  padding:14px 14px calc(34px + env(safe-area-inset-bottom));
+  background:#041c30;
+  color:#f5fafc;
+}
+.nr-safety-page[data-mode="driver"] .nr-safety-wrap{max-width:840px}
+.nr-safety-page[data-mode="driver"] .nr-safety-head{
+  min-height:60px;
+  margin-bottom:12px;
+  padding-top:max(2px,env(safe-area-inset-top));
+}
+.nr-safety-page[data-mode="driver"] .nr-safety-back{
+  width:48px;height:48px;min-width:48px;min-height:48px;
+  border-radius:15px;
+  border-color:rgba(133,173,194,.22);
+  background:#07243a;
+}
+.nr-safety-page[data-mode="driver"] .nr-safety-network{
+  min-height:32px;
+  border-color:rgba(133,173,194,.18);
+  background:#07243a;
+}
+.nr-safety-page[data-mode="driver"] .nr-safety-intro,
+.nr-safety-page[data-mode="driver"] .nr-sos-panel,
+.nr-safety-page[data-mode="driver"] .nr-share-panel,
+.nr-safety-page[data-mode="driver"] .nr-help-panel,
+.nr-safety-page[data-mode="driver"] .nr-report-panel{
+  border-color:rgba(126,166,188,.16);
+  background:#07243a;
+  box-shadow:none;
+}
+.nr-safety-page[data-mode="driver"] .nr-safety-intro{padding:15px;border-radius:18px}
+.nr-safety-page[data-mode="driver"] .nr-safety-shield{
+  background:rgba(74,168,228,.1);
+  color:#7bc8fa;
+}
+.nr-safety-page[data-mode="driver"] .nr-safety-actions{
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+.nr-safety-page[data-mode="driver"] .nr-safety-action{
+  min-height:88px;
+  border-color:rgba(126,166,188,.16);
+  border-radius:18px;
+  background:#07243a;
+}
+.nr-safety-page[data-mode="driver"] .nr-safety-action:focus-visible,
+.nr-safety-page[data-mode="driver"] .nr-safety-back:focus-visible,
+.nr-safety-page[data-mode="driver"] .nr-sos-hold:focus-visible,
+.nr-safety-page[data-mode="driver"] .nr-share-primary:focus-visible,
+.nr-safety-page[data-mode="driver"] .nr-report-submit:focus-visible{
+  outline:3px solid rgba(84,173,255,.78);
+  outline-offset:2px;
+}
+.nr-safety-page[data-mode="driver"] .nr-safety-action[data-tone="danger"]{
+  border-color:rgba(211,77,94,.28);
+}
+.nr-safety-page[data-mode="driver"] .nr-safety-action[data-tone="success"]{
+  border-color:rgba(0,200,120,.22);
+}
+.nr-safety-page[data-mode="driver"] .nr-safety-context,
+.nr-safety-page[data-mode="driver"] .nr-share-preview,
+.nr-safety-page[data-mode="driver"] .nr-report-context,
+.nr-safety-page[data-mode="driver"] .nr-safety-check{
+  border-color:rgba(126,166,188,.14);
+  background:#061f33;
+}
+.nr-safety-page[data-mode="driver"] .nr-sos-hold{
+  min-height:68px;
+  border-radius:17px;
+  border-color:#84404c;
+  background:#382129;
+}
+.nr-safety-page[data-mode="driver"] .nr-sos-alternative,
+.nr-safety-page[data-mode="driver"] .nr-sos-options a{
+  min-height:50px;
+  border-radius:14px;
+}
+.nr-safety-page[data-mode="driver"] .nr-share-primary,
+.nr-safety-page[data-mode="driver"] .nr-report-submit{
+  min-height:54px;
+  border-radius:15px;
+}
+.nr-safety-page[data-mode="driver"] .nr-safety-field select{
+  min-height:48px;
+}
+@media(max-width:620px){
+  .nr-safety-page[data-mode="driver"] .nr-safety-actions{grid-template-columns:1fr}
+  .nr-safety-page[data-mode="driver"] .nr-safety-action{min-height:76px}
+}

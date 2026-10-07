@@ -59,6 +59,8 @@ export function DriverNavigationMap({
   const mapRef = useRef<MapboxMap | null>(null);
   const markers = useRef<MapboxMarker[]>([]);
   const manualView = useRef(false);
+  const lastCameraView = useRef<MapView>(view);
+  const lastCameraTarget = useRef<"pickup" | "destination">(target);
   const loaded = useRef(false);
   const trafficAvailable = useRef(true);
   const [mountedRevision, setMountedRevision] = useState(0);
@@ -276,13 +278,20 @@ export function DriverNavigationMap({
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !map.isStyleLoaded()) return;
+
+    const viewChanged = lastCameraView.current !== view;
+    const targetChanged = lastCameraTarget.current !== target;
+    if (viewChanged || targetChanged) manualView.current = false;
+    lastCameraView.current = view;
+    lastCameraTarget.current = target;
+    if (manualView.current) return;
+
     const points = route.filter(valid);
     if (valid(vehicle)) points.push(vehicle);
     const targetPoint = target === "pickup" ? pickup : destination;
     if (valid(targetPoint)) points.push(targetPoint);
 
     if (view === "vehicle" && valid(vehicle)) {
-      manualView.current = false;
       map.easeTo({
         center: lngLat(vehicle),
         zoom: Math.max(15.8, map.getZoom()),
@@ -294,7 +303,6 @@ export function DriverNavigationMap({
     }
 
     if (view === "overview" && points.length) {
-      manualView.current = false;
       if (points.length === 1) {
         map.easeTo({ center: lngLat(points[0]), zoom: 15, duration: 260 });
         return;
@@ -309,7 +317,7 @@ export function DriverNavigationMap({
         duration: matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 320,
       });
     }
-  }, [view, target, mountedRevision]);
+  }, [view, target, route, vehicle?.lat, vehicle?.lng, pickup?.lat, pickup?.lng, destination?.lat, destination?.lng, heading, mountedRevision]);
 
   const recenter = () => {
     const map = mapRef.current;

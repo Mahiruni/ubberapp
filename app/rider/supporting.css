@@ -67,3 +67,114 @@
 .nr-support-page[data-theme="light"] .nr-payment-notice{color:#526b79}
 .nr-support-page[data-theme="light"] .nr-rating-stars button{background:#f5f7f9;border-color:#dce5e9;color:#6b7e89}
 .nr-support-page[data-theme="light"] .nr-rating-panel textarea{background:#fff;color:#102334;border-color:#dce5e9}
+
+
+/* Driver Trip Chat — Flagship v4. Rider support screens remain unchanged. */
+.nr-support-page[data-mode="driver"]{
+  height:100dvh;
+  min-height:100dvh;
+  overflow:hidden;
+  padding:12px 12px calc(78px + env(safe-area-inset-bottom));
+  background:#041c30;
+  color:#f5fafc;
+}
+.nr-support-page[data-mode="driver"] .nr-support-wrap{
+  width:min(780px,100%);
+  height:100%;
+  margin:0 auto;
+  display:flex;
+  flex-direction:column;
+  min-height:0;
+}
+.nr-support-page[data-mode="driver"] .nr-support-head{
+  flex:0 0 auto;
+  min-height:60px;
+  margin-bottom:9px;
+  padding-top:max(2px,env(safe-area-inset-top));
+}
+.nr-support-page[data-mode="driver"] .nr-support-back,
+.nr-support-page[data-mode="driver"] .nr-support-icon-btn{
+  width:48px;height:48px;min-width:48px;min-height:48px;
+  border-radius:15px;
+  border-color:rgba(133,173,194,.22);
+  background:#07243a;
+}
+.nr-support-page[data-mode="driver"] .nr-support-head h1{font-size:22px}
+.nr-support-page[data-mode="driver"] .nr-support-card{
+  border-color:rgba(126,166,188,.16);
+  background:#07243a;
+  box-shadow:none;
+}
+.nr-support-page[data-mode="driver"] .nr-chat-context{
+  flex:0 0 auto;
+  padding:11px 12px;
+  border-radius:17px;
+}
+.nr-support-page[data-mode="driver"] .nr-chat-route{margin-top:8px}
+.nr-support-page[data-mode="driver"] .nr-chat-route span{
+  background:#061f33;
+  color:#9db3c0;
+}
+.nr-support-page[data-mode="driver"] .nr-chat-thread{
+  flex:1 1 auto;
+  min-height:0;
+  max-height:none;
+  overflow:auto;
+  padding:12px 3px 20px;
+  overscroll-behavior:contain;
+}
+.nr-support-page[data-mode="driver"] .nr-chat-bubble{
+  max-width:min(80%,520px);
+  margin:6px 0;
+  padding:10px 12px;
+  border-color:rgba(126,166,188,.16);
+  background:#0a2d46;
+  box-shadow:none;
+}
+.nr-support-page[data-mode="driver"] .nr-chat-bubble.mine{
+  background:#0b3a32;
+  border-color:rgba(0,200,120,.2);
+}
+.nr-support-page[data-mode="driver"] .nr-chat-bubble p{
+  font-size:13px;
+  line-height:1.42;
+}
+.nr-support-page[data-mode="driver"] .nr-chat-composer{
+  left:50%;
+  bottom:0;
+  width:min(780px,100%);
+  min-height:70px;
+  grid-template-columns:minmax(0,1fr) 52px;
+  gap:8px;
+  padding:9px 12px calc(9px + env(safe-area-inset-bottom));
+  border-top:1px solid rgba(126,166,188,.18);
+  background:rgba(3,25,42,.98);
+  box-shadow:0 -10px 28px rgba(0,8,18,.22);
+}
+.nr-support-page[data-mode="driver"] .nr-chat-composer textarea{
+  min-height:52px;
+  max-height:132px;
+  border-radius:16px;
+  border-color:#274d65;
+  background:#061f33;
+  font-size:13px;
+}
+.nr-support-page[data-mode="driver"] .nr-chat-composer button{
+  width:52px;height:52px;min-width:52px;min-height:52px;
+  border-radius:16px;
+}
+.nr-support-page[data-mode="driver"] .nr-support-back:focus-visible,
+.nr-support-page[data-mode="driver"] .nr-support-icon-btn:focus-visible,
+.nr-support-page[data-mode="driver"] .nr-chat-composer textarea:focus-visible,
+.nr-support-page[data-mode="driver"] .nr-chat-composer button:focus-visible{
+  outline:3px solid rgba(84,173,255,.78);
+  outline-offset:2px;
+}
+@media(min-width:760px){
+  .nr-support-page[data-mode="driver"]{padding-top:20px}
+  .nr-support-page[data-mode="driver"] .nr-chat-composer{
+    bottom:18px;
+    border:1px solid rgba(126,166,188,.18);
+    border-radius:20px;
+  }
+}
