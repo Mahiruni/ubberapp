@@ -547,10 +547,10 @@ export default function DriverNavigationPage() {
     setBusy(false);
   }
 
-  if (loading) return <main className="nr-app nr-driver-navigation-page" data-mode="driver" data-theme="dark"><div className="nr-nav-loading" aria-busy="true"><span /><span /><span /></div></main>;
+  if (loading) return <main className="nr-app nr-driver-navigation-page" data-mode="driver"><div className="nr-nav-loading" aria-busy="true"><span /><span /><span /></div></main>;
 
   if (message && !trip) return (
-    <main className="nr-app nr-driver-navigation-page" data-mode="driver" data-theme="dark">
+    <main className="nr-app nr-driver-navigation-page" data-mode="driver">
       <section className="nr-nav-unavailable">
         <span><Icon name="info" size={25} /></span><h1>{op("Navigation unavailable")}</h1><p>{message}</p>
         <button onClick={() => router.replace("/driver/home")}>{op("Back to Driver Home")}</button>
@@ -561,7 +561,7 @@ export default function DriverNavigationPage() {
   if (!trip || !stage) return null;
 
   return (
-    <main className="nr-app nr-driver-navigation-page" data-mode="driver" data-theme="dark">
+    <main className="nr-app nr-driver-navigation-page" data-mode="driver">
       <DriverNavigationMap vehicle={position} pickup={trip.pickupCoordinate} destination={trip.destinationCoordinate} route={nativeRoute?.target === stage.target ? nativeRoute.geometry : []} segments={nativeRoute?.target === stage.target ? nativeRoute.segments : []} target={stage.target} view={mapView} gpsState={gpsState} heading={position?.heading ?? null} />
 
       <button className="nr-nav-home" onClick={() => router.replace("/driver/home")} aria-label={op("Driver home")}><Icon name="home" size={19} /></button>
@@ -639,7 +639,7 @@ export default function DriverNavigationPage() {
           </div>
         ) : (
           <div className="nr-nav-stage-actions">
-            <button className="nr-nav-stage-primary" onClick={() => router.replace("/driver/home?screen=earnings")}><Icon name="money" size={19} /> {op("View earnings")}</button>
+            <button className="nr-nav-stage-primary" onClick={() => router.replace("/driver/earnings")}><Icon name="money" size={19} /> {op("View earnings")}</button>
             <button className="nr-nav-stage-secondary" onClick={() => router.replace("/driver/home")}><Icon name="home" size={18} /> Driver Home</button>
           </div>
         )}

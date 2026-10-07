@@ -1,8 +1,10 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Icon } from "../../../../components/nexride/ui";
+import { Icon, LanguageContext } from "../../../../components/nexride/ui";
+import { announceLanguage } from "../../../../components/nexride/language-provider";
+import { DriverThemeSelector } from "../../../../components/nexride/driver-app-shell";
 import { supabase } from "../../../../lib/supabase";
 import { loadDriverProfileData, type DriverProfileData } from "../../../../lib/nexride-driver-profile";
 import "../../../nexride.css";
@@ -11,6 +13,7 @@ import "../../../detail-system.css";
 
 export default function DriverProfileSettingsPage() {
   const router = useRouter();
+  const language = useContext(LanguageContext);
   const [profile, setProfile] = useState<DriverProfileData | null>(null);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -96,7 +99,7 @@ export default function DriverProfileSettingsPage() {
   }
 
   return (
-    <main className="nr-app nr-driver-profile-subpage" data-mode="driver" data-theme="dark">
+    <main className="nr-app nr-driver-profile-subpage" data-mode="driver">
       <div className="nr-driver-profile-subwrap">
         <header className="nr-profile-subhead">
           <button className="nr-driver-icon-btn" onClick={() => router.replace("/driver/home?screen=profile")} aria-label="Back to driver profile">
@@ -168,6 +171,30 @@ export default function DriverProfileSettingsPage() {
                   <span>{feedback}</span>
                 </div>
               )}
+            </section>
+
+            <section className="nr-profile-panel">
+              <div className="nr-profile-panel-head">
+                <div>
+                  <h2>App preferences</h2>
+                  <p>Theme and language apply across the complete Driver experience.</p>
+                </div>
+              </div>
+              <div className="nr-driver-preference-block">
+                <div className="nr-driver-preference-label">
+                  <div><strong>Appearance</strong><small>Follow your phone or choose a fixed theme.</small></div>
+                </div>
+                <DriverThemeSelector />
+              </div>
+              <div className="nr-driver-preference-block">
+                <div className="nr-driver-preference-label">
+                  <div><strong>Language</strong><small>English uses NexRide Latin typography; Amharic uses the configured Ethiopic font.</small></div>
+                </div>
+                <div className="nr-driver-language-selector" role="group" aria-label="Driver language">
+                  <button type="button" data-active={language === "en" ? "true" : "false"} aria-pressed={language === "en"} onClick={() => announceLanguage("en")}>English</button>
+                  <button type="button" data-active={language === "am" ? "true" : "false"} aria-pressed={language === "am"} onClick={() => announceLanguage("am")}>አማርኛ</button>
+                </div>
+              </div>
             </section>
 
             <section className="nr-profile-panel">

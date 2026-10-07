@@ -76,10 +76,10 @@ export default function DriverEarningsReportPage() {
   }, [router]);
 
   return (
-    <main className="nr-app nr-earnings-report-page" data-mode="driver" data-theme="dark">
+    <main className="nr-app nr-earnings-report-page" data-mode="driver">
       <div className="nr-earnings-report-wrap">
         <header className="nr-earnings-report-head">
-          <button className="nr-driver-icon-btn" onClick={() => router.replace("/driver/home?screen=earnings")} aria-label="Back to driver earnings">
+          <button className="nr-driver-icon-btn" onClick={() => router.replace("/driver/earnings")} aria-label="Back to driver earnings">
             <Icon name="back" />
           </button>
           <div>

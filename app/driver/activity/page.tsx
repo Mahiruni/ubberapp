@@ -116,9 +116,9 @@ export default function DriverActivityPage() {
   }, [rows]);
 
   return (
-    <main className="min-h-dvh bg-[var(--nr-navy)] px-3 pb-[calc(96px+env(safe-area-inset-bottom,0px))] pt-[max(14px,env(safe-area-inset-top,0px))] text-white sm:px-6 sm:pt-6">
+    <main className="nr-driver-activity-page min-h-dvh bg-[var(--nr-navy)] px-3 pb-6 pt-4 text-white sm:px-6 sm:pt-6">
       <div className="mx-auto w-full max-w-3xl">
-        <header className="mb-5 flex items-center gap-3">
+        <header className="nr-driver-local-header mb-5 flex items-center gap-3">
           <button
             className="grid size-11 min-h-11 place-items-center rounded-[15px] border border-white/10 bg-white/5 text-white"
             onClick={() => router.push("/driver/home")}
@@ -134,11 +134,11 @@ export default function DriverActivityPage() {
         </header>
 
         <section className="mb-4 grid grid-cols-2 gap-2.5" aria-label="Activity summary">
-          <div className="rounded-[20px] border border-white/8 bg-white/[.055] p-4">
+          <div className="nr-driver-activity-summary rounded-[20px] border border-white/8 bg-white/[.055] p-4">
             <small className="text-[11px] font-semibold text-white/55">Completed</small>
             <strong className="mt-1 block text-2xl tabular-nums">{stats.completed}</strong>
           </div>
-          <div className="rounded-[20px] border border-white/8 bg-white/[.055] p-4">
+          <div className="nr-driver-activity-summary rounded-[20px] border border-white/8 bg-white/[.055] p-4">
             <small className="text-[11px] font-semibold text-white/55">Cancelled</small>
             <strong className="mt-1 block text-2xl tabular-nums">{stats.cancelled}</strong>
           </div>
@@ -199,30 +199,6 @@ export default function DriverActivityPage() {
           </div>
         )}
       </div>
-
-      <nav className="nr-driver-bottom-nav" aria-label="Driver navigation" data-screen="activity">
-        {[
-          { id: "home", label: t("home"), icon: "home" as const, href: "/driver/home" },
-          { id: "requests", label: t("requests"), icon: "clock" as const, href: "/driver/activity" },
-          { id: "earnings", label: t("earnings"), icon: "money" as const, href: "/driver/home?screen=earnings" },
-          { id: "messages", label: t("messages"), icon: "chat" as const, href: "/support?role=driver" },
-          { id: "account", label: t("account"), icon: "user" as const, href: "/driver/home?screen=profile" },
-        ].map((item) => (
-          <button
-            type="button"
-            key={item.id}
-            className={item.id === "requests" ? "active" : ""}
-            onClick={() => router.push(item.href)}
-            aria-current={item.id === "requests" ? "page" : undefined}
-            aria-label={item.label}
-          >
-            <span className="nr-driver-nav-icon" aria-hidden="true">
-              <Icon name={item.icon} size={20} />
-            </span>
-            <span className="nr-driver-nav-label">{item.label}</span>
-          </button>
-        ))}
-      </nav>
     </main>
   );
 }

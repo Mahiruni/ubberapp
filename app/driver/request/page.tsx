@@ -412,7 +412,7 @@ export default function DriverRideRequestPage() {
   }
 
   return (
-    <main className="nr-app nr-driver-request-page" data-mode="driver" data-theme="dark">
+    <main className="nr-app nr-driver-request-page" data-mode="driver">
       <div className="nr-driver-request-map">
         <DriverNavigationMap
           vehicle={driverPosition}
