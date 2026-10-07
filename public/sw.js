@@ -1,4 +1,4 @@
-const VERSION = "nexride-flagship-v2";
+const VERSION = "nexride-flagship-v3";
 const CORE_CACHE = VERSION + "-core";
 const RUNTIME_CACHE = VERSION + "-runtime";
 const CORE_ASSETS = [
@@ -83,6 +83,48 @@ self.addEventListener("fetch", (event) => {
         })
         .catch(() => cached);
       return cached || update;
+    })
+  );
+});
+
+
+self.addEventListener("push", (event) => {
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch {
+    data = { body: event.data ? event.data.text() : "" };
+  }
+
+  const title = typeof data.title === "string" && data.title ? data.title : "NexRide";
+  const body = typeof data.body === "string" ? data.body : "";
+  const url = typeof data.url === "string" && data.url.startsWith("/") ? data.url : "/";
+  const tag = typeof data.tag === "string" ? data.tag : undefined;
+
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body,
+      tag,
+      icon: "/icons/icon-192.png",
+      badge: "/favicon-32x32.png",
+      data: { url },
+      renotify: false,
+    })
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const target = new URL(event.notification.data?.url || "/", self.location.origin).href;
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
+      for (const client of clients) {
+        if ("focus" in client) {
+          client.navigate(target);
+          return client.focus();
+        }
+      }
+      return self.clients.openWindow ? self.clients.openWindow(target) : undefined;
     })
   );
 });
