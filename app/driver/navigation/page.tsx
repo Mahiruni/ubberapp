@@ -194,6 +194,16 @@ export default function DriverNavigationPage() {
             const row = payload.new as Record<string, unknown>;
             const status = normalizeStatus(row.status);
             if (!status) return;
+            if (status === "cancelled" || status === "withdrawn") {
+              emitNexRideFeedback({
+                event: "cancelled",
+                id: `${loaded.requestId}:${status}:driver`,
+                title: "Ride cancelled",
+                body: "This assigned ride is no longer active.",
+                url: "/driver/home",
+              });
+              stopNexRideNavigationVoice();
+            }
             setTrip((current) => current ? {
               ...current,
               status,
