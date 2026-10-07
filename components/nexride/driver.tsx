@@ -12,6 +12,7 @@ import { DriverAvailabilitySwipe } from "./driver-availability-swipe";
 import { supabase } from "../../lib/supabase";
 import { resolveSessionRole } from "../../lib/nexride-account-role";
 import { nexrideApiFetch } from "../../lib/nexride-api-auth";
+import { emitNexRideFeedback } from "../../lib/nexride-feedback";
 import "../../app/driver/driver-dashboard.css";
 import "../../app/driver/driver-home-v2.css";
 import "../../app/rider-home.css";
@@ -237,6 +238,13 @@ export function DriverWorkspace({
         pendingOffer &&
         (!pendingOffer.expires_at || new Date(pendingOffer.expires_at).getTime() > Date.now())
       ) {
+        emitNexRideFeedback({
+          event: "ride_request",
+          id: pendingOffer.id,
+          title: "New ride request",
+          body: "Open NexRide to review this request.",
+          url: `/driver/request?offer=${pendingOffer.id}`,
+        });
         router.push(`/driver/request?offer=${pendingOffer.id}`);
       }
 
@@ -251,6 +259,13 @@ export function DriverWorkspace({
             if (next.status !== "pending" || typeof next.id !== "string") return;
             const expiresAt = typeof next.expires_at === "string" ? new Date(next.expires_at).getTime() : null;
             if (expiresAt !== null && expiresAt <= Date.now()) return;
+            emitNexRideFeedback({
+              event: "ride_request",
+              id: next.id,
+              title: "New ride request",
+              body: "Open NexRide to review this request.",
+              url: `/driver/request?offer=${next.id}`,
+            });
             router.push(`/driver/request?offer=${next.id}`);
           },
         )
@@ -579,7 +594,11 @@ export function DriverWorkspace({
           setError("NexRide could not update availability. Refresh your Driver status and try again.");
         }
       } else if (payload?.driver) {
-        setState((current) => mergeDriverState(current, payload.driver as Record<string, unknown>));
+        const confirmed = payload.driver as Record<string, unknown>;
+        setState((current) => mergeDriverState(current, confirmed));
+        if ((confirmed.is_online === true) === nextOnline) {
+          emitNexRideFeedback({ event: nextOnline ? "driver_online" : "driver_offline" });
+        }
       }
     } catch {
       setError("Availability could not be updated. Check your connection and try again.");
