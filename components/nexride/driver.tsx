@@ -425,6 +425,11 @@ export function DriverWorkspace({
     return () => navigator.geolocation.clearWatch(watchId);
   }, [driverId, state.online]);
 
+  const firstName = useMemo(() => state.name.trim().split(/\s+/)[0] || "Driver", [state.name]);
+  const initials = useMemo(
+    () => state.name.trim().split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "DR",
+    [state.name],
+  );
 
   const verified = state.reviewStatus === "approved";
   const locationReady = locationPermission === "granted";
@@ -717,7 +722,8 @@ export function DriverWorkspace({
           locked={loading}
           readOnly
           topLabel={state.online ? "ONLINE" : "OFFLINE"}
-            showProfile={false}
+          showProfile={false}
+          preferredStyle={resolvedTheme === "dark" ? "dark" : "streets"}
         />
         <div className="nr-driver-operational-card">
           <div className="nr-driver-operational-status">
