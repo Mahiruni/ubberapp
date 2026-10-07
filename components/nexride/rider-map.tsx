@@ -463,6 +463,8 @@ export function RiderMap({
   topLabel,
   showProfile = true,
   preferredStyle,
+  showSearch = true,
+  showNativeControls = true,
   onStartRoute,
 }: {
   position: RiderLocation | null;
@@ -480,6 +482,8 @@ export function RiderMap({
   topLabel?: string;
   showProfile?: boolean;
   preferredStyle?: "streets" | "dark";
+  showSearch?: boolean;
+  showNativeControls?: boolean;
   onStartRoute?: () => void;
 }) {
   const t = useTranslation();
@@ -584,74 +588,78 @@ export function RiderMap({
       map.doubleClickZoom.enable();
       map.scrollZoom.enable();
 
-      const navigation = new mapboxgl.default.NavigationControl({
-        showCompass: false,
-        showZoom: true,
-      });
-      const fullscreen = new mapboxgl.default.FullscreenControl({
-        container:
-          container.current.closest<HTMLElement>(".nr-rider-map-surface") ||
-          undefined,
-      });
+      if (showNativeControls) {
+        const navigation = new mapboxgl.default.NavigationControl({
+          showCompass: false,
+          showZoom: true,
+        });
+        const fullscreen = new mapboxgl.default.FullscreenControl({
+          container:
+            container.current.closest<HTMLElement>(".nr-rider-map-surface") ||
+            undefined,
+        });
+        map.addControl(navigation, "top-right");
+        map.addControl(fullscreen, "top-right");
+      }
+
       const scale = new mapboxgl.default.ScaleControl({
         maxWidth: 92,
         unit: "metric",
       });
-
-      map.addControl(navigation, "top-right");
-      map.addControl(fullscreen, "top-right");
       map.addControl(scale, "bottom-left");
 
-      const geocoder = new MapboxGeocoder({
-        accessToken: token,
-        mapboxgl:
-          mapboxgl.default as unknown as typeof import("mapbox-gl"),
-        marker: false,
-        countries: "et",
-        language,
-        placeholder:
-          language === "am" ? "ቦታ ይፈልጉ" : "Search Addis Ababa",
-        bbox: [38.66, 8.84, 38.91, 9.11],
-        proximity: { longitude: 38.775, latitude: 9.008 },
-        useBrowserFocus: true,
-      });
-      map.addControl(geocoder, "top-left");
+      if (showSearch) {
+        const geocoder = new MapboxGeocoder({
+          accessToken: token,
+          mapboxgl:
+            mapboxgl.default as unknown as typeof import("mapbox-gl"),
+          marker: false,
+          countries: "et",
+          language,
+          placeholder:
+            language === "am" ? "ቦታ ይፈልጉ" : "Search Addis Ababa",
+          bbox: [38.66, 8.84, 38.91, 9.11],
+          proximity: { longitude: 38.775, latitude: 9.008 },
+          useBrowserFocus: true,
+        });
+        map.addControl(geocoder, "top-left");
 
-      geocoder.on("result", (event: any) => {
-        const result = event?.result;
-        const coordinates =
-          Array.isArray(result?.center) && result.center.length >= 2
-            ? result.center
-            : result?.geometry?.type === "Point" &&
-                Array.isArray(result.geometry.coordinates)
-              ? result.geometry.coordinates
-              : null;
-        const plan = journeyRef.current;
-        if (
-          !coordinates ||
-          !plan ||
-          readOnlyRef.current ||
-          !Number.isFinite(Number(coordinates[0])) ||
-          !Number.isFinite(Number(coordinates[1]))
-        )
-          return;
-        plan.select("destination", {
-          lng: Number(coordinates[0]),
-          lat: Number(coordinates[1]),
-          name:
-            typeof result?.text === "string"
-              ? result.text
-              : typeof result?.place_name === "string"
+        geocoder.on("result", (event: any) => {
+          const result = event?.result;
+          const coordinates =
+            Array.isArray(result?.center) && result.center.length >= 2
+              ? result.center
+              : result?.geometry?.type === "Point" &&
+                  Array.isArray(result.geometry.coordinates)
+                ? result.geometry.coordinates
+                : null;
+          const plan = journeyRef.current;
+          if (
+            !coordinates ||
+            !plan ||
+            readOnlyRef.current ||
+            !Number.isFinite(Number(coordinates[0])) ||
+            !Number.isFinite(Number(coordinates[1]))
+          )
+            return;
+          plan.select("destination", {
+            lng: Number(coordinates[0]),
+            lat: Number(coordinates[1]),
+            name:
+              typeof result?.text === "string"
+                ? result.text
+                : typeof result?.place_name === "string"
+                  ? result.place_name
+                  : "",
+            address:
+              typeof result?.place_name === "string"
                 ? result.place_name
                 : "",
-          address:
-            typeof result?.place_name === "string"
-              ? result.place_name
-              : "",
-          source: "provider",
-          confirmed: true,
+            source: "provider",
+            confirmed: true,
+          });
         });
-      });
+      }
 
       const syncStyleData = () => {
         if (!map.isStyleLoaded()) return;
@@ -806,7 +814,7 @@ export function RiderMap({
       setMounted(false);
       loadedRef.current = false;
     };
-  }, [attempt, language]);
+  }, [attempt, language, showSearch, showNativeControls]);
 
   useEffect(() => {
     if (preferredStyle) setStyleKey(preferredStyle);
