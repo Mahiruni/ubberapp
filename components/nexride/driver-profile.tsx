@@ -244,20 +244,21 @@ export function DriverProfileScreen({
       <section className="nr-driver-profile-quick-grid" aria-label="Driver profile quick actions">
         <DriverQuick icon="shield" title="Documents" detail={verification.title} onClick={() => router.push("/driver/profile/documents")}/>
         <DriverQuick icon="pin" title="Vehicle" detail={profile.vehiclePlate || "Vehicle details"} onClick={() => router.push("/driver/profile/vehicle")}/>
-        <DriverQuick icon="money" title="Earnings" detail="Reports and trip earnings" onClick={() => router.push("/driver/earnings/report")}/>
+        <DriverQuick icon="money" title="Earnings" detail="Reports and trip earnings" onClick={() => router.push("/driver/earnings")}/>
         <DriverQuick icon="wallet" title="Payouts" detail="Payout account and withdrawals" onClick={() => router.push("/driver/profile/payouts")}/>
       </section>
 
       <div className="nr-driver-profile-columns">
         <div>
-          <DriverSection title="Driver account" subtitle="Identity, documents and vehicle">
+          <DriverSection title="Driver account" subtitle="Identity, trips, documents and vehicle">
             <DriverRow icon="user" title="Personal details" detail={profile.phone || profile.email || "Driver contact information"} onClick={() => router.push("/driver/profile/settings")}/>
+            <DriverRow icon="clock" title="Trip activity" detail="Accepted, completed, and cancelled trips" onClick={() => router.push("/driver/activity")}/>
             <DriverRow icon="shield" title="Driver documents" detail={verification.title} onClick={() => router.push("/driver/profile/documents")}/>
             <DriverRow icon="pin" title="Vehicle information" detail={profile.vehicle || "Vehicle details"} onClick={() => router.push("/driver/profile/vehicle")}/>
           </DriverSection>
 
           <DriverSection title="Earnings & payouts" subtitle="Earnings and payout history">
-            <DriverRow icon="money" title="Earnings report" detail="Completed trips and recorded earnings" onClick={() => router.push("/driver/earnings/report")}/>
+            <DriverRow icon="money" title="Earnings report" detail="Completed trips and recorded earnings" onClick={() => router.push("/driver/earnings")}/>
             <DriverRow icon="wallet" title="Payouts" detail="Payout account and history" onClick={() => router.push("/driver/profile/payouts")}/>
           </DriverSection>
         </div>
@@ -269,7 +270,7 @@ export function DriverProfileScreen({
           </DriverSection>
 
           <DriverSection title="Preferences & account" subtitle="Your NexRide Driver settings">
-            <DriverRow icon="settings" title="Profile settings" detail="Name, phone and account details" onClick={() => router.push("/driver/profile/settings")}/>
+            <DriverRow icon="settings" title="App settings" detail="Profile, language, theme, and account details" onClick={() => router.push("/driver/profile/settings")}/>
             <DriverRow icon="info" title="Privacy & account data" detail="Your authenticated driver information stays private" onClick={() => router.push("/driver/profile/documents")}/>
           </DriverSection>
         </div>

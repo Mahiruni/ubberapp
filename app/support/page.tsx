@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "../../components/nexride/ui";
+import { DriverBottomNav, usePersistedDriverTheme } from "../../components/nexride/driver-app-shell";
 import { RiderMenu, usePersistedRiderTheme } from "../../components/nexride/rider-menu";
 import { useOperationalTranslation } from "../../components/nexride/operational-i18n";
 import { supabase } from "../../lib/supabase";
@@ -59,6 +60,7 @@ export default function HelpSupportPage() {
   const router = useRouter();
   const op = useOperationalTranslation();
   const theme = usePersistedRiderTheme();
+  const driverTheme = usePersistedDriverTheme();
   const [role, setRole] = useState<"rider" | "driver">("rider");
   const [userId, setUserId] = useState("");
   const [rides, setRides] = useState<RideOption[]>([]);
@@ -101,16 +103,19 @@ export default function HelpSupportPage() {
       if (!active) return;
 
       if (!session) {
-        router.replace("/rider/sign-in");
+        router.replace(requestedRole === "driver" ? "/driver/auth" : "/rider/sign-in");
         return;
       }
 
       setUserId(session.user.id);
 
-      const { data: rows } = await supabase
+      let ridesQuery = supabase
         .from("ride_requests")
-        .select("id,pickup_location,destination_location,status,created_at")
-        .eq("rider_id", session.user.id)
+        .select("id,pickup_location,destination_location,status,created_at");
+      ridesQuery = requestedRole === "driver"
+        ? ridesQuery.eq("assigned_driver_id", session.user.id)
+        : ridesQuery.eq("rider_id", session.user.id);
+      const { data: rows } = await ridesQuery
         .order("created_at", { ascending: false })
         .limit(30);
 
@@ -197,7 +202,7 @@ export default function HelpSupportPage() {
   }
 
   return (
-    <main className="nr-app nr-support-page" data-theme={role === "rider" ? theme : "dark"} data-mode={role}>
+    <main className="nr-app nr-support-page" data-theme={role === "rider" ? theme : driverTheme.resolvedTheme} data-mode={role}>
       <div className="nr-support-wrap">
         <header className="nr-support-head">
           <button className="nr-support-back" onClick={() => window.history.length > 1 ? router.back() : router.replace("/")} aria-label={op("Back")}>
@@ -234,20 +239,20 @@ export default function HelpSupportPage() {
         </section>
 
         <section className="nr-support-card nr-support-channels">
-          <a className="nr-support-channel" href="/safety?role=rider">
+          <a className="nr-support-channel" href={role === "driver" ? "/safety?role=driver" : "/safety?role=rider"}>
             <span><Icon name="shield" size={17} /></span>
             <span><strong>{op("Safety")}</strong><small>{op("Emergency help, trip sharing, and reports")}</small></span>
             <Icon name="chevron" size={15} />
           </a>
-          <a className="nr-support-channel" href="/rider/trips">
+          <a className="nr-support-channel" href={role === "driver" ? "/driver/activity" : "/rider/trips"}>
             <span><Icon name="clock" size={17} /></span>
             <span><strong>{op("Activity")}</strong><small>{op("Trips, receipts, and trip-specific support")}</small></span>
             <Icon name="chevron" size={15} />
           </a>
           {activeRide && (
-            <a className="nr-support-channel" href={"/trip/chat?ride=" + encodeURIComponent(activeRide.id) + "&role=rider"}>
+            <a className="nr-support-channel" href={"/trip/chat?ride=" + encodeURIComponent(activeRide.id) + "&role=" + role}>
               <span><Icon name="chat" size={17} /></span>
-              <span><strong>{op("Message driver")}</strong><small>{op("Available during your active trip")}</small></span>
+              <span><strong>{role === "driver" ? op("Message rider") : op("Message driver")}</strong><small>{op("Available during your active trip")}</small></span>
               <Icon name="chevron" size={15} />
             </a>
           )}
@@ -309,7 +314,7 @@ export default function HelpSupportPage() {
           )}
         </form>
       </div>
-      {role === "rider" && <RiderMenu active="messages" />}
+      {role === "rider" ? <RiderMenu active="messages" /> : <DriverBottomNav activeOverride="messages" />}
     </main>
   );
 }
