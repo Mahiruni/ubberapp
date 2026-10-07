@@ -29,3 +29,84 @@
 .nr-report-note{margin-top:10px;padding:12px;border-radius:13px;background:#0a2b43;color:#7897aa;font-size:9px;line-height:1.5}
 @media(max-width:430px){.nr-earnings-total{font-size:34px}.nr-earnings-metrics{gap:6px}.nr-earnings-metric{padding:11px 9px}.nr-earnings-metric strong{font-size:15px}.nr-earnings-periods button{font-size:10px}.nr-report-summary-grid{gap:6px}}
 @media(prefers-reduced-motion:reduce){.nr-earnings-loading span{animation:none}}
+
+
+/* Driver Earnings — Flagship v4 */
+.nr-earnings-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:14px;
+}
+.nr-earnings-head h1{font-size:28px;letter-spacing:-.045em}
+.nr-earnings-periods{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:4px;
+  padding:4px;
+  margin-bottom:12px;
+  border:1px solid rgba(126,166,188,.16);
+  border-radius:16px;
+  background:#07243a;
+}
+.nr-earnings-periods button{
+  min-height:42px;
+  border:0;
+  border-radius:12px;
+  background:transparent;
+  color:#7896a8;
+  font-size:10px;
+  font-weight:800;
+}
+.nr-earnings-periods button.active{
+  background:#0c344f;
+  color:#f4f9fb;
+  box-shadow:inset 0 0 0 1px rgba(0,200,120,.18);
+}
+.nr-earnings-total-card{
+  padding:18px;
+  border:1px solid rgba(126,166,188,.18);
+  border-radius:22px;
+  background:#07243a;
+  box-shadow:none;
+}
+.nr-earnings-total{font-size:clamp(34px,8vw,48px);font-variant-numeric:tabular-nums}
+.nr-earnings-definition{max-width:620px;color:#718fa2;font-size:9px;line-height:1.5}
+.nr-earnings-chart{
+  margin-top:16px;
+  padding-top:14px;
+  border-top:1px solid rgba(126,166,188,.12);
+}
+.nr-earnings-chart-line{fill:none;stroke:#00c878;stroke-width:3}
+.nr-earnings-chart-dot{fill:#00c878}
+.nr-earnings-metrics{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:8px;
+  margin-top:10px;
+}
+.nr-earnings-metric{
+  min-height:112px;
+  padding:14px;
+  border:1px solid rgba(126,166,188,.16);
+  border-radius:18px;
+  background:#07243a;
+}
+.nr-earnings-metric strong{font-variant-numeric:tabular-nums}
+.nr-earnings-report-action{
+  width:100%;
+  min-height:54px;
+  margin-top:10px;
+  padding:0 14px;
+  border:1px solid rgba(126,166,188,.16);
+  border-radius:16px;
+  background:#07243a;
+  color:#eaf2f7;
+}
+.nr-earnings-state{border-radius:17px}
+@media(max-width:520px){
+  .nr-earnings-periods button{min-height:44px;font-size:9px}
+  .nr-earnings-metrics{grid-template-columns:1fr}
+  .nr-earnings-metric{min-height:86px}
+}

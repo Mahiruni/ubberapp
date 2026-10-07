@@ -382,3 +382,101 @@
     justify-content:flex-start;
   }
 }
+
+
+/* Driver Request — Flagship v4 */
+.nr-driver-request-page{background:#041827}
+.nr-driver-request-map{inset:0;background:#061b2c}
+.nr-driver-request-map::after{
+  background:linear-gradient(180deg,rgba(1,13,23,.12),transparent 44%,rgba(2,17,29,.34))
+}
+.nr-request-back{
+  top:max(14px,env(safe-area-inset-top));
+  left:14px;
+  width:48px;height:48px;min-width:48px;min-height:48px;
+  border-radius:15px;
+  border-color:rgba(145,180,199,.28);
+  background:rgba(4,29,47,.93);
+}
+.nr-request-sheet{
+  padding:0;
+  min-height:0;
+  max-height:75dvh;
+  border-radius:28px 28px 0 0;
+  background:rgba(4,28,48,.98);
+  color:#f4f8fb;
+}
+.nr-request-sheet .nr-driver-sheet-content{
+  padding:0 18px calc(20px + env(safe-area-inset-bottom));
+}
+.nr-request-heading{align-items:center}
+.nr-request-eyebrow{color:#62e3ad;font-size:9px}
+.nr-request-heading h1,.nr-request-state h1{color:#f5fafc;font-size:24px}
+.nr-request-countdown{
+  min-height:38px;
+  border-color:rgba(138,174,194,.2);
+  background:#0a2b44;
+  color:#d8e7ef;
+  font-variant-numeric:tabular-nums;
+}
+.nr-request-approach{color:#8fa8b7}
+.nr-request-approach strong{color:#f0f6f9}
+.nr-request-traffic{
+  border-color:rgba(138,174,194,.18);
+  background:#08263d;
+  color:#a5bac6;
+}
+.nr-request-route{margin:18px 0 14px}
+.nr-request-route-copy small,.nr-request-summary small{color:#6f8fa2}
+.nr-request-route-copy strong{color:#eff5f8;font-size:13px}
+.nr-request-route-line .dot{box-shadow:0 0 0 4px rgba(0,200,120,.12)}
+.nr-request-route-line i{background:linear-gradient(#52778c,#29475b)}
+.nr-request-route-line i::after{background:#f5fafc;border-color:#f5fafc}
+.nr-request-summary{
+  grid-template-columns:1fr 1fr;
+  gap:1px;
+  overflow:hidden;
+  padding:1px;
+  border-color:rgba(124,163,185,.15);
+  background:rgba(124,163,185,.12);
+  border-radius:16px;
+}
+.nr-request-summary div{
+  min-height:62px;
+  padding:10px;
+  background:#08263d;
+  justify-content:center;
+}
+.nr-request-summary div:last-child{text-align:left}
+.nr-request-summary strong{color:#f4f8fb;font-size:12px;font-variant-numeric:tabular-nums}
+.nr-request-error{
+  border-color:rgba(220,93,110,.36);
+  background:#342129;
+  color:#ffc2cc;
+}
+.nr-request-accept{
+  min-height:56px!important;
+  border-radius:16px;
+  background:#00c878;
+  color:#03251b!important;
+  font-size:15px;
+  box-shadow:none;
+}
+.nr-request-decline{
+  min-height:48px!important;
+  color:#9db1bd!important;
+}
+.nr-request-state>span{background:rgba(0,200,120,.1);color:#72e6b6}
+.nr-request-state p{color:#8ea6b5}
+.nr-request-state button{background:#00c878;color:#03251b!important}
+.nr-request-loading span{background:#123950}
+@media(min-width:760px){
+  .nr-request-sheet{
+    right:28px;bottom:28px;
+    width:430px;
+    height:min(610px,calc(100dvh - 56px));
+    border-radius:26px;
+  }
+  .nr-request-sheet .nr-driver-sheet-content{padding:18px 20px 22px}
+  .nr-request-back{top:28px;left:28px}
+}

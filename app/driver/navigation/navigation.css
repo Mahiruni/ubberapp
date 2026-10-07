@@ -113,3 +113,104 @@
   .nr-nav-status{bottom:calc(338px + env(safe-area-inset-bottom))}
   .nr-nav-trip-progress small{font-size:7.5px}
 }
+
+
+/* Driver Navigation — Flagship v4 */
+.nr-driver-navigation-page{background:#041827}
+.nr-nav-home{
+  left:14px;
+  top:max(14px,env(safe-area-inset-top));
+  width:48px;height:48px;min-width:48px;min-height:48px;
+  border-radius:15px;
+  border-color:rgba(145,180,199,.28);
+  background:rgba(4,29,47,.93);
+}
+.nr-nav-guidance{
+  top:max(14px,env(safe-area-inset-top));
+  left:72px;
+  right:76px;
+  min-height:74px;
+  grid-template-columns:44px minmax(0,1fr) auto;
+  gap:10px;
+  padding:10px 12px;
+  border-color:rgba(131,170,191,.22);
+  border-radius:18px;
+  background:rgba(4,29,47,.94);
+  box-shadow:0 12px 34px rgba(0,0,0,.24);
+}
+.nr-nav-guidance-icon{
+  width:44px;height:44px;border-radius:13px;
+  background:rgba(38,126,190,.15);color:#72bfff
+}
+.nr-nav-guidance small{color:#66e4b0}
+.nr-nav-guidance strong{font-size:17px}
+.nr-nav-guidance-distance{font-variant-numeric:tabular-nums}
+.nr-nav-map-controls{display:none}
+.nr-nav-status{
+  left:14px;
+  right:74px;
+  bottom:calc(var(--nr-driver-sheet-height,27dvh) + 12px);
+  border-radius:13px;
+  transition:bottom 220ms ease;
+}
+.nr-nav-bottom-card{
+  padding:0;
+  min-height:0;
+  max-height:75dvh;
+  background:rgba(4,28,48,.985);
+}
+.nr-nav-bottom-card .nr-driver-sheet-content{
+  padding:0 18px calc(18px + env(safe-area-inset-bottom));
+}
+.nr-nav-trip-progress{margin:0 0 12px}
+.nr-nav-trip-meta{margin:0 0 8px}
+.nr-nav-current-destination h1{font-size:22px}
+.nr-nav-current-destination p{font-size:11px}
+.nr-nav-stage-actions{gap:8px}
+.nr-nav-stage-primary,.nr-nav-stage-secondary{
+  min-height:52px!important;
+  border-radius:15px!important;
+}
+.nr-nav-stage-primary{background:#00c878!important;color:#03251b!important}
+.nr-nav-stage-secondary{background:#0b3049!important;border:1px solid #31536a!important;color:#f2f7fa!important}
+.nr-nav-stage-secondary.complete{border-color:rgba(0,200,120,.28)!important;color:#89e9c0!important}
+.nr-nav-utility-row{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+  margin:0 0 12px;
+}
+.nr-nav-utility-row button{
+  min-height:48px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  padding:0 8px;
+  border:1px solid rgba(126,166,188,.18);
+  border-radius:14px;
+  background:#08263d;
+  color:#dce9f0;
+  font-size:10px;
+  font-weight:800;
+}
+.nr-nav-utility-row button.active{
+  border-color:rgba(0,200,120,.28);
+  background:rgba(0,200,120,.08);
+  color:#79e6b7;
+}
+.nr-nav-handoff{
+  margin-top:10px;
+  border-radius:13px;
+  color:#7f9caf;
+}
+@media(min-width:760px){
+  .nr-nav-bottom-card{
+    right:28px;bottom:28px;
+    width:430px;
+    height:min(610px,calc(100dvh - 56px));
+    border-radius:26px;
+  }
+  .nr-nav-bottom-card .nr-driver-sheet-content{padding:18px 20px 22px}
+  .nr-nav-status{right:474px;bottom:28px}
+}

@@ -584,13 +584,6 @@ export default function DriverNavigationPage() {
         <span className="nr-nav-guidance-distance">{guidanceDistance}</span>
       </section>
 
-      <div className="nr-nav-map-controls" aria-label="Map controls">
-        <button onClick={() => setMapView("vehicle")} className={mapView === "vehicle" ? "active" : ""} disabled={!position} aria-label="Recenter on vehicle" aria-pressed={mapView === "vehicle"}><Icon name="locate" size={20} /></button>
-        <button onClick={() => setMapView("overview")} className={mapView === "overview" ? "active" : ""} aria-label="Show route overview" aria-pressed={mapView === "overview"}><Icon name="globe" size={20} /></button>
-        <button onClick={() => router.push(`/trip/chat?ride=${trip.requestId}&role=driver&offer=${trip.offerId}`)} aria-label={op("Open rider chat")}><Icon name="chat" size={20} /></button>
-        <button onClick={() => router.push(`/safety?role=driver&ride=${trip.requestId}`)} aria-label={op("Open Safety Center")}><Icon name="shield" size={20} /></button>
-      </div>
-
       {(gpsState !== "fresh" || routeNotice || locationShareError || nativeRouteNotice) && (
         <div className={`nr-nav-status ${gpsState === "lost" || locationShareError ? "danger" : gpsState === "stale" || nativeRouteNotice ? "warning" : ""}`}>
           <Icon name={gpsState === "fresh" && !locationShareError && !nativeRouteNotice ? "check" : "info"} size={16} />
@@ -599,6 +592,11 @@ export default function DriverNavigationPage() {
       )}
 
       <DriverBottomSheet className="nr-nav-bottom-card" label="Trip controls" defaultSnap="collapsed">
+        <div className="nr-nav-utility-row" aria-label="Trip quick actions">
+          <button type="button" className={mapView === "overview" ? "active" : ""} onClick={() => setMapView("overview")}><Icon name="globe" size={17} /> {op("Overview")}</button>
+          <button type="button" onClick={() => router.push(`/trip/chat?ride=${trip.requestId}&role=driver&offer=${trip.offerId}`)}><Icon name="chat" size={17} /> {op("Chat")}</button>
+          <button type="button" onClick={() => router.push(`/safety?role=driver&ride=${trip.requestId}`)}><Icon name="shield" size={17} /> {op("Safety")}</button>
+        </div>
         <div className="nr-nav-trip-progress" aria-label={op("Trip progress")}>
           {[
             { label: op("Pickup"), icon: "pin" as const },

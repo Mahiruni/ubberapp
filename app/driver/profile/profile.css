@@ -97,3 +97,78 @@
 .nr-payout-refresh{min-height:38px;border-radius:10px;font-size:9px}
 @media(min-width:760px){.nr-driver-profile-subpage{padding:36px 24px 72px}.nr-profile-panel{padding:21px}}
 @media(max-width:520px){.nr-driver-profile-subpage{padding:18px 14px 44px}.nr-profile-subhead{align-items:flex-start}.nr-profile-panel{padding:15px;border-radius:18px}.nr-document-meta,.nr-vehicle-detail-grid{grid-template-columns:1fr}}
+
+
+/* Driver Profile — Flagship v4 */
+.nr-driver-profile-v2{max-width:980px;margin:0 auto}
+.nr-driver-profile-heading{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:14px;
+}
+.nr-driver-profile-heading h1{font-size:28px;letter-spacing:-.045em}
+.nr-driver-profile-heading p{color:#819dac!important;font-size:10px!important}
+.nr-driver-profile-hero-v2{
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr) auto;
+  gap:15px;
+  padding:18px;
+  border:1px solid rgba(126,166,188,.18);
+  border-radius:22px;
+  background:#07243a;
+  box-shadow:none;
+}
+.nr-driver-profile-v2 .nr-driver-profile-photo{
+  width:76px;height:76px;border-radius:24px
+}
+.nr-driver-profile-v2 .nr-driver-profile-identity h2{font-size:22px}
+.nr-driver-verification-pill{font-size:8px}
+.nr-driver-profile-edit{min-height:44px;border-radius:13px}
+.nr-driver-profile-summary-v2{
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:1px;
+  overflow:hidden;
+  margin-top:10px;
+  padding:1px;
+  border:1px solid rgba(126,166,188,.14);
+  border-radius:18px;
+  background:rgba(126,166,188,.12);
+}
+.nr-driver-profile-summary-v2 .nr-profile-metric{
+  min-height:86px;
+  padding:13px;
+  border:0;
+  border-radius:0;
+  background:#07243a;
+}
+.nr-driver-verification-card{
+  margin-top:10px;
+  border-radius:18px;
+  background:#07243a;
+}
+.nr-driver-profile-quick-grid{
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:8px;
+  margin-top:10px;
+}
+.nr-driver-profile-quick{
+  min-height:84px;
+  border-radius:17px;
+  background:#07243a;
+}
+.nr-driver-profile-columns{gap:10px;margin-top:10px}
+.nr-driver-profile-section{
+  border-radius:18px;
+  background:#07243a;
+}
+.nr-driver-profile-row{min-height:62px}
+.nr-driver-profile-footer{margin-top:14px}
+@media(max-width:700px){
+  .nr-driver-profile-hero-v2{grid-template-columns:auto minmax(0,1fr);padding:15px}
+  .nr-driver-profile-edit{grid-column:1/-1;justify-content:center}
+  .nr-driver-profile-summary-v2{grid-template-columns:1fr 1fr}
+  .nr-driver-profile-quick-grid{grid-template-columns:1fr 1fr}
+  .nr-driver-profile-columns{grid-template-columns:1fr}
+}
