@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { GeoJSONSource, Map as MapboxMap, Marker as MapboxMarker } from "mapbox-gl";
 import { Icon, Spinner } from "./ui";
+import { useDriverTheme } from "./driver-app-shell";
 import "mapbox-gl/dist/mapbox-gl.css";
 
 export type NavigationCoordinate = { lat: number; lng: number };
@@ -55,6 +56,7 @@ export function DriverNavigationMap({
   gpsState: GpsState;
   heading: number | null;
 }) {
+  const { resolvedTheme } = useDriverTheme();
   const container = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapboxMap | null>(null);
   const markers = useRef<MapboxMarker[]>([]);
@@ -65,7 +67,7 @@ export function DriverNavigationMap({
   const trafficAvailable = useRef(true);
   const [mountedRevision, setMountedRevision] = useState(0);
   const [mapStatus, setMapStatus] = useState<"loading" | "ready" | "unavailable">("loading");
-  const [styleKey, setStyleKey] = useState<MapStyleKey>("streets");
+  const [styleKey, setStyleKey] = useState<MapStyleKey>(resolvedTheme === "dark" ? "dark" : "streets");
   const [layersOpen, setLayersOpen] = useState(false);
   const [trafficVisible, setTrafficVisible] = useState(true);
   const [trafficUnavailable, setTrafficUnavailable] = useState(false);
@@ -88,7 +90,7 @@ export function DriverNavigationMap({
 
       const map = new mapboxgl.default.Map({
         container: container.current,
-        style: STYLE_URLS.streets,
+        style: STYLE_URLS[resolvedTheme === "dark" ? "dark" : "streets"],
         center: INITIAL,
         zoom: 13.5,
         attributionControl: true,
@@ -130,6 +132,10 @@ export function DriverNavigationMap({
       mapRef.current = null;
     };
   }, []);
+
+  useEffect(() => {
+    setStyleKey(resolvedTheme === "dark" ? "dark" : "streets");
+  }, [resolvedTheme]);
 
   useEffect(() => {
     const map = mapRef.current;

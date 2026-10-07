@@ -17,9 +17,15 @@ export default function DriverHomePage() {
 
   useEffect(() => {
     const requestedScreen = new URLSearchParams(window.location.search).get("screen");
-    if (requestedScreen === "earnings" || requestedScreen === "map" || requestedScreen === "profile") {
-      setScreen(requestedScreen);
+    if (requestedScreen === "earnings") {
+      router.replace("/driver/earnings");
+      return;
     }
+    if (requestedScreen === "profile") {
+      router.replace("/driver/profile");
+      return;
+    }
+    if (requestedScreen === "map") setScreen("map");
 
     let active = true;
     supabase.auth.getSession().then(async ({ data }) => {
@@ -62,5 +68,12 @@ export default function DriverHomePage() {
 
   if (checking) return <main className="nr-app nr-driver-shell"><div className="nr-driver-page"><div className="nr-driver-card nr-driver-loading"><span className="nr-driver-skeleton wide" /><span className="nr-driver-skeleton" /><span className="nr-driver-skeleton" /></div></div></main>;
 
-  return <main className="nr-app nr-driver-shell" data-mode="driver" data-theme="dark"><DriverWorkspace screen={screen} navigate={setScreen} onSafety={() => router.push("/safety?role=driver")} /></main>;
+  const navigate = (next: DriverScreen) => {
+    if (next === "home") setScreen("home");
+    else if (next === "map") setScreen("map");
+    else if (next === "earnings") router.push("/driver/earnings");
+    else router.push("/driver/profile");
+  };
+
+  return <main className="nr-app nr-driver-shell" data-mode="driver"><DriverWorkspace screen={screen} navigate={navigate} onSafety={() => router.push("/safety?role=driver")} /></main>;
 }

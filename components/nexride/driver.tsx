@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Icon, useTranslation } from "./ui";
+import { Icon } from "./ui";
+import { useDriverTheme } from "./driver-app-shell";
 import { RiderMap } from "./rider-map";
 import { useRiderLocation } from "../../lib/nexride-location";
 import { DriverEarningsScreen } from "./driver-earnings";
@@ -121,6 +122,7 @@ export function DriverWorkspace({
   onSafety: () => void;
 }) {
   const router = useRouter();
+  const { resolvedTheme } = useDriverTheme();
   const [state, setState] = useState<DriverState>(emptyState);
   const [driverId, setDriverId] = useState("");
   const [loading, setLoading] = useState(true);
@@ -423,11 +425,6 @@ export function DriverWorkspace({
     return () => navigator.geolocation.clearWatch(watchId);
   }, [driverId, state.online]);
 
-  const firstName = useMemo(() => state.name.trim().split(/\s+/)[0] || "Driver", [state.name]);
-  const initials = useMemo(
-    () => state.name.trim().split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "DR",
-    [state.name],
-  );
 
   const verified = state.reviewStatus === "approved";
   const locationReady = locationPermission === "granted";
@@ -617,7 +614,6 @@ export function DriverWorkspace({
           onBack={() => navigate("home")}
           onOpenReport={() => router.push("/driver/earnings/report")}
         />
-        <DriverBottomNav screen={screen} navigate={navigate} />
       </div>
     );
   }
@@ -649,6 +645,7 @@ export function DriverWorkspace({
             readOnly
             topLabel={state.online ? "ONLINE" : "OFFLINE"}
             showProfile={false}
+            preferredStyle={resolvedTheme === "dark" ? "dark" : "streets"}
           />
 
           <div className="nr-driver-map-float">
@@ -675,7 +672,6 @@ export function DriverWorkspace({
           </div>
         </section>
 
-        <DriverBottomNav screen={screen} navigate={navigate} />
       </div>
     );
   }
@@ -688,7 +684,6 @@ export function DriverWorkspace({
           onBack={() => navigate("home")}
           onSafety={onSafety}
         />
-        <DriverBottomNav screen={screen} navigate={navigate} />
       </div>
     );
   }
@@ -788,13 +783,8 @@ export function DriverWorkspace({
       )}
 
       <button className="nr-driver-action-row" onClick={onSafety}><Icon name="shield" /><span>Safety & Support</span><Icon name="chevron" /></button>
-      <DriverBottomNav screen={screen} navigate={navigate} />
     </div>
   );
-}
-
-function PageHead({ title, navigate, back = true }: { title: string; navigate: (screen: DriverScreen) => void; back?: boolean }) {
-  return <div className="nr-driver-page-head"><div><span className="nr-driver-kicker">NEXRIDE · DRIVER</span><h1>{title}</h1></div>{back && <button className="nr-driver-icon-btn" onClick={() => navigate("home")} aria-label="Back to driver home"><Icon name="back" /></button>}</div>;
 }
 
 function Metric({ label, value, suffix, hint, loading }: { label: string; value: string; suffix?: string; hint: string; loading: boolean }) {
@@ -806,44 +796,5 @@ function Metric({ label, value, suffix, hint, loading }: { label: string; value:
         <em>{hint}</em>
       </>}
     </section>
-  );
-}
-
-function DriverBottomNav({ screen, navigate }: { screen: DriverScreen; navigate: (screen: DriverScreen) => void }) {
-  const t = useTranslation();
-  const router = useRouter();
-  const items: {
-    id: string;
-    label: string;
-    icon: "home" | "money" | "navigation" | "user";
-    screen: DriverScreen;
-  }[] = [
-    { id: "home", label: t("home"), icon: "home", screen: "home" },
-    { id: "earnings", label: t("earnings"), icon: "money", screen: "earnings" },
-    { id: "map", label: t("map"), icon: "navigation", screen: "map" },
-    { id: "account", label: t("account"), icon: "user", screen: "profile" },
-  ];
-
-  return (
-    <nav className="nr-driver-bottom-nav" aria-label="Driver navigation" data-screen={screen}>
-      {items.map((item) => {
-        const active = Boolean(item.screen && screen === item.screen);
-        return (
-          <button
-            type="button"
-            key={item.id}
-            className={active ? "active" : ""}
-            onClick={() => navigate(item.screen)}
-            aria-current={active ? "page" : undefined}
-            aria-label={item.label}
-          >
-            <span className="nr-driver-nav-icon" aria-hidden="true">
-              <Icon name={item.icon} size={20} />
-            </span>
-            <span className="nr-driver-nav-label">{item.label}</span>
-          </button>
-        );
-      })}
-    </nav>
   );
 }

@@ -462,6 +462,7 @@ export function RiderMap({
   readOnly = false,
   topLabel,
   showProfile = true,
+  preferredStyle,
   onStartRoute,
 }: {
   position: RiderLocation | null;
@@ -478,6 +479,7 @@ export function RiderMap({
   readOnly?: boolean;
   topLabel?: string;
   showProfile?: boolean;
+  preferredStyle?: "streets" | "dark";
   onStartRoute?: () => void;
 }) {
   const t = useTranslation();
@@ -510,14 +512,14 @@ export function RiderMap({
   const suppressMapClickUntil = useRef(0);
   const loadedRef = useRef(false);
   const lastRecenter = useRef(recenter);
-  const activeStyleRef = useRef<MapStyleKey>("streets");
+  const activeStyleRef = useRef<MapStyleKey>(preferredStyle || "streets");
 
   const [mapStatus, setMapStatus] = useState<
     "loading" | "ready" | "unavailable"
   >("loading");
   const [attempt, setAttempt] = useState(0);
   const [mounted, setMounted] = useState(false);
-  const [styleKey, setStyleKey] = useState<MapStyleKey>("streets");
+  const [styleKey, setStyleKey] = useState<MapStyleKey>(preferredStyle || "streets");
   const [layerMenuOpen, setLayerMenuOpen] = useState(false);
   const [bearing, setBearing] = useState(0);
   const [trafficVisible, setTrafficVisible] = useState(true);
@@ -564,7 +566,7 @@ export function RiderMap({
 
       const map = new mapboxgl.default.Map({
         container: container.current,
-        style: STYLE_URLS[styleKey],
+        style: STYLE_URLS[preferredStyle || styleKey],
         center: INITIAL_CENTER,
         zoom: INITIAL_ZOOM,
         pitch: INITIAL_PITCH,
@@ -805,6 +807,10 @@ export function RiderMap({
       loadedRef.current = false;
     };
   }, [attempt, language]);
+
+  useEffect(() => {
+    if (preferredStyle) setStyleKey(preferredStyle);
+  }, [preferredStyle]);
 
   useEffect(() => {
     const map = mapRef.current;
