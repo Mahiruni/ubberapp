@@ -1,0 +1,25 @@
+.nr-feedback-settings{display:grid;gap:10px;margin-top:14px;padding:14px;border:1px solid color-mix(in srgb,var(--nr-border) 88%,transparent);border-radius:20px;background:linear-gradient(180deg,color-mix(in srgb,var(--nr-surface-raised) 96%,var(--nr-emerald) 4%),var(--nr-surface-raised));box-shadow:0 12px 34px rgba(4,28,48,.07)}
+.nr-feedback-heading{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:11px;padding:2px 2px 8px}
+.nr-feedback-heading>span,.nr-feedback-icon,.nr-feedback-notifications>span{display:grid;place-items:center;width:38px;height:38px;border-radius:12px;background:color-mix(in srgb,var(--nr-emerald) 13%,var(--nr-surface));color:var(--nr-emerald);border:1px solid color-mix(in srgb,var(--nr-emerald) 24%,transparent)}
+.nr-feedback-heading strong,.nr-feedback-copy strong,.nr-feedback-notifications strong{display:block;font-size:14px;letter-spacing:-.015em;color:var(--nr-text)}
+.nr-feedback-heading small,.nr-feedback-copy small,.nr-feedback-notifications small{display:block;margin-top:2px;font-size:11px;line-height:1.35;color:var(--nr-text-secondary)}
+.nr-feedback-test,.nr-feedback-notifications button{min-height:36px;padding:0 12px;border-radius:999px;border:1px solid var(--nr-border);background:var(--nr-surface);color:var(--nr-text);font-size:11px;font-weight:800;cursor:pointer}
+.nr-feedback-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:11px;padding:11px 12px;border:1px solid var(--nr-border);border-radius:16px;background:color-mix(in srgb,var(--nr-surface) 96%,transparent);cursor:pointer}
+.nr-feedback-row.emphasis{border-color:color-mix(in srgb,var(--nr-emerald) 35%,var(--nr-border));box-shadow:inset 3px 0 0 var(--nr-emerald)}
+.nr-feedback-row input{appearance:none;-webkit-appearance:none;width:42px;height:24px;border-radius:999px;background:color-mix(in srgb,var(--nr-text-secondary) 24%,transparent);position:relative;transition:background .2s ease;cursor:pointer}
+.nr-feedback-row input:after{content:"";position:absolute;width:18px;height:18px;left:3px;top:3px;border-radius:50%;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.18);transition:transform .2s ease}
+.nr-feedback-row input:checked{background:var(--nr-emerald)}
+.nr-feedback-row input:checked:after{transform:translateX(18px)}
+.nr-feedback-row input:focus-visible,.nr-feedback-test:focus-visible,.nr-feedback-notifications button:focus-visible,.nr-feedback-language button:focus-visible{outline:3px solid color-mix(in srgb,var(--nr-emerald) 35%,transparent);outline-offset:2px}
+.nr-feedback-icon{width:34px;height:34px;border-radius:11px}
+.nr-feedback-copy{min-width:0}
+.nr-feedback-notifications{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:11px;margin-top:2px;padding:12px;border-radius:16px;background:color-mix(in srgb,var(--nr-bg-secondary) 80%,transparent);border:1px solid var(--nr-border)}
+.nr-feedback-language{display:flex;gap:4px;padding:4px;margin:0 0 0 46px;border-radius:12px;background:var(--nr-bg-secondary);width:max-content}
+.nr-feedback-language button{border:0;border-radius:9px;padding:7px 11px;background:transparent;color:var(--nr-text-secondary);font-size:11px;font-weight:800;cursor:pointer}
+.nr-feedback-language button[aria-pressed="true"]{background:var(--nr-surface);color:var(--nr-text);box-shadow:0 3px 12px rgba(4,28,48,.08)}
+.nr-feedback-saved{margin:0;padding:7px 10px;border-radius:10px;background:color-mix(in srgb,var(--nr-emerald) 10%,transparent);color:var(--nr-text);font-size:11px;font-weight:700}
+.nr-feedback-note{margin:0;padding:2px 4px;font-size:10px;line-height:1.45;color:var(--nr-text-secondary)}
+.nr-driver-request-page .nr-request-heading:before{content:"";width:8px;height:8px;border-radius:50%;background:var(--nr-emerald);box-shadow:0 0 0 5px color-mix(in srgb,var(--nr-emerald) 14%,transparent);flex:0 0 auto}
+.nr-driver-request-page .nr-request-heading{align-items:center}
+@media(max-width:430px){.nr-feedback-settings{padding:12px;border-radius:18px}.nr-feedback-row{padding:10px}.nr-feedback-heading small,.nr-feedback-copy small,.nr-feedback-notifications small{font-size:10px}.nr-feedback-notifications{grid-template-columns:auto 1fr}.nr-feedback-notifications button{grid-column:2;justify-self:start}}
+@media(prefers-reduced-motion:reduce){.nr-feedback-row input,.nr-feedback-row input:after{transition:none!important}}
