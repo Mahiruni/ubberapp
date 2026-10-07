@@ -710,7 +710,20 @@ export function DriverWorkspace({
           {state.avatarUrl ? <img src={state.avatarUrl} alt="" /> : <Icon name="user" size={22} />}
         </button>
 
-        <div className="nr-driver-home-swipe">
+        <div
+          className="nr-driver-home-swipe"
+          data-map-input-boundary="true"
+          onPointerDown={(event) => event.stopPropagation()}
+          onPointerMove={(event) => event.stopPropagation()}
+          onPointerUp={(event) => event.stopPropagation()}
+          onPointerCancel={(event) => event.stopPropagation()}
+          onTouchStart={(event) => event.stopPropagation()}
+          onTouchMove={(event) => event.stopPropagation()}
+          onTouchEnd={(event) => event.stopPropagation()}
+          onWheel={(event) => event.stopPropagation()}
+          onClick={(event) => event.stopPropagation()}
+          onDoubleClick={(event) => event.stopPropagation()}
+        >
           <DriverAvailabilitySwipe
             online={state.online}
             updating={updating}

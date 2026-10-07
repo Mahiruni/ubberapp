@@ -569,7 +569,20 @@ function AppWorkspace({
             <Brand driver={mode === "driver"} />
             <p>{t("brandMessage")}</p>
           </div>
-          <div className={`nr-panel ${riderMapView ? "nr-rider-flow-panel" : ""} ${riderHome ? "nr-home-panel-host" : ""}`}>
+          <div
+            className={`nr-panel ${riderMapView ? "nr-rider-flow-panel" : ""} ${riderHome ? "nr-home-panel-host" : ""}`}
+            data-map-input-boundary={riderMapView ? "true" : undefined}
+            onPointerDown={(event) => event.stopPropagation()}
+            onPointerMove={(event) => event.stopPropagation()}
+            onPointerUp={(event) => event.stopPropagation()}
+            onPointerCancel={(event) => event.stopPropagation()}
+            onTouchStart={(event) => event.stopPropagation()}
+            onTouchMove={(event) => event.stopPropagation()}
+            onTouchEnd={(event) => event.stopPropagation()}
+            onWheel={(event) => event.stopPropagation()}
+            onClick={(event) => event.stopPropagation()}
+            onDoubleClick={(event) => event.stopPropagation()}
+          >
             {riderMapView && <div className="nr-rider-map-input-shield" aria-hidden="true" />}
             {profileView && mode === "rider" ? <RiderProfile language={language} setLanguage={setLanguage} theme={theme} setTheme={setTheme} profile={profile} setProfile={setProfile} rides={() => setRiderScreen("trips")} saved={() => setRiderScreen("saved")} payments={() => setRiderScreen("wallet")} safety={() => openSafety(mode)} support={() => window.location.assign("/support")} switchDriver={() => switchMode("driver")} isAdmin={isAdmin} /> : profileView ? (
               <Sheet title={t("profile")}>

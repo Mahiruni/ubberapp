@@ -998,3 +998,37 @@
   position:relative;
   z-index:1;
 }
+
+
+/* Hard map-input boundary: opaque, composited, and above the Mapbox canvas. */
+.nr-app[data-mode="rider"] .rider-map-flow .nr-rider-flow-panel[data-map-input-boundary="true"] {
+  position:relative!important;
+  z-index:1000!important;
+  isolation:isolate!important;
+  contain:paint!important;
+  transform:translateZ(0)!important;
+  background:var(--surface)!important;
+  pointer-events:auto!important;
+  touch-action:auto!important;
+  overscroll-behavior:contain!important;
+  -webkit-tap-highlight-color:transparent;
+}
+.nr-app[data-mode="rider"] .rider-map-flow .nr-rider-flow-panel[data-map-input-boundary="true"]::before {
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  background:var(--surface);
+  pointer-events:none;
+}
+.nr-app[data-mode="rider"] .rider-map-flow .nr-rider-flow-panel[data-map-input-boundary="true"] .nr-rider-map-input-shield {
+  z-index:0!important;
+  background:var(--surface)!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+  touch-action:none!important;
+}
+.nr-app[data-mode="rider"] .rider-map-flow .nr-rider-flow-panel[data-map-input-boundary="true"] > :not(.nr-rider-map-input-shield) {
+  position:relative;
+  z-index:1;
+}

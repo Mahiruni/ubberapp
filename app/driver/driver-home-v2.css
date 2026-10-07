@@ -323,3 +323,23 @@
     padding:5px!important;
   }
 }
+
+
+/* Hard Driver map-input boundary: the wrapper owns its entire hit area. */
+.nr-driver-home-swipe[data-map-input-boundary="true"]{
+  z-index:1000!important;
+  isolation:isolate!important;
+  contain:paint!important;
+  transform:translateX(-50%) translateZ(0)!important;
+  background:var(--driver-surface,#fff)!important;
+  pointer-events:auto!important;
+  touch-action:none!important;
+  overscroll-behavior:contain!important;
+}
+.nr-driver-app-shell[data-theme="dark"] .nr-driver-home-swipe[data-map-input-boundary="true"]{
+  background:var(--driver-surface,#08283f)!important;
+}
+.nr-driver-home-swipe[data-map-input-boundary="true"] .nr-driver-availability-swipe{
+  pointer-events:auto!important;
+  touch-action:none!important;
+}
