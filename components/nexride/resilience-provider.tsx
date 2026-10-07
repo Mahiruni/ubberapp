@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-type NetworkState = "online" | "slow" | "reconnecting" | "offline" | "restored";
+type NetworkState = "online" | "slow" | "reconnecting" | "offline";
 
 const DATA_SAVER_KEY = "nexride.data-saver";
 const NETWORK_EVENT = "nexride:network-state";
@@ -24,10 +24,11 @@ function connectionSnapshot() {
 export function NexRideResilienceProvider({ children }: { children: React.ReactNode }) {
   const [network, setNetwork] = useState<NetworkState>("online");
   const [dataSaver, setDataSaver] = useState(false);
-  const [showRestored, setShowRestored] = useState(false);
   const offlineSince = useRef<number | null>(null);
-  const restoreTimer = useRef<number | null>(null);
   const probeTimer = useRef<number | null>(null);
+  const toastTimer = useRef<number | null>(null);
+  const networkRef = useRef<NetworkState>("online");
+  const [toast, setToast] = useState<{ state: NetworkState; message: string } | null>(null);
   const consecutiveFailures = useRef(0);
 
   const applyDataSaver = useCallback((enabled: boolean) => {
@@ -39,11 +40,50 @@ export function NexRideResilienceProvider({ children }: { children: React.ReactN
     } catch {}
   }, []);
 
-  const publish = useCallback((next: NetworkState) => {
-    setNetwork(next);
-    document.documentElement.dataset.nrNetwork = next;
-    window.dispatchEvent(new CustomEvent(NETWORK_EVENT, { detail: { state: next } }));
-  }, []);
+  const showNetworkToast = useCallback(
+    (state: NetworkState, message: string) => {
+      setToast({ state, message });
+      if (toastTimer.current) window.clearTimeout(toastTimer.current);
+      toastTimer.current = window.setTimeout(() => {
+        setToast(null);
+        toastTimer.current = null;
+      }, 3000);
+    },
+    [],
+  );
+
+  const publish = useCallback(
+    (next: NetworkState, overrideMessage?: string) => {
+      const previous = networkRef.current;
+      if (previous === next) return;
+
+      networkRef.current = next;
+      setNetwork(next);
+      document.documentElement.dataset.nrNetwork = next;
+      window.dispatchEvent(
+        new CustomEvent(NETWORK_EVENT, { detail: { state: next } }),
+      );
+
+      const recovered =
+        (previous === "offline" || previous === "reconnecting") &&
+        (next === "online" || next === "slow");
+
+      const message =
+        overrideMessage ||
+        (recovered
+          ? "Back online. Live trip updates restored."
+          : next === "offline"
+            ? "You’re offline. Showing the latest saved trip information."
+            : next === "reconnecting"
+              ? "Reconnecting… live trip updates may be delayed."
+              : next === "slow"
+                ? "Connection is slow. NexRide is reducing background data."
+                : "Back online. Live trip updates restored.");
+
+      showNetworkToast(next, message);
+    },
+    [showNetworkToast],
+  );
 
   useEffect(() => {
     const snapshot = connectionSnapshot();
@@ -65,18 +105,13 @@ export function NexRideResilienceProvider({ children }: { children: React.ReactN
 
     const restored = () => {
       consecutiveFailures.current = 0;
-      if (offlineSince.current) {
-        offlineSince.current = null;
-        publish("restored");
-        setShowRestored(true);
-        if (restoreTimer.current) window.clearTimeout(restoreTimer.current);
-        restoreTimer.current = window.setTimeout(() => {
-          setShowRestored(false);
-          evaluate();
-        }, 3200);
-      } else {
-        evaluate();
-      }
+      const hadBeenOffline = offlineSince.current !== null;
+      offlineSince.current = null;
+      const current = connectionSnapshot();
+      publish(
+        current.slow ? "slow" : "online",
+        hadBeenOffline ? "Back online. Live trip updates restored." : undefined,
+      );
     };
 
     const wentOffline = () => {
@@ -97,8 +132,8 @@ export function NexRideResilienceProvider({ children }: { children: React.ReactN
       window.removeEventListener("online", restored);
       window.removeEventListener("offline", wentOffline);
       connection?.removeEventListener?.("change", evaluate);
-      if (restoreTimer.current) window.clearTimeout(restoreTimer.current);
       if (probeTimer.current) window.clearTimeout(probeTimer.current);
+      if (toastTimer.current) window.clearTimeout(toastTimer.current);
     };
   }, [applyDataSaver, publish]);
 
@@ -139,16 +174,8 @@ export function NexRideResilienceProvider({ children }: { children: React.ReactN
     };
   }, [network, publish]);
 
-  const message = useMemo(() => {
-    if (network === "offline") return "You’re offline. Showing the latest saved trip information.";
-    if (network === "reconnecting") return "Reconnecting… live trip updates may be delayed.";
-    if (network === "slow") return "Connection is slow. NexRide is reducing background data.";
-    if (network === "restored" || showRestored) return "Back online. Live trip updates restored.";
-    if (dataSaver) return "Data Saver is on.";
-    return "";
-  }, [network, showRestored, dataSaver]);
-
-  const visible = network !== "online" || dataSaver || showRestored;
+  const message = toast?.message || "";
+  const visible = Boolean(toast);
 
   return (
     <>
@@ -157,7 +184,7 @@ export function NexRideResilienceProvider({ children }: { children: React.ReactN
         {message}
       </div>
       {visible && (
-        <aside className="nr-network-banner" data-state={network} role="status">
+        <aside className="nr-network-banner" data-state={toast?.state || network} role="status">
           <span className="nr-network-dot" aria-hidden="true" />
           <span className="nr-network-copy">{message}</span>
           <button
