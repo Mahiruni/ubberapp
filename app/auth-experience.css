@@ -477,14 +477,14 @@
     linear-gradient(100deg,rgba(0,200,120,.10),transparent 52%);
 }
 .nr-auth-experience[data-mode="rider"] .nr-auth-content{
-  background:rgba(255,255,255,.88);
+  background:rgba(255,255,255,.76);
   border-top:1px solid rgba(255,255,255,.52);
   backdrop-filter:blur(22px) saturate(125%);
   -webkit-backdrop-filter:blur(22px) saturate(125%);
 }
 @media(min-width:900px){
   .nr-auth-experience[data-mode="rider"] .nr-auth-content{
-    background:rgba(255,255,255,.90);
+    background:rgba(255,255,255,.80);
     border-left:1px solid rgba(255,255,255,.46);
     border-top:0;
   }
@@ -499,6 +499,6 @@
     -webkit-backdrop-filter:none;
   }
   .nr-auth-experience[data-mode="rider"] .nr-auth-content{
-    background:rgba(255,255,255,.86);
+    background:rgba(255,255,255,.79);
   }
 }
