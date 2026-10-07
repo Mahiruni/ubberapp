@@ -146,3 +146,23 @@
     transition: none;
   }
 }
+
+
+/* Welcome page glass surface over the user-supplied Addis city image. */
+.nr-auth-content .nr-rider-welcome{color:#102334}
+.nr-auth-content .nr-rider-welcome>p{color:#52697a}
+.nr-auth-content .nr-rider-entry-kicker{
+  border-color:rgba(0,157,94,.18);
+  background:rgba(0,200,120,.08);
+  color:#008c57;
+}
+.nr-auth-content .nr-rider-entry-benefits span{
+  border-color:rgba(16,35,52,.09);
+  background:rgba(255,255,255,.50);
+  color:#18384d;
+  box-shadow:0 8px 24px rgba(4,28,48,.05);
+  -webkit-backdrop-filter:blur(12px);
+  backdrop-filter:blur(12px);
+}
+.nr-auth-content .nr-rider-entry-benefits svg{color:#00a765}
+.nr-auth-content .nr-rider-driver-link a{color:#008c57}
