@@ -1,6 +1,7 @@
 "use client";
 import Image from "next/image";
 import { RiderProfile, RiderSettings } from "../components/nexride/rider-profile";
+import { NexRideFeedbackSettings } from "../components/nexride/feedback-settings";
 import { useRouter } from "next/navigation";
 import { RiderSplash } from "../components/nexride/splash";
 import {
@@ -823,6 +824,7 @@ function AppWorkspace({
                   </div>
                 </div>
               )}
+              <NexRideFeedbackSettings role="driver" language={language} />
               <StatusBanner>{t("localAccount")}</StatusBanner>
               <Button variant="secondary" onClick={() => setPanel("reset")}>
                 {t("clear")}
