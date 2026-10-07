@@ -8,10 +8,12 @@ import { RiderMap } from "./rider-map";
 import { useRiderLocation } from "../../lib/nexride-location";
 import { DriverEarningsScreen } from "./driver-earnings";
 import { DriverProfileScreen } from "./driver-profile";
+import { DriverAvailabilitySwipe } from "./driver-availability-swipe";
 import { supabase } from "../../lib/supabase";
 import { resolveSessionRole } from "../../lib/nexride-account-role";
 import { nexrideApiFetch } from "../../lib/nexride-api-auth";
 import "../../app/driver/driver-dashboard.css";
+import "../../app/driver/driver-home-v2.css";
 import "../../app/rider-home.css";
 
 export type DriverScreen = "home" | "earnings" | "map" | "profile";
@@ -493,6 +495,28 @@ export function DriverWorkspace({
     const nextOnline = !state.online;
     let location: Record<string, unknown> | undefined;
 
+    if (!nextOnline) {
+      const activeRide = await supabase
+        .from("ride_requests")
+        .select("id,status")
+        .eq("assigned_driver_id", driverId)
+        .in("status", ["accepted", "arrived_pickup", "in_trip"])
+        .limit(1)
+        .maybeSingle();
+
+      if (activeRide.error) {
+        setError("NexRide could not verify your active-trip status. Stay online and try again.");
+        setUpdating(false);
+        return;
+      }
+
+      if (activeRide.data) {
+        setError("You’re on an active trip. Complete or cancel it before going offline.");
+        setUpdating(false);
+        return;
+      }
+    }
+
     if (nextOnline) {
       try {
         const position = await currentPosition();
@@ -645,8 +669,11 @@ export function DriverWorkspace({
   }
 
   return (
-    <div className="nr-driver-page">
-      <section className={`nr-driver-operational-map ${state.online ? "is-online" : ""}`} aria-label="Driver operational map">
+    <div className="nr-driver-page nr-driver-home-cockpit">
+      <section
+        className={`nr-driver-home-map-canvas ${state.online ? "is-online" : "is-offline"}`}
+        aria-label="Driver operational map"
+      >
         <RiderMap
           position={mapLocation.position}
           status={mapLocation.status}
@@ -656,68 +683,70 @@ export function DriverWorkspace({
           onProfile={() => navigate("profile")}
           locked={loading}
           readOnly
-          topLabel={state.online ? "ONLINE" : "OFFLINE"}
           showProfile={false}
           preferredStyle={resolvedTheme === "dark" ? "dark" : "streets"}
+          showSearch={false}
+          showNativeControls={false}
         />
-        <div className="nr-driver-operational-card">
-          <div className="nr-driver-operational-status">
-            <span className={`nr-status-dot ${state.online ? "online" : "offline"}`} aria-hidden="true" />
+
+        <div className="nr-driver-home-status-chip" role="status" aria-live="polite" data-online={state.online ? "true" : "false"}>
+          <span className="nr-driver-home-status-dot" aria-hidden="true" />
+          <span>{state.online ? "Online · Ready for requests" : "Offline"}</span>
+        </div>
+
+        <section className="nr-driver-availability-dock" aria-label="Driver availability">
+          <div className="nr-driver-availability-dock-head">
             <div>
               <small>DRIVER AVAILABILITY</small>
               <strong>{state.online ? "Online" : "Offline"}</strong>
-              <span>
-                {state.online
-                  ? "Ready for ride requests. NexRide uses your location while you’re online."
-                  : verified
-                    ? "Go online when you’re ready to receive requests."
-                    : "Complete verification before going online."}
-              </span>
             </div>
+            <span className="nr-driver-availability-state" data-online={state.online ? "true" : "false"}>
+              <i aria-hidden="true" />
+              {state.online ? "Active" : "Not accepting rides"}
+            </span>
           </div>
-          <button
-            className={`nr-driver-primary ${state.online ? "secondary-state" : ""}`}
-            disabled={loading || updating || (!state.online && !canGoOnline)}
-            onClick={toggleAvailability}
-          >
-            {updating ? "Updating…" : state.online ? "Go offline" : "Go online"}
-          </button>
-        </div>
+
+          <DriverAvailabilitySwipe
+            online={state.online}
+            updating={updating}
+            disabled={loading || (!state.online && !canGoOnline)}
+            onToggle={toggleAvailability}
+          />
+
+          <p className="nr-driver-availability-help">
+            {updating
+              ? state.online
+                ? "Going offline…"
+                : "Going online…"
+              : state.online
+                ? "You’re searchable by eligible riders nearby. Your live location is shared while you’re online."
+                : verified
+                  ? "Swipe right when you’re ready to receive ride requests."
+                  : "Complete Driver verification before going online."}
+          </p>
+
+          {error && (
+            <div className="nr-driver-availability-message error" role="alert">
+              <Icon name="info" size={17} />
+              <div>
+                <strong>{driverErrorTitle(error)}</strong>
+                <span>{error}</span>
+              </div>
+            </div>
+          )}
+
+          {!loading && block && (
+            <div className={`nr-driver-availability-message ${block.tone}`}>
+              <Icon name={verified ? "navigation" : "shield"} size={17} />
+              <div>
+                <strong>{block.title}</strong>
+                <span>{block.body}</span>
+              </div>
+              {block.action && <button type="button" onClick={resolveBlock}>{block.action}</button>}
+            </div>
+          )}
+        </section>
       </section>
-
-      {error && <div className="nr-driver-notice error" role="alert"><Icon name="info" /><div><strong>{driverErrorTitle(error)}</strong><span>{error}</span></div></div>}
-
-      {!loading && block && (
-        <div className={`nr-driver-notice ${block.tone}`}>
-          <Icon name={verified ? "navigation" : "shield"} />
-          <div><strong>{block.title}</strong><span>{block.body}</span></div>
-          {block.action && <button onClick={resolveBlock}>{block.action}</button>}
-        </div>
-      )}
-
-
-      {loading ? (
-        <section className="nr-driver-card nr-driver-loading">
-          <span className="nr-driver-skeleton wide" />
-          <span className="nr-driver-skeleton" />
-          <span className="nr-driver-skeleton" />
-        </section>
-      ) : state.activeTrip ? (
-        <section className="nr-driver-card nr-active-trip">
-          <div><span className="nr-driver-kicker">ACTIVE TRIP</span><strong>{state.activeTrip.status}</strong></div>
-          <div className="nr-trip-route"><span>{state.activeTrip.pickup}</span><Icon name="chevron" /><span>{state.activeTrip.destination}</span></div>
-          <button onClick={() => navigate("map")}>Open trip</button>
-        </section>
-      ) : (
-        <section className="nr-driver-card nr-empty-trip">
-          <div className="nr-empty-trip-icon"><Icon name="locate" size={23} /></div>
-          <div>
-            <strong>No trips yet</strong>
-            <span>{state.online ? "You’re online. New ride requests will appear here." : "Go online to start receiving ride requests."}</span>
-          </div>
-        </section>
-      )}
-
     </div>
   );
 }
