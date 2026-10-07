@@ -87,21 +87,39 @@ export function RiderHomePanel({
   const rows = data.recent.slice(0, 3);
   const [snap, setSnap] = useState<HomeSheetSnap>("medium");
   const [viewportHeight, setViewportHeight] = useState(800);
-  const [offset, setOffset] = useState(() => snapOffset("medium", 800));
   const [dragging, setDragging] = useState(false);
+  const sheetRef = useRef<HTMLElement | null>(null);
+  const frameRef = useRef<number | null>(null);
+  const offsetRef = useRef(snapOffset("medium", 800));
   const drag = useRef({
     startY: 0,
     startOffset: 0,
     lastY: 0,
     lastAt: 0,
     velocity: 0,
+    moved: false,
   });
+
+  const paintOffset = (next: number) => {
+    offsetRef.current = next;
+    if (frameRef.current !== null) return;
+    frameRef.current = requestAnimationFrame(() => {
+      sheetRef.current?.style.setProperty(
+        "--nr-home-sheet-offset",
+        `${offsetRef.current}px`,
+      );
+      frameRef.current = null;
+    });
+  };
 
   useEffect(() => {
     const update = () => {
-      const nextHeight = Math.max(520, window.innerHeight || 800);
+      const nextHeight = Math.max(
+        520,
+        window.visualViewport?.height || window.innerHeight || 800,
+      );
       setViewportHeight(nextHeight);
-      setOffset(snapOffset(snap, nextHeight));
+      paintOffset(snapOffset(snap, nextHeight));
     };
     update();
     window.addEventListener("resize", update);
@@ -109,12 +127,13 @@ export function RiderHomePanel({
     return () => {
       window.removeEventListener("resize", update);
       window.visualViewport?.removeEventListener("resize", update);
+      if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
     };
   }, [snap]);
 
   const applySnap = (next: HomeSheetSnap) => {
     setSnap(next);
-    setOffset(snapOffset(next, viewportHeight));
+    requestAnimationFrame(() => paintOffset(snapOffset(next, viewportHeight)));
   };
 
   const nearestSnap = (value: number) =>
@@ -129,7 +148,7 @@ export function RiderHomePanel({
     if (!dragging) return;
     setDragging(false);
     const order: HomeSheetSnap[] = ["expanded", "medium", "collapsed"];
-    const nearest = nearestSnap(offset);
+    const nearest = nearestSnap(offsetRef.current);
     const index = order.indexOf(nearest);
     const velocity = drag.current.velocity;
     if (velocity < -0.45) {
@@ -147,10 +166,11 @@ export function RiderHomePanel({
     const now = performance.now();
     drag.current = {
       startY: event.clientY,
-      startOffset: offset,
+      startOffset: offsetRef.current,
       lastY: event.clientY,
       lastAt: now,
       velocity: 0,
+      moved: false,
     };
     setDragging(true);
   };
@@ -162,14 +182,20 @@ export function RiderHomePanel({
     drag.current.velocity = (event.clientY - drag.current.lastY) / elapsed;
     drag.current.lastY = event.clientY;
     drag.current.lastAt = now;
+    const delta = event.clientY - drag.current.startY;
+    if (Math.abs(delta) > 3) drag.current.moved = true;
     const next = Math.min(
       snapOffset("collapsed", viewportHeight),
-      Math.max(0, drag.current.startOffset + event.clientY - drag.current.startY),
+      Math.max(0, drag.current.startOffset + delta),
     );
-    setOffset(next);
+    paintOffset(next);
   };
 
   const toggleSnap = () => {
+    if (drag.current.moved) {
+      drag.current.moved = false;
+      return;
+    }
     applySnap(
       snap === "collapsed"
         ? "medium"
@@ -199,11 +225,14 @@ export function RiderHomePanel({
 
   return (
     <section
+      ref={sheetRef}
       className="nr-rider-home-panel nr-rider-home-sheet"
       aria-label={t("destination")}
       data-snap={snap}
       data-dragging={dragging || undefined}
-      style={{ "--nr-home-sheet-offset": `${offset}px` } as CSSProperties}
+      style={{
+        "--nr-home-sheet-offset": "29dvh",
+      } as CSSProperties}
     >
       <button
         type="button"
@@ -219,6 +248,7 @@ export function RiderHomePanel({
         onPointerMove={onPointerMove}
         onPointerUp={finishDrag}
         onPointerCancel={finishDrag}
+        onLostPointerCapture={finishDrag}
         onKeyDown={onHandleKeyDown}
       >
         <span className="nr-home-handle" aria-hidden="true" />
