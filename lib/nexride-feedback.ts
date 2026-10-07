@@ -198,7 +198,7 @@ function startRideRequestAlert() {
 }
 
 function soundFor(event: NexRideFeedbackEvent): NexRideSoundId | null {
-  return {
+  const sounds: Record<NexRideFeedbackEvent, NexRideSoundId | null> = {
     driver_online: "online",
     driver_offline: "offline",
     success: "success",
@@ -214,7 +214,8 @@ function soundFor(event: NexRideFeedbackEvent): NexRideSoundId | null {
     cancelled: "cancelled",
     warning: "warning",
     safety: "safety",
-  }[event];
+  };
+  return sounds[event];
 }
 
 function isDuplicate(key?: string) {
@@ -238,7 +239,6 @@ async function showSystemNotification(title: string, body: string, tag?: string,
         icon: "/icons/icon-192.png",
         badge: "/favicon-32x32.png",
         tag,
-        renotify: false,
         silent: false,
         data: { url: url || window.location.href },
       });

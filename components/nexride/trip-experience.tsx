@@ -99,22 +99,22 @@ export function TripExperience({ screen, tripId, userId, preview, navigate, setP
         if (stopped) return;
         if (feedbackStatus && next.status && next.status !== feedbackStatus) {
           const event =
-            next.status === "arrived_pickup" ? "driver_arrived"
+            next.status === "arrived" ? "driver_arrived"
             : next.status === "in_trip" ? "trip_started"
             : next.status === "completed" ? "trip_completed"
-            : next.status === "cancelled" || next.status === "withdrawn" ? "cancelled"
+            : next.status === "cancelled" ? "cancelled"
             : null;
           if (event) {
             emitNexRideFeedback({
               event,
               id: `${tripId}:${next.status}`,
               title:
-                next.status === "arrived_pickup" ? "Your driver is here"
+                next.status === "arrived" ? "Your driver is here"
                 : next.status === "in_trip" ? "Trip started"
                 : next.status === "completed" ? "Trip completed"
                 : "Ride cancelled",
               body:
-                next.status === "arrived_pickup" ? "Your NexRide driver has arrived at the pickup point."
+                next.status === "arrived" ? "Your NexRide driver has arrived at the pickup point."
                 : next.status === "in_trip" ? "Your NexRide trip is now in progress."
                 : next.status === "completed" ? "You’ve arrived. Your trip is complete."
                 : "This ride is no longer active.",
