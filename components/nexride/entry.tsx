@@ -8,11 +8,9 @@ import "./splash.css";
 
 export function EntryShell({
   children,
-  photoCredit = false,
   authMode,
 }: {
   children: ReactNode;
-  photoCredit?: boolean;
   authMode?: "signin" | "signup" | "forgot" | "reset";
 }) {
   const [language, setLanguage] = useState<Language>("en");
@@ -72,7 +70,6 @@ export function EntryShell({
                 </Button>
               </div>
               {children}
-              {photoCredit && <PhotoCredit />}
             </div>
           </section>
         </div>
@@ -92,28 +89,5 @@ export function EntryPhoto() {
         quality={85}
       />
     </div>
-  );
-}
-
-export function PhotoCredit() {
-  return (
-    <small className="nr-entry-credit">
-      Photo:{" "}
-      <a
-        href="https://commons.wikimedia.org/wiki/File:AddisView.jpg"
-        target="_blank"
-        rel="noreferrer"
-      >
-        DaneyWiki
-      </a>{" "}
-      ·{" "}
-      <a
-        href="https://creativecommons.org/licenses/by-sa/4.0/"
-        target="_blank"
-        rel="noreferrer"
-      >
-        CC BY-SA 4.0
-      </a>
-    </small>
   );
 }
