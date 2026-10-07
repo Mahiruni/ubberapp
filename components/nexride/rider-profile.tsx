@@ -7,6 +7,7 @@ import { PREVIEW_ENABLED_KEY, PREVIEW_STORAGE_KEY, markExplicitSignOut, retrySta
 import type { Language } from '../../lib/nexride-i18n';
 import type { PreviewProfile } from '../../lib/nexride-preview';
 import { Button, Dialog, Icon, InputField, useTranslation, type IconName } from './ui';
+import { NexRideFeedbackSettings } from './feedback-settings';
 
 type Props = {
   language: Language;
@@ -69,7 +70,8 @@ export function RiderSettings({language,setLanguage,theme,setTheme}: Pick<Props,
         }
       }}/>
     </label>
-    <p className="nr-muted">{say('Push, SMS and email notifications are not connected yet. Safety and trip status remain visible in the app.','የፑሽ፣ ኤስኤምኤስና ኢሜይል ማሳወቂያዎች ገና አልተገናኙም።')}</p>
+    <NexRideFeedbackSettings role="rider" language={language}/>
+    <p className="nr-muted">{say('System notifications are available when this device supports them and you allow permission. SMS and email alerts are not connected yet. Safety and trip status remain visible in the app.','የስርዓት ማሳወቂያዎች መሣሪያው ሲደግፍና ፈቃድ ሲሰጡ ይገኛሉ። የSMS እና ኢሜይል ማሳወቂያዎች ገና አልተገናኙም።')}</p>
     {feedback&&<p className="nr-settings-feedback" role="status">{feedback}</p>}
   </div>;
 }
