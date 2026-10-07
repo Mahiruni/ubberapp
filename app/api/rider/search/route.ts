@@ -1,4 +1,3 @@
-import { randomUUID } from "node:crypto";
 import { mapboxToken } from "../../../../lib/location";
 import { validPoint } from "../../../../lib/nexride-search";
 
@@ -99,53 +98,26 @@ async function searchPlaces(
   q: string,
   language: "en" | "am",
 ): Promise<Result[]> {
-  // Search Box complements geocoding with POIs/businesses such as hospitals,
-  // schools, hotels, restaurants, banks and other named Addis destinations.
-  const session = randomUUID();
+  // Search Box text search returns coordinate-bearing POIs and businesses in
+  // one request: hospitals, schools, hotels, restaurants, banks, malls, etc.
   const params = new URLSearchParams({
     q,
     access_token: token,
-    session_token: session,
     country: "ET",
     proximity: "38.775,9.008",
     bbox: "38.66,8.84,38.91,9.11",
-    limit: "6",
-    language: language === "am" ? "am" : "en",
+    limit: "10",
+    language,
   });
-  const suggest = await fetch(
-    `https://api.mapbox.com/search/searchbox/v1/suggest?${params}`,
+  const result = await fetch(
+    `https://api.mapbox.com/search/searchbox/v1/forward?${params}`,
     { signal: AbortSignal.timeout(7000), cache: "no-store" },
   );
-  if (!suggest.ok) return [];
-  const payload = await suggest.json();
-  const suggestions = Array.isArray(payload.suggestions)
-    ? payload.suggestions.slice(0, 6)
-    : [];
-
-  const rows = await Promise.all(
-    suggestions.map(async (suggestion: { mapbox_id?: unknown }) => {
-      if (typeof suggestion.mapbox_id !== "string") return null;
-      const retrieve = new URLSearchParams({
-        access_token: token,
-        session_token: session,
-      });
-      try {
-        const result = await fetch(
-          `https://api.mapbox.com/search/searchbox/v1/retrieve/${encodeURIComponent(
-            suggestion.mapbox_id,
-          )}?${retrieve}`,
-          { signal: AbortSignal.timeout(5000), cache: "no-store" },
-        );
-        if (!result.ok) return null;
-        const data = await result.json();
-        const feature = Array.isArray(data.features) ? data.features[0] : null;
-        return feature ? normalizeFeature(feature) : null;
-      } catch {
-        return null;
-      }
-    }),
-  );
-  return rows.filter((item): item is Result => !!item);
+  if (!result.ok) return [];
+  const payload = await result.json();
+  return (Array.isArray(payload.features) ? payload.features : [])
+    .map(normalizeFeature)
+    .filter((item: Result | null): item is Result => !!item);
 }
 
 export async function GET(request: Request) {
