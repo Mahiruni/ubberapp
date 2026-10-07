@@ -266,8 +266,7 @@ export function RiderMenu({
               {items.map((item) => {
                 const selected = active === item.id;
                 const disabled =
-                  locked &&
-                  !["safety", "messages", "profile"].includes(item.id);
+                  locked && !["safety", "messages"].includes(item.id);
                 return (
                   <button
                     type="button"
