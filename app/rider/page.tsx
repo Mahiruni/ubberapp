@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { EntryPhoto, EntryShell } from "../../components/nexride/entry";
+import { EntryShell } from "../../components/nexride/entry";
 import { Button, Icon, StatusBanner, useTranslation } from "../../components/nexride/ui";
 import {
   enterRider,
@@ -19,7 +19,7 @@ import "./rider-entry.css";
 
 export default function RiderWelcomePage() {
   return (
-    <EntryShell photoCredit>
+    <EntryShell>
       <RiderWelcome />
     </EntryShell>
   );
@@ -81,8 +81,6 @@ function RiderWelcome() {
       <span className="nr-rider-entry-kicker">NEXRIDE · RIDER</span>
       <h1>{t("welcome")}</h1>
       <p>{t("brandMessage")}</p>
-      <EntryPhoto />
-
       <div className="nr-rider-entry-benefits" aria-label="Rider experience">
         <span><Icon name="pin" size={18} /> Pickup & destination</span>
         <span><Icon name="navigation" size={18} /> Ride choices</span>
