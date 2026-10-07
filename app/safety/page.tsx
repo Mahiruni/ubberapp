@@ -7,6 +7,7 @@ import { DriverStandaloneMenu, usePersistedDriverTheme } from "../../components/
 import { RiderMenu, usePersistedRiderTheme } from "../../components/nexride/rider-menu";
 import { useOperationalTranslation } from "../../components/nexride/operational-i18n";
 import { supabase } from "../../lib/supabase";
+import { emitNexRideFeedback } from "../../lib/nexride-feedback";
 import "../nexride.css";
 import "./safety.css";
 import "../detail-system.css";
@@ -310,6 +311,13 @@ function EmergencySOS() {
     cancelHold();
     setProgress(100);
     setOpened(true);
+    emitNexRideFeedback({
+      event: "safety",
+      id: "emergency-options:" + Date.now(),
+      title: "Emergency options opened",
+      body: "Choose the phone service you need. NexRide has not placed a call automatically.",
+      url: "/safety",
+    });
   };
 
   const beginHold = () => {
