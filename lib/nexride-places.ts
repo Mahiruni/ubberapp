@@ -1,4 +1,32 @@
-export type Place = { name: string; address: string; lat: number; lng: number };
+export type AddisSubcity =
+  | "Addis Ketema"
+  | "Akaky Kaliti"
+  | "Arada"
+  | "Bole"
+  | "Gullele"
+  | "Kirkos"
+  | "Kolfe Keranio"
+  | "Lideta"
+  | "Nifas Silk-Lafto"
+  | "Yeka"
+  | "Lemi Kura";
+
+export type Place = {
+  name: string;
+  address: string;
+  lat: number;
+  lng: number;
+  nameAm?: string;
+  aliases?: string[];
+  category?: string;
+  subcity?: AddisSubcity | string;
+  neighborhood?: string;
+  provider?: "nexride" | "mapbox" | "openstreetmap" | string;
+  providerPlaceId?: string;
+  verified?: boolean;
+  popularity?: number;
+  updatedAt?: string;
+};
 export const places: Place[] = [
   {
     name: "Bole Atlas",

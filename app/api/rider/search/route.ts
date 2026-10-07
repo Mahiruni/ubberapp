@@ -1,5 +1,13 @@
 import { mapboxToken } from "../../../../lib/location";
-import { validPoint } from "../../../../lib/nexride-search";
+import {
+  PREVIEW_BOUNDS,
+  insideBounds,
+  validPoint,
+} from "../../../../lib/nexride-search";
+
+const ADDIS_CENTER = { lat: 9.008, lng: 38.775 };
+const SEARCH_CACHE_TTL = 2 * 60_000;
+const searchCache = new Map<string, { at: number; results: Result[] }>();
 
 const response = (body: unknown, status = 200) =>
   Response.json(body, {
@@ -23,14 +31,17 @@ type Result = {
 };
 
 const normalizeFeature = (feature: {
+  id?: unknown;
   geometry?: { coordinates?: unknown[] };
   properties?: {
     name?: unknown;
     full_address?: unknown;
+    address?: unknown;
     place_formatted?: unknown;
     match_code?: { confidence?: unknown };
     feature_type?: unknown;
     mapbox_id?: unknown;
+    poi_category?: unknown;
   };
 }): Result | null => {
   const coords = feature.geometry?.coordinates;
@@ -38,11 +49,22 @@ const normalizeFeature = (feature: {
   const props = feature.properties;
   const name = typeof props?.name === "string" ? props.name.trim() : "";
   if (!validPoint(point) || !name) return null;
+
   const address =
     (typeof props?.full_address === "string" && props.full_address.trim()) ||
     (typeof props?.place_formatted === "string" &&
       props.place_formatted.trim()) ||
+    (typeof props?.address === "string" && props.address.trim()) ||
     name;
+
+  const category =
+    Array.isArray(props?.poi_category) &&
+    typeof props.poi_category[0] === "string"
+      ? props.poi_category[0]
+      : typeof props?.feature_type === "string"
+        ? props.feature_type
+        : undefined;
+
   return {
     ...point,
     name,
@@ -51,33 +73,70 @@ const normalizeFeature = (feature: {
     confirmed: props?.match_code?.confidence !== "low",
     provider: "mapbox",
     providerPlaceId:
-      typeof props?.mapbox_id === "string" ? props.mapbox_id : undefined,
-    category:
-      typeof props?.feature_type === "string" ? props.feature_type : undefined,
+      typeof props?.mapbox_id === "string"
+        ? props.mapbox_id
+        : typeof feature.id === "string"
+          ? feature.id
+          : undefined,
+    category,
   };
 };
 
 const dedupe = (results: Result[]) => {
   const seen = new Set<string>();
   return results.filter((item) => {
-    const key = `${item.name.toLocaleLowerCase()}|${item.lat.toFixed(5)}|${item.lng.toFixed(5)}`;
+    const key = [
+      item.name.toLocaleLowerCase(),
+      item.lat.toFixed(5),
+      item.lng.toFixed(5),
+    ].join("|");
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
   });
 };
 
+const rank = (
+  results: Result[],
+  q: string,
+  proximity: { lat: number; lng: number },
+) => {
+  const needle = q.normalize("NFKC").toLocaleLowerCase().trim();
+  return results
+    .map((place, index) => {
+      const name = place.name.normalize("NFKC").toLocaleLowerCase();
+      const address = place.address.normalize("NFKC").toLocaleLowerCase();
+      const dy = place.lat - proximity.lat;
+      const dx = place.lng - proximity.lng;
+      const approximateDistance = Math.sqrt(dx * dx + dy * dy);
+      let score = -index * 0.01;
+
+      if (name === needle) score += 140;
+      else if (name.startsWith(needle)) score += 90;
+      else if (name.includes(needle)) score += 55;
+      else if (address.includes(needle)) score += 24;
+
+      if (insideBounds(place, PREVIEW_BOUNDS)) score += 35;
+      score += Math.max(0, 20 - approximateDistance * 140);
+
+      return { place, score };
+    })
+    .sort((a, b) => b.score - a.score)
+    .map((entry) => entry.place);
+};
+
 async function geocode(
   token: string,
   q: string,
   language: "en" | "am",
+  proximity: { lat: number; lng: number },
 ): Promise<Result[]> {
   const query = new URLSearchParams({
     access_token: token,
     q,
     country: "et",
-    proximity: "38.775,9.008",
-    bbox: "38.66,8.84,38.91,9.11",
+    proximity: `${proximity.lng},${proximity.lat}`,
+    bbox: PREVIEW_BOUNDS.join(","),
     autocomplete: "true",
     limit: "10",
     language: language === "am" ? "am,en" : "en,am",
@@ -97,15 +156,14 @@ async function searchPlaces(
   token: string,
   q: string,
   language: "en" | "am",
+  proximity: { lat: number; lng: number },
 ): Promise<Result[]> {
-  // Search Box text search returns coordinate-bearing POIs and businesses in
-  // one request: hospitals, schools, hotels, restaurants, banks, malls, etc.
   const params = new URLSearchParams({
     q,
     access_token: token,
     country: "ET",
-    proximity: "38.775,9.008",
-    bbox: "38.66,8.84,38.91,9.11",
+    proximity: `${proximity.lng},${proximity.lat}`,
+    bbox: PREVIEW_BOUNDS.join(","),
     limit: "10",
     language,
   });
@@ -134,8 +192,9 @@ export async function GET(request: Request) {
     reverse
       ? !params.has("lat") || !params.has("lng") || !validPoint(point)
       : !q || q.length > 120 || q.includes(";") || q.split(/\s+/).length > 20
-  )
+  ) {
     return response({ status: "invalid", results: [] }, 400);
+  }
 
   const token = mapboxToken();
   if (!token) return response({ status: "unavailable", results: [] }, 503);
@@ -164,15 +223,53 @@ export async function GET(request: Request) {
     }
   }
 
+  const proximity =
+    params.has("lat") && params.has("lng") && validPoint(point)
+      ? point
+      : ADDIS_CENTER;
+
+  const cacheKey = [
+    language,
+    q.normalize("NFKC").toLocaleLowerCase(),
+    proximity.lat.toFixed(3),
+    proximity.lng.toFixed(3),
+  ].join("|");
+  const cached = searchCache.get(cacheKey);
+  if (cached && Date.now() - cached.at < SEARCH_CACHE_TTL) {
+    return response({
+      status: "ready",
+      results: cached.results,
+      coverage: "addis-ababa",
+      cached: true,
+    });
+  }
+
   try {
     const [geocoded, pois] = await Promise.all([
-      geocode(token, q, language).catch(() => []),
-      searchPlaces(token, q, language).catch(() => []),
+      geocode(token, q, language, proximity).catch(() => []),
+      searchPlaces(token, q, language, proximity).catch(() => []),
     ]);
-    const results = dedupe([...pois, ...geocoded]).slice(0, 12);
-    if (!results.length)
-      return response({ status: "ready", results: [] });
-    return response({ status: "ready", results });
+
+    const results = rank(
+      dedupe([...pois, ...geocoded]),
+      q,
+      proximity,
+    ).slice(0, 12);
+
+    searchCache.set(cacheKey, { at: Date.now(), results });
+    if (searchCache.size > 200) {
+      [...searchCache.entries()]
+        .sort((a, b) => a[1].at - b[1].at)
+        .slice(0, 50)
+        .forEach(([key]) => searchCache.delete(key));
+    }
+
+    return response({
+      status: "ready",
+      results,
+      coverage: "addis-ababa",
+      sources: ["mapbox-searchbox", "mapbox-geocoding"],
+    });
   } catch {
     return response({ status: "error", results: [] }, 502);
   }

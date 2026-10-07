@@ -269,6 +269,7 @@ function AppWorkspace({
     mode === "rider" &&
     ["home", "destination", "rides", "finding", "trip", "live", "summary"].includes(screen);
   const riderSearch = mode === "rider" && screen === "destination";
+  const riderSummary = mode === "rider" && screen === "summary";
   useEffect(() => {
     if (riderScreen === "rides" && !journey.canContinue)
       setRiderScreen("destination");
@@ -367,7 +368,7 @@ function AppWorkspace({
             } as React.CSSProperties)
           : undefined
       }
-      className={`nr-workspace ${profileView && mode === "rider" ? "rider-profile-view" : ""} ${riderTripView ? "rider-trip-view" : ""} ${riderHome ? "rider-home-view" : ""} ${riderMapView && !riderHome ? "rider-map-flow" : ""} ${riderSearch ? "rider-search-view" : ""} ${mode === "rider" && screen === "rides" ? "rider-ride-view" : ""} ${mode === "rider" && ["finding", "trip", "live", "summary"].includes(screen) ? "rider-matching-view" : ""}`}
+      className={`nr-workspace ${profileView && mode === "rider" ? "rider-profile-view" : ""} ${riderTripView ? "rider-trip-view" : ""} ${riderHome ? "rider-home-view" : ""} ${riderMapView ? "rider-map-flow" : ""} ${riderSearch ? "rider-search-view" : ""} ${mode === "rider" && screen === "rides" ? "rider-ride-view" : ""} ${mode === "rider" && screen === "finding" ? "rider-matching-view" : ""} ${riderSummary ? "rider-summary-view" : ""}`}
     >
       <aside className="nr-sidebar" inert={requestPending || matching.active}>
         <Brand driver={mode === "driver"} />
@@ -491,7 +492,7 @@ function AppWorkspace({
           </div>
         )}
         <div
-          className={`nr-stage ${["home", "destination", "rides", "finding", "trip", "live", "request", "navigation"].includes(screen) ? "with-map" : "content-view"}`}
+          className={`nr-stage ${["home", "destination", "rides", "finding", "trip", "live", "summary", "request", "navigation"].includes(screen) ? "with-map" : "content-view"}`}
         >
           {riderMapView ? (
             <RiderMap
@@ -504,13 +505,13 @@ function AppWorkspace({
               journey={
                 riderHome
                   ? undefined
-                  : screen === "finding" && matching.request
+                  : ["finding", "trip", "live"].includes(screen) && matching.request
                     ? { ...journey, ...matching.request.journey, pinMode: null }
                     : journey
               }
-              readOnly={["finding", "trip", "live"].includes(screen)}
+              readOnly={["finding", "trip", "live", "summary"].includes(screen)}
               searching={screen === 'finding' && !matching.connectionLost && ['searching', 'delayed'].includes(matching.snapshot?.status || 'searching')}
-              rideLabel={["rides", "finding", "trip", "live"].includes(screen)}
+              rideLabel={["rides", "finding", "trip", "live", "summary"].includes(screen)}
               topLabel={authenticated ? t("city") : t("preview")}
               back={screen === "rides" ? () => navigate("destination") : undefined}
               locked={requestPending}
@@ -544,7 +545,7 @@ function AppWorkspace({
             <Brand driver={mode === "driver"} />
             <p>{t("brandMessage")}</p>
           </div>
-          <div className={`nr-panel ${riderHome ? "nr-home-panel-host" : ""}`}>
+          <div className={`nr-panel ${riderMapView ? "nr-rider-flow-panel" : ""} ${riderHome ? "nr-home-panel-host" : ""}`}>
             {profileView && mode === "rider" ? <RiderProfile language={language} setLanguage={setLanguage} theme={theme} setTheme={setTheme} profile={profile} setProfile={setProfile} rides={() => setRiderScreen("trips")} saved={() => setRiderScreen("saved")} payments={() => setRiderScreen("wallet")} safety={() => openSafety(mode)} support={() => window.location.assign("/support")} switchDriver={() => switchMode("driver")} isAdmin={isAdmin} /> : profileView ? (
               <Sheet title={t("profile")}>
                 <div className="nr-profile-header">

@@ -12,15 +12,15 @@ function fitPlan(
   bounds: Leaflet.LatLngBoundsExpression,
   ride: boolean,
 ) {
-  const height = view.getSize().y;
+  const reduced =
+    typeof matchMedia !== "undefined" &&
+    matchMedia("(prefers-reduced-motion: reduce)").matches;
   view.fitBounds(bounds, {
-    paddingTopLeft: [
-      ride ? 76 : 48,
-      Math.min(ride ? 94 : 70, Math.max(20, height - 50)),
-    ],
-    paddingBottomRight: [48, Math.min(36, height * 0.15)],
+    paddingTopLeft: [28, ride ? 78 : 70],
+    paddingBottomRight: [28, 28],
     maxZoom: 16,
-    animate: false,
+    animate: !reduced,
+    duration: reduced ? 0 : 0.35,
   });
 }
 export function RiderMap({
@@ -65,6 +65,7 @@ export function RiderMap({
   const planMarkers = useRef<Leaflet.LayerGroup | null>(null);
   const routeLine = useRef<Leaflet.Polyline | null>(null);
   const routeCasing = useRef<Leaflet.Polyline | null>(null);
+  const manualView = useRef(false);
   const [tiles, setTiles] = useState<"loading" | "ready" | "unavailable">(
     "loading",
   );
@@ -98,6 +99,16 @@ export function RiderMap({
               lat: event.latlng.lat,
               lng: event.latlng.lng,
             });
+        });
+        const markManualView = () => {
+          manualView.current = true;
+        };
+        container.current.addEventListener("pointerdown", markManualView, {
+          signal: keys.signal,
+        });
+        container.current.addEventListener("wheel", markManualView, {
+          signal: keys.signal,
+          passive: true,
         });
         container.current.addEventListener(
           "keydown",
@@ -142,6 +153,7 @@ export function RiderMap({
           view.invalidateSize();
           const plan = planRef.current;
           if (
+            !manualView.current &&
             !plan?.pinMode &&
             plan?.pickup?.confirmed &&
             plan.destination?.confirmed
@@ -202,6 +214,7 @@ export function RiderMap({
         className: "nr-user-location-dot",
       }),
     ]).addTo(map.current);
+    manualView.current = false;
     map.current.setView([position.lat, position.lng], 16, {
       animate: !matchMedia("(prefers-reduced-motion: reduce)").matches,
     });
@@ -256,7 +269,8 @@ export function RiderMap({
       !planRef.current?.pinMode &&
       pickup?.confirmed &&
       destination?.confirmed
-    )
+    ) {
+      manualView.current = false;
       fitPlan(
         map.current,
         [
@@ -265,7 +279,7 @@ export function RiderMap({
         ],
         rideLabelRef.current,
       );
-    else if (!planRef.current?.pinMode && (pickup || destination)) {
+    } else if (!planRef.current?.pinMode && (pickup || destination)) {
       const point = pickup || destination!;
       map.current.setView([point.lat, point.lng], 16, { animate: false });
     }
@@ -309,6 +323,7 @@ export function RiderMap({
       .addTo(map.current);
     routeCasing.current = casing;
     routeLine.current = line;
+    manualView.current = false;
     fitPlan(map.current, line.getBounds(), rideLabelRef.current);
     return () => {
       line.remove();

@@ -58,7 +58,19 @@ export function DestinationPanel({
   );
   const local = searchPreviewPlaces(query[field]);
   const firstResult = useRef<HTMLButtonElement>(null);
-  const drag = useRef<{ start: number; ratio: number } | null>(null);
+  const drag = useRef<{
+    start: number;
+    ratio: number;
+    current: number;
+    lastY: number;
+    lastAt: number;
+    velocity: number;
+  } | null>(null);
+  const sheetFrame = useRef<number | null>(null);
+  const sheetHeight = useRef(0);
+  const searchCache = useRef(
+    new Map<string, { at: number; results: Endpoint[] }>(),
+  );
   const draftRestored = useRef(false);
   useEffect(() => {
     try {
@@ -84,40 +96,107 @@ export function DestinationPanel({
   }, [field, query, language]);
   useEffect(() => {
     const q = query[field].trim();
-    setRemote({ status: q.length >= 3 ? "loading" : "idle", results: [] });
-    if (q.length < 3) return;
+    setRemote({ status: q.length >= 2 ? "loading" : "idle", results: [] });
+    if (q.length < 2) return;
+
+    const proximity =
+      position &&
+      Number.isFinite(position.lat) &&
+      Number.isFinite(position.lng)
+        ? `${position.lat.toFixed(3)},${position.lng.toFixed(3)}`
+        : "addis";
+    const cacheKey = `${language}|${q.toLocaleLowerCase()}|${proximity}`;
+    const cached = searchCache.current.get(cacheKey);
+    if (cached && Date.now() - cached.at < 5 * 60_000) {
+      setRemote({ status: "ready", results: cached.results });
+      return;
+    }
+
     let active = true;
     const controller = new AbortController();
     const timer = setTimeout(() => {
+      const params = new URLSearchParams({ q, lang: language });
+      if (
+        position &&
+        Number.isFinite(position.lat) &&
+        Number.isFinite(position.lng)
+      ) {
+        params.set("lat", String(position.lat));
+        params.set("lng", String(position.lng));
+      }
+
       setRemote({ status: "loading", results: [] });
-      fetch(
-        `/api/rider/search?q=${encodeURIComponent(q)}&lang=${language}`,
-        {
+      fetch(`/api/rider/search?${params}`, {
         signal: AbortSignal.any([
           controller.signal,
           AbortSignal.timeout(10000),
         ]),
-          cache: "no-store",
-        },
-      )
+        cache: "no-store",
+      })
         .then((r) => r.json())
         .then((data) => {
-          if (active)
-            setRemote({
-              status: data.status,
-              results: Array.isArray(data.results) ? data.results : [],
-            });
+          if (!active) return;
+          const results = Array.isArray(data.results) ? data.results : [];
+          if (data.status === "ready")
+            searchCache.current.set(cacheKey, { at: Date.now(), results });
+          setRemote({ status: data.status, results });
         })
         .catch(() => {
           if (active) setRemote({ status: "error", results: [] });
         });
-    }, 350);
+    }, 280);
+
     return () => {
       active = false;
       clearTimeout(timer);
       controller.abort();
     };
-  }, [field, query, language]);
+  }, [field, query, language, position?.lat, position?.lng]);
+  const paintSheetRatio = (target: HTMLElement, ratio: number) => {
+    const root = target.closest<HTMLElement>(".rider-map-flow");
+    if (!root) return;
+    const viewportHeight = j.viewport.height || window.innerHeight || 800;
+    sheetHeight.current = Math.max(
+      120,
+      Math.min(viewportHeight * ratio, viewportHeight - 140),
+    );
+    if (sheetFrame.current !== null) return;
+    sheetFrame.current = requestAnimationFrame(() => {
+      root.style.setProperty(
+        "--nr-flow-sheet-height",
+        `${sheetHeight.current}px`,
+      );
+      sheetFrame.current = null;
+    });
+  };
+
+  const settleSheet = (target: HTMLElement) => {
+    const activeDrag = drag.current;
+    if (!activeDrag) return;
+    const viewportHeight = j.viewport.height || window.innerHeight || 800;
+    const projected = Math.min(
+      0.75,
+      Math.max(
+        0.28,
+        activeDrag.current - (activeDrag.velocity * 170) / viewportHeight,
+      ),
+    );
+    const snaps = [0.28, 0.46, 0.75] as const;
+    const next = snaps.reduce((best, candidate) =>
+      Math.abs(candidate - projected) < Math.abs(best - projected)
+        ? candidate
+        : best,
+    );
+    drag.current = null;
+    j.setSheetRatio(next);
+    const root = target.closest<HTMLElement>(".rider-map-flow");
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() =>
+        root?.style.removeProperty("--nr-flow-sheet-height"),
+      ),
+    );
+  };
+
   const select = (point: Endpoint) => {
     if (shortcut) {
       if (point.source === "preview") choose(point);
@@ -177,28 +256,52 @@ export function DestinationPanel({
           }
         }}
         onPointerDown={(e) => {
-          drag.current = { start: e.clientY, ratio: j.sheetRatio };
+          e.preventDefault();
+          e.stopPropagation();
+          const now = performance.now();
+          drag.current = {
+            start: e.clientY,
+            ratio: j.sheetRatio,
+            current: j.sheetRatio,
+            lastY: e.clientY,
+            lastAt: now,
+            velocity: 0,
+          };
           e.currentTarget.setPointerCapture(e.pointerId);
         }}
         onPointerMove={(e) => {
-          if (drag.current)
-            j.setSheetRatio(
-              Math.min(
-                0.75,
-                Math.max(
-                  0.28,
-                  drag.current.ratio +
-                    (drag.current.start - e.clientY) /
-                      (j.viewport.height || 800),
-                ),
-              ),
-            );
+          const activeDrag = drag.current;
+          if (!activeDrag) return;
+          e.preventDefault();
+          e.stopPropagation();
+          const now = performance.now();
+          const elapsed = Math.max(1, now - activeDrag.lastAt);
+          activeDrag.velocity = (e.clientY - activeDrag.lastY) / elapsed;
+          activeDrag.lastY = e.clientY;
+          activeDrag.lastAt = now;
+          activeDrag.current = Math.min(
+            0.75,
+            Math.max(
+              0.28,
+              activeDrag.ratio +
+                (activeDrag.start - e.clientY) /
+                  (j.viewport.height || 800),
+            ),
+          );
+          paintSheetRatio(e.currentTarget, activeDrag.current);
         }}
-        onPointerUp={() => {
-          drag.current = null;
+        onPointerUp={(e) => {
+          e.stopPropagation();
+          if (e.currentTarget.hasPointerCapture(e.pointerId))
+            e.currentTarget.releasePointerCapture(e.pointerId);
+          settleSheet(e.currentTarget);
         }}
-        onPointerCancel={() => {
-          drag.current = null;
+        onPointerCancel={(e) => {
+          e.stopPropagation();
+          settleSheet(e.currentTarget);
+        }}
+        onLostPointerCapture={(e) => {
+          if (drag.current) settleSheet(e.currentTarget);
         }}
       >
         <span />

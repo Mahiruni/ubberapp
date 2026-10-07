@@ -8,9 +8,8 @@ import {
   type KeyboardEvent,
   type PointerEvent as ReactPointerEvent,
 } from "react";
-import { Icon, ListRow, useTranslation } from "./ui";
-import { placeKey, placeName, locality } from "../../lib/nexride-search";
-import { LanguageContext } from "./ui";
+import { Icon, LanguageContext, ListRow, useTranslation } from "./ui";
+import { locality, placeKey, placeName } from "../../lib/nexride-search";
 import { type Place } from "../../lib/nexride-places";
 import type { HomePlaces } from "../../lib/nexride-home";
 import type { LocationStatus, RiderLocation } from "../../lib/nexride-location";
@@ -22,10 +21,14 @@ const visibleRatio: Record<HomeSheetSnap, number> = {
   medium: 0.46,
   expanded: 0.75,
 };
-const maxRatio = 0.75;
 
-const snapOffset = (snap: HomeSheetSnap, viewportHeight: number) =>
-  Math.max(0, (maxRatio - visibleRatio[snap]) * viewportHeight);
+const snapHeight = (snap: HomeSheetSnap, viewportHeight: number) => {
+  const mapMinimum = Math.min(160, viewportHeight * 0.28);
+  return Math.max(
+    150,
+    Math.min(visibleRatio[snap] * viewportHeight, viewportHeight - mapMinimum),
+  );
+};
 
 export function LocationMessage({
   status,
@@ -90,30 +93,41 @@ export function RiderHomePanel({
   const sheetRef = useRef<HTMLElement | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const frameRef = useRef<number | null>(null);
-  const dragActiveRef = useRef(false);
-  const offsetRef = useRef(snapOffset("medium", 800));
+  const heightRef = useRef(snapHeight("medium", 800));
+  const dragActive = useRef(false);
   const drag = useRef({
     startY: 0,
-    startOffset: 0,
+    startHeight: snapHeight("medium", 800),
     lastY: 0,
     lastAt: 0,
     velocity: 0,
     moved: false,
   });
 
-  const homeHost = () =>
-    sheetRef.current?.closest<HTMLElement>(".nr-home-panel-host") || null;
+  const flowRoot = () =>
+    sheetRef.current?.closest<HTMLElement>(".rider-map-flow") || null;
 
-  const paintOffset = (next: number) => {
-    offsetRef.current = next;
+  const paintHeight = (next: number) => {
+    heightRef.current = next;
     if (frameRef.current !== null) return;
     frameRef.current = requestAnimationFrame(() => {
-      homeHost()?.style.setProperty(
-        "--nr-home-sheet-offset",
-        `${offsetRef.current}px`,
+      flowRoot()?.style.setProperty(
+        "--nr-flow-sheet-height",
+        `${heightRef.current}px`,
       );
       frameRef.current = null;
     });
+  };
+
+  const minHeight = () => snapHeight("collapsed", viewportHeight);
+  const maxHeight = () => snapHeight("expanded", viewportHeight);
+
+  const withResistance = (raw: number) => {
+    const min = minHeight();
+    const max = maxHeight();
+    if (raw < min) return min + (raw - min) * 0.16;
+    if (raw > max) return max + (raw - max) * 0.16;
+    return raw;
   };
 
   useEffect(() => {
@@ -123,89 +137,108 @@ export function RiderHomePanel({
         window.visualViewport?.height || window.innerHeight || 800,
       );
       setViewportHeight(nextHeight);
-      paintOffset(snapOffset(snap, nextHeight));
+      const next = snapHeight(snap, nextHeight);
+      heightRef.current = next;
+      flowRoot()?.style.setProperty("--nr-flow-sheet-height", `${next}px`);
     };
+
     update();
     window.addEventListener("resize", update);
     window.visualViewport?.addEventListener("resize", update);
+
     return () => {
       window.removeEventListener("resize", update);
       window.visualViewport?.removeEventListener("resize", update);
       if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
+      flowRoot()?.style.removeProperty("--nr-flow-sheet-height");
     };
   }, [snap]);
 
   const applySnap = (next: HomeSheetSnap) => {
+    dragActive.current = false;
+    setDragging(false);
     setSnap(next);
-    requestAnimationFrame(() => paintOffset(snapOffset(next, viewportHeight)));
+    paintHeight(snapHeight(next, viewportHeight));
   };
 
   const nearestSnap = (value: number) =>
     (Object.keys(visibleRatio) as HomeSheetSnap[]).reduce((best, candidate) =>
-      Math.abs(snapOffset(candidate, viewportHeight) - value) <
-      Math.abs(snapOffset(best, viewportHeight) - value)
+      Math.abs(snapHeight(candidate, viewportHeight) - value) <
+      Math.abs(snapHeight(best, viewportHeight) - value)
         ? candidate
         : best,
     );
 
+  const beginDrag = (clientY: number) => {
+    const now = performance.now();
+    drag.current = {
+      startY: clientY,
+      startHeight: heightRef.current,
+      lastY: clientY,
+      lastAt: now,
+      velocity: 0,
+      moved: false,
+    };
+    dragActive.current = true;
+    setDragging(true);
+  };
+
+  const moveDrag = (clientY: number) => {
+    if (!dragActive.current) return;
+    const now = performance.now();
+    const elapsed = Math.max(1, now - drag.current.lastAt);
+    drag.current.velocity = -(clientY - drag.current.lastY) / elapsed;
+    drag.current.lastY = clientY;
+    drag.current.lastAt = now;
+
+    const delta = drag.current.startY - clientY;
+    if (Math.abs(delta) > 5) drag.current.moved = true;
+    paintHeight(withResistance(drag.current.startHeight + delta));
+  };
+
   const finishDrag = () => {
-    if (!dragActiveRef.current) return;
-    dragActiveRef.current = false;
-    homeHost()?.removeAttribute("data-home-dragging");
+    if (!dragActive.current) return;
+    dragActive.current = false;
     setDragging(false);
-    const max = snapOffset("collapsed", viewportHeight);
-    const velocity = drag.current.velocity;
+
+    const min = minHeight();
+    const max = maxHeight();
+    const clamped = Math.min(max, Math.max(min, heightRef.current));
     const projected = Math.min(
       max,
-      Math.max(0, offsetRef.current + velocity * 180),
+      Math.max(min, clamped + drag.current.velocity * 170),
     );
     applySnap(nearestSnap(projected));
   };
 
   const onPointerDown = (event: ReactPointerEvent<HTMLElement>) => {
     if (event.button !== 0 && event.pointerType === "mouse") return;
+    event.preventDefault();
     event.stopPropagation();
     event.currentTarget.setPointerCapture(event.pointerId);
-    const now = performance.now();
-    drag.current = {
-      startY: event.clientY,
-      startOffset: offsetRef.current,
-      lastY: event.clientY,
-      lastAt: now,
-      velocity: 0,
-      moved: false,
-    };
-    dragActiveRef.current = true;
-    homeHost()?.setAttribute("data-home-dragging", "true");
-    setDragging(true);
+    beginDrag(event.clientY);
   };
 
   const onPointerMove = (event: ReactPointerEvent<HTMLElement>) => {
-    if (!dragActiveRef.current) return;
+    if (!dragActive.current) return;
     event.preventDefault();
     event.stopPropagation();
-    const now = performance.now();
-    const elapsed = Math.max(1, now - drag.current.lastAt);
-    drag.current.velocity = (event.clientY - drag.current.lastY) / elapsed;
-    drag.current.lastY = event.clientY;
-    drag.current.lastAt = now;
-    const delta = event.clientY - drag.current.startY;
-    if (Math.abs(delta) > 3) drag.current.moved = true;
-    const next = Math.min(
-      snapOffset("collapsed", viewportHeight),
-      Math.max(0, drag.current.startOffset + delta),
-    );
-    paintOffset(next);
+    moveDrag(event.clientY);
   };
 
+  const onPointerEnd = (event: ReactPointerEvent<HTMLElement>) => {
+    event.stopPropagation();
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    finishDrag();
+  };
 
   useEffect(() => {
     const scroller = scrollRef.current;
     if (!scroller) return;
 
     let startY = 0;
-    let lastY = 0;
-    let lastAt = 0;
     let touchId = -1;
     let handedToSheet = false;
 
@@ -215,8 +248,6 @@ export function RiderHomePanel({
       const touch = event.touches[0];
       touchId = touch.identifier;
       startY = touch.clientY;
-      lastY = touch.clientY;
-      lastAt = performance.now();
       handedToSheet = false;
     };
 
@@ -227,36 +258,16 @@ export function RiderHomePanel({
       );
       if (!touch) return;
 
-      const distance = touch.clientY - startY;
-      if (!handedToSheet && scroller.scrollTop <= 1 && distance > 7) {
+      const downward = touch.clientY - startY;
+      if (!handedToSheet && scroller.scrollTop <= 1 && downward > 7) {
         handedToSheet = true;
-        const now = performance.now();
-        drag.current = {
-          startY,
-          startOffset: offsetRef.current,
-          lastY: startY,
-          lastAt: now,
-          velocity: 0,
-          moved: true,
-        };
-        dragActiveRef.current = true;
-        homeHost()?.setAttribute("data-home-dragging", "true");
-        setDragging(true);
+        beginDrag(startY);
+        drag.current.moved = true;
       }
 
       if (!handedToSheet) return;
-
       event.preventDefault();
-      const now = performance.now();
-      const elapsed = Math.max(1, now - lastAt);
-      drag.current.velocity = (touch.clientY - lastY) / elapsed;
-      lastY = touch.clientY;
-      lastAt = now;
-      const next = Math.min(
-        snapOffset("collapsed", viewportHeight),
-        Math.max(0, drag.current.startOffset + touch.clientY - startY),
-      );
-      paintOffset(next);
+      moveDrag(touch.clientY);
     };
 
     const end = (event: TouchEvent) => {
@@ -313,28 +324,6 @@ export function RiderHomePanel({
   };
 
   return (
-    <>
-      <div
-        className="nr-home-map-guard"
-        aria-hidden="true"
-        onPointerDown={(event) => {
-          event.preventDefault();
-          event.stopPropagation();
-        }}
-        onPointerMove={(event) => {
-          event.preventDefault();
-          event.stopPropagation();
-        }}
-        onPointerUp={(event) => {
-          event.preventDefault();
-          event.stopPropagation();
-        }}
-        onTouchStart={(event) => event.stopPropagation()}
-        onTouchMove={(event) => {
-          event.preventDefault();
-          event.stopPropagation();
-        }}
-      />
     <section
       ref={sheetRef}
       className="nr-rider-home-panel nr-rider-home-sheet"
@@ -343,15 +332,17 @@ export function RiderHomePanel({
       data-dragging={dragging || undefined}
       onPointerDown={(event) => event.stopPropagation()}
       onPointerMove={(event) => event.stopPropagation()}
-      onClick={(event) => event.stopPropagation()}
+      onPointerUp={(event) => event.stopPropagation()}
+      onTouchStart={(event) => event.stopPropagation()}
+      onWheel={(event) => event.stopPropagation()}
     >
       <div
         className="nr-home-sheet-grab-area"
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
-        onPointerUp={finishDrag}
-        onPointerCancel={finishDrag}
-        onLostPointerCapture={finishDrag}
+        onPointerUp={onPointerEnd}
+        onPointerCancel={onPointerEnd}
+        onLostPointerCapture={onPointerEnd}
       >
         <button
           type="button"
@@ -486,6 +477,5 @@ export function RiderHomePanel({
         </div>
       </div>
     </section>
-    </>
   );
 }

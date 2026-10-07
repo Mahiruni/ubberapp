@@ -7,6 +7,20 @@ export type Endpoint = Place & {
 };
 export type Bounds = [number, number, number, number];
 export const PREVIEW_BOUNDS: Bounds = [38.66, 8.84, 38.91, 9.11];
+
+export const ADDIS_SUBCITIES = [
+  { en: "Addis Ketema", am: "አዲስ ከተማ", aliases: ["addis ketema", "addis ketema sub city"] },
+  { en: "Akaky Kaliti", am: "አቃቂ ቃሊቲ", aliases: ["akaki kaliti", "akaky kaliti"] },
+  { en: "Arada", am: "አራዳ", aliases: ["arada"] },
+  { en: "Bole", am: "ቦሌ", aliases: ["bole"] },
+  { en: "Gullele", am: "ጉለሌ", aliases: ["gulele", "gullele"] },
+  { en: "Kirkos", am: "ቂርቆስ", aliases: ["kirkos"] },
+  { en: "Kolfe Keranio", am: "ኮልፌ ቀራንዮ", aliases: ["kolfe keranio", "kolfe keranyo", "kolfe"] },
+  { en: "Lideta", am: "ልደታ", aliases: ["lideta"] },
+  { en: "Nifas Silk-Lafto", am: "ንፋስ ስልክ ላፍቶ", aliases: ["nifas silk lafto", "nefas silk lafto", "lafto"] },
+  { en: "Yeka", am: "የካ", aliases: ["yeka"] },
+  { en: "Lemi Kura", am: "ለሚ ኩራ", aliases: ["lemi kura", "lemi-kura"] },
+] as const;
 export function validPoint(p: unknown): p is { lat: number; lng: number } {
   const v = p as { lat?: number; lng?: number } | null;
   return (
@@ -116,47 +130,132 @@ const amNames: Record<string, string> = {
   Gullele: "ጉለሌ",
   Arada: "አራዳ",
 };
+
+const placeAliases: Record<string, string[]> = {
+  "Bole Airport": ["bole airport", "bole international airport", "airport", "ቦሌ ኤርፖርት"],
+  "Bole Medhanealem": ["bole medhanialem", "bole medhane alem", "medhanialem", "መድኃኔዓለም"],
+  Piassa: ["piazza", "piassa", "piyasa", "ፒያሳ"],
+  Megenagna: ["megenagna", "megenagnia", "megenanya", "መገናኛ"],
+  "Megenagna Square": ["megenagna square", "megenanya square", "መገናኛ አደባባይ"],
+  Merkato: ["mercato", "merkato", "መርካቶ"],
+  Kazanchis: ["kazanchis", "kazanchies", "ካዛንቺስ"],
+  "Meskel Square": ["meskel square", "mesqel square", "መስቀል አደባባይ"],
+  "Mexico Square": ["mexico square", "mexico", "ሜክሲኮ"],
+  "4 Kilo": ["4 kilo", "arat kilo", "arba kilo", "አራት ኪሎ"],
+  "6 Kilo": ["6 kilo", "sidist kilo", "ስድስት ኪሎ"],
+  "Shiro Meda": ["shiromeda", "shiro meda", "ሽሮ ሜዳ"],
+  "Sar Bet": ["sarbet", "sar bet", "ሳር ቤት"],
+  "Bole Rwanda": ["rwanda", "bole rwanda", "ቦሌ ሩዋንዳ"],
+  "Shola Gebeya": ["shola market", "shola gebeya", "ሾላ ገበያ"],
+  "Kolfe Keranyo": ["kolfe keranyo", "kolfe keranio", "ኮልፌ ቀራንዮ"],
+  "Nifas Silk Lafto": ["nifas silk lafto", "nefas silk lafto", "ንፋስ ስልክ ላፍቶ"],
+  "Akaki Kaliti": ["akaki kaliti", "akaky kaliti", "አቃቂ ቃሊቲ"],
+  "Lemi Kura": ["lemi kura", "lemi-kura", "ለሚ ኩራ"],
+};
 const amLocality: [string, string][] = [
+  ...ADDIS_SUBCITIES.flatMap((subcity) => [
+    [subcity.en, subcity.am] as [string, string],
+    ...subcity.aliases.map((alias) => [alias, subcity.am] as [string, string]),
+  ]),
   ["Addis Ababa", "አዲስ አበባ"],
   ["Kolfe Keranyo", "ኮልፌ ቀራንዮ"],
-  ["Kolfe Keranio", "ኮልፌ ቀራንዮ"],
-  ["Nifas Silk-Lafto", "ንፋስ ስልክ ላፍቶ"],
-  ["Bole", "ቦሌ"],
-  ["Yeka", "የካ"],
-  ["Kirkos", "ቂርቆስ"],
-  ["Arada", "አራዳ"],
   ["Entoto", "እንጦጦ"],
   ["Meskel Square", "መስቀል አደባባይ"],
   ["Kazanchis", "ካዛንቺስ"],
 ];
 export function placeName(p: Place, language: Language) {
-  return language === "am" ? amNames[p.name] || p.name : p.name;
+  return language === "am"
+    ? p.nameAm || amNames[p.name] || p.name
+    : p.name;
 }
+
 export function locality(p: Place, language: Language) {
   const distinct =
     p.name === "Kolfe"
       ? p.lat < 9.02
         ? "Kolfe Keranio · West"
         : "Kolfe · North"
-      : p.address;
+      : [p.neighborhood, p.subcity, p.address].filter(Boolean).join(" · ") ||
+        p.address;
   if (language === "en") return distinct;
-  const area = amLocality.find(([name]) => p.address.includes(name));
+
+  const source = `${p.subcity || ""} ${p.address}`.toLocaleLowerCase();
+  const area = amLocality.find(([name]) =>
+    source.includes(name.toLocaleLowerCase()),
+  );
   return `${area?.[1] || "አዲስ አበባ"} · ${p.name === "Kolfe" ? (p.lat < 9.02 ? "ምዕራብ" : "ሰሜን") : p.address}`;
 }
+
+const normalizeSearch = (value: string) =>
+  value
+    .normalize("NFKC")
+    .toLocaleLowerCase()
+    .replace(/[’']/g, "")
+    .replace(/[-_/]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+function localSearchText(p: Place) {
+  const subcity = ADDIS_SUBCITIES.find((item) => {
+    const haystack = `${p.subcity || ""} ${p.address}`.toLocaleLowerCase();
+    return (
+      haystack.includes(item.en.toLocaleLowerCase()) ||
+      item.aliases.some((alias) => haystack.includes(alias))
+    );
+  });
+  return normalizeSearch(
+    [
+      p.name,
+      p.nameAm,
+      amNames[p.name],
+      p.address,
+      p.neighborhood,
+      p.subcity,
+      ...(p.aliases || []),
+      ...(placeAliases[p.name] || []),
+      subcity?.en,
+      subcity?.am,
+      ...(subcity?.aliases || []),
+    ]
+      .filter(Boolean)
+      .join(" "),
+  );
+}
+
 export function searchPreviewPlaces(query: string) {
-  const q = query.normalize("NFKC").toLocaleLowerCase().trim();
+  const q = normalizeSearch(query);
   const unique = places.filter(
     (p, i) => places.findIndex((a) => placeKey(a) === placeKey(p)) === i,
   );
-  return (
-    q
-      ? unique.filter((p) =>
-          `${p.name} ${p.address} ${amNames[p.name] || ""} ${locality(p, "am")}`
-            .toLocaleLowerCase()
-            .includes(q),
-        )
-      : unique.slice(0, 8)
-  ).slice(0, 12);
+
+  if (!q) {
+    return unique
+      .slice()
+      .sort((a, b) => (b.popularity || 0) - (a.popularity || 0))
+      .slice(0, 8);
+  }
+
+  return unique
+    .map((place) => {
+      const name = normalizeSearch(place.name);
+      const am = normalizeSearch(place.nameAm || amNames[place.name] || "");
+      const aliases = [
+        ...(place.aliases || []),
+        ...(placeAliases[place.name] || []),
+      ].map(normalizeSearch);
+      const text = localSearchText(place);
+      let score = 0;
+      if (name === q || am === q || aliases.includes(q)) score += 100;
+      if (name.startsWith(q) || am.startsWith(q)) score += 60;
+      if (aliases.some((alias) => alias.startsWith(q))) score += 50;
+      if (text.includes(q)) score += 20;
+      score += Math.min(15, place.popularity || 0);
+      return { place, score };
+    })
+    .filter((item) => item.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .map((item) => item.place)
+    .slice(0, 12);
 }
 export const previewEndpoint = (p: Place): Endpoint => ({
   ...p,
