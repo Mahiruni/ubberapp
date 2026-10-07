@@ -949,3 +949,9 @@
     transition:none!important;
   }
 }
+
+
+/* Hide the rectangular live route information overlay; route and traffic layers remain active. */
+.nr-live-route-panel {
+  display: none !important;
+}
