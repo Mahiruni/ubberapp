@@ -7,7 +7,12 @@ import {
   useState,
   type KeyboardEvent as ReactKeyboardEvent,
 } from "react";
-import { PREVIEW_STORAGE_KEY } from "../../lib/nexride-startup";
+import {
+  PREVIEW_ENABLED_KEY,
+  PREVIEW_STORAGE_KEY,
+  markExplicitSignOut,
+  retryStartup,
+} from "../../lib/nexride-startup";
 import { resolveSessionRole } from "../../lib/nexride-account-role";
 import { supabase } from "../../lib/supabase";
 import {
@@ -89,19 +94,26 @@ export function RiderMenu({
   const say = (en: string, am: string) => (language === "am" ? am : en);
   const [open, setOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(Boolean(adminOverride));
+  const [hasSession, setHasSession] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
+  const [signOutError, setSignOutError] = useState("");
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const drawerRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => setIsAdmin(Boolean(adminOverride)), [adminOverride]);
 
   useEffect(() => {
-    if (!open || adminOverride !== undefined) return;
+    if (!open) return;
     let activeEffect = true;
 
     void supabase.auth.getSession().then(async ({ data }) => {
-      if (!activeEffect || !data.session) return;
+      if (!activeEffect) return;
+      setHasSession(Boolean(data.session));
+      if (!data.session || adminOverride !== undefined) return;
       const role = await resolveSessionRole(data.session).catch(() => "");
       if (activeEffect) setIsAdmin(role === "admin");
+    }).catch(() => {
+      if (activeEffect) setHasSession(false);
     });
 
     return () => {
@@ -206,6 +218,36 @@ export function RiderMenu({
     window.location.assign(hrefs[id]);
   };
 
+  const signOut = async () => {
+    if (signingOut) return;
+    setSigningOut(true);
+    setSignOutError("");
+
+    try {
+      const current = await supabase.auth.getSession();
+      if (current.data.session) {
+        const result = await supabase.auth.signOut({ scope: "local" });
+        if (result.error) throw result.error;
+        const verified = await supabase.auth.getSession();
+        if (verified.error || verified.data.session) throw new Error("session_still_active");
+      }
+
+      markExplicitSignOut("rider");
+      try {
+        localStorage.removeItem(PREVIEW_ENABLED_KEY);
+        localStorage.removeItem(PREVIEW_STORAGE_KEY);
+        localStorage.removeItem("nexride-state");
+      } catch {}
+      retryStartup(true);
+      setHasSession(false);
+      setOpen(false);
+      window.location.replace("/rider/sign-in?logged_out=1");
+    } catch {
+      setSignOutError(say("Log out could not be completed. Please try again.", "መውጣት አልተቻለም። እንደገና ይሞክሩ።"));
+      setSigningOut(false);
+    }
+  };
+
   const onTriggerKeyDown = (event: ReactKeyboardEvent<HTMLButtonElement>) => {
     if (event.key === "ArrowRight" || event.key === "ArrowDown") {
       event.preventDefault();
@@ -259,6 +301,7 @@ export function RiderMenu({
             </header>
 
 
+            <div className="nr-rider-drawer-section-label">{say("Your NexRide", "የእርስዎ NexRide")}</div>
             <nav
               className="nr-rider-drawer-nav"
               aria-label={say("Rider navigation", "የተሳፋሪ አሰሳ")}
@@ -289,6 +332,7 @@ export function RiderMenu({
               })}
             </nav>
 
+            <div className="nr-rider-drawer-section-label nr-rider-drawer-section-label-secondary">{say("More", "ተጨማሪ")}</div>
             <div className="nr-rider-drawer-secondary">
               <button
                 type="button"
@@ -324,7 +368,28 @@ export function RiderMenu({
             </div>
 
             <footer className="nr-rider-drawer-footer">
-              <small>NexRide · Better Rides. A Brighter Tomorrow.</small>
+              <div className="nr-rider-drawer-footer-card">
+                <div className="nr-rider-drawer-footer-brand">
+                  <span className="nr-rider-drawer-footer-mark" aria-hidden="true">N</span>
+                  <div>
+                    <strong>NexRide</strong>
+                    <small>{say("Better Rides. A Brighter Tomorrow.", "የተሻለ ጉዞ። ብሩህ ነገ።")}</small>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  className="nr-rider-drawer-signout"
+                  onClick={() => void signOut()}
+                  disabled={signingOut}
+                >
+                  <Icon name="power" size={18} />
+                  <span>{signingOut ? say("Logging out…", "በመውጣት ላይ…") : say("Log out", "ውጣ")}</span>
+                </button>
+                {signOutError && <p role="alert">{signOutError}</p>}
+                {!hasSession && !signOutError && (
+                  <small className="nr-rider-drawer-footer-note">{say("Exit this local Rider session.", "ይህን የተሳፋሪ ክፍለ ጊዜ ይውጡ።")}</small>
+                )}
+              </div>
             </footer>
           </aside>
         </div>
