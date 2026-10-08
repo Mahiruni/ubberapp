@@ -146,12 +146,12 @@ export const messages = {
     "ቦታው ከአገልግሎት ክልሉ ውጭ ነው። ሌላ ቦታ ይምረጡ።",
   ],
   outsidePreviewArea: [
-    "A location is outside the Addis Ababa preview area. Choose another location.",
-    "ቦታው ከአዲስ አበባ ማሳያ ክልል ውጭ ነው። ሌላ ቦታ ይምረጡ።",
+    "This location is outside NexRide’s Addis Ababa service area. Choose a place within 100 km of Addis.",
+    "ይህ ቦታ ከNexRide የአዲስ አበባ አገልግሎት ክልል ውጭ ነው። ከአዲስ አበባ በ100 ኪ.ሜ ውስጥ ያለ ቦታ ይምረጡ።",
   ],
   previewCoverage: [
-    "Preview area: Addis Ababa. Live service coverage is not connected.",
-    "የማሳያ ክልል፦ አዲስ አበባ። የቀጥታ አገልግሎት ክልል አልተገናኘም።",
+    "Service area: Addis Ababa and surrounding places within 100 km.",
+    "የአገልግሎት ክልል፦ አዲስ አበባ እና በ100 ኪ.ሜ ውስጥ ያሉ አካባቢዎች።",
   ],
   continueRideOptions: ["Choose a ride", "ጉዞ ይምረጡ"],
   previewRideOptions: ["Preview ride options", "የጉዞ አማራጮችን ይመልከቱ"],
