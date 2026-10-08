@@ -1424,3 +1424,79 @@
     text-wrap:balance!important;
   }
 }
+
+
+/* Deep glass Rider sheet — remove the rectangular backing layer while keeping
+   the invisible Mapbox input shield fully active. */
+@media (max-width:800px) {
+  .nr-app[data-mode="rider"] .rider-map-flow
+    .nr-rider-flow-panel[data-map-input-boundary="true"] {
+    background:transparent!important;
+    contain:layout!important;
+    overflow:visible!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow
+    .nr-rider-flow-panel[data-map-input-boundary="true"]::before {
+    display:none!important;
+    content:none!important;
+    background:transparent!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow
+    .nr-rider-flow-panel[data-map-input-boundary="true"]
+    .nr-rider-map-input-shield {
+    background:transparent!important;
+    opacity:1!important;
+    pointer-events:auto!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow
+    .nr-rider-flow-panel > div:not([hidden]) {
+    background:transparent!important;
+    border-radius:24px 24px 0 0!important;
+    overflow:visible!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow :is(
+    .nr-rider-home-sheet,
+    .nr-destination-panel,
+    .nr-ride-selection,
+    .nr-driver-matching,
+    .nr-assigned-driver-panel,
+    .nr-trip-experience-panel
+  ) {
+    overflow:hidden!important;
+    border:1px solid color-mix(in srgb,var(--line) 62%,transparent)!important;
+    border-bottom:0!important;
+    border-radius:24px 24px 0 0!important;
+    background:color-mix(in srgb,var(--surface) 88%,transparent)!important;
+    box-shadow:
+      0 -1px 0 rgba(255,255,255,.58),
+      0 -10px 30px rgba(4,28,48,.12),
+      0 -28px 70px rgba(4,28,48,.08)!important;
+    backdrop-filter:blur(26px) saturate(138%)!important;
+    -webkit-backdrop-filter:blur(26px) saturate(138%)!important;
+  }
+
+  .nr-app[data-mode="rider"][data-theme="dark"] .rider-map-flow :is(
+    .nr-rider-home-sheet,
+    .nr-destination-panel,
+    .nr-ride-selection,
+    .nr-driver-matching,
+    .nr-assigned-driver-panel,
+    .nr-trip-experience-panel
+  ) {
+    background:rgba(4,28,48,.86)!important;
+    border-color:rgba(168,194,207,.16)!important;
+    box-shadow:
+      0 -1px 0 rgba(255,255,255,.07),
+      0 -12px 34px rgba(0,8,18,.30),
+      0 -30px 76px rgba(0,8,18,.20)!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-home-sheet-grab-area {
+    background:transparent!important;
+    border-radius:24px 24px 0 0!important;
+  }
+}
