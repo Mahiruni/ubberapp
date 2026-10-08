@@ -124,6 +124,24 @@ export function DriverWorkspace({
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState("");
   const [locationPermission, setLocationPermission] = useState<LocationPermission>("checking");
+  const [alertPermission, setAlertPermission] = useState<NotificationPermission | "unsupported">("unsupported");
+  useEffect(() => {
+    if (typeof Notification === "undefined") return;
+    const sync = () => setAlertPermission(Notification.permission);
+    sync();
+    window.addEventListener("focus", sync);
+    return () => window.removeEventListener("focus", sync);
+  }, []);
+
+  const enableDriverAlerts = async () => {
+    if (typeof Notification === "undefined") return;
+    try {
+      const permission = await Notification.requestPermission();
+      setAlertPermission(permission);
+    } catch {
+      setAlertPermission(Notification.permission);
+    }
+  };
   const mapLocation = useRiderLocation();
 
   const refreshDriverStatus = async (id = driverId) => {
@@ -706,7 +724,7 @@ export function DriverWorkspace({
                 <span className="nr-driver-home-control-brand">NEXRIDE · DRIVER</span>
                 <strong>{state.online ? say("Ready for rides", "ለጉዞ ዝግጁ") : say("You're offline", "ከመስመር ውጭ ነዎት")}</strong>
                 <small>{state.online
-                  ? say("You can receive ride requests when this app is minimized. GPS updates may pause in the background.", "መተግበሪያው ሲቀነስም የጉዞ ጥያቄ ሊደርስዎት ይችላል። የGPS ዝመና ሊቋረጥ ይችላል።")
+                  ? say("Online stays active when minimized. Android may pause GPS and delay alerts until you reopen NexRide.", "መተግበሪያው ሲቀነስ የመስመር ላይ ሁኔታዎ ይቀጥላል። Android GPSን እና ማሳወቂያዎችን ሊያዘገይ ይችላል።")
                   : say("Swipe to start receiving ride requests", "ጉዞ ለመቀበል ያንሸራትቱ")}</small>
               </div>
               <span className="nr-driver-home-control-online" data-online={state.online ? "true" : "false"}>
@@ -715,7 +733,18 @@ export function DriverWorkspace({
             </div>
             <div className="nr-driver-home-control-meta" aria-label={say("Operational status", "የኦፕሬሽን ሁኔታ")}>
               <span><Icon name="navigation" size={15} />{mapLocation.status === "ready" ? say("GPS ready", "GPS ዝግጁ") : say("GPS needs attention", "GPS ማረጋገጥ ያስፈልጋል")}</span>
-              <span><Icon name="bell" size={15} />{say("Ride alerts", "የጉዞ ማሳወቂያ")}</span>
+              <button
+                type="button"
+                disabled={alertPermission === "granted" || alertPermission === "unsupported" || alertPermission === "denied"}
+                onClick={() => void enableDriverAlerts()}
+                aria-label={say("Enable ride notifications", "የጉዞ ማሳወቂያዎችን አንቃ")}
+              >
+                <Icon name="bell" size={15} />
+                {alertPermission === "granted" ? say("Alerts enabled", "ማሳወቂያ በርቷል")
+                  : alertPermission === "denied" ? say("Alerts blocked", "ማሳወቂያ ታግዷል")
+                  : alertPermission === "unsupported" ? say("In-app alerts", "የውስጥ ማሳወቂያ")
+                  : say("Enable alerts", "ማሳወቂያን አንቃ")}
+              </button>
             </div>
             <DriverAvailabilitySwipe
               online={state.online}
