@@ -6,7 +6,12 @@ export type Endpoint = Place & {
   accuracy?: number;
 };
 export type Bounds = [number, number, number, number];
-export const PREVIEW_BOUNDS: Bounds = [38.66, 8.84, 38.91, 9.11];
+// Addis metro coverage: central Addis plus the practical surrounding urban belt
+// (Burayu/Sebeta/Holeta to the west, Sululta/Sendafa to the north,
+// Legetafo/Legedadi to the east, and Gelan/Dukem/Bishoftu to the south-east).
+// Provider search still ranks nearby/core Addis results first.
+export const ADDIS_CORE_BOUNDS: Bounds = [38.66, 8.84, 38.91, 9.11];
+export const PREVIEW_BOUNDS: Bounds = [38.45, 8.65, 39.12, 9.28];
 
 export const ADDIS_SUBCITIES = [
   { en: "Addis Ketema", am: "አዲስ ከተማ", aliases: ["addis ketema", "addis ketema sub city"] },
@@ -255,7 +260,7 @@ export function searchPreviewPlaces(query: string) {
     .filter((item) => item.score > 0)
     .sort((a, b) => b.score - a.score)
     .map((item) => item.place)
-    .slice(0, 12);
+    .slice(0, 20);
 }
 export const previewEndpoint = (p: Place): Endpoint => ({
   ...p,
