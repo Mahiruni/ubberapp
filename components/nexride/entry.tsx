@@ -42,6 +42,11 @@ export function EntryShell({
               <div className="nr-auth-hero-copy">
                 <span>ADDIS ABABA · NEXRIDE</span>
                 <strong>Better Rides.<br />A Brighter Tomorrow.</strong>
+                <div className="nr-auth-hero-points">
+                  <span>Quick account setup</span>
+                  <span>Saved places</span>
+                  <span>Trip history</span>
+                </div>
               </div>
                 </div>
 
