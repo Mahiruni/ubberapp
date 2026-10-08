@@ -576,6 +576,9 @@ export function DriverWorkspace({
         if (payload?.status === "driver_not_approved") {
           await refreshDriverStatus();
           setError("Your latest verification status was refreshed. You can go online as soon as approval is active.");
+        } else if (payload?.status === "vehicle_identity_incomplete") {
+          setError("Complete your vehicle model, color, and plate before going online.");
+          router.push("/driver/verification");
         } else if (payload?.status === "account_inactive") {
           setError("This driver account is not active. Contact NexRide support.");
         } else if (payload?.status === "location_required") {
