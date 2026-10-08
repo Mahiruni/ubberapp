@@ -64,7 +64,7 @@ export default function DriverVerificationPage() {
 
       const { data, error: loadError } = await supabase
         .from("drivers")
-        .select("license_number,license_expiry,vehicle,vehicle_plate,review_status,rejection_reason")
+        .select("license_number,license_expiry,vehicle,vehicle_color,vehicle_plate,review_status,rejection_reason")
         .eq("id", session.user.id)
         .maybeSingle();
 
@@ -77,7 +77,7 @@ export default function DriverVerificationPage() {
         setLicenseNumber(data.license_number || "");
         setLicenseExpiry(data.license_expiry || "");
         setVehicle(data.vehicle || session.user.user_metadata?.vehicle || "");
-        setVehicleColor(session.user.user_metadata?.vehicle_color || "");
+        setVehicleColor(data.vehicle_color || session.user.user_metadata?.vehicle_color || "");
         setPlate(data.vehicle_plate || session.user.user_metadata?.vehicle_plate || "");
         if (!["approved", "pending", "suspended"].includes(next || "draft")) {
           try {
