@@ -52,7 +52,8 @@ export function DriverSessionBridge() {
         });
         // Browser notifications are best-effort while minimized. They require
         // explicit user permission and may be suspended by the operating system.
-        if (document.visibilityState === "hidden" && Notification.permission === "granted") {
+        if (document.visibilityState === "hidden" && typeof Notification !== "undefined" &&
+          Notification.permission === "granted" && "serviceWorker" in navigator) {
           void navigator.serviceWorker?.ready.then(reg =>
             reg.showNotification("New NexRide ride request", {
               body: "Open NexRide to accept, decline or pass this ride.",

@@ -725,7 +725,7 @@ export function DriverWorkspace({
               onToggle={toggleAvailability}
             />
             <nav className="nr-driver-home-quick-actions" aria-label={say("Driver quick actions", "የአሽከርካሪ ፈጣን አማራጮች")}>
-              <button type="button" onClick={() => router.push("/driver/activity")}><Icon name="list" size={16} />{say("Activity", "እንቅስቃሴ")}</button>
+              <button type="button" onClick={() => router.push("/driver/activity")}><Icon name="clock" size={16} />{say("Activity", "እንቅስቃሴ")}</button>
               <button type="button" onClick={() => router.push("/driver/earnings")}><Icon name="wallet" size={16} />{say("Earnings", "ገቢ")}</button>
               <button type="button" onClick={() => router.push("/driver/profile/settings")}><Icon name="settings" size={16} />{say("Settings", "ቅንብሮች")}</button>
             </nav>
