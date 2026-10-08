@@ -101,7 +101,9 @@ export function NexRideMobileUpdateGate() {
 
       setPending(null);
       if (choice === "web-refresh") {
-        if (!safeToRefresh(pathname)) return;
+        // Never reload an ongoing trip, including one viewed from the driver home map.
+        const active = await hasActiveTrip(role);
+        if (active !== false || !safeToRefresh(pathname)) return;
         try { sessionStorage.setItem(revisionKey, policy.webRevision); } catch {}
         // Network-first service worker and a single reload per revision keep loops away.
         if ("serviceWorker" in navigator) {
