@@ -8,6 +8,7 @@ import { supabase } from "../../../lib/supabase";
 import type { DriverReviewStatus } from "../../../lib/nexride-driver-verification";
 import { resolveSessionRole } from "../../../lib/nexride-account-role";
 import { nexrideApiFetch } from "../../../lib/nexride-api-auth";
+import { VEHICLE_COLOR_OPTIONS } from "../../../lib/nexride-vehicle";
 import "../auth/driver-auth.css";
 import "../onboarding/driver-onboarding.css";
 import "../../detail-system.css";
@@ -29,6 +30,7 @@ export default function DriverVerificationPage() {
   const [licenseNumber, setLicenseNumber] = useState("");
   const [licenseExpiry, setLicenseExpiry] = useState("");
   const [vehicle, setVehicle] = useState("");
+  const [vehicleColor, setVehicleColor] = useState("");
   const [plate, setPlate] = useState("");
   const [licenseFile, setLicenseFile] = useState<File | null>(null);
   const [registrationFile, setRegistrationFile] = useState<File | null>(null);
@@ -75,6 +77,7 @@ export default function DriverVerificationPage() {
         setLicenseNumber(data.license_number || "");
         setLicenseExpiry(data.license_expiry || "");
         setVehicle(data.vehicle || session.user.user_metadata?.vehicle || "");
+        setVehicleColor(session.user.user_metadata?.vehicle_color || "");
         setPlate(data.vehicle_plate || session.user.user_metadata?.vehicle_plate || "");
         if (!["approved", "pending", "suspended"].includes(next || "draft")) {
           try {
@@ -84,12 +87,14 @@ export default function DriverVerificationPage() {
               if (typeof draft.licenseNumber === "string") setLicenseNumber(draft.licenseNumber.slice(0, 120));
               if (typeof draft.licenseExpiry === "string") setLicenseExpiry(draft.licenseExpiry.slice(0, 20));
               if (typeof draft.vehicle === "string") setVehicle(draft.vehicle.slice(0, 120));
+              if (typeof draft.vehicleColor === "string") setVehicleColor(draft.vehicleColor.slice(0, 32));
               if (typeof draft.plate === "string") setPlate(draft.plate.slice(0, 60));
             }
           } catch {}
         }
       } else {
         setVehicle(session.user.user_metadata?.vehicle || "");
+        setVehicleColor(session.user.user_metadata?.vehicle_color || "");
         setPlate(session.user.user_metadata?.vehicle_plate || "");
       }
       setLoading(false);
@@ -102,10 +107,10 @@ export default function DriverVerificationPage() {
     try {
       sessionStorage.setItem(
         "nexride.driver.verification.draft." + driverId,
-        JSON.stringify({ licenseNumber, licenseExpiry, vehicle, plate }),
+        JSON.stringify({ licenseNumber, licenseExpiry, vehicle, vehicleColor, plate }),
       );
     } catch {}
-  }, [driverId, loading, status, editingApproved, licenseNumber, licenseExpiry, vehicle, plate]);
+  }, [driverId, loading, status, editingApproved, licenseNumber, licenseExpiry, vehicle, vehicleColor, plate]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -156,6 +161,7 @@ export default function DriverVerificationPage() {
         licenseNumber: licenseNumber.trim(),
         licenseExpiry,
         vehicle: vehicle.trim(),
+        vehicleColor,
         vehiclePlate: plate.trim(),
         licenseDocumentPath: licensePath,
         vehicleRegistrationPath: registrationPath,
@@ -208,7 +214,10 @@ export default function DriverVerificationPage() {
               <label>Driver license number<input value={licenseNumber} onChange={(e) => setLicenseNumber(e.target.value)} required /></label>
               <label>License expiry<input type="date" value={licenseExpiry} onChange={(e) => setLicenseExpiry(e.target.value)} required /></label>
             </div>
-            <label>Vehicle model<input value={vehicle} onChange={(e) => setVehicle(e.target.value)} placeholder="e.g. Toyota Corolla" required /></label>
+            <div className="driver-form-grid">
+              <label>Vehicle model<input value={vehicle} onChange={(e) => setVehicle(e.target.value)} placeholder="e.g. Toyota Corolla" required /></label>
+              <label>Vehicle color<select value={vehicleColor} onChange={(e) => setVehicleColor(e.target.value)} required><option value="">Choose color</option>{VEHICLE_COLOR_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.en}</option>)}</select></label>
+            </div>
             <label>Vehicle plate<input value={plate} onChange={(e) => setPlate(e.target.value)} required /></label>
             <label>Driver license document<input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" onChange={(e) => setLicenseFile(e.target.files?.[0] || null)} required /></label>
             <label>Vehicle registration document<input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" onChange={(e) => setRegistrationFile(e.target.files?.[0] || null)} required /></label>
