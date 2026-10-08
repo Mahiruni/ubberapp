@@ -103,9 +103,15 @@
     z-index:6!important;
   }
 
-  .nr-app[data-mode="rider"] .rider-map-flow .nr-map-profile,
+  /* Keep one persistent Rider profile entry on the map.
+     Only the redundant preview chip is hidden in map-flow layouts. */
   .nr-app[data-mode="rider"] .rider-map-flow .nr-map-preview-chip {
     display:none!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-map-profile {
+    display:grid!important;
+    pointer-events:auto!important;
   }
 
   .nr-app[data-mode="rider"] .rider-map-flow .nr-map-attribution {
