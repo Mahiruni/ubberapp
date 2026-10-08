@@ -64,7 +64,7 @@ export async function PATCH(request: Request) {
         .maybeSingle(),
       admin
         .from("drivers")
-        .select("review_status,rejection_reason,is_online,rating")
+        .select("review_status,rejection_reason,is_online,rating,vehicle,vehicle_plate")
         .eq("id", authorized.user.id)
         .maybeSingle(),
     ]);
@@ -93,6 +93,38 @@ export async function PATCH(request: Request) {
         },
         409,
       );
+
+    const vehicleModel =
+      String(current.vehicle || authorized.user.user_metadata?.vehicle || "").trim();
+    const vehiclePlate =
+      String(
+        current.vehicle_plate ||
+          authorized.user.user_metadata?.vehicle_plate ||
+          "",
+      ).trim();
+    const vehicleColor = String(
+      authorized.user.user_metadata?.vehicle_color || "",
+    ).trim();
+
+    if (wantsOnline && (!vehicleModel || !vehiclePlate || !vehicleColor)) {
+      if (current.is_online === true) {
+        await authorized.client
+          .from("drivers")
+          .update({ is_online: false })
+          .eq("id", authorized.user.id);
+      }
+      return reply(
+        {
+          status: "vehicle_identity_incomplete",
+          missing: {
+            vehicle: !vehicleModel,
+            color: !vehicleColor,
+            plate: !vehiclePlate,
+          },
+        },
+        409,
+      );
+    }
 
     if (goingOffline && current.is_online !== true) {
       return reply({
