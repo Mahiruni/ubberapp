@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { Brand, Icon, type IconName } from "../../components/nexride/ui";
 import { supabase } from "../../lib/supabase";
+import { AdminAccountIdentities } from "../../components/nexride/admin-account-identities";
 import "./admin.css";
 import "../detail-system.css";
 
@@ -13,6 +14,7 @@ type Module =
   | "drivers"
   | "verification"
   | "users"
+  | "accounts"
   | "finance"
   | "safety"
   | "support"
@@ -26,6 +28,7 @@ const nav: [Module, string, IconName][] = [
   ["drivers", "Drivers", "user"],
   ["verification", "Verification", "check"],
   ["users", "Users", "users"],
+  ["accounts", "Identity & Accounts", "shield"],
   ["finance", "Payments", "money"],
   ["safety", "Safety", "shield"],
   ["support", "Support", "chat"],
@@ -540,6 +543,8 @@ export default function AdminPage() {
             setRange={setRange}
             setModule={setModule}
           />
+        ) : module === "accounts" ? (
+          <AdminAccountIdentities />
         ) : (
           <DataModule
             module={module}
