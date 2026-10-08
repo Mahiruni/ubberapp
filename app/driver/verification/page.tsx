@@ -186,7 +186,11 @@ export default function DriverVerificationPage() {
             ? "Approved or suspended verification cannot be replaced from this screen."
             : payload?.status === "identity_ownership_review_required"
               ? "This identity needs an ownership or replacement review. Visit Manage Account for help."
-              : "We couldn’t submit your verification. Try again.";
+              : payload?.status === "verification_document_missing"
+                ? "One of your document files is missing. Please upload the missing file again; existing files are kept."
+                : payload?.status === "verification_document_invalid"
+                  ? "A document is empty, unsupported or larger than 8 MB. Upload a valid JPG, PNG, WebP or PDF."
+                  : "We couldn’t submit your verification. Try again.";
       setError(message);
       setBusy(false);
       return;
