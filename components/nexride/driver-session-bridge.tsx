@@ -110,8 +110,14 @@ export function DriverSessionBridge() {
       }).catch(() => {});
     };
 
+    const stopGps = () => {
+      if (gpsWatch !== null) {
+        navigator.geolocation?.clearWatch(gpsWatch);
+        gpsWatch = null;
+      }
+    };
     const startGps = () => {
-      if (gpsWatch !== null || !navigator.geolocation) return;
+      if (!activeOnline || gpsWatch !== null || !navigator.geolocation) return;
       gpsWatch = navigator.geolocation.watchPosition(sendGps, () => {
         // Do not silently take the driver offline when Android suspends GPS.
         // On returning to the app, location/availability are rechecked.
@@ -120,11 +126,15 @@ export function DriverSessionBridge() {
 
     const onResume = () => {
       if (!mounted) return;
-      void reconcileAvailability();
-      if (activeOnline && document.visibilityState === "visible") {
-        navigator.geolocation?.getCurrentPosition(sendGps, () => {},
-          { enableHighAccuracy: true, maximumAge: 10_000, timeout: 12_000 });
-      }
+      void reconcileAvailability().then(() => {
+        if (!mounted) return;
+        if (!activeOnline) { stopGps(); return; }
+        startGps();
+        if (document.visibilityState === "visible") {
+          navigator.geolocation?.getCurrentPosition(sendGps, () => {},
+            { enableHighAccuracy: true, maximumAge: 10_000, timeout: 12_000 });
+        }
+      }).catch(() => {});
     };
     const onVisibility = () => {
       if (document.visibilityState === "visible") onResume();
@@ -142,7 +152,7 @@ export function DriverSessionBridge() {
       driverId = id;
       await reconcileAvailability();
       if (!mounted) return;
-      startGps();
+      if (activeOnline) startGps();
 
       offerChannel = supabase.channel("driver-shell-offers:" + id)
         .on("postgres_changes", {
@@ -164,7 +174,12 @@ export function DriverSessionBridge() {
         }, payload => {
           const data = payload.new as DriverOnline;
           activeOnline = data.is_online === true && data.review_status === "approved";
-          if (activeOnline) void readPending();
+          if (activeOnline) {
+            startGps();
+            void readPending();
+          } else {
+            stopGps();
+          }
         }).subscribe();
     };
 
@@ -184,7 +199,7 @@ export function DriverSessionBridge() {
       window.removeEventListener("online", onResume);
       window.removeEventListener(DRIVER_AVAILABILITY_CHANGED, onResume);
       document.removeEventListener("visibilitychange", onVisibility);
-      if (gpsWatch !== null) navigator.geolocation?.clearWatch(gpsWatch);
+      stopGps();
       if (offerChannel) void supabase.removeChannel(offerChannel);
       if (availabilityChannel) void supabase.removeChannel(availabilityChannel);
     };
