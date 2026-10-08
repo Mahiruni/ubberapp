@@ -1619,3 +1619,112 @@
     min-height:var(--nr-flow-sheet-height)!important;
   }
 }
+
+
+/* HARD INVARIANT: the Rider wrapper never disappears.
+   Screen state changes only replace content inside this permanent surface. */
+@media (max-width:800px) {
+  .nr-app[data-mode="rider"] .rider-map-flow
+    .nr-rider-flow-panel > .nr-rider-persistent-wrapper:not([hidden]) {
+    position:relative!important;
+    inset:auto!important;
+    z-index:4!important;
+    display:block!important;
+    width:100%!important;
+    height:100%!important;
+    min-height:100%!important;
+    max-height:100%!important;
+    margin:0!important;
+    padding:0!important;
+    opacity:1!important;
+    visibility:visible!important;
+    transform:none!important;
+    translate:none!important;
+    scale:1!important;
+    overflow:hidden!important;
+    pointer-events:auto!important;
+    border:1px solid color-mix(in srgb,var(--line) 62%,transparent)!important;
+    border-bottom:0!important;
+    border-radius:24px 24px 0 0!important;
+    background:color-mix(in srgb,var(--surface) 88%,transparent)!important;
+    color:var(--text)!important;
+    box-shadow:
+      0 -1px 0 rgba(255,255,255,.58),
+      0 -10px 30px rgba(4,28,48,.12),
+      0 -28px 70px rgba(4,28,48,.08)!important;
+    backdrop-filter:blur(26px) saturate(138%)!important;
+    -webkit-backdrop-filter:blur(26px) saturate(138%)!important;
+    transition:none!important;
+    contain:layout paint;
+  }
+
+  .nr-app[data-mode="rider"][data-theme="dark"] .rider-map-flow
+    .nr-rider-flow-panel > .nr-rider-persistent-wrapper:not([hidden]) {
+    background:rgba(4,28,48,.86)!important;
+    border-color:rgba(168,194,207,.16)!important;
+    box-shadow:
+      0 -1px 0 rgba(255,255,255,.07),
+      0 -12px 34px rgba(0,8,18,.30),
+      0 -30px 76px rgba(0,8,18,.20)!important;
+  }
+
+  /* Every Rider screen fills the permanent wrapper. It may change content,
+     scroll state or snap height, but it never owns wrapper visibility. */
+  .nr-app[data-mode="rider"] .rider-map-flow
+    .nr-rider-persistent-wrapper:not([hidden]) > :is(
+      .nr-rider-home-sheet,
+      .nr-destination-panel,
+      .nr-ride-selection,
+      .nr-driver-matching,
+      .nr-trip-experience
+    ) {
+    position:relative!important;
+    inset:auto!important;
+    display:flex!important;
+    flex-direction:column!important;
+    width:100%!important;
+    height:100%!important;
+    min-height:0!important;
+    max-height:100%!important;
+    margin:0!important;
+    opacity:1!important;
+    visibility:visible!important;
+    transform:none!important;
+    overflow:hidden!important;
+    pointer-events:auto!important;
+    border:0!important;
+    border-radius:24px 24px 0 0!important;
+    background:transparent!important;
+    box-shadow:none!important;
+    backdrop-filter:none!important;
+    -webkit-backdrop-filter:none!important;
+  }
+
+  /* Do not allow transient loading, pending, matching, keyboard or route
+     classes to collapse the wrapper itself. */
+  .nr-app[data-mode="rider"] .rider-map-flow:is(
+    .rider-home-view,
+    .rider-search-view,
+    .rider-ride-view,
+    .rider-matching-view,
+    .rider-assigned-view,
+    .rider-live-view,
+    .rider-trip-view,
+    .rider-summary-view
+  ) .nr-rider-persistent-wrapper:not([hidden]) {
+    display:block!important;
+    opacity:1!important;
+    visibility:visible!important;
+    min-height:100%!important;
+    pointer-events:auto!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow[data-request-pending="true"]
+    .nr-rider-persistent-wrapper:not([hidden]),
+  .nr-app[data-mode="rider"] .rider-map-flow[data-keyboard="true"]
+    .nr-rider-persistent-wrapper:not([hidden]) {
+    display:block!important;
+    opacity:1!important;
+    visibility:visible!important;
+  }
+}
