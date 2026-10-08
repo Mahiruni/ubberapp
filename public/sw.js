@@ -1,4 +1,4 @@
-const VERSION = "nexride-flagship-v5";
+const VERSION = "nexride-flagship-v6";
 const CORE_CACHE = VERSION + "-core";
 const RUNTIME_CACHE = VERSION + "-runtime";
 const CORE_ASSETS = [
@@ -14,7 +14,8 @@ const CORE_ASSETS = [
   "/icons/icon-maskable-512.png",
   "/fonts/noto-sans-ethiopic-400.woff2",
   "/fonts/noto-sans-ethiopic-700.woff2",
-  "/fonts/Benaiah/Benaiah-Bold-Ethiopic.woff2?v=5"
+  "/fonts/Benaiah/Benaiah-Bold-Ethiopic.woff2?v=5",
+  "/audio/nexride-driver-request.mp3?v=1"
 ];
 
 self.addEventListener("install", (event) => {
@@ -64,6 +65,7 @@ self.addEventListener("fetch", (event) => {
     url.pathname.startsWith("/brand/") ||
     url.pathname.startsWith("/icons/") ||
     url.pathname.startsWith("/fonts/") ||
+    url.pathname.startsWith("/audio/") ||
     url.pathname === "/favicon.svg" ||
     url.pathname === "/favicon.ico" ||
     url.pathname.startsWith("/favicon-") ||

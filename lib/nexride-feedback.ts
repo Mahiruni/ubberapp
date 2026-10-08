@@ -64,23 +64,7 @@ const patterns: Record<NexRideSoundId, Pattern> = {
   offline: { notes: [[523.25, .08, .03], [349.23, .15, .045, .07]] },
   success: { notes: [[440, .08, .035], [587.33, .18, .055, .07]] },
   message: { notes: [[659.25, .08, .03], [783.99, .1, .035, .055]], wave: "sine" },
-  request: {
-    // Incoming ride request: a recognisable ringtone-style phrase rather than
-    // a few notification beeps. One phrase is ~3.35s and is repeated with a
-    // short breathing gap while the offer remains actionable.
-    notes: [
-      [196, 3.12, .018, 0],
-      [392, .34, .048, 0],
-      [523.25, .38, .058, .34],
-      [659.25, .56, .068, .72],
-      [523.25, .30, .046, 1.42],
-      [659.25, .34, .056, 1.72],
-      [783.99, .58, .066, 2.06],
-      [659.25, .28, .050, 2.72],
-      [523.25, .42, .056, 2.98],
-    ],
-    wave: "triangle",
-  },
+  request: { notes: [] },
   rideAccepted: { notes: [[392, .08, .04], [523.25, .11, .05, .07], [659.25, .19, .06, .16]] },
   driverAssigned: { notes: [[329.63, .1, .04], [440, .12, .05, .09], [659.25, .24, .06, .19]] },
   driverArrived: { notes: [[523.25, .15, .055], [659.25, .17, .06, .19], [523.25, .24, .05, .38]] },
@@ -93,9 +77,8 @@ const patterns: Record<NexRideSoundId, Pattern> = {
 };
 
 let context: AudioContext | null = null;
-let requestTimer: number | null = null;
-let requestStopTimer: number | null = null;
-const requestNodes = new Set<OscillatorNode>();
+let requestAudio: HTMLAudioElement | null = null;
+let requestAudioPrimed = false;
 const seen = new Map<string, number>();
 let spokenKey = "";
 
@@ -142,15 +125,41 @@ export function saveNexRideFeedbackPreferences(next: NexRideFeedbackPreferences)
   } catch {}
 }
 
+function getRideRequestAudio() {
+  if (typeof window === "undefined") return null;
+  if (!requestAudio) {
+    requestAudio = new Audio("/audio/nexride-driver-request.mp3?v=1");
+    requestAudio.loop = true;
+    requestAudio.preload = "auto";
+    requestAudio.volume = .92;
+  }
+  return requestAudio;
+}
+
 export async function primeNexRideAudio() {
   const audio = getContext();
-  if (!audio) return false;
+  const ringtone = getRideRequestAudio();
+  let contextReady = false;
   try {
-    if (audio.state === "suspended") await audio.resume();
-    return audio.state === "running";
-  } catch {
-    return false;
+    if (audio) {
+      if (audio.state === "suspended") await audio.resume();
+      contextReady = audio.state === "running";
+    }
+  } catch {}
+
+  if (ringtone && !requestAudioPrimed) {
+    try {
+      const wasMuted = ringtone.muted;
+      ringtone.muted = true;
+      await ringtone.play();
+      ringtone.pause();
+      ringtone.currentTime = 0;
+      ringtone.muted = wasMuted;
+      requestAudioPrimed = true;
+    } catch {}
   }
+
+  return contextReady || requestAudioPrimed;
 }
 
 function schedulePattern(id: NexRideSoundId, tracked?: Set<OscillatorNode>) {
@@ -193,39 +202,29 @@ function hapticFor(event: NexRideFeedbackEvent) {
 }
 
 export function stopRideRequestAlert() {
-  if (typeof window !== "undefined" && requestTimer !== null) window.clearInterval(requestTimer);
-  if (typeof window !== "undefined" && requestStopTimer !== null) window.clearTimeout(requestStopTimer);
-  requestTimer = null;
-  requestStopTimer = null;
-  for (const node of requestNodes) {
-    try { node.stop(); } catch {}
+  const ringtone = requestAudio;
+  if (ringtone) {
+    try {
+      ringtone.pause();
+      ringtone.currentTime = 0;
+    } catch {}
   }
-  requestNodes.clear();
   if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") {
     try { navigator.vibrate(0); } catch {}
   }
 }
 
-const RIDE_REQUEST_ALERT_MAX_MS = 30_000;
-const RIDE_REQUEST_PHRASE_INTERVAL_MS = 3_750;
-
 function startRideRequestAlert() {
   stopRideRequestAlert();
-  let cycle = 0;
+  const ringtone = getRideRequestAudio();
+  hapticFor("ride_request");
+  if (!ringtone) return;
 
-  const play = () => {
-    schedulePattern("request", requestNodes);
-    // Keep vibration useful without buzzing continuously for the whole window.
-    if (cycle === 0 || cycle % 3 === 0) hapticFor("ride_request");
-    cycle += 1;
-  };
-
-  play();
-
-  if (typeof window !== "undefined") {
-    requestTimer = window.setInterval(play, RIDE_REQUEST_PHRASE_INTERVAL_MS);
-    requestStopTimer = window.setTimeout(stopRideRequestAlert, RIDE_REQUEST_ALERT_MAX_MS);
-  }
+  try {
+    ringtone.loop = true;
+    ringtone.currentTime = 0;
+    void ringtone.play().catch(() => {});
+  } catch {}
 }
 
 function soundFor(event: NexRideFeedbackEvent): NexRideSoundId | null {
