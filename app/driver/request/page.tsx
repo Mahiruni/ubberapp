@@ -1,11 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DriverNavigationMap, type NavigationCoordinate, type NavigationTrafficSegment } from "../../../components/nexride/driver-navigation-map";
 import { DriverBottomSheet } from "../../../components/nexride/driver-bottom-sheet";
 import { Icon } from "../../../components/nexride/ui";
 import { useOperationalTranslation } from "../../../components/nexride/operational-i18n";
+import { Dialog } from "../../../components/nexride/ui";
 import { supabase } from "../../../lib/supabase";
 import { resolveSessionRole } from "../../../lib/nexride-account-role";
 import {
@@ -78,7 +79,10 @@ export default function DriverRideRequestPage() {
   const [offer, setOffer] = useState<RideOffer | null>(null);
   const [request, setRequest] = useState<RideRequest | null>(null);
   const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState<"accept" | "decline" | null>(null);
+  const [submitting, setSubmitting] = useState<"accept" | "decline" | "pass" | null>(null);
+  const [confirmAction, setConfirmAction] = useState<"decline" | "pass" | null>(null);
+  const [passOutcome, setPassOutcome] = useState<"forwarded" | "other_pending" | "no_drivers" | null>(null);
+  const decisionLock = useRef(false);
   const [acceptFailure, setAcceptFailure] = useState("");
   const [secondsRemaining, setSecondsRemaining] = useState<number | null>(null);
   const [soundBlocked, setSoundBlocked] = useState(false);
@@ -385,8 +389,9 @@ export default function DriverRideRequestPage() {
   }, [request]);
 
   async function acceptRide() {
-    if (!offer || submitting || visibleStatus !== "pending") return;
-
+    if (!offer || submitting || decisionLock.current || visibleStatus !== "pending") return;
+    decisionLock.current = true;
+    setConfirmAction(null);
     setSubmitting("accept");
     setAcceptFailure("");
 
@@ -411,10 +416,12 @@ export default function DriverRideRequestPage() {
         setAcceptFailure(op("Acceptance failed. The request may have changed or your connection may be unavailable."));
       }
       setSubmitting(null);
+      decisionLock.current = false;
       return;
     }
 
     stopRideRequestAlert(offer.id);
+    decisionLock.current = false;
     emitNexRideFeedback({
       event: "ride_accepted",
       id: offer.id,
@@ -427,8 +434,8 @@ export default function DriverRideRequestPage() {
   }
 
   async function declineRide() {
-    if (!offer || submitting || visibleStatus !== "pending") return;
-
+    if (!offer || submitting || decisionLock.current || visibleStatus !== "pending") return;
+    decisionLock.current = true;
     setSubmitting("decline");
     setAcceptFailure("");
 
@@ -444,16 +451,80 @@ export default function DriverRideRequestPage() {
     if (error || !data) {
       setAcceptFailure(op("NexRide could not decline this request. Its status may already have changed."));
       setSubmitting(null);
+      decisionLock.current = false;
+      setConfirmAction(null);
       return;
     }
 
     stopRideRequestAlert(offer.id);
+    setConfirmAction(null);
+    setPassOutcome(null);
     setOffer((current) => current ? { ...current, status: "declined" } : current);
     setSubmitting(null);
+    decisionLock.current = false;
+  }
+
+  async function passRide() {
+    if (!offer || submitting || decisionLock.current || visibleStatus !== "pending") return;
+    decisionLock.current = true;
+    setSubmitting("pass");
+    setAcceptFailure("");
+    try {
+      // Authenticated RPC performs the decline and next-driver dispatch in
+      // one transaction. A rejected/expired offer cannot be passed.
+      const { data, error } = await supabase.rpc("driver_pass_ride_offer", {
+        p_offer_id: offer.id,
+      });
+      const response = data as {
+        status?: string; requestId?: string; forwarded?: boolean;
+        anotherOfferActive?: boolean; currentStatus?: string;
+      } | null;
+      if (error || !response || response.status !== "passed" || response.requestId !== offer.request_id) {
+        if (response?.status === "expired") {
+          setOffer(current => current ? { ...current, status: "expired" } : current);
+        } else if (response?.status === "unavailable" || response?.status === "already_resolved") {
+          await loadOffer(driverId, offer.id).catch(() => {});
+        }
+        setAcceptFailure(op("Could not pass this request. Check the latest status and try again."));
+        return;
+      }
+      stopRideRequestAlert(offer.id);
+      setPassOutcome(response.forwarded ? "forwarded" :
+        response.anotherOfferActive ? "other_pending" : "no_drivers");
+      setOffer(current => current ? { ...current, status: "declined" } : current);
+    } catch {
+      setAcceptFailure(op("Could not pass this request. Check your connection and try again."));
+    } finally {
+      decisionLock.current = false;
+      setSubmitting(null);
+      setConfirmAction(null);
+    }
   }
 
   return (
     <main className="nr-app nr-driver-request-page" data-mode="driver">
+      {confirmAction && offer?.status === "pending" && (
+        <Dialog
+          title={op(confirmAction === "pass" ? "Pass this ride to another driver?" : "Decline this ride?")}
+          onClose={() => { if (!submitting) setConfirmAction(null); }}
+        >
+          <div className="nr-request-confirm-content">
+            <p>{op(confirmAction === "pass"
+              ? "Your offer will be released. NexRide will try another available driver and keep the rider searching."
+              : "Are you sure you want to decline this request? The rider's ride will not be cancelled.")}</p>
+            <div className="nr-request-confirm-actions">
+              <button type="button" className="nr-request-confirm-no"
+                disabled={Boolean(submitting)}
+                onClick={() => setConfirmAction(null)}>{op("No, Keep Request")}</button>
+              <button type="button" className="nr-request-confirm-yes"
+                disabled={Boolean(submitting)}
+                onClick={() => void (confirmAction === "pass" ? passRide() : declineRide())}>
+                {submitting ? op("Processing…") : op(confirmAction === "pass" ? "Yes, Pass Ride" : "Yes, Decline")}
+              </button>
+            </div>
+          </div>
+        </Dialog>
+      )}
       {offer?.status === "pending" && soundBlocked && (
         <button
           type="button"
@@ -533,8 +604,14 @@ export default function DriverRideRequestPage() {
         ) : visibleStatus === "declined" ? (
           <RequestState
             icon="check"
-            title={op("Ride declined")}
-            body={op("You declined this request. NexRide can send another request while you remain online.")}
+            title={op(passOutcome ? "Ride passed" : "Ride declined")}
+            body={op(passOutcome === "forwarded"
+              ? "NexRide sent this ride request to another available driver."
+              : passOutcome === "other_pending"
+                ? "Another driver has an active offer for this ride."
+                : passOutcome === "no_drivers"
+                  ? "No additional driver is available yet. The rider can continue searching."
+                  : "You declined this request. NexRide can send another request while you remain online.")}
             action={op("Back to Driver Home")}
             onAction={() => router.replace("/driver/home")}
           />
@@ -613,12 +690,25 @@ export default function DriverRideRequestPage() {
               </div>
             )}
 
-            <button className="nr-request-accept" disabled={Boolean(submitting)} onClick={acceptRide}>
-              {submitting === "accept" ? op("Accepting…") : acceptFailure ? op("Try Accept Again") : op("Accept")}
-            </button>
-            <button className="nr-request-decline" disabled={Boolean(submitting)} onClick={declineRide}>
-              {submitting === "decline" ? op("Declining…") : op("Decline")}
-            </button>
+            <div className="nr-request-actions" aria-label={op("Respond to ride request")}>
+              <div className="nr-request-actions-primary">
+                <button type="button" className="nr-request-accept"
+                  disabled={Boolean(submitting)} onClick={() => void acceptRide()}>
+                  <Icon name="check" size={18} />
+                  {submitting === "accept" ? op("Accepting…") : op("Accept")}
+                </button>
+                <button type="button" className="nr-request-decline"
+                  disabled={Boolean(submitting)} onClick={() => setConfirmAction("decline")}>
+                  <Icon name="close" size={18} />
+                  {op("Decline")}
+                </button>
+              </div>
+              <button type="button" className="nr-request-pass"
+                disabled={Boolean(submitting)} onClick={() => setConfirmAction("pass")}>
+                <Icon name="arrow" size={18} />
+                {op("Pass to Another Driver")}
+              </button>
+            </div>
           </>
         )}
       </DriverBottomSheet>
