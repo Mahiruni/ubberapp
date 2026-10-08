@@ -131,7 +131,7 @@ describe("ride quotes and request integration", () => {
     expect(
       fetch.mock.calls
         .slice(1)
-        .every((call) => call[1].headers["Idempotency-Key"] === key),
+        .every((call) => new Headers(call[1].headers).get("Idempotency-Key") === key),
     ).toBe(true);
   });
 });
