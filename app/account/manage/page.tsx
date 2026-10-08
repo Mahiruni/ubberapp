@@ -102,8 +102,11 @@ export default function NexRideManageAccountPage() {
   }
 
   useEffect(() => {
-    if (explicitSignOutRole(window.localStorage)) {
-      router.replace("/rider/sign-in");
+    const signedOut = explicitSignOutRole(window.localStorage);
+    if (signedOut) {
+      // Keep Rider and Driver signed-out journeys separate. Never restore a
+      // session by sending a signed-out Driver through the Rider entry.
+      router.replace(signedOut === "driver" ? "/driver/auth?logged_out=1" : "/rider/sign-in");
       return;
     }
     let mounted = true;
