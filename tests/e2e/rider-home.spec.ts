@@ -216,7 +216,7 @@ test("mobile focused destination search keeps saved and suggested places above t
   await input.focus();
   const root = page.locator(".rider-search-view");
   await expect(root).toHaveAttribute("data-search-open", "true");
-  await expect(page.getByRole("heading", { name: "Recent searches" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Recent places" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Popular places" })).toBeVisible();
   const panel = page.locator(".nr-destination-panel");
   const searchBody = page.locator(".nr-destination-body");
