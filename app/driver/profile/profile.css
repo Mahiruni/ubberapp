@@ -172,3 +172,22 @@
   .nr-driver-profile-quick-grid{grid-template-columns:1fr 1fr}
   .nr-driver-profile-columns{grid-template-columns:1fr}
 }
+
+/* Driver-specific navigation app preference is a real persisted selection. */
+.nr-driver-navigation-provider{display:grid;grid-template-columns:1fr 1fr;gap:8px;max-width:480px;margin-top:8px}
+.nr-driver-navigation-provider button{
+  min-height:46px;
+  border:1px solid var(--driver-border);
+  border-radius:12px;
+  background:var(--driver-surface-elevated);
+  color:var(--driver-text-primary);
+  font-size:13px;
+  font-weight:750;
+}
+.nr-driver-navigation-provider button[data-active="true"]{
+  border-color:var(--driver-accent);
+  background:color-mix(in srgb,var(--driver-accent) 12%,var(--driver-surface));
+  box-shadow:inset 0 0 0 1px var(--driver-accent);
+}
+.nr-driver-navigation-provider button:focus-visible{outline:3px solid var(--driver-accent);outline-offset:2px}
+.nr-driver-navigation-provider-note{color:var(--driver-text-secondary);font-size:11px;line-height:1.4}

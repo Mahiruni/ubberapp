@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Icon, LanguageContext } from "../../../../components/nexride/ui";
 import { announceLanguage } from "../../../../components/nexride/language-provider";
 import { DriverThemeSelector } from "../../../../components/nexride/driver-app-shell";
+import { NEXRIDE_DRIVER_NAV_PROVIDER_KEY, isDriverNavigationProvider, readDriverNavigationProvider, type NexRideDriverNavigationProvider } from "../../../../lib/nexride-driver-navigation-provider";
 import { supabase } from "../../../../lib/supabase";
 import { loadDriverProfileData, type DriverProfileData } from "../../../../lib/nexride-driver-profile";
 import "../../../nexride.css";
@@ -21,6 +22,27 @@ export default function DriverProfileSettingsPage() {
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState("");
   const [success, setSuccess] = useState(false);
+  const [navigationProvider, setNavigationProvider] = useState<NexRideDriverNavigationProvider>("google");
+
+  useEffect(() => {
+    setNavigationProvider(readDriverNavigationProvider());
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === NEXRIDE_DRIVER_NAV_PROVIDER_KEY && isDriverNavigationProvider(event.newValue))
+        setNavigationProvider(event.newValue);
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
+  const chooseNavigationProvider = (provider: NexRideDriverNavigationProvider) => {
+    try {
+      window.localStorage.setItem(NEXRIDE_DRIVER_NAV_PROVIDER_KEY, provider);
+      setNavigationProvider(provider);
+    } catch {
+      setFeedback("Navigation preference could not be saved on this device.");
+      setSuccess(false);
+    }
+  };
 
   useEffect(() => {
     let active = true;
@@ -178,8 +200,8 @@ export default function DriverProfileSettingsPage() {
             <section className="nr-profile-panel">
               <div className="nr-profile-panel-head">
                 <div>
-                  <h2>App preferences</h2>
-                  <p>Theme and language apply across the complete Driver experience.</p>
+                  <h2>Driver preferences</h2>
+                  <p>Choose the settings that make your Driver experience comfortable.</p>
                 </div>
               </div>
               <div className="nr-driver-preference-block">
@@ -196,6 +218,19 @@ export default function DriverProfileSettingsPage() {
                   <button type="button" data-active={language === "en" ? "true" : "false"} aria-pressed={language === "en"} onClick={() => announceLanguage("en")}>English</button>
                   <button type="button" data-active={language === "am" ? "true" : "false"} aria-pressed={language === "am"} onClick={() => announceLanguage("am")}>አማርኛ</button>
                 </div>
+              </div>
+              <div className="nr-driver-preference-block">
+                <div className="nr-driver-preference-label">
+                  <div>
+                    <strong>Default navigation app</strong>
+                    <small>Used when you open external turn-by-turn directions during an active trip. NexRide's live Mapbox route stays unchanged.</small>
+                  </div>
+                </div>
+                <div className="nr-driver-navigation-provider" role="group" aria-label="External navigation provider">
+                  <button type="button" data-active={navigationProvider === "google" ? "true" : "false"} aria-pressed={navigationProvider === "google"} onClick={() => chooseNavigationProvider("google")}>Google Maps</button>
+                  <button type="button" data-active={navigationProvider === "waze" ? "true" : "false"} aria-pressed={navigationProvider === "waze"} onClick={() => chooseNavigationProvider("waze")}>Waze</button>
+                </div>
+                <small className="nr-driver-navigation-provider-note">If Waze has no coordinates for a stop, Google Maps is used as a safe fallback.</small>
               </div>
             </section>
 
