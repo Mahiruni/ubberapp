@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { nexrideApiFetch } from './nexride-api-auth';
 import { textValue, timestamp, type Row, type TripSnapshot } from './nexride-trip-data';
 
 const activeStates = ['accepted', 'arrived_pickup', 'in_trip'];
@@ -73,12 +74,15 @@ export async function readRiderTrip(
   const driverId = textValue(ride.assigned_driver_id);
   const active = activeStates.includes(String(ride.status));
 
-  const [profileResult, driverResult, ratingResult, locationResult] = await Promise.all([
-    driverId && active
-      ? supabase.from('profiles').select('full_name,phone').eq('id', driverId).maybeSingle()
-      : null,
+  const [driverSafeResult, ratingResult, locationResult] = await Promise.all([
     driverId
-      ? supabase.from('drivers').select('vehicle,vehicle_plate,rating,review_status,reviewed_at').eq('id', driverId).maybeSingle()
+      ? nexrideApiFetch(`/api/rider/trips/${tripId}/driver`, {
+          cache: 'no-store',
+        })
+          .then(async (response) =>
+            response.ok ? await response.json() : null,
+          )
+          .catch(() => null)
       : null,
     supabase.from('ride_ratings').select('score').eq('ride_request_id', tripId).eq('rater_id', userId).maybeSingle(),
     driverId && active
@@ -91,14 +95,15 @@ export async function readRiderTrip(
       : null,
   ]);
 
-  const profile = profileResult && !profileResult.error ? profileResult.data : null;
-  const driver = driverResult && !driverResult.error ? driverResult.data : null;
+  const safeDriver =
+    driverSafeResult?.status === 'ready' && driverSafeResult?.driver
+      ? driverSafeResult.driver
+      : null;
   const rating = !ratingResult.error ? ratingResult.data : null;
   const location = locationResult && !locationResult.error ? locationResult.data : null;
 
   const estimatedFare = numeric(ride.estimated_trip_fare_etb);
   const finalFare = numeric(ride.final_fare_etb);
-  const reviewedAt = timestamp(driver?.reviewed_at);
   const score = numeric(rating?.score);
 
   const snapshot: TripSnapshot = {
@@ -106,22 +111,37 @@ export async function readRiderTrip(
     revision,
     status: riderStatus(ride.status),
     category: textValue(ride.ride_category),
-    driver: driverId && !['reassigning', 'cancelled'].includes(riderStatus(ride.status))
-      ? {
-          id: driverId,
-          name: textValue(profile?.full_name),
-          contactPhone: active ? textValue(profile?.phone) : undefined,
-          rating: numeric(driver?.rating),
-          vehicle: {
-            model: textValue(driver?.vehicle),
-            plate: textValue(driver?.vehicle_plate),
-          },
-          verification:
-            driver?.review_status === 'approved' && reviewedAt
-              ? { status: 'verified', source: 'driver_review', verifiedAt: reviewedAt }
-              : undefined,
-        }
-      : null,
+    driver:
+      driverId &&
+      safeDriver &&
+      !['reassigning', 'cancelled'].includes(riderStatus(ride.status))
+        ? {
+            id: driverId,
+            name: textValue(safeDriver.name),
+            photo: textValue(safeDriver.photo),
+            contactPhone: active ? textValue(safeDriver.phone) : undefined,
+            rating: numeric(safeDriver.rating),
+            tripCount: numeric(safeDriver.tripCount),
+            vehicle: {
+              model: textValue(safeDriver.vehicle?.model),
+              color: textValue(safeDriver.vehicle?.color),
+              plate: textValue(safeDriver.vehicle?.plate),
+            },
+            verification:
+              safeDriver.verification?.status === 'verified' &&
+              numeric(safeDriver.verification?.verifiedAt) != null
+                ? {
+                    status: 'verified',
+                    source:
+                      textValue(safeDriver.verification?.source) ||
+                      'driver_review',
+                    verifiedAt: numeric(
+                      safeDriver.verification?.verifiedAt,
+                    )!,
+                  }
+                : undefined,
+          }
+        : null,
     pickup: {
       ...point(ride.pickup_lat, ride.pickup_lng),
       name: textValue(ride.pickup_location),
