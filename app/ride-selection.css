@@ -510,3 +510,85 @@
 .rider-ride-view .nr-recenter {
   color: #102334;
 }
+
+
+/* Vehicle identity restored inside the ride-choice wrapper. */
+.nr-ride-selection .nr-ride-card {
+  display:grid;
+  grid-template-columns:64px minmax(0,1fr) auto;
+  align-items:center;
+  column-gap:12px;
+}
+
+.nr-ride-selection .nr-ride-vehicle {
+  width:60px;
+  height:54px;
+  display:grid;
+  place-items:center;
+  flex:0 0 auto;
+  border:1px solid #e4eaf0;
+  border-radius:16px;
+  background:linear-gradient(180deg,#fbfdfd 0%,#f0f5f5 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.86);
+}
+
+.nr-ride-selection .nr-ride-vehicle svg {
+  width:54px;
+  height:34px;
+  overflow:visible;
+}
+
+.nr-ride-selection .nr-ride-vehicle-shell { fill:#16384d; }
+.nr-ride-selection .nr-ride-vehicle-glass { fill:#dcecf3; }
+.nr-ride-selection .nr-ride-vehicle-light { fill:#00c878; }
+.nr-ride-selection .nr-ride-vehicle-grille { fill:#294f66; }
+.nr-ride-selection .nr-ride-vehicle-wheel { fill:#041c30; }
+.nr-ride-selection .nr-ride-vehicle-shadow { fill:rgba(4,28,48,.13); }
+
+.nr-ride-selection .nr-ride-vehicle[data-category="comfort"] {
+  background:linear-gradient(180deg,#f8fbff 0%,#edf3f8 100%);
+}
+
+.nr-ride-selection .nr-ride-vehicle[data-category="comfort"] .nr-ride-vehicle-shell {
+  fill:#244f6b;
+}
+
+.nr-ride-selection .nr-ride-vehicle[data-category="xl"] {
+  background:linear-gradient(180deg,#f7fbf9 0%,#eaf5ef 100%);
+}
+
+.nr-ride-selection .nr-ride-vehicle[data-category="xl"] .nr-ride-vehicle-shell {
+  fill:#0d3444;
+}
+
+.nr-ride-selection .nr-ride-card.selected .nr-ride-vehicle {
+  border-color:rgba(0,200,120,.44);
+  background:linear-gradient(180deg,#f5fff9 0%,#e9f9f1 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.9),
+    0 0 0 3px rgba(0,200,120,.08);
+}
+
+.nr-ride-selection .nr-ride-copy {
+  min-width:0;
+}
+
+.nr-ride-selection .nr-ride-price {
+  align-self:center;
+}
+
+@media(max-width:390px){
+  .nr-ride-selection .nr-ride-card {
+    grid-template-columns:56px minmax(0,1fr) auto;
+    column-gap:9px;
+  }
+  .nr-ride-selection .nr-ride-vehicle {
+    width:54px;
+    height:50px;
+    border-radius:14px;
+  }
+  .nr-ride-selection .nr-ride-vehicle svg {
+    width:48px;
+    height:31px;
+  }
+}
