@@ -234,7 +234,10 @@ export async function GET(request: Request) {
   }
 
   const proximity =
-    params.has("lat") && params.has("lng") && validPoint(point)
+    params.has("lat") &&
+    params.has("lng") &&
+    validPoint(point) &&
+    insideAddisServiceRadius(point)
       ? point
       : ADDIS_CENTER;
 
