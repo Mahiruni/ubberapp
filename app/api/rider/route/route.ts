@@ -5,6 +5,7 @@ import {
 } from "../../../../lib/location";
 import {
   serviceBounds,
+  insideAddisServiceRadius,
   insideBounds,
   validPoint,
 } from "../../../../lib/nexride-search";
@@ -27,9 +28,17 @@ export async function POST(request: Request) {
 
   if (
     !insideBounds(pickup, coverage.bounds) ||
-    !insideBounds(destination, coverage.bounds)
+    !insideBounds(destination, coverage.bounds) ||
+    !insideAddisServiceRadius(pickup) ||
+    !insideAddisServiceRadius(destination)
   )
-    return response({ status: "coverage", coverage }, 422);
+    return response(
+      {
+        status: "coverage",
+        coverage: { ...coverage, radiusKm: 100, center: "Addis Ababa" },
+      },
+      422,
+    );
 
   if (haversineMeters(pickup, destination) < 30)
     return response({ status: "same", coverage }, 422);
@@ -48,7 +57,7 @@ export async function POST(request: Request) {
       route: alternatives[0],
       alternatives,
       updatedAt: Date.now(),
-      coverage,
+      coverage: { ...coverage, radiusKm: 100, center: "Addis Ababa" },
     });
   } catch {
     return response({ status: "error", coverage }, 502);
