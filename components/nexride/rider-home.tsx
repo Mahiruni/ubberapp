@@ -388,10 +388,6 @@ export function RiderHomePanel({
                 : "Where are you going?"}
             </h2>
           </div>
-          <span className="nr-home-city">
-            <Icon name="pin" size={14} />
-            {t("city")}
-          </span>
         </div>
       </div>
 
