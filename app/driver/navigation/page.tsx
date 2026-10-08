@@ -670,7 +670,7 @@ export default function DriverNavigationPage() {
         <aside className="nr-driver-rider-details" aria-label="Assigned rider location information">
           <div className="nr-driver-rider-details-head">
             <strong>{op("Your rider")}</strong>
-            <button type="button" onClick={() => setRiderDetailsOpen(false)} aria-label="Close rider details"><Icon name="x" size={19} /></button>
+            <button type="button" onClick={() => setRiderDetailsOpen(false)} aria-label="Close rider details"><Icon name="close" size={19} /></button>
           </div>
           <span className="nr-driver-rider-details-status" data-mode={riderMode} role="status">{op(riderPositionLabel)}</span>
           {riderFix && <p>{op("Location last received")} {new Date(riderFix.recordedAt).toLocaleTimeString()} {riderFix.accuracy != null ? `· GPS ±${Math.round(riderFix.accuracy)} m` : ""}</p>}
