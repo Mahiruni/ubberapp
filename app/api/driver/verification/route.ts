@@ -1,6 +1,7 @@
 import { authorizedRequestSupabase } from "../../../../lib/nexride-server-supabase";
 import { serverAdminSupabase } from "../../../../lib/nexride-server-admin";
 import { normalizeVehicleColor } from "../../../../lib/nexride-vehicle";
+import { isDriverDocumentPath, isDriverDocumentEvidence } from "../../../../lib/nexride-driver-document-evidence";
 
 const reply = (body: unknown, status = 200) =>
   Response.json(body, {
@@ -29,7 +30,7 @@ export async function POST(request: Request) {
   const vehiclePlate = text(body.vehiclePlate, 60);
   const licenseDocumentPath = text(body.licenseDocumentPath, 300);
   const vehicleRegistrationPath = text(body.vehicleRegistrationPath, 300);
-  const prefix = authorized.user.id + "/";
+  const ownerId = authorized.user.id;
 
   if (
     !licenseNumber ||
@@ -37,8 +38,9 @@ export async function POST(request: Request) {
     !vehicle ||
     !vehicleColor ||
     !vehiclePlate ||
-    !licenseDocumentPath.startsWith(prefix) ||
-    !vehicleRegistrationPath.startsWith(prefix)
+    !isDriverDocumentPath(licenseDocumentPath, ownerId) ||
+    !isDriverDocumentPath(vehicleRegistrationPath, ownerId) ||
+    licenseDocumentPath === vehicleRegistrationPath
   ) {
     return reply({ status: "invalid_verification" }, 400);
   }
@@ -59,20 +61,21 @@ export async function POST(request: Request) {
     if (profile?.role !== "driver") return reply({ status: "driver_required" }, 403);
     if (profile.account_status !== "active") return reply({ status: "account_inactive" }, 403);
 
-    const metadataResult = await admin.auth.admin.updateUserById(
-      authorized.user.id,
-      {
-        user_metadata: {
-          ...(authorized.user.user_metadata || {}),
-          vehicle,
-          vehicle_color: vehicleColor,
-          vehicle_plate: vehiclePlate,
-        },
-      },
-    );
-
-    if (metadataResult.error)
-      return reply({ status: "vehicle_identity_save_failed" }, 500);
+    // A driver-owned path is not proof of upload. Verify that both actual
+    // private Storage objects exist, are nonempty and have safe file types.
+    const files = admin.storage.from("driver-verification");
+    const [licenseEvidence, registrationEvidence] = await Promise.all([
+      files.info(licenseDocumentPath),
+      files.info(vehicleRegistrationPath),
+    ]);
+    if (licenseEvidence.error || registrationEvidence.error ||
+      !licenseEvidence.data || !registrationEvidence.data) {
+      return reply({ status: "verification_document_missing" }, 400);
+    }
+    if (!isDriverDocumentEvidence(licenseEvidence.data) ||
+      !isDriverDocumentEvidence(registrationEvidence.data)) {
+      return reply({ status: "verification_document_invalid" }, 400);
+    }
 
     const commonUpdate = {
       license_number: licenseNumber,
@@ -112,6 +115,15 @@ export async function POST(request: Request) {
         return reply({ status: "identity_ownership_review_required" }, 409);
       return reply({ status: "verification_save_failed" }, 500);
     }
+
+    // Write optional display metadata only after the database accepts the
+    // verified evidence. A metadata outage must not cause repeat submissions.
+    await admin.auth.admin.updateUserById(ownerId, {
+      user_metadata: {
+        ...(authorized.user.user_metadata || {}),
+        vehicle, vehicle_color: vehicleColor, vehicle_plate: vehiclePlate,
+      },
+    }).catch(() => {});
 
     return reply({
       status: "submitted",
