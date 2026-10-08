@@ -656,7 +656,11 @@ function AppWorkspace({
               </Sheet>
             ) : null}
             {mode === "rider" && (
-              <div hidden={profileView}>
+              <div
+                className="nr-rider-persistent-wrapper"
+                data-rider-screen={riderScreen}
+                hidden={profileView}
+              >
                 <RiderWorkspace
                   screen={riderScreen}
                   navigate={navigateRider}
