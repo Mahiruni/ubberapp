@@ -4,7 +4,7 @@ import { supabase } from "../../lib/supabase";
 import "./admin-account-identities.css";
 
 type Profile = { id:string; full_name:string|null; role:string; phone:string|null; account_status:string };
-type Document = { id:string;user_id:string;document_type:string;issuing_country:string;status:string;created_at:string };
+type Document = { id:string;user_id:string;document_type:string;issuing_country:string;status:string;created_at:string;storage_bucket:string;storage_path:string|null };
 type Review = {id:string;user_id:string;category:string;detail:string;status:string;created_at:string};
 type Deletion = {id:string;user_id:string;status:string;created_at:string};
 type Summary = {accounts:number;legacyPhoneConflictGroups:number;identityDocuments:number;openIdentityReviews:number};
@@ -27,7 +27,7 @@ export function AdminAccountIdentities() {
   async function load(){
     const [a,b,c,d,e]=await Promise.all([
       supabase.from("profiles").select("id,full_name,phone,role,account_status").order("created_at",{ascending:false}).limit(100),
-      supabase.from("account_identity_documents").select("id,user_id,document_type,issuing_country,status,created_at").order("created_at",{ascending:false}).limit(100),
+      supabase.from("account_identity_documents").select("id,user_id,document_type,issuing_country,status,created_at,storage_bucket,storage_path").order("created_at",{ascending:false}).limit(100),
       supabase.from("account_identity_reviews").select("id,user_id,category,detail,status,created_at").order("created_at",{ascending:false}).limit(100),
       supabase.from("account_deletion_requests").select("id,user_id,status,created_at").order("created_at",{ascending:false}).limit(100),
       supabase.rpc("admin_account_identity_audit"),
@@ -49,6 +49,22 @@ export function AdminAccountIdentities() {
   const visibleDocs=docs.filter(d=>matches(d.user_id));
   const visibleReviews=reviews.filter(r=>matches(r.user_id));
   const visibleDeletions=deletions.filter(d=>matches(d.user_id));
+
+  async function preview(document:Document) {
+    if(!document.storage_path)return;
+    // Open a placeholder synchronously to avoid popup blockers, then navigate
+    // only after RLS authorizes the 60-second private signed URL.
+    const tab=window.open("","_blank","noopener,noreferrer");
+    const signed=await supabase.storage.from(document.storage_bucket)
+      .createSignedUrl(document.storage_path,60);
+    if(signed.error||!signed.data?.signedUrl){
+      tab?.close();
+      setError("Private document preview could not be opened. Confirm storage permissions.");
+      return;
+    }
+    if(tab)tab.location.href=signed.data.signedUrl;
+    else setNotice("Allow pop-ups for NexRide to review this private document.");
+  }
 
   async function decide(kind:"document"|"ownership"|"deletion",id:string,status:string) {
     if(busy)return;
@@ -94,6 +110,7 @@ export function AdminAccountIdentities() {
         {visibleDocs.length===0?<p>No identity documents in this selection.</p>:visibleDocs.map(d=><div className="nex-admin-row" key={d.id}>
           <div><strong>{names.get(d.user_id)||"Member"} · {d.document_type.replace(/_/g," ")}</strong><small>{d.issuing_country} · Submitted {actionDate(d.created_at)}</small></div>
           <div className="nex-admin-decisions"><span className="nex-admin-pill">{d.status}</span>
+            {d.storage_path&&<button type="button" disabled={!!busy} onClick={()=>void preview(d)}>View evidence</button>}
             {d.status==="pending"||d.status==="rejected"?<>
               <button type="button" disabled={!!busy} onClick={()=>void decide("document",d.id,"approved")}>Approve</button>
               <button type="button" disabled={!!busy} onClick={()=>void decide("document",d.id,"rejected")}>Reject</button>

@@ -185,7 +185,10 @@ export default function NexRideManageAccountPage() {
         p_expiry:documentExpiry || null,
       });
       if (claim.error || claim.data !== "submitted") {
-        setNotice("This document needs an identity ownership or replacement review. The number has not been assigned to another account.");
+        // A failed claim is not verification evidence. Discard only that
+        // unsubmitted upload; the Storage policy blocks deletion after claim.
+        await supabase.storage.from("nexride-identity").remove([path]).catch(() => {});
+        setNotice("This document needs an identity ownership or replacement review. No new identity was assigned.");
         return;
       }
       setDocumentNumber(""); setDocumentFile(null); setDocumentExpiry("");
