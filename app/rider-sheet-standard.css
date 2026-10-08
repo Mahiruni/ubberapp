@@ -1378,3 +1378,49 @@
     box-shadow:0 -9px 26px rgba(4,28,48,.095)!important;
   }
 }
+
+
+/* Rider home heading — clean, compact, and unobstructed. */
+@media (max-width:800px) {
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-rider-home-intro {
+    display:block!important;
+    margin:0!important;
+    padding:0 2px 2px!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-rider-home-intro > div {
+    width:100%!important;
+    min-width:0!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-home-city {
+    display:none!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-home-kicker {
+    margin:0 0 4px!important;
+    font-size:9.5px!important;
+    line-height:1.15!important;
+    letter-spacing:.15em!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-rider-home-intro h2 {
+    width:100%!important;
+    max-width:none!important;
+    margin:0!important;
+    font-size:clamp(21px,5.6vw,24px)!important;
+    line-height:1.12!important;
+    font-weight:780!important;
+    letter-spacing:-.035em!important;
+    white-space:nowrap!important;
+    text-wrap:nowrap!important;
+  }
+}
+
+@media (max-width:340px) {
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-rider-home-intro h2 {
+    font-size:20px!important;
+    white-space:normal!important;
+    text-wrap:balance!important;
+  }
+}
