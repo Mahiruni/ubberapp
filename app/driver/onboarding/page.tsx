@@ -8,6 +8,7 @@ import { supabase } from "../../../lib/supabase";
 import { nexrideAuthRedirectUrl } from "../../../lib/nexride-auth-url";
 import { resolveSessionRole } from "../../../lib/nexride-account-role";
 import { announceLanguage } from "../../../components/nexride/language-provider";
+import { VEHICLE_COLOR_OPTIONS } from "../../../lib/nexride-vehicle";
 import "../auth/driver-auth.css";
 import "./driver-onboarding.css";
 import "../../auth-experience.css";
@@ -24,6 +25,7 @@ export default function DriverOnboarding() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [vehicle, setVehicle] = useState("");
+  const [vehicleColor, setVehicleColor] = useState("");
   const [plate, setPlate] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -65,6 +67,7 @@ export default function DriverOnboarding() {
           full_name: name.trim(),
           phone: phone.trim(),
           vehicle: vehicle.trim(),
+          vehicle_color: vehicleColor,
           vehicle_plate: plate.trim(),
           driver_onboarding_complete: true,
         },
@@ -91,6 +94,7 @@ export default function DriverOnboarding() {
           full_name: name.trim(),
           phone: phone.trim(),
           vehicle: vehicle.trim(),
+          vehicle_color: vehicleColor,
           vehicle_plate: plate.trim(),
           driver_onboarding_complete: true,
         },
@@ -156,9 +160,23 @@ export default function DriverOnboarding() {
               <div className="nr-auth-subsection">
                 <div><span>{say("VEHICLE DETAILS", "የተሽከርካሪ መረጃ")}</span><small>{say("Used to prepare your driver verification.", "የአሽከርካሪ ማረጋገጫዎን ለማዘጋጀት ይጠቅማል።")}</small></div>
                 <div className="driver-form-grid">
-                  <label><span>{say("Vehicle", "ተሽከርካሪ")}</span><div className="nr-auth-input"><Icon name="settings" size={19}/><input value={vehicle} onChange={(e) => setVehicle(e.target.value)} placeholder="Toyota Corolla" required /></div></label>
-                  <label><span>{say("Plate number", "የሰሌዳ ቁጥር")}</span><div className="nr-auth-input"><Icon name="card" size={19}/><input value={plate} onChange={(e) => setPlate(e.target.value)} placeholder="2-A12345" required /></div></label>
+                  <label><span>{say("Vehicle model", "የተሽከርካሪ ሞዴል")}</span><div className="nr-auth-input"><Icon name="settings" size={19}/><input value={vehicle} onChange={(e) => setVehicle(e.target.value)} placeholder="Toyota Corolla" required /></div></label>
+                  <label>
+                    <span>{say("Vehicle color", "የተሽከርካሪ ቀለም")}</span>
+                    <div className="nr-auth-input nr-auth-select-row">
+                      <Icon name="settings" size={19}/>
+                      <select value={vehicleColor} onChange={(e) => setVehicleColor(e.target.value)} required aria-label={say("Vehicle color", "የተሽከርካሪ ቀለም")}>
+                        <option value="">{say("Choose color", "ቀለም ይምረጡ")}</option>
+                        {VEHICLE_COLOR_OPTIONS.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {language === "am" ? option.am : option.en}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </label>
                 </div>
+                <label><span>{say("Plate number", "የሰሌዳ ቁጥር")}</span><div className="nr-auth-input"><Icon name="card" size={19}/><input value={plate} onChange={(e) => setPlate(e.target.value)} placeholder="2-A12345" required /></div></label>
               </div>
 
               {error && <div className="driver-auth-error" role="alert">{error}</div>}
