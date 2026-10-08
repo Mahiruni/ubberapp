@@ -1,13 +1,15 @@
 import { mapboxToken } from "../../../../lib/location";
 import {
+  ADDIS_CENTER,
   ADDIS_CORE_BOUNDS,
+  ADDIS_SEARCH_BOUNDS,
   PREVIEW_BOUNDS,
+  insideAddisServiceRadius,
   insideBounds,
   searchPreviewPlaces,
   validPoint,
 } from "../../../../lib/nexride-search";
 
-const ADDIS_CENTER = { lat: 9.008, lng: 38.775 };
 const SEARCH_CACHE_TTL = 2 * 60_000;
 const searchCache = new Map<string, { at: number; results: Result[] }>();
 
@@ -139,6 +141,7 @@ async function geocode(
     q,
     country: "et",
     proximity: `${proximity.lng},${proximity.lat}`,
+    bbox: ADDIS_SEARCH_BOUNDS.join(","),
     autocomplete: "true",
     limit: "10",
     language: language === "am" ? "am,en" : "en,am",
@@ -165,6 +168,7 @@ async function searchPlaces(
     access_token: token,
     country: "ET",
     proximity: `${proximity.lng},${proximity.lat}`,
+    bbox: ADDIS_SEARCH_BOUNDS.join(","),
     limit: "10",
     language,
   });
@@ -217,8 +221,13 @@ export async function GET(request: Request) {
       const data = await result.json();
       const results = (Array.isArray(data.features) ? data.features : [])
         .map(normalizeFeature)
-        .filter((item: Result | null): item is Result => !!item);
-      return response({ status: "ready", results });
+        .filter((item: Result | null): item is Result => !!item)
+        .filter(insideAddisServiceRadius);
+      return response({
+        status: "ready",
+        results,
+        coverage: "addis-100km",
+      });
     } catch {
       return response({ status: "error", results: [] }, 502);
     }
@@ -240,7 +249,7 @@ export async function GET(request: Request) {
     return response({
       status: "ready",
       results: cached.results,
-      coverage: "ethiopia-search-addis-ranked",
+      coverage: "addis-100km",
       cached: true,
     });
   }
@@ -264,7 +273,7 @@ export async function GET(request: Request) {
     ]);
 
     const results = rank(
-      dedupe([...local, ...pois, ...geocoded]),
+      dedupe([...local, ...pois, ...geocoded]).filter(insideAddisServiceRadius),
       q,
       proximity,
     ).slice(0, 20);
@@ -280,7 +289,7 @@ export async function GET(request: Request) {
     return response({
       status: "ready",
       results,
-      coverage: "ethiopia-search-addis-ranked",
+      coverage: "addis-100km",
       sources: ["nexride-local", "mapbox-searchbox", "mapbox-geocoding"],
     });
   } catch {
