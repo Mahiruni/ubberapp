@@ -1,4 +1,5 @@
--- NexRide identity functions exported from production. Run after identity schema migration.
+-- NexRide identity functions exported from current production definitions. Run after identity schema migration.
+
 CREATE OR REPLACE FUNCTION private.normalize_et_phone(p_phone text)
  RETURNS text
  LANGUAGE sql
@@ -222,7 +223,7 @@ CREATE OR REPLACE FUNCTION public.account_submit_identity_document(p_type text, 
  SECURITY DEFINER
  SET search_path TO ''
 AS $function$
-declare actor uuid:=(select auth.uid()); document_id uuid;
+declare actor uuid:=(select auth.uid()); document_id uuid; actual_bucket text; actual_path text;
 begin
  if actor is null then raise exception 'auth_required' using errcode='42501'; end if;
  if not exists(select 1 from public.profiles p where p.id=actor and p.account_status='active')
@@ -240,6 +241,10 @@ begin
     actor,p_type,upper(p_country),p_identifier,p_storage_path,p_expiry);
  exception when unique_violation then return 'ownership_review_required';
  end;
+ select d.storage_bucket,d.storage_path into actual_bucket,actual_path
+ from public.account_identity_documents d where d.id=document_id;
+ if actual_bucket<>'nexride-identity' or actual_path is distinct from p_storage_path
+ then return 'already_registered'; end if;
  return 'submitted';
 end;
 $function$;
@@ -257,6 +262,10 @@ begin
  from public.profiles p where p.id=actor for update;
  if profile_role not in ('rider','driver') or state<>'active' then
   raise exception 'account_not_eligible' using errcode='42501'; end if;
+ if exists(select 1 from public.ride_requests r
+   where r.rider_id=actor and r.status in ('accepted','arrived_pickup','in_trip')) then
+    raise exception 'finish_active_trip_first' using errcode='23514';
+ end if;
  insert into public.account_roles(user_id,role) values(actor,'rider') on conflict do nothing;
  insert into public.account_roles(user_id,role) values(actor,'driver') on conflict do nothing;
  if profile_role='rider' then
@@ -277,7 +286,11 @@ declare actor uuid:=(select auth.uid());
 begin
  if actor is null or not exists(select 1 from public.profiles p
   where p.id=actor and p.account_status='active' and p.role in ('rider','driver')) then
-    raise exception 'account_not_eligible' using errcode='42501';
+  raise exception 'account_not_eligible' using errcode='42501'; end if;
+ if exists(select 1 from public.drivers d where d.id=actor and d.is_online=true)
+   or exists(select 1 from public.ride_requests r
+    where r.assigned_driver_id=actor and r.status in ('accepted','arrived_pickup','in_trip')) then
+  raise exception 'go_offline_finish_trip_first' using errcode='23514';
  end if;
  insert into public.account_roles(user_id,role) values(actor,'rider') on conflict do nothing;
  return 'ready';
@@ -373,7 +386,6 @@ begin
  return 'saved'; -- Not an actual deletion. Regulatory checks still required.
 end;
 $function$;
-
 
 revoke all on function private.normalize_et_phone(text) from public,anon,authenticated;
 revoke all on function private.reserve_nexride_document(uuid,text,text,text,text,date) from public,anon,authenticated;
