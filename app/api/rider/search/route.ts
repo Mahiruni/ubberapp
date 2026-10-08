@@ -1,5 +1,6 @@
 import { mapboxToken } from "../../../../lib/location";
 import {
+  ADDIS_CORE_BOUNDS,
   PREVIEW_BOUNDS,
   insideBounds,
   searchPreviewPlaces,
@@ -117,8 +118,9 @@ const rank = (
       else if (name.includes(needle)) score += 55;
       else if (address.includes(needle)) score += 24;
 
-      if (insideBounds(place, PREVIEW_BOUNDS)) score += 35;
-      score += Math.max(0, 20 - approximateDistance * 140);
+      if (insideBounds(place, ADDIS_CORE_BOUNDS)) score += 38;
+      else if (insideBounds(place, PREVIEW_BOUNDS)) score += 20;
+      score += Math.max(0, 24 - approximateDistance * 120);
 
       return { place, score };
     })
@@ -240,7 +242,7 @@ export async function GET(request: Request) {
     return response({
       status: "ready",
       results: cached.results,
-      coverage: "addis-ababa",
+      coverage: "addis-metro",
       cached: true,
     });
   }
@@ -267,7 +269,7 @@ export async function GET(request: Request) {
       dedupe([...local, ...pois, ...geocoded]),
       q,
       proximity,
-    ).slice(0, 12);
+    ).slice(0, 20);
 
     searchCache.set(cacheKey, { at: Date.now(), results });
     if (searchCache.size > 200) {
@@ -280,7 +282,7 @@ export async function GET(request: Request) {
     return response({
       status: "ready",
       results,
-      coverage: "addis-ababa",
+      coverage: "addis-metro",
       sources: ["nexride-local", "mapbox-searchbox", "mapbox-geocoding"],
     });
   } catch {
