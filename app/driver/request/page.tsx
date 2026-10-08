@@ -390,7 +390,8 @@ export default function DriverRideRequestPage() {
   }, [request]);
 
   async function acceptRide() {
-    if (!offer || submitting || decisionLock.current || visibleStatus !== "pending") return;
+    if (!offer || submitting || decisionLock.current || offer.status !== "pending" ||
+      (offer.expires_at && Date.parse(offer.expires_at) <= Date.now())) return;
     decisionLock.current = true;
     setConfirmAction(null);
     setSubmitting("accept");
@@ -435,7 +436,8 @@ export default function DriverRideRequestPage() {
   }
 
   async function declineRide() {
-    if (!offer || submitting || decisionLock.current || visibleStatus !== "pending") return;
+    if (!offer || submitting || decisionLock.current || offer.status !== "pending" ||
+      (offer.expires_at && Date.parse(offer.expires_at) <= Date.now())) return;
     decisionLock.current = true;
     setSubmitting("decline");
     setAcceptFailure("");
@@ -466,7 +468,8 @@ export default function DriverRideRequestPage() {
   }
 
   async function passRide() {
-    if (!offer || submitting || decisionLock.current || visibleStatus !== "pending") return;
+    if (!offer || submitting || decisionLock.current || offer.status !== "pending" ||
+      (offer.expires_at && Date.parse(offer.expires_at) <= Date.now())) return;
     decisionLock.current = true;
     setSubmitting("pass");
     setAcceptFailure("");
