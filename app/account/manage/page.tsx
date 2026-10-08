@@ -15,6 +15,7 @@ import {
 } from "../../../lib/nexride-identity";
 import { LanguageContext } from "../../../components/nexride/ui";
 import "./manage.css";
+import { identityActivityLabel } from "../../../lib/nexride-identity-events";
 
 type Profile = {
   id: string; role: string; full_name: string | null;
@@ -28,6 +29,7 @@ type Identity = {
 type Role = { role: string };
 type Review = { id: string; category: string; status: string; created_at: string };
 type Deletion = { id: string; status: string; created_at: string };
+type IdentityActivity = { id: string; event_type: string; created_at: string };
 type VerifiedPhone = { phone_e164: string; verified_at: string };
 type UserRecord = {
   id: string; email?: string; email_confirmed_at?: string;
@@ -47,6 +49,7 @@ export default function NexRideManageAccountPage() {
   const [roles, setRoles] = useState<Role[]>([]);
   const [documents, setDocuments] = useState<Identity[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [activity, setActivity] = useState<IdentityActivity[]>([]);
   const [deletion, setDeletion] = useState<Deletion | null>(null);
   const [verifiedPhone, setVerifiedPhone] = useState<VerifiedPhone | null>(null);
   const [notice, setNotice] = useState("");
@@ -75,17 +78,18 @@ export default function NexRideManageAccountPage() {
     }
     const identity = auth.data.user;
     setUser(identity);
-    const [pr, ro, docs, rev, del, phone] = await Promise.all([
+    const [pr, ro, docs, rev, del, phone, events] = await Promise.all([
       supabase.from("profiles").select("id,role,full_name,phone,account_status").eq("id", identity.id).maybeSingle(),
       supabase.from("account_roles").select("role").eq("user_id", identity.id),
       supabase.from("account_identity_documents").select("id,document_type,issuing_country,status,created_at,expires_at,storage_path,storage_bucket").eq("user_id", identity.id).order("created_at",{ascending:false}),
       supabase.from("account_identity_reviews").select("id,category,status,created_at").eq("user_id",identity.id).order("created_at",{ascending:false}).limit(8),
       supabase.from("account_deletion_requests").select("id,status,created_at").eq("user_id",identity.id).order("created_at",{ascending:false}).limit(1),
       supabase.from("account_verified_phones").select("phone_e164,verified_at").eq("user_id",identity.id).maybeSingle(),
+      supabase.from("account_identity_events").select("id,event_type,created_at").eq("owner_id",identity.id).order("created_at",{ascending:false}).limit(12),
     ]);
     if (pr.error || !pr.data) throw new Error("Your account information could not be loaded.");
     setProfile(pr.data as Profile);
-    if (ro.error || docs.error || rev.error || del.error || phone.error) {
+    if (ro.error || docs.error || rev.error || del.error || phone.error || events.error) {
       throw new Error("Verification information is temporarily unavailable.");
     }
     setRoles((ro.data || []) as Role[]);
@@ -93,6 +97,7 @@ export default function NexRideManageAccountPage() {
     setReviews((rev.data || []) as Review[]);
     setDeletion((del.data?.[0] || null) as Deletion | null);
     setVerifiedPhone((phone.data || null) as VerifiedPhone | null);
+    setActivity((events.data || []) as IdentityActivity[]);
     setLoading(false);
   }
 
@@ -391,6 +396,19 @@ export default function NexRideManageAccountPage() {
                 <button type="submit" disabled={busy}>{busy?say("Submitting…","በማስገባት ላይ…"):say("Submit for review","ለማረጋገጫ ላክ")}</button>
               </>}
             </form>
+          </section>
+
+          <section className="nex-manage-card">
+            <div className="nex-manage-section">
+              <h2>{say("Security activity","የመለያ ደህንነት እንቅስቃሴ")}</h2>
+              <p>{say("Private verification history with no identity numbers, phone numbers or document file paths.","ስሱ መረጃ የሌለው የግል የማረጋገጫ ታሪክ።")}</p>
+            </div>
+            {activity.length===0
+              ? <p className="nex-manage-muted">{say("No recent activity; previous verified records remain available above.","አዲስ እንቅስቃሴ የለም።")}</p>
+              : activity.map(entry=><div className="nex-manage-detail" key={entry.id}>
+                  <span>{identityActivityLabel(entry.event_type,language==="am"?"am":"en")}</span>
+                  <strong>{new Date(entry.created_at).toLocaleDateString(language==="am"?"am-ET":"en-ET")}</strong>
+                </div>)}
           </section>
 
           <section className="nex-manage-card">

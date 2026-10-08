@@ -1,12 +1,14 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../../lib/supabase";
+import { identityActivityLabel } from "../../lib/nexride-identity-events";
 import "./admin-account-identities.css";
 
 type Profile = { id:string; full_name:string|null; role:string; phone:string|null; account_status:string };
 type Document = { id:string;user_id:string;document_type:string;issuing_country:string;status:string;created_at:string;storage_bucket:string;storage_path:string|null };
 type Review = {id:string;user_id:string;category:string;detail:string;status:string;created_at:string};
 type Deletion = {id:string;user_id:string;status:string;created_at:string};
+type IdentityActivity = {id:string;owner_id:string;event_type:string;created_at:string};
 type Summary = {accounts:number;legacyPhoneConflictGroups:number;identityDocuments:number;openIdentityReviews:number};
 
 const mask = (s:string|null) => !s ? "—" : s.length > 5 ? "•••" + s.slice(-3) : "••••";
@@ -17,6 +19,7 @@ export function AdminAccountIdentities() {
   const [docs,setDocs]=useState<Document[]>([]);
   const [reviews,setReviews]=useState<Review[]>([]);
   const [deletions,setDeletions]=useState<Deletion[]>([]);
+  const [activity,setActivity]=useState<IdentityActivity[]>([]);
   const [summary,setSummary]=useState<Summary|null>(null);
   const [query,setQuery]=useState("");
   const [loading,setLoading]=useState(true);
@@ -25,17 +28,19 @@ export function AdminAccountIdentities() {
   const [error,setError]=useState("");
 
   async function load(){
-    const [a,b,c,d,e]=await Promise.all([
+    const [a,b,c,d,e,f]=await Promise.all([
       supabase.from("profiles").select("id,full_name,phone,role,account_status").order("created_at",{ascending:false}).limit(100),
       supabase.from("account_identity_documents").select("id,user_id,document_type,issuing_country,status,created_at,storage_bucket,storage_path").order("created_at",{ascending:false}).limit(100),
       supabase.from("account_identity_reviews").select("id,user_id,category,detail,status,created_at").order("created_at",{ascending:false}).limit(100),
       supabase.from("account_deletion_requests").select("id,user_id,status,created_at").order("created_at",{ascending:false}).limit(100),
       supabase.rpc("admin_account_identity_audit"),
+      supabase.from("account_identity_events").select("id,owner_id,event_type,created_at").order("created_at",{ascending:false}).limit(80),
     ]);
-    if(a.error||b.error||c.error||d.error||e.error)throw new Error("admin_account_read_failed");
+    if(a.error||b.error||c.error||d.error||e.error||f.error)throw new Error("admin_account_read_failed");
     setProfiles((a.data||[]) as Profile[]);setDocs((b.data||[]) as Document[]);
     setReviews((c.data||[]) as Review[]);setDeletions((d.data||[]) as Deletion[]);
-    setSummary((e.data||null) as Summary|null);setLoading(false);
+    setSummary((e.data||null) as Summary|null);
+    setActivity((f.data||[]) as IdentityActivity[]);setLoading(false);
   }
   useEffect(()=>{
     let active=true;
@@ -49,6 +54,7 @@ export function AdminAccountIdentities() {
   const visibleDocs=docs.filter(d=>matches(d.user_id));
   const visibleReviews=reviews.filter(r=>matches(r.user_id));
   const visibleDeletions=deletions.filter(d=>matches(d.user_id));
+  const visibleActivity=activity.filter(d=>matches(d.owner_id));
 
   async function preview(document:Document) {
     if(!document.storage_path)return;
@@ -132,6 +138,16 @@ export function AdminAccountIdentities() {
             </>:null}
           </div>
         </div>)}
+      </section>
+      <section className="nex-admin-pane">
+        <h2>Identity security audit <small>{visibleActivity.length}</small></h2>
+        <p>Verification and account-review events, without sensitive document or contact details.</p>
+        {visibleActivity.length===0?<p>No recent activity.</p>:visibleActivity.map(entry=>
+          <div className="nex-admin-row" key={entry.id}>
+            <div><strong>{names.get(entry.owner_id)||"Member"} · {identityActivityLabel(entry.event_type)}</strong>
+              <small>{actionDate(entry.created_at)} · {entry.owner_id.slice(0,8)}</small>
+            </div>
+          </div>)}
       </section>
       <section className="nex-admin-pane">
         <h2>Account deletion requests <small>{visibleDeletions.length}</small></h2>
