@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { unsubmittedDriverEvidencePaths } from "../../lib/nexride-driver-evidence";
+import { unsubmittedDriverEvidencePaths, sanitizeDriverVerificationDraft } from "../../lib/nexride-driver-evidence";
 describe("NexRide identity evidence cleanup", () => {
   it("preserves approved and previously submitted verification paths", () => {
     const existing = ["user/license-approved.pdf", "user/vehicle-approved.png"];
@@ -14,5 +14,28 @@ describe("NexRide identity evidence cleanup", () => {
   });
   it("does not delete existing documents on retry with no new uploads", () => {
     expect(unsubmittedDriverEvidencePaths([],["user/license-existing.pdf"])).toEqual([]);
+  });
+});
+
+describe("Private Driver license number draft migration", () => {
+  it("scrubs a legacy license number and retains only non-sensitive vehicle fields", () => {
+    const draft = sanitizeDriverVerificationDraft(JSON.stringify({
+      licenseNumber: "SENSITIVE-NUMBER",
+      licenseExpiry: "2027-10-01",
+      vehicle: "Toyota",
+      vehicleColor: "White",
+      plate: "A123",
+      accountToken: "SHOULD-NOT-PERSIST",
+    }));
+    expect(draft).not.toContain("SENSITIVE-NUMBER");
+    expect(draft).not.toContain("SHOULD-NOT-PERSIST");
+    expect(JSON.parse(draft)).toEqual({
+      licenseExpiry:"2027-10-01",vehicle:"Toyota",vehicleColor:"White",plate:"A123",
+    });
+  });
+  it("does not carry arbitrary fields from a malformed legacy object", () => {
+    expect(JSON.parse(sanitizeDriverVerificationDraft('{"licenseNumber":"ABC"}')))
+      .toEqual({licenseExpiry:"",vehicle:"",vehicleColor:"",plate:""});
+    expect(() => sanitizeDriverVerificationDraft("{not-json")).toThrow();
   });
 });

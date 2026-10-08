@@ -9,7 +9,7 @@ import type { DriverReviewStatus } from "../../../lib/nexride-driver-verificatio
 import { resolveSessionRole } from "../../../lib/nexride-account-role";
 import { nexrideApiFetch } from "../../../lib/nexride-api-auth";
 import { VEHICLE_COLOR_OPTIONS } from "../../../lib/nexride-vehicle";
-import { unsubmittedDriverEvidencePaths } from "../../../lib/nexride-driver-evidence";
+import { unsubmittedDriverEvidencePaths, sanitizeDriverVerificationDraft } from "../../../lib/nexride-driver-evidence";
 import "../auth/driver-auth.css";
 import "../onboarding/driver-onboarding.css";
 import "../../detail-system.css";
@@ -60,6 +60,15 @@ export default function DriverVerificationPage() {
         return;
       }
       setDriverId(session.user.id);
+      // Migrate legacy session drafts that contained raw license numbers.
+      // Keep non-sensitive vehicle drafts, scrub the ID number immediately.
+      const draftKey = "nexride.driver.verification.draft." + session.user.id;
+      try {
+        const legacy = sessionStorage.getItem(draftKey);
+        if (legacy) sessionStorage.setItem(draftKey, sanitizeDriverVerificationDraft(legacy));
+      } catch {
+        try { sessionStorage.removeItem(draftKey); } catch {}
+      }
       if (session.user.user_metadata?.driver_onboarding_complete !== true) {
         router.replace("/driver/onboarding");
         return;
