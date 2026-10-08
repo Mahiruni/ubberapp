@@ -565,9 +565,8 @@ function AppWorkspace({
             <Brand driver={mode === "driver"} />
             <p>{t("brandMessage")}</p>
           </div>
-          <div
-            className={`nr-panel ${riderMapView ? "nr-rider-flow-panel" : ""} ${riderHome ? "nr-home-panel-host" : ""}`}
-            data-map-input-boundary={riderMapView ? "true" : undefined}
+          {!riderMapView && <div
+            className="nr-panel"
             onPointerDown={(event) => event.stopPropagation()}
             onPointerMove={(event) => event.stopPropagation()}
             onPointerUp={(event) => event.stopPropagation()}
@@ -579,7 +578,6 @@ function AppWorkspace({
             onClick={(event) => event.stopPropagation()}
             onDoubleClick={(event) => event.stopPropagation()}
           >
-            {riderMapView && <div className="nr-rider-map-input-shield" aria-hidden="true" />}
             {profileView && mode === "rider" ? <RiderProfile language={language} setLanguage={setLanguage} theme={theme} setTheme={setTheme} profile={profile} setProfile={setProfile} rides={() => setRiderScreen("trips")} saved={() => setRiderScreen("saved")} payments={() => setRiderScreen("wallet")} safety={() => openSafety(mode)} support={() => window.location.assign("/support")} switchDriver={() => switchMode("driver")} isAdmin={isAdmin} /> : profileView ? (
               <Sheet title={t("profile")}>
                 <div className="nr-profile-header">
@@ -655,12 +653,8 @@ function AppWorkspace({
                 </Button>
               </Sheet>
             ) : null}
-            {mode === "rider" && (
-              <div
-                className="nr-rider-persistent-wrapper"
-                data-rider-screen={riderScreen}
-                hidden={profileView}
-              >
+            {mode === "rider" && !riderMapView && (
+              <div hidden={profileView}>
                 <RiderWorkspace
                   screen={riderScreen}
                   navigate={navigateRider}
@@ -687,8 +681,48 @@ function AppWorkspace({
                 />
               </div>
             )}
-          </div>
+          </div>}
         </div>
+
+        {mode === "rider" && riderMapView && (
+          <div
+            className={`nr-panel nr-rider-flow-panel ${riderHome ? "nr-home-panel-host" : ""}`}
+            data-map-input-boundary="true"
+            onPointerDown={(event) => event.stopPropagation()}
+            onPointerMove={(event) => event.stopPropagation()}
+            onPointerUp={(event) => event.stopPropagation()}
+            onPointerCancel={(event) => event.stopPropagation()}
+            onTouchStart={(event) => event.stopPropagation()}
+            onTouchMove={(event) => event.stopPropagation()}
+            onTouchEnd={(event) => event.stopPropagation()}
+            onWheel={(event) => event.stopPropagation()}
+            onClick={(event) => event.stopPropagation()}
+            onDoubleClick={(event) => event.stopPropagation()}
+          >
+            <div className="nr-rider-map-input-shield" aria-hidden="true" />
+            <div
+              className="nr-rider-persistent-wrapper"
+              data-rider-screen={riderScreen}
+            >
+              <RiderWorkspace
+                screen={riderScreen}
+                navigate={navigateRider}
+                onSafety={() => openSafety("rider")}
+                onUnavailable={unavailable}
+                trip={trip}
+                setTrip={setTrip}
+                position={riderLocation.position}
+                locationStatus={riderLocation.status}
+                locate={riderLocation.locate}
+                journey={journey}
+                onBookingPending={onBookingPending}
+                matching={matching}
+                onTripSource={setLiveTripShown}
+              />
+            </div>
+          </div>
+        )}
+
         {mode === "driver" && (
           <div className="nr-mobile-nav" aria-label="Primary driver navigation">
             <Navigation items={navItems} active={screen} onNavigate={navigate} />
