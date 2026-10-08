@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Icon } from "./ui";
 import { useOperationalTranslation } from "./operational-i18n";
 import {
@@ -66,6 +67,7 @@ export function DriverEarningsScreen({
   onOpenReport: () => void;
 }) {
   const op = useOperationalTranslation();
+  const router = useRouter();
   const [period, setPeriod] = useState<EarningsPeriod>("today");
   const [report, setReport] = useState<DriverEarningsReport | null>(null);
   const [loading, setLoading] = useState(true);
@@ -211,6 +213,14 @@ export function DriverEarningsScreen({
 
           <button className="nr-earnings-report-action" onClick={onOpenReport}>
             <span><Icon name="wallet" size={19} /><strong>{op("View detailed report")}</strong></span>
+            <Icon name="chevron" size={17} />
+          </button>
+          <button
+            type="button"
+            className="nr-earnings-report-action"
+            onClick={() => router.push("/driver/profile/payouts")}
+          >
+            <span><Icon name="wallet" size={19} /><strong>Wallet & payouts</strong></span>
             <Icon name="chevron" size={17} />
           </button>
         </>
