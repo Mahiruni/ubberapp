@@ -70,6 +70,7 @@ export default function DriverAuth() {
     }
 
     clearExplicitSignOut();
+    window.localStorage.setItem("nexride:active-account-role","driver");
     const role = await resolveSessionRole(data.session);
     if (role === "admin") {
       router.replace("/admin");

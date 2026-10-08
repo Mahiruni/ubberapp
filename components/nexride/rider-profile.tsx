@@ -241,6 +241,7 @@ export function RiderProfile(props:Props) {
 
       <AccountSection title={say('Account & help','መለያ እና እገዛ')} subtitle={say('Your details and support','ዝርዝሮችዎ እና ድጋፍ')}>
         <AccountRow icon="user" title={say('Personal information','የግል መረጃ')} detail={say('Name and contact details','ስም እና የመገናኛ ዝርዝሮች')} onClick={()=>{setForm(shown);open('edit')}}/>
+        <AccountRow icon="shield" title={say('Manage Account & Verification','መለያ እና ማረጋገጫ')} detail={say('Unique identity, verified contacts, roles and security','ማንነት፣ ስልክ እና ደህንነት')} onClick={()=>window.location.assign('/account/manage')}/>
         <AccountRow icon="chat" title={say('Support','ድጋፍ')} detail={say('Help with rides and your account','ለጉዞና መለያ እገዛ')} onClick={props.support}/>
         <AccountRow icon="info" title={say('Privacy & data','ግላዊነት እና ውሂብ')} detail={say('How NexRide handles your information','NexRide መረጃዎን እንዴት እንደሚይዝ')} onClick={()=>open('privacy')}/>
       </AccountSection>

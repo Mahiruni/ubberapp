@@ -258,6 +258,7 @@ export function DriverProfileScreen({
 
           <DriverSection title="Preferences & account" subtitle="Your NexRide Driver settings">
             <DriverRow icon="settings" title="App settings" detail="Profile, language, theme, and account details" onClick={() => router.push("/driver/profile/settings")}/>
+            <DriverRow icon="shield" title="Manage Account & Verification" detail="Unique identity, verified contacts, role access and security" onClick={() => router.push("/account/manage")}/>
             <DriverRow icon="info" title="Privacy & account data" detail="Your authenticated driver information stays private" onClick={() => router.push("/driver/profile/documents")}/>
           </DriverSection>
         </div>

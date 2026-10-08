@@ -7,6 +7,7 @@ export const ONBOARDING_KEY = "nexride:onboarding-complete";
 export const PREVIEW_ENABLED_KEY = "nexride:preview-enabled";
 export const LANGUAGE_KEY = "nexride:language";
 export const EXPLICIT_SIGNOUT_KEY = "nexride:explicit-signout";
+export const ACTIVE_ACCOUNT_ROLE_KEY = "nexride:active-account-role";
 export type SignedOutRole = "rider" | "driver";
 export type StartupDestination = "/" | "/onboarding" | "/rider/sign-in" | "/driver/auth" | "/driver/onboarding" | "/driver/home";
 export type RestoredPreferences = { language: Language; mode: "rider" | "driver"; theme: "light" | "dark"; profile: PreviewProfile; trip: PreviewTrip | null };
@@ -100,8 +101,24 @@ export function initializeRider(): Promise<StartupResult> {
         return completed;
       }
       const role = accountRole || session?.user?.user_metadata?.role;
-
-      if (role === "driver") {
+      const requestedRiderRole = role === "driver"
+        && window.localStorage.getItem(ACTIVE_ACCOUNT_ROLE_KEY) === "rider";
+      let activeRiderRole = false;
+      if (requestedRiderRole && session) {
+        try {
+          const {supabase}=await import("./supabase");
+          const membership=await supabase.from("account_roles").select("role")
+            .eq("user_id",session.user.id).eq("role","rider").maybeSingle();
+          activeRiderRole=!membership.error && membership.data?.role === "rider";
+        } catch {}
+      }
+      if (explicitSignOutRole(window.localStorage)) {
+        const signedOutRole = explicitSignOutRole(window.localStorage);
+        const destination = startupDestination({ ...restored, session:null,signedOutRole });
+        completed = {preferences:restored.preferences,destination,session:null};
+        return completed;
+      }
+      if (role === "driver" && !activeRiderRole) {
         restored.preferences.mode = "driver";
       } else if (session) {
         const metadata = session.user.user_metadata;
@@ -127,7 +144,8 @@ export function initializeRider(): Promise<StartupResult> {
         } catch {}
       }
 
-      const destination = startupDestination({ ...restored, session, accountRole });
+      const destination = startupDestination({ ...restored, session,
+        accountRole: activeRiderRole ? "rider" : accountRole });
       completed = { preferences: restored.preferences, destination, session };
       return completed;
     } catch (error) {

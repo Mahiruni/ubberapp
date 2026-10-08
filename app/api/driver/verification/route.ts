@@ -108,6 +108,8 @@ export async function POST(request: Request) {
       const message = error?.message || "";
       if (/approved or suspended/i.test(message))
         return reply({ status: "verification_locked" }, 409);
+      if (/identity_ownership_review_required|existing_identity_document_must_be_reviewed|duplicate key|identity document/i.test(message) || error?.code==="23505")
+        return reply({ status: "identity_ownership_review_required" }, 409);
       return reply({ status: "verification_save_failed" }, 500);
     }
 
