@@ -22,13 +22,13 @@ export default function DriverWelcome() {
       return () => { active = false; };
     }
     supabase.auth.getSession().then(async ({ data }) => {
-      if (!active) return;
+      if (!active || explicitSignOutRole(window.localStorage)) return;
       const session = data.session;
       const role = session?.user?.user_metadata?.role;
       if (session && role === "driver") {
         enterDriver(session);
         const destination = await driverResumeDestination(session);
-        if (active) router.replace(destination);
+        if (active && !explicitSignOutRole(window.localStorage)) router.replace(destination);
         return;
       }
       setChecking(false);

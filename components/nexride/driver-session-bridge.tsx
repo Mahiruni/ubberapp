@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { supabase } from "../../lib/supabase";
 import { nexrideApiFetch } from "../../lib/nexride-api-auth";
+import { explicitSignOutRole } from "../../lib/nexride-startup";
 import { emitNexRideFeedback } from "../../lib/nexride-feedback";
 import { eligibleDriverOffer, shouldOpenDriverOffer } from "../../lib/nexride-driver-presence";
 
@@ -143,7 +144,9 @@ export function DriverSessionBridge() {
     };
 
     const bootstrap = async () => {
+      if (explicitSignOutRole(window.localStorage)) return;
       const { data: session } = await supabase.auth.getSession();
+      if (explicitSignOutRole(window.localStorage)) return;
       const id = session.session?.user.id || "";
       if (!mounted || !id) return;
       const { data: profile } = await supabase.from("profiles")

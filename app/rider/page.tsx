@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { EntryShell } from "../../components/nexride/entry";
 import { Button, Icon, StatusBanner, useTranslation } from "../../components/nexride/ui";
 import {
+  clearExplicitSignOut,
   enterRider,
   explicitSignOutRole,
   ONBOARDING_KEY,
@@ -37,7 +38,7 @@ function RiderWelcome() {
       return () => { active = false; };
     }
     supabase.auth.getSession().then(async ({ data, error }) => {
-      if (!active) return;
+      if (!active || explicitSignOutRole(window.localStorage)) return;
       if (error || !data.session) {
         setCheckingSession(false);
         return;
@@ -49,7 +50,7 @@ function RiderWelcome() {
       }
       try {
         await ensureRiderProfile(data.session);
-        if (!active) return;
+        if (!active || explicitSignOutRole(window.localStorage)) return;
         enterRider(data.session);
         router.replace("/");
       } catch {
@@ -68,6 +69,7 @@ function RiderWelcome() {
       localStorage.setItem(ONBOARDING_KEY, "true");
       localStorage.setItem(PREVIEW_ENABLED_KEY, "true");
     } catch {}
+    clearExplicitSignOut();
     enterRider(null);
     router.replace("/");
   };

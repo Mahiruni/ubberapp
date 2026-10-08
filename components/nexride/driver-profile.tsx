@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Dialog, Icon, type IconName } from "./ui";
 import { supabase } from "../../lib/supabase";
-import { markExplicitSignOut, retryStartup } from "../../lib/nexride-startup";
+import { signOutNexRide } from "../../lib/nexride-sign-out";
 import { nexrideApiFetch } from "../../lib/nexride-api-auth";
 import {
   initialsFor,
@@ -128,20 +128,7 @@ export function DriverProfileScreen({
         return;
       }
 
-      const { error: authError } = await supabase.auth.signOut({ scope: "local" });
-      if (authError) {
-        setSignOutError("Sign out could not be completed. Please try again.");
-        return;
-      }
-
-      const current = await supabase.auth.getSession();
-      if (current.error || current.data.session) {
-        setSignOutError("Sign out could not be confirmed. Please try again.");
-        return;
-      }
-
-      markExplicitSignOut("driver");
-      retryStartup(false);
+      await signOutNexRide("driver");
       setSignOutOpen(false);
       window.location.replace("/driver/auth?logged_out=1");
     } catch {

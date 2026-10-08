@@ -30,13 +30,11 @@ export default function DriverAuth() {
     let active = true;
     const params = new URLSearchParams(window.location.search);
     const confirmationLanding = params.get("confirmed") === "1";
-    if (confirmationLanding) {
-      setNotice(t("emailConfirmed"));
-      clearExplicitSignOut();
-    }
-    if (explicitSignOutRole(window.localStorage) && !confirmationLanding) return;
+    if (confirmationLanding) setNotice(t("emailConfirmed"));
+    // Confirmation links must not automatically restore a logged-out user.
+    if (explicitSignOutRole(window.localStorage)) return;
     supabase.auth.getSession().then(async ({ data }) => {
-      if (!active || !data.session) return;
+      if (!active || !data.session || explicitSignOutRole(window.localStorage)) return;
       const role = await resolveSessionRole(data.session);
       if (!active) return;
       if (role === "admin") {
@@ -49,7 +47,7 @@ export default function DriverAuth() {
       }
       enterDriver(data.session);
       const destination = await driverResumeDestination(data.session);
-      if (active) router.replace(destination);
+      if (active && !explicitSignOutRole(window.localStorage)) router.replace(destination);
     });
     return () => { active = false; };
   }, [router]);

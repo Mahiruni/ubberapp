@@ -18,7 +18,8 @@ import { supabase } from "../../lib/supabase";
 import { nexrideApiFetch } from "../../lib/nexride-api-auth";
 import { DriverCancellationNotice } from "./driver-cancellation-notice";
 import { DriverSessionBridge } from "./driver-session-bridge";
-import { markExplicitSignOut, retryStartup } from "../../lib/nexride-startup";
+import { explicitSignOutRole } from "../../lib/nexride-startup";
+import { signOutNexRide } from "../../lib/nexride-sign-out";
 
 export type DriverThemePreference = "system" | "light" | "dark";
 export type DriverResolvedTheme = "light" | "dark";
@@ -219,14 +220,10 @@ function DriverHamburgerMenu({ activeOverride }: { activeOverride?: DriverNavId 
           return;
         }
 
-        const { error: authError } = await supabase.auth.signOut({ scope: "local" });
-        if (authError) throw authError;
-        const verified = await supabase.auth.getSession();
-        if (verified.error || verified.data.session) throw new Error("session_still_active");
+        await signOutNexRide("driver");
       }
 
-      markExplicitSignOut("driver");
-      retryStartup(false);
+      if (!session) await signOutNexRide("driver");
       setOpen(false);
       window.location.replace("/driver/auth?logged_out=1");
     } catch {
@@ -492,8 +489,19 @@ function DriverHeader({ pathname }: { pathname: string }) {
 
 function DriverShellChrome({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const { preference, resolvedTheme } = useDriverTheme();
-  if (isPublicDriverPath(pathname)) return <>{children}</>;
+  const [blockedByLogout, setBlockedByLogout] = useState(false);
+  const isPublic = isPublicDriverPath(pathname);
+
+  useEffect(() => {
+    const signedOut = Boolean(explicitSignOutRole(window.localStorage));
+    setBlockedByLogout(signedOut && !isPublic);
+    if (signedOut && !isPublic) router.replace("/driver/auth?logged_out=1");
+  }, [isPublic, pathname, router]);
+
+  if (isPublic) return <>{children}</>;
+  if (blockedByLogout) return null;
 
   const tripFocus = isTripFocusPath(pathname);
   const home = pathname === "/driver/home";

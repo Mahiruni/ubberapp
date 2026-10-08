@@ -78,6 +78,23 @@ describe("rider initialization", () => {
     expect(startupDestination({ ...state, session, signedOutRole: "driver" })).toBe("/driver/auth");
   });
 
+  it("does not resurrect a rider session whose restoration was pending during logout", async () => {
+    let resume!: (value: unknown) => void;
+    getSession.mockImplementationOnce(() => new Promise(resolve => { resume = resolve; }));
+    const pending = initializeRider();
+    values.set(EXPLICIT_SIGNOUT_KEY, "rider");
+    resume({ data: { session }, error: null });
+    const result = await pending;
+    expect(result.destination).toBe("/rider/sign-in");
+    expect(result.session).toBeNull();
+    expect(values.get(EXPLICIT_SIGNOUT_KEY)).toBe("rider");
+  });
+  it("ignores a stale enterRider(session) after logout", () => {
+    values.set(EXPLICIT_SIGNOUT_KEY, "rider");
+    enterRider(session);
+    expect(completedStartup()).toBeNull();
+    expect(values.get(EXPLICIT_SIGNOUT_KEY)).toBe("rider");
+  });
   it("does not restore a persisted session after an explicit logout", async () => {
     values.set(EXPLICIT_SIGNOUT_KEY, "rider");
     getSession.mockResolvedValue({ data: { session }, error: null });

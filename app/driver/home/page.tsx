@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DriverWorkspace, type DriverScreen } from "../../../components/nexride/driver";
 import { supabase } from "../../../lib/supabase";
+import { explicitSignOutRole } from "../../../lib/nexride-startup";
 import { getDriverReviewStatus } from "../../../lib/nexride-driver-verification";
 import { resolveSessionRole } from "../../../lib/nexride-account-role";
 import "../../../app/nexride.css";
@@ -28,8 +29,12 @@ export default function DriverHomePage() {
     if (requestedScreen === "map") setScreen("map");
 
     let active = true;
+    if (explicitSignOutRole(window.localStorage)) {
+      router.replace("/driver/auth?logged_out=1");
+      return () => { active = false; };
+    }
     supabase.auth.getSession().then(async ({ data }) => {
-      if (!active) return;
+      if (!active || explicitSignOutRole(window.localStorage)) return;
       const session = data.session;
       if (!session) {
         router.replace("/driver/auth");
@@ -37,6 +42,7 @@ export default function DriverHomePage() {
       }
 
       const role = await resolveSessionRole(session);
+      if (!active || explicitSignOutRole(window.localStorage)) return;
       if (role === "admin") {
         router.replace("/admin");
         return;

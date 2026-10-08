@@ -66,7 +66,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
     }
 
     const restoreSession = async (session: NonNullable<Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"]>) => {
-      if (!active || restoringSession) return;
+      if (!active || restoringSession || explicitSignOutRole(window.localStorage)) return;
       restoringSession = true;
 
       try {
@@ -82,7 +82,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
         }
 
         await ensureRiderProfile(session);
-        if (!active) return;
+        if (!active || explicitSignOutRole(window.localStorage)) return;
         markAuthenticated();
         enterRider(session);
         router.replace("/");
@@ -105,12 +105,12 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
       }
     };
 
-    if (signedOutRole && !confirmationLanding && mode !== "reset") {
+    if (signedOutRole && mode !== "reset") {
       if (mode === "signin") setCheckingSession(false);
     } else supabase.auth
       .getSession()
       .then(({ data, error: sessionError }) => {
-        if (!active || mode === "reset") return;
+        if (!active || mode === "reset" || explicitSignOutRole(window.localStorage)) return;
 
         if (sessionError || !data.session) {
           if (mode === "signin") setCheckingSession(false);
@@ -133,8 +133,8 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
         return;
       }
 
-      if (event === "SIGNED_IN" && confirmationLanding && session) {
-        clearExplicitSignOut();
+      if (event === "SIGNED_IN" && confirmationLanding && session &&
+          !explicitSignOutRole(window.localStorage)) {
         setCheckingSession(true);
         void restoreSession(session);
       }
@@ -265,6 +265,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
 
       if (data.session) {
         await ensureRiderProfile(data.session, { fullName: name, phone: mobile });
+        clearExplicitSignOut();
         markAuthenticated();
         enterRider(data.session);
         navigating = true;
@@ -356,6 +357,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
       }
 
       await ensureRiderProfile(data.session);
+      clearExplicitSignOut();
       markAuthenticated();
       enterRider(data.session);
       navigating = true;
@@ -380,6 +382,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
       localStorage.setItem(PREVIEW_ENABLED_KEY, "true");
     } catch {}
 
+    clearExplicitSignOut();
     enterRider(null);
     router.replace("/");
   };

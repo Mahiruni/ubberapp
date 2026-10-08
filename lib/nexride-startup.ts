@@ -92,6 +92,13 @@ export function initializeRider(): Promise<StartupResult> {
 
       const session = result.data.session;
       const accountRole = session ? await resolveSessionRole(session) : null;
+      // Logout may occur while restoring the previous session.
+      const signedOutDuringRestore = explicitSignOutRole(window.localStorage);
+      if (signedOutDuringRestore) {
+        const destination = startupDestination({ ...restored, session: null, signedOutRole: signedOutDuringRestore });
+        completed = { preferences: restored.preferences, destination, session: null };
+        return completed;
+      }
       const role = accountRole || session?.user?.user_metadata?.role;
 
       if (role === "driver") {
@@ -136,7 +143,7 @@ export function initializeRider(): Promise<StartupResult> {
   return pending;
 }
 export function enterRider(session: Session | null) {
-  clearExplicitSignOut();
+  if (session && typeof window !== "undefined" && explicitSignOutRole(window.localStorage)) return;
   let preferences = defaults();
   try {
     preferences = restorePreferences(window.localStorage).preferences;
@@ -168,6 +175,6 @@ export function enterRider(session: Session | null) {
   completed = { preferences, destination: "/", session };
   pending = null;
 }
-export function enterDriver(session: Session) { clearExplicitSignOut(); let preferences = defaults(); try { preferences = restorePreferences(window.localStorage).preferences; } catch {} preferences.mode = "driver"; if (session.user.user_metadata?.full_name) preferences.profile.name = String(session.user.user_metadata.full_name); if (session.user.email) preferences.profile.email = session.user.email; if (session.user.user_metadata?.phone) preferences.profile.phone = String(session.user.user_metadata.phone); completed = { preferences, destination: "/driver/home", session }; pending = null; }
+export function enterDriver(session: Session) { if (typeof window !== "undefined" && explicitSignOutRole(window.localStorage)) return; let preferences = defaults(); try { preferences = restorePreferences(window.localStorage).preferences; } catch {} preferences.mode = "driver"; if (session.user.user_metadata?.full_name) preferences.profile.name = String(session.user.user_metadata.full_name); if (session.user.email) preferences.profile.email = session.user.email; if (session.user.user_metadata?.phone) preferences.profile.phone = String(session.user.user_metadata.phone); completed = { preferences, destination: "/driver/home", session }; pending = null; }
 export function updateStartupPreferences(preferences: RestoredPreferences) { if (completed) completed = { ...completed, preferences }; }
 export function retryStartup(resetPreferences = false) { pending = null; completed = null; if (resetPreferences) try { localStorage.removeItem(PREVIEW_STORAGE_KEY); localStorage.removeItem("nexride-state"); } catch {} }

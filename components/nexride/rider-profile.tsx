@@ -3,7 +3,8 @@ import Image from 'next/image';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { supabase } from '../../lib/supabase';
 import { ALERTS_KEY, readAccount, saveAccount, validateProfile, type RiderAccount } from '../../lib/nexride-account';
-import { PREVIEW_ENABLED_KEY, PREVIEW_STORAGE_KEY, markExplicitSignOut, retryStartup } from '../../lib/nexride-startup';
+import { PREVIEW_ENABLED_KEY, PREVIEW_STORAGE_KEY, retryStartup } from '../../lib/nexride-startup';
+import { signOutNexRide } from '../../lib/nexride-sign-out';
 import type { Language } from '../../lib/nexride-i18n';
 import type { PreviewProfile } from '../../lib/nexride-preview';
 import { Button, Dialog, Icon, InputField, useTranslation, type IconName } from './ui';
@@ -181,11 +182,7 @@ export function RiderProfile(props:Props) {
     setBusy(true);
     setError('');
     try{
-      const result=await supabase.auth.signOut({scope:'local'});
-      if(result.error)throw result.error;
-      const current=await supabase.auth.getSession();
-      if(current.error||current.data.session)throw Error('Session still active');
-      markExplicitSignOut('rider');
+      await signOutNexRide('rider');
       setSignedOutLocally(true);
       leaveAccount();
     }catch{
