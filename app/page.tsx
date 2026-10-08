@@ -233,7 +233,6 @@ function AppWorkspace({
   }, []);
   const [panel, setPanel] = useState<Panel>(null);
   const [serviceTitle, setServiceTitle] = useState("");
-  const [offline, setOffline] = useState(false);
   const [toast, setToast] = useState("");
   const navigateRider = useCallback((s: RiderScreen) => {
     if (!bookingLock.current) setRiderScreen(s);
@@ -242,16 +241,6 @@ function AppWorkspace({
     (s: DriverScreen) => setDriverScreen(s),
     [],
   );
-  useEffect(() => {
-    const update = () => setOffline(!navigator.onLine);
-    update();
-    window.addEventListener("online", update);
-    window.addEventListener("offline", update);
-    return () => {
-      window.removeEventListener("online", update);
-      window.removeEventListener("offline", update);
-    };
-  }, []);
   useEffect(() => {
     if (!toast) return;
     const timer = window.setTimeout(() => setToast(""), 3000);
@@ -500,11 +489,6 @@ function AppWorkspace({
             <Icon name="info" size={17} />
           </button>
         </div>}
-        {offline && (
-          <div className="nr-network-banner" role="status">
-            {t("networkOffline")}
-          </div>
-        )}
         <div
           className={`nr-stage ${["home", "destination", "rides", "finding", "trip", "live", "summary", "request", "navigation"].includes(screen) ? "with-map" : "content-view"}`}
         >
