@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useContext, useEffect, useState } from "react";
 import { Button, Dialog, Icon, LanguageContext, useTranslation } from "./ui";
 import { endpointName } from "./destination";
@@ -123,10 +124,22 @@ export function RideSelection({
         ) : model.loadState === "error" ? (
           <div className="nr-fare-state" role="alert">
             <Icon name="info" />
-            <p>{t("faresFailed")}</p>
-            <Button variant="secondary" onClick={model.load}>
-              {t("tryAgain")}
-            </Button>
+            <p>
+              {model.loadError === "auth"
+                ? "Use an active Rider account to enable live booking."
+                : model.loadError === "journey"
+                  ? "Choose a valid pickup and destination within the service area."
+                  : t("faresFailed")}
+            </p>
+            {model.loadError === "auth" ? (
+              <Link href="/rider/sign-in" className="nr-preview-ride-link">
+                {t("signIn")} <Icon name="arrow" size={16} />
+              </Link>
+            ) : model.loadError === "journey" ? (
+              <Button variant="secondary" onClick={back}>{t("editJourney")}</Button>
+            ) : (
+              <Button variant="secondary" onClick={model.load}>{t("tryAgain")}</Button>
+            )}
           </div>
         ) : (
           <>
@@ -319,8 +332,19 @@ export function RideSelection({
         {model.fares?.source === "preview" && (
           <>
             <small className="nr-booking-boundary">
-              {t("requestUnavailable")}
+              {model.fares.previewReason === "service_unavailable"
+                ? "Live fares are temporarily unreachable. Only sample prices are shown."
+                : "Sign in with your Rider account to enable live booking."}
             </small>
+            {model.fares.previewReason === "service_unavailable" ? (
+              <button className="nr-preview-ride-link" onClick={model.load}>
+                {t("tryAgain")} <Icon name="arrow" size={16} />
+              </button>
+            ) : (
+              <Link href="/rider/sign-in" className="nr-preview-ride-link">
+                {t("signIn")} <Icon name="arrow" size={16} />
+              </Link>
+            )}
             <button
               className="nr-preview-ride-link"
               disabled={!model.canPreview}

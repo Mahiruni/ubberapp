@@ -85,7 +85,7 @@ export async function POST(request: Request) {
     if (
       profileError ||
       !profile ||
-      profile.role !== "rider" ||
+      (profile.role !== "rider" && profile.role !== "admin") ||
       profile.account_status !== "active"
     ) {
       console.warn("nexride_booking_rejected", { reason: "rider_not_eligible" });

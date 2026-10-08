@@ -39,10 +39,14 @@ export async function POST(request: Request) {
   )
     return reply({ status: "invalid_journey" }, 422);
 
-  // Display sample fares for guests and non-Rider roles. These never enable
-  // real bookings and must never be labeled as confirmed service quotes.
+  // A guest may inspect non-bookable sample fares. Invalid bearer credentials
+  // must return 401 so the client can refresh its session instead of silently
+  // downgrading an authenticated Rider to preview mode.
+  const authorization = request.headers.get("authorization")?.trim() || "";
+  if (!authorization) return reply(previewFares({ pickup, destination }));
+
   const authorized = await authorizedRequestSupabase(request).catch(() => null);
-  if (!authorized) return reply(previewFares({ pickup, destination }));
+  if (!authorized) return reply({ status: "session_expired" }, 401);
 
   try {
     // Validate the Rider using the server's authoritative profile lookup.
@@ -62,9 +66,10 @@ export async function POST(request: Request) {
     if (!profile || profile.account_status !== "active") {
       return reply({ status: "profile_unavailable" }, 403);
     }
-    if (profile.role !== "rider") {
-      return reply(previewFares({ pickup, destination }));
-    }
+    // Administrators may use the Rider experience without losing their
+    // administrative role; Drivers must sign in with a Rider account.
+    if (profile.role !== "rider" && profile.role !== "admin")
+      return reply({ status: "rider_account_required" }, 403);
 
     return reply(liveFareSet({ pickup, destination }));
   } catch {

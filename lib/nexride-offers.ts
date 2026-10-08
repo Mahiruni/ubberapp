@@ -38,6 +38,7 @@ export function useRideOffers(
     next: number | null;
   } | null>(null);
   const [refresh, setRefresh] = useState(0);
+  const [loadError, setLoadError] = useState<"auth" | "journey" | null>(null);
   const lock = useRef(false),
     mounted = useRef(true),
     prior = useRef<FareSet | null>(null);
@@ -71,6 +72,7 @@ export function useRideOffers(
     let active = true;
     const controller = new AbortController();
     setLoadState("loading");
+    setLoadError(null);
     setRequestState("idle");
     bookingAdapter
       .fares(
@@ -79,8 +81,19 @@ export function useRideOffers(
       )
       .then((data) => {
         if (!active) return;
+        // Only Economy is currently live. Avoid reopening the screen with a
+        // persisted, disabled Comfort/XL choice.
+        const current = data.offers.find((offer) => offer.category === selectedRef.current);
+        if (data.source === "service" && current?.availability !== "available") {
+          const available = data.offers.find((offer) => offer.availability === "available");
+          if (available) {
+            selectedRef.current = available.category;
+            setSelected(available.category);
+          }
+        }
         const old = prior.current;
-        if (old && pricingFingerprint(old) !== pricingFingerprint(data)) {
+        if (old?.source === "service" && data.source === "service" &&
+            pricingFingerprint(old) !== pricingFingerprint(data)) {
           const before = old.offers.find(
             (o) => o.category === selectedRef.current,
           )!;
@@ -89,19 +102,35 @@ export function useRideOffers(
           )!;
           setChanged({ old: fareTotal(before), next: fareTotal(after) });
         }
+        if (!old || old.source !== "service" || data.source !== "service") setChanged(null);
         prior.current = data;
         setFares(data);
         setLoadState("ready");
       })
-      .catch(() => {
+      .catch((error: unknown) => {
         if (!active || controller.signal.aborted) return;
-        // An unreachable fare service is not a confirmed quote. Keep the
-        // journey usable with explicitly labeled, non-bookable sample fares.
+        const code = error instanceof Error ? error.message : "";
+        // Authentication and invalid journeys are actionable errors, not
+        // service outages; never mislabel them as demo pricing.
+        if (/^fares_http_(401|403)$/.test(code)) {
+          setLoadError("auth");
+          setLoadState("error");
+          return;
+        }
+        if (/^fares_http_(400|422)$/.test(code)) {
+          setLoadError("journey");
+          setLoadState("error");
+          return;
+        }
+        // Only genuine service/network failures use non-bookable estimates.
         try {
-          const sample = previewFares({
-            pickup: journey.pickup!,
-            destination: journey.destination!,
-          });
+          const sample = {
+            ...previewFares({
+              pickup: journey.pickup!,
+              destination: journey.destination!,
+            }),
+            previewReason: "service_unavailable" as const,
+          };
           prior.current = null;
           setChanged(null);
           setFares(sample);
@@ -207,6 +236,7 @@ export function useRideOffers(
     selected,
     setSelected,
     loadState,
+    loadError,
     requestState,
     requestId,
     changed,

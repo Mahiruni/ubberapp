@@ -15,6 +15,7 @@ export type RideFare = {
 };
 export type FareSet = {
   source: "preview" | "service";
+  previewReason?: "sign_in_required" | "service_unavailable";
   revision: string;
   expiresAt: string;
   chargesComplete: boolean;
@@ -102,6 +103,7 @@ export function previewFares(journey: BookingJourney): FareSet {
   });
   return {
     source: "preview",
+    previewReason: "sign_in_required",
     revision: `preview:${offers.map((o) => o.id).join(":")}`,
     expiresAt: new Date(Date.now() + 5 * 60_000).toISOString(),
     chargesComplete: false,
@@ -192,14 +194,12 @@ export const bookingAdapter = {
     revision: string,
     idempotencyKey: string,
   ): Promise<BookingResult> {
-    const { nexrideApiHeaders } = await import("./nexride-api-auth");
-    const headers = await nexrideApiHeaders(true);
-    headers["Idempotency-Key"] = idempotencyKey;
-    const response = await fetch("/api/rider/requests", {
+    const { nexrideApiFetch } = await import("./nexride-api-auth");
+    const response = await nexrideApiFetch("/api/rider/requests", {
       method: "POST",
       cache: "no-store",
       signal: AbortSignal.timeout(15000),
-      headers,
+      headers: { "Content-Type": "application/json", "Idempotency-Key": idempotencyKey },
       body: JSON.stringify({
         ...journey,
         quoteId: fare.id,
