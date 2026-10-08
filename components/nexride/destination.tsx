@@ -125,6 +125,11 @@ export function DestinationPanel({
     new Map<string, { at: number; results: Endpoint[] }>(),
   );
   const draftRestored = useRef(false);
+  const bodyRef = useRef<HTMLDivElement>(null);
+
+  // Close the expanded search surface on route/screen changes. This does not
+  // affect the user's saved places or in-progress search draft.
+  useEffect(() => () => j.setSearchOpen(false), [j.setSearchOpen]);
 
   useEffect(() => {
     setRecentSearches(restoreRecentSearches());
@@ -234,6 +239,7 @@ export function DestinationPanel({
     setQuery((q) => ({ ...q, [field]: "" }));
     setRemote({ status: "idle", results: [] });
     setSearchActive(false);
+    j.setSearchOpen(false);
     j.setSheetRatio(0.46);
     if (field === "pickup") setField("destination");
     document.activeElement instanceof HTMLElement &&
@@ -297,7 +303,7 @@ export function DestinationPanel({
         <button
           className="nr-icon-button"
           aria-label={t("back")}
-          onClick={back}
+          onClick={() => { j.setSearchOpen(false); back(); }}
         >
           <Icon name="back" />
         </button>
@@ -324,7 +330,7 @@ export function DestinationPanel({
           </h1>
         </div>
       </header>
-      <div className="nr-destination-body">
+      <div ref={bodyRef} className="nr-destination-body">
         {!picking && (
           <>
             <div className="nr-endpoint-fields">
@@ -358,18 +364,26 @@ export function DestinationPanel({
                         onFocus={() => {
                           setField(target);
                           setSearchActive(true);
+                          j.setSearchOpen(true);
+                          bodyRef.current?.scrollTo({ top: 0 });
                           if (j.sheetRatio < 0.75) j.setSheetRatio(0.75);
                         }}
                         onChange={(e) => {
                           j.clear(target);
                           setField(target);
                           setSearchActive(true);
+                          j.setSearchOpen(true);
                           setQuery((q) => ({ ...q, [target]: e.target.value }));
                         }}
                         onKeyDown={(e) => {
                           if (e.key === "ArrowDown") {
                             e.preventDefault();
                             firstResult.current?.focus();
+                          }
+                          if (e.key === "Escape") {
+                            j.setSearchOpen(false);
+                            setSearchActive(false);
+                            e.currentTarget.blur();
                           }
                         }}
                         maxLength={120}
@@ -408,6 +422,9 @@ export function DestinationPanel({
               <button
                 onClick={() => {
                   setQuery((q) => ({ ...q, [field]: "" }));
+                  j.setSearchOpen(false);
+                  setSearchActive(false);
+                  document.activeElement instanceof HTMLElement && document.activeElement.blur();
                   j.startPin(field);
                 }}
               >

@@ -1986,3 +1986,129 @@
     z-index:0!important;
   }
 }
+
+
+/* SEARCH VISIBILITY FIX — mobile IME, in-app browsers and persistent wrapper.
+   An active destination search is a single visual-viewport surface. Previous
+   late wrapper rules forced a tall, bottom-anchored box over the suggestions.
+   This intentionally overrides only the destination search state. */
+@media (max-width: 800px) {
+  .nr-app[data-mode="rider"] .rider-map-flow.rider-search-view[data-search-open="true"] {
+    height: var(--nr-viewport-height, 100dvh)!important;
+    min-height: 0!important;
+    overflow: hidden!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow.rider-search-view[data-search-open="true"]
+    .nr-main > .nr-rider-flow-panel {
+    position: fixed!important;
+    inset: auto 0 auto 0!important;
+    top: var(--nr-visual-offset-top, 0px)!important;
+    bottom: auto!important;
+    left: 0!important;
+    right: 0!important;
+    z-index: 2000!important;
+    width: 100%!important;
+    height: var(--nr-viewport-height, 100dvh)!important;
+    min-height: 0!important;
+    max-height: var(--nr-viewport-height, 100dvh)!important;
+    margin: 0!important;
+    padding: 0!important;
+    border: 0!important;
+    overflow: hidden!important;
+    background: var(--surface)!important;
+    transition: none!important;
+    transform: none!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow.rider-search-view[data-search-open="true"]
+    .nr-main > .nr-rider-flow-panel > .nr-rider-persistent-wrapper {
+    inset: 0!important;
+    height: 100%!important;
+    min-height: 0!important;
+    max-height: 100%!important;
+    border: 0!important;
+    border-radius: 0!important;
+    overflow: hidden!important;
+    background: var(--surface)!important;
+    box-shadow: none!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow.rider-search-view[data-search-open="true"]
+    .nr-rider-persistent-wrapper > .nr-destination-panel {
+    display: flex!important;
+    flex-direction: column!important;
+    height: 100%!important;
+    min-height: 0!important;
+    max-height: 100%!important;
+    overflow: hidden!important;
+    border-radius: 0!important;
+    background: var(--surface)!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow.rider-search-view[data-search-open="true"]
+    .nr-flow-sheet-handle {
+    display: none!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow.rider-search-view[data-search-open="true"]
+    .nr-destination-panel > header {
+    flex: 0 0 auto!important;
+    min-height: 56px;
+    padding: max(9px, env(safe-area-inset-top)) 16px 6px!important;
+    background: var(--surface)!important;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow.rider-search-view[data-search-open="true"]
+    .nr-destination-body {
+    flex: 1 1 0!important;
+    min-height: 0!important;
+    height: auto!important;
+    width: 100%!important;
+    overflow-y: auto!important;
+    overflow-x: hidden!important;
+    overscroll-behavior-y: contain!important;
+    touch-action: pan-y!important;
+    -webkit-overflow-scrolling: touch;
+    padding: 8px 16px max(16px, env(safe-area-inset-bottom))!important;
+    scroll-padding-top: 116px;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow.rider-search-view[data-search-open="true"]
+    .nr-endpoint-fields {
+    position: sticky;
+    top: -8px;
+    z-index: 4;
+    padding: 2px 0 8px;
+    background: var(--surface)!important;
+    box-shadow: 0 5px 10px color-mix(in srgb, var(--surface) 85%, transparent);
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow.rider-search-view[data-search-open="true"]
+    .nr-search-discovery {
+    display: grid!important;
+    min-height: min-content!important;
+    overflow: visible!important;
+    padding: 0 0 20px!important;
+    background: var(--surface)!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow.rider-search-view[data-search-open="true"]
+    .nr-place-suggestion {
+    min-height: 54px!important;
+    flex-shrink: 0!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow.rider-search-view[data-search-open="true"]
+    .nr-destination-panel footer {
+    display: none!important;
+  }
+
+  /* Compact the optional actions only while the soft keyboard occupies space.
+     The saved/recent/live suggestions remain available and scrollable. */
+  .nr-app[data-mode="rider"] .rider-map-flow.rider-search-view[data-search-open="true"][data-keyboard="true"]
+    .nr-destination-actions {
+    display: none!important;
+  }
+}

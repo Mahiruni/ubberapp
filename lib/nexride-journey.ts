@@ -63,7 +63,8 @@ export function useJourney(position: RiderLocation | null, language: Language = 
   const [dragging, setDragging] = useState(false);
   const [retry, setRetry] = useState(0);
   const [sheetRatio, setSheetRatio] = useState(0.46);
-  const [viewport, setViewport] = useState({ height: 0, keyboard: false });
+  const [viewport, setViewport] = useState({ height: 0, keyboard: false, offsetTop: 0 });
+  const [searchOpen, setSearchOpen] = useState(false);
   const nextDevice = useRef(false);
   const [storageReady, setStorageReady] = useState(false);
   const reverseCache = useRef(new Map<string, { name: string; address: string }>());
@@ -355,15 +356,25 @@ export function useJourney(position: RiderLocation | null, language: Language = 
   }, [key, valid, retry]);
 
   useEffect(() => {
+    // Android webviews differ: some resize the layout viewport, others only
+    // resize or pan the visual viewport. Keep its actual visible rectangle.
     const update = () => {
-      const height = window.visualViewport?.height || window.innerHeight;
-      setViewport({ height, keyboard: height < window.innerHeight - 120 });
+      const visual = window.visualViewport;
+      const height = Math.max(1, Math.round(visual?.height || window.innerHeight));
+      const offsetTop = Math.max(0, Math.round(visual?.offsetTop || 0));
+      const keyboard = height < window.innerHeight - 120;
+      setViewport(current =>
+        current.height === height && current.keyboard === keyboard &&
+        current.offsetTop === offsetTop ? current : { height, keyboard, offsetTop },
+      );
     };
     update();
     window.visualViewport?.addEventListener("resize", update);
+    window.visualViewport?.addEventListener("scroll", update);
     window.addEventListener("resize", update);
     return () => {
       window.visualViewport?.removeEventListener("resize", update);
+      window.visualViewport?.removeEventListener("scroll", update);
       window.removeEventListener("resize", update);
     };
   }, []);
@@ -419,6 +430,8 @@ export function useJourney(position: RiderLocation | null, language: Language = 
       }),
     sheetRatio,
     setSheetRatio,
+    searchOpen,
+    setSearchOpen,
     viewport,
   };
 }

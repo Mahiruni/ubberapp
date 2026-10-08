@@ -207,3 +207,34 @@ test("small, landscape and desktop layouts keep map controls, sheet and navigati
     ).toBe(true);
   }
 });
+
+test("mobile focused destination search keeps saved and suggested places above the keyboard surface", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 780 });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Search destination", exact: true }).click();
+  const input = page.getByRole("textbox", { name: "Search destination" });
+  await input.focus();
+  const root = page.locator(".rider-search-view");
+  await expect(root).toHaveAttribute("data-search-open", "true");
+  await expect(page.getByRole("heading", { name: "Recent searches" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Popular places" })).toBeVisible();
+  const panel = page.locator(".nr-destination-panel");
+  const searchBody = page.locator(".nr-destination-body");
+  const geometry = await page.evaluate(() => {
+    const input = document.querySelector<HTMLInputElement>('.nr-endpoint-field input:focus');
+    const body = document.querySelector<HTMLElement>('.nr-destination-body');
+    const box = document.querySelector<HTMLElement>('.nr-destination-panel');
+    return { input: input?.getBoundingClientRect().toJSON(), body: body?.getBoundingClientRect().toJSON(), box: box?.getBoundingClientRect().toJSON() };
+  });
+  expect(geometry.box?.top).toBeGreaterThanOrEqual(-1);
+  expect(geometry.box?.bottom).toBeLessThanOrEqual(781);
+  expect(geometry.input?.top).toBeGreaterThanOrEqual(0);
+  expect(geometry.input?.bottom).toBeLessThanOrEqual(geometry.box?.bottom || 0);
+  expect(geometry.body?.height).toBeGreaterThan(100);
+  await expect(panel).toBeVisible();
+  await expect(searchBody).toHaveCSS("overflow-y", "auto");
+  await input.fill("Bole");
+  await expect(page.getByRole("heading", { name: "Suggested places" })).toBeVisible();
+  await expect(page.locator(".nr-place-suggestion").first()).toBeVisible();
+  await expect(root).toHaveAttribute("data-search-open", "true");
+});

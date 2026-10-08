@@ -352,6 +352,7 @@ function AppWorkspace({
   return (
     <div
       data-keyboard={journey.viewport.keyboard}
+      data-search-open={riderSearch && journey.searchOpen}
       data-request-pending={requestPending}
       style={
         riderSearch
@@ -366,6 +367,7 @@ function AppWorkspace({
                     ),
                   )}px`,
               "--nr-viewport-height": `${journey.viewport.height || 800}px`,
+              "--nr-visual-offset-top": `${journey.viewport.offsetTop || 0}px`,
             } as React.CSSProperties)
           : undefined
       }
