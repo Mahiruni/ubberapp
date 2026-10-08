@@ -8,6 +8,7 @@ import { Icon } from "../../../components/nexride/ui";
 import { useOperationalTranslation } from "../../../components/nexride/operational-i18n";
 import { Dialog } from "../../../components/nexride/ui";
 import { resolveDriverPassOutcome } from "../../../lib/nexride-driver-pass";
+import { confirmedDriverOfferDecision } from "../../../lib/nexride-sequential-offers";
 import { supabase } from "../../../lib/supabase";
 import { resolveSessionRole } from "../../../lib/nexride-account-role";
 import {
@@ -343,6 +344,24 @@ export default function DriverRideRequestPage() {
     return () => window.clearInterval(timer);
   }, [offer?.expires_at, offer?.status]);
 
+  // Driver-side expiry advances dispatch even when the rider isn't actively
+  // refreshing. Rider snapshot polling provides another independent path.
+  useEffect(() => {
+    if (offer?.status !== "pending" || !offer.id || secondsRemaining !== 0) return;
+    let active = true;
+    void supabase.rpc("driver_decide_ride_offer", {
+      p_offer_id: offer.id, p_action: "expire",
+    }).then(({ data, error }) => {
+      if (!active || error) return;
+      const result = data as { status?: string } | null;
+      if (result?.status === "expired") {
+        stopRideRequestAlert(offer.id);
+        setOffer(current => current?.id === offer.id ? { ...current, status: "expired" } : current);
+      }
+    }).catch(() => {});
+    return () => { active = false; };
+  }, [offer?.id, offer?.status, secondsRemaining]);
+
   useEffect(() => {
     const sync = () => setSoundBlocked(isRideRequestSoundBlocked());
     window.addEventListener(RIDE_REQUEST_SOUND_STATE_EVENT, sync);
@@ -397,20 +416,16 @@ export default function DriverRideRequestPage() {
     setSubmitting("accept");
     setAcceptFailure("");
 
-    const { data, error } = await supabase
-      .from("ride_request_offers")
-      .update({ status: "accepted" })
-      .eq("id", offer.id)
-      .eq("driver_id", driverId)
-      .eq("status", "pending")
-      .select("status")
-      .maybeSingle();
-
-    if (error || !data) {
+    const { data, error } = await supabase.rpc("driver_decide_ride_offer", {
+      p_offer_id: offer.id, p_action: "accept",
+    });
+    const outcome = data as { status?: string; requestId?: string } | null;
+    if (error || !confirmedDriverOfferDecision("accept",outcome,offer.request_id)) {
       const message = error?.message || "";
-      if (message.includes("RIDE_OFFER_EXPIRED")) {
+      if (outcome?.status === "expired" || message.includes("RIDE_OFFER_EXPIRED")) {
         setOffer((current) => current ? { ...current, status: "expired" } : current);
-      } else if (message.includes("RIDE_REQUEST_UNAVAILABLE") || error?.code === "23505") {
+      } else if (outcome?.status === "unavailable" || outcome?.status === "already_resolved" ||
+        message.includes("RIDE_REQUEST_UNAVAILABLE") || error?.code === "23505") {
         setOffer((current) => current ? { ...current, status: "withdrawn" } : current);
       } else if (message.includes("DRIVER_NOT_ELIGIBLE")) {
         setAcceptFailure(op("Your driver account is not currently eligible to accept rides. Check verification and availability."));
@@ -442,16 +457,14 @@ export default function DriverRideRequestPage() {
     setSubmitting("decline");
     setAcceptFailure("");
 
-    const { data, error } = await supabase
-      .from("ride_request_offers")
-      .update({ status: "declined" })
-      .eq("id", offer.id)
-      .eq("driver_id", driverId)
-      .eq("status", "pending")
-      .select("status")
-      .maybeSingle();
-
-    if (error || !data) {
+    const { data, error } = await supabase.rpc("driver_decide_ride_offer", {
+      p_offer_id: offer.id, p_action: "decline",
+    });
+    const outcome = data as { status?: string; requestId?: string; forwarded?: boolean } | null;
+    if (error || !confirmedDriverOfferDecision("decline",outcome,offer.request_id)) {
+      if (outcome?.status === "expired") {
+        setOffer(current => current ? { ...current, status: "expired" } : current);
+      }
       setAcceptFailure(op("NexRide could not decline this request. Its status may already have changed."));
       setSubmitting(null);
       decisionLock.current = false;
@@ -461,7 +474,7 @@ export default function DriverRideRequestPage() {
 
     stopRideRequestAlert(offer.id);
     setConfirmAction(null);
-    setPassOutcome(null);
+    setPassOutcome(outcome.forwarded ? "forwarded" : "no_drivers");
     setOffer((current) => current ? { ...current, status: "declined" } : current);
     setSubmitting(null);
     decisionLock.current = false;
@@ -476,8 +489,8 @@ export default function DriverRideRequestPage() {
     try {
       // Authenticated RPC performs the decline and next-driver dispatch in
       // one transaction. A rejected/expired offer cannot be passed.
-      const { data, error } = await supabase.rpc("driver_pass_ride_offer", {
-        p_offer_id: offer.id,
+      const { data, error } = await supabase.rpc("driver_decide_ride_offer", {
+        p_offer_id: offer.id, p_action: "pass",
       });
       const response = data as {
         status?: string; requestId?: string; forwarded?: boolean;
