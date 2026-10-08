@@ -161,8 +161,8 @@ export default function RiderReceiptPage() {
 
             <section className="nr-receipt-grid" aria-label="Receipt summary">
               <ReceiptValue label={op("Fare")} value={amount?.amount === null ? op("Unavailable") : amount?.amount?.toLocaleString("en-ET") + " ETB"} note={amount?.final ? op("Final fare") : op("Estimated fare")} />
-              <ReceiptValue label={op("Payment method")} value={op("Cash")} note={op("Pay after your trip")} />
-              <ReceiptValue label={op("Payment status")} value={op(ride.paymentStatus)} note={ride.paymentStatus === "paid" ? op("Confirmed") : op("Current status")} />
+              <ReceiptValue label={op("Payment method")} value={ride.paymentMethod === "cash" ? op("Cash") : ride.paymentMethod === "chapa" ? op("Online payment · Chapa") : op("Not available")} note={ride.paymentMethod === "cash" ? op("Cash is handled directly with the driver.") : op("Current status")} />
+              <ReceiptValue label={op("Payment status")} value={ride.paymentMethod === "cash" ? op(ride.paymentStatus === "paid" ? "Paid" : "Cash payment") : op(ride.paymentStatus)} note={ride.paymentMethod === "cash" ? op("No online payment required.") : ride.paymentStatus === "paid" ? op("Confirmed") : op("Current status")} />
               <ReceiptValue label={op("Rating")} value={rating ? rating.score + " / 5" : op("Not rated")} note={op("Your feedback")} />
             </section>
 

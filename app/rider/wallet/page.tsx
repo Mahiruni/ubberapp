@@ -58,6 +58,7 @@ export default function RiderWalletPage() {
           .select("id,pickup_location,destination_location,payment_status,payment_method,status,final_fare_etb,estimated_trip_fare_etb,created_at")
         .eq("rider_id", session.user.id)
         .in("payment_status", ["pending", "failed", "unknown"])
+          .neq("payment_method", "cash")
           .order("created_at", { ascending: false })
           .limit(20),
         fetch("/api/payments/config", { cache: "no-store" }).catch(() => null),
@@ -84,7 +85,7 @@ export default function RiderWalletPage() {
   }, [router]);
 
   async function payOnline(ride: PaymentIssue) {
-    if (!onlinePayments || payingRide) return;
+    if (!onlinePayments || payingRide || ride.payment_method !== "chapa") return;
     setError("");
     setPayingRide(ride.id);
 
@@ -204,7 +205,7 @@ export default function RiderWalletPage() {
                       </span>
                       <strong>{ride.payment_status}</strong>
                     </button>
-                    {onlinePayments && ride.status === "completed" && (
+                    {onlinePayments && ride.status === "completed" && ride.payment_method === "chapa" && (
                       <button
                         type="button"
                         className="nr-payment-pay-button"

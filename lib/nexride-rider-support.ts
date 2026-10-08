@@ -19,7 +19,7 @@ export type RiderRide = {
   status: RiderRideStatus;
   estimatedFareEtb: number | null;
   finalFareEtb: number | null;
-  paymentMethod: "cash";
+  paymentMethod: "cash" | "chapa" | "unknown";
   paymentStatus: "pending" | "paid" | "failed" | "unknown";
   createdAt: string;
   completedAt: string | null;
@@ -71,7 +71,7 @@ function mapRide(row: Record<string, unknown>): RiderRide {
     status: status(row.status),
     estimatedFareEtb: number(row.estimated_trip_fare_etb),
     finalFareEtb: number(row.final_fare_etb),
-    paymentMethod: "cash",
+    paymentMethod: row.payment_method === "cash" || row.payment_method === "chapa" ? row.payment_method : "unknown",
     paymentStatus:
       row.payment_status === "paid" || row.payment_status === "failed" || row.payment_status === "unknown"
         ? row.payment_status
