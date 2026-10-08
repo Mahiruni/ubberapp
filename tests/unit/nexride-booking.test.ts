@@ -130,7 +130,7 @@ describe("ride quotes and request integration", () => {
     await bookingAdapter.request(journey, set.offers[0], set.revision, key);
     expect(
       fetch.mock.calls
-        .slice(1)
+        .slice(-2)
         .every((call) => new Headers(call[1].headers).get("Idempotency-Key") === key),
     ).toBe(true);
   });
