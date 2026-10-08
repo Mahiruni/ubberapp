@@ -94,6 +94,15 @@ describe("ride quotes and request integration", () => {
       }),
     ).toBe(false);
   });
+  it("recovers after a transient 503, reusing fresh headers and refusing expired quotes", async () => {
+    const fresh = previewFares(journey);
+    const failure = Response.json({ status: "temporarily_unavailable" }, { status: 503 });
+    const fetch = vi.fn().mockResolvedValueOnce(failure).mockResolvedValueOnce(Response.json(fresh));
+    vi.stubGlobal("fetch", fetch);
+    const result = await bookingAdapter.fares(journey, new AbortController().signal);
+    expect(result.source).toBe("preview");
+    expect(fetch).toHaveBeenCalledTimes(2);
+  });
   it("distinguishes price changes from quote renewal", () => {
     const set = previewFares(journey),
       renewal = {

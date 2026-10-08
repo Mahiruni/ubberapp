@@ -132,22 +132,59 @@ export type BookingResult =
 // The server must authenticate, reprice and deduplicate before creating a real trip.
 export const bookingAdapter = {
   async fares(journey: BookingJourney, signal: AbortSignal): Promise<FareSet> {
-    const { nexrideApiHeaders } = await import("./nexride-api-auth");
-    const response = await fetch("/api/rider/fares", {
-      method: "POST",
-      cache: "no-store",
-      signal,
-      headers: await nexrideApiHeaders(true),
-      body: JSON.stringify(journey),
-    });
-    const data = await response.json();
-    if (
-      !response.ok ||
-      !validFareSet(data) ||
-      Date.parse(data.expiresAt) <= Date.now()
-    )
-      throw new Error("fares_unavailable");
-    return data;
+    const { nexrideApiFetch } = await import("./nexride-api-auth");
+    let lastFailure: unknown = new Error("fares_unavailable");
+    for (let attempt = 0; attempt < 3; attempt++) {
+      if (signal.aborted) throw signal.reason || new Error("fare_request_aborted");
+      try {
+        const response = await nexrideApiFetch("/api/rider/fares", {
+          method: "POST",
+          cache: "no-store",
+          signal,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(journey),
+        });
+
+        if (response.ok) {
+          const data: unknown = await response.json();
+          if (!validFareSet(data)) throw new Error("fares_invalid_response");
+          // Prices close to expiration cause a race between quote and booking.
+          if (Date.parse(data.expiresAt) - Date.now() <= 1500) {
+            lastFailure = new Error("fare_quote_expiring");
+          } else {
+            return data;
+          }
+        } else if (![429, 502, 503, 504].includes(response.status)) {
+          // Do not repeatedly retry invalid journeys or ineligible accounts.
+          throw new Error(`fares_http_${response.status}`);
+        } else {
+          lastFailure = new Error(`fares_http_${response.status}`);
+        }
+      } catch (error) {
+        if (signal.aborted) throw error;
+        lastFailure = error;
+        // Authorization/validation failures must not be retried.
+        if (
+          error instanceof Error &&
+          /^fares_http_(400|401|403|404|422)$/.test(error.message)
+        )
+          throw error;
+      }
+      if (attempt < 2) {
+        await new Promise<void>((resolve, reject) => {
+          const timeout = setTimeout(() => {
+            signal.removeEventListener("abort", abort);
+            resolve();
+          }, attempt === 0 ? 300 : 700);
+          const abort = () => {
+            clearTimeout(timeout);
+            reject(signal.reason || new Error("fare_request_aborted"));
+          };
+          signal.addEventListener("abort", abort, { once: true });
+        });
+      }
+    }
+    throw lastFailure;
   },
   async request(
     journey: BookingJourney,

@@ -99,29 +99,32 @@ test("three illustrated sample rides keep prices aligned and real booking unavai
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog")).not.toBeVisible();
 });
-test("fare loading and retry are real request states", async ({ page }) => {
-  let release: () => void = () => {};
-  const gate = new Promise<void>((r) => (release = r));
+test("temporary fare-service error automatically retries and recovers", async ({ page }) => {
   let attempts = 0;
   await page.route("**/api/rider/fares", async (r) => {
     attempts++;
     if (attempts === 1) {
-      await gate;
-      await r.fulfill({ status: 503, json: { status: "failed" } });
+      await r.fulfill({ status: 503, json: { status: "temporarily_unavailable" } });
     } else await r.fulfill({ json: quote() });
   });
   await openRides(page);
-  await expect(page.locator(".nr-fare-loading")).toBeVisible();
-  await expect(
-    page.getByRole("button", { name: "Request Ride", exact: true }),
-  ).toBeDisabled();
-  release();
-  await expect(page.locator(".nr-fare-state")).toContainText(
-    "Fares couldn’t be loaded",
-  );
-  await page.getByRole("button", { name: "Try again", exact: true }).click();
   await expect(page.getByRole("radio", { name: /Economy/ })).toBeVisible();
+  await expect(page.locator(".nr-ride-selection")).toContainText("Confirmed quote");
   expect(attempts).toBe(2);
+});
+test("persistent fare outage shows safe samples but prevents real booking", async ({ page }) => {
+  let attempts = 0;
+  await page.route("**/api/rider/fares", async (r) => {
+    attempts++;
+    await r.fulfill({ status: 503, json: { status: "temporarily_unavailable" } });
+  });
+  await openRides(page);
+  await expect(page.getByRole("radio", { name: /Economy/ })).toBeVisible();
+  await expect(page.locator(".nr-ride-selection")).toContainText(
+    "Sample calculation, not a live quote",
+  );
+  await expect(page.getByRole("button", { name: "Request Ride", exact: true })).toBeDisabled();
+  expect(attempts).toBe(3);
 });
 test("unavailable categories cannot be selected and all charges appear before request", async ({
   page,

@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   bookingAdapter,
   fareTotal,
+  previewFares,
   pricingFingerprint,
   type FareSet,
   type RideCategory,
@@ -74,7 +75,7 @@ export function useRideOffers(
     bookingAdapter
       .fares(
         { pickup: journey.pickup, destination: journey.destination },
-        AbortSignal.any([controller.signal, AbortSignal.timeout(10000)]),
+        AbortSignal.any([controller.signal, AbortSignal.timeout(18000)]),
       )
       .then((data) => {
         if (!active) return;
@@ -93,7 +94,21 @@ export function useRideOffers(
         setLoadState("ready");
       })
       .catch(() => {
-        if (active) setLoadState("error");
+        if (!active || controller.signal.aborted) return;
+        // An unreachable fare service is not a confirmed quote. Keep the
+        // journey usable with explicitly labeled, non-bookable sample fares.
+        try {
+          const sample = previewFares({
+            pickup: journey.pickup!,
+            destination: journey.destination!,
+          });
+          prior.current = null;
+          setChanged(null);
+          setFares(sample);
+          setLoadState("ready");
+        } catch {
+          setLoadState("error");
+        }
       });
     return () => {
       active = false;
