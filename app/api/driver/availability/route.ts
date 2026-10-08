@@ -136,7 +136,7 @@ export async function PATCH(request: Request) {
     if (!hasOnline && current.is_online !== true)
       return reply({ status: "driver_offline" }, 409);
 
-    const selectFields = "review_status,rejection_reason,is_online,rating";
+    const selectFields = "review_status,rejection_reason,is_online,rating,vehicle,vehicle_plate";
     let updatedDriver = current;
 
     // Keep location writes on the trusted server client because the location
