@@ -62,7 +62,6 @@ export default function DriverProfileSettingsPage() {
     if (!profile || busy || profile.accountStatus !== "active") return;
 
     const cleanName = name.trim();
-    const cleanPhone = phone.trim();
 
     if (!cleanName) {
       setSuccess(false);
@@ -76,7 +75,7 @@ export default function DriverProfileSettingsPage() {
 
     const { error } = await supabase
       .from("profiles")
-      .update({ full_name: cleanName, phone: cleanPhone })
+      .update({ full_name: cleanName })
       .eq("id", profile.id);
 
     if (error) {
@@ -88,11 +87,10 @@ export default function DriverProfileSettingsPage() {
     await supabase.auth.updateUser({
       data: {
         full_name: cleanName,
-        phone: cleanPhone,
       },
     });
 
-    setProfile({ ...profile, fullName: cleanName, phone: cleanPhone });
+    setProfile({ ...profile, fullName: cleanName });
     setSuccess(true);
     setFeedback("Profile updated.");
     setBusy(false);
@@ -127,7 +125,7 @@ export default function DriverProfileSettingsPage() {
               <div className="nr-profile-panel-head">
                 <div>
                   <h2>Personal information</h2>
-                  <p>Update your name and phone here. Verified license and vehicle details use the verification flow.</p>
+                  <p>Update your name here. Phone and email ownership changes require verification in Manage Account.</p>
                 </div>
               </div>
 
@@ -150,10 +148,14 @@ export default function DriverProfileSettingsPage() {
                     maxLength={30}
                     type="tel"
                     autoComplete="tel"
-                    onChange={(event) => setPhone(event.target.value)}
-                    disabled={profile.accountStatus !== "active"}
+                    readOnly
+                    aria-describedby="nr-phone-verify-note"
                   />
                 </label>
+                <small id="nr-phone-verify-note">Your contact phone remains unchanged until you verify a replacement by SMS.</small>
+                <button className="nr-doc-secondary" type="button" onClick={()=>router.push("/account/manage")}>
+                  <Icon name="shield" size={16} /> Verify or change phone
+                </button>
                 <label>
                   Account email
                   <input value={profile.email || "Not available"} disabled aria-describedby="nr-email-note" />

@@ -286,10 +286,15 @@ export function RiderProfile(props:Props) {
         </div>
         <fieldset disabled={busy}>
           <InputField label={t('name')} required autoComplete="name" maxLength={80} value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/>
-          <InputField label={t('phone')} type="tel" autoComplete="tel" maxLength={25} value={form.phone} onChange={e=>setForm({...form,phone:e.target.value})}/>
+          <InputField label={t('phone')} type="tel" autoComplete="tel" maxLength={25} value={form.phone} readOnly={!!account} onChange={e=>{if(!account)setForm({...form,phone:e.target.value})}}/>
           <InputField label={t('email')} type="email" readOnly={!!account} autoComplete="email" maxLength={254} value={form.email} onChange={e=>setForm({...form,email:e.target.value})}/>
         </fieldset>
-        {account&&<p className="nr-muted">{say('Email is your sign-in identity and cannot be changed from this profile screen.','ኢሜይል የመግቢያ መለያዎ ነው እና ከዚህ ገጽ ሊቀየር አይችልም።')}</p>}
+        {account&&<>
+          <p className="nr-muted">{say('Verified email and phone changes require account ownership confirmation.','ኢሜይልን እና ስልክን ለመቀየር የባለቤትነት ማረጋገጫ ያስፈልጋል።')}</p>
+          <button type="button" className="nr-account-edit" onClick={()=>window.location.assign("/account/manage")}>
+            {say('Verify or change email and phone in Manage Account →','ኢሜይልና ስልክን በመለያ አስተዳደር ይቀይሩ →')}
+          </button>
+        </>}
         {error&&<p className="nr-account-error" role="alert">{error}</p>}
         <Button type="submit" disabled={busy} loading={busy}>{busy?say('Saving…','በማስቀመጥ ላይ…'):t('save')}</Button>
       </form>

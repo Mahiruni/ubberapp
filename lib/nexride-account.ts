@@ -26,7 +26,9 @@ export async function saveAccount(account: RiderAccount, profile: PreviewProfile
   if (validateProfile(profile)) throw Error('Invalid profile');
   const auth = await supabase.auth.getUser();
   if (auth.error || auth.data.user?.id !== account.id) throw Error('Session changed');
-  const { data, error } = await supabase.from('profiles').update({ full_name: profile.name.trim(), phone: profile.phone.trim() || null })
+  // Contact-phone ownership is managed only through Auth OTP; changing a
+  // display field here must not bypass one-number-one-owner verification.
+  const { data, error } = await supabase.from('profiles').update({ full_name: profile.name.trim() })
     .eq('id', account.id).select('id,full_name,phone').single();
   if (error || !data || data.id !== account.id) throw error || Error('Save not confirmed');
   return { name: data.full_name || '', phone: data.phone || '', email: auth.data.user.email || '' };
