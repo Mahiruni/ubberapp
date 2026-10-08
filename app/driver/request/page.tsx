@@ -349,9 +349,9 @@ export default function DriverRideRequestPage() {
   useEffect(() => {
     if (offer?.status !== "pending" || !offer.id || secondsRemaining !== 0) return;
     let active = true;
-    void supabase.rpc("driver_decide_ride_offer", {
+    void Promise.resolve(supabase.rpc("driver_decide_ride_offer", {
       p_offer_id: offer.id, p_action: "expire",
-    }).then(({ data, error }) => {
+    })).then(({ data, error }) => {
       if (!active || error) return;
       const result = data as { status?: string } | null;
       if (result?.status === "expired") {
@@ -474,7 +474,7 @@ export default function DriverRideRequestPage() {
 
     stopRideRequestAlert(offer.id);
     setConfirmAction(null);
-    setPassOutcome(outcome.forwarded ? "forwarded" : "no_drivers");
+    setPassOutcome(outcome?.forwarded ? "forwarded" : "no_drivers");
     setOffer((current) => current ? { ...current, status: "declined" } : current);
     setSubmitting(null);
     decisionLock.current = false;
