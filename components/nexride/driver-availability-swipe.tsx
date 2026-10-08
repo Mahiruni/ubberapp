@@ -1,6 +1,6 @@
 "use client";
 
-import { useContext, useLayoutEffect, useRef, type PointerEvent as ReactPointerEvent } from "react";
+import { useContext, useLayoutEffect, useRef, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent } from "react";
 import { Icon, LanguageContext } from "./ui";
 import {
   clampSwipeOffset,
@@ -206,7 +206,7 @@ export function DriverAvailabilitySwipe({
     resetGesture();
   };
 
-  const activate = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const activate = (event: ReactMouseEvent<HTMLButtonElement>) => {
     // Physical pointer clicks cannot toggle availability. Native keyboard
     // and assistive technology activation dispatch click with detail === 0.
     if (event.detail !== 0 || disabled || updating || pendingRef.current) return;
