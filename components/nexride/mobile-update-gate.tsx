@@ -16,6 +16,7 @@ type NativeUpdatePlugin = {
 };
 type NativeBridge = {
   getPlatform?: () => string;
+  nativePromise?: (plugin: string, method: string, options: Record<string, never>) => Promise<unknown>;
   Plugins?: { App?: NativeAppPlugin; NexRideUpdates?: NativeUpdatePlugin };
 };
 type PendingUpdate = { role: MobileRole; release: MobileRelease; installedBuild: number };
@@ -60,9 +61,11 @@ export function NexRideMobileUpdateGate() {
     checkBusy.current = true;
     try {
       const bridge = (window as Window & { Capacitor?: NativeBridge }).Capacitor;
-      if (bridge?.getPlatform?.() !== "android" || !bridge.Plugins?.App?.getInfo) return;
+      if (bridge?.getPlatform?.() !== "android" || (!bridge.Plugins?.App?.getInfo && !bridge.nativePromise)) return;
       bridgeRef.current = bridge;
-      const info = await bridge.Plugins.App.getInfo();
+      const info = bridge.Plugins?.App?.getInfo
+        ? await bridge.Plugins.App.getInfo()
+        : await bridge.nativePromise!("App", "getInfo", {}) as { id: string; build: string; version: string };
       const role = nativeRoleFromPackage(info.id);
       const currentBuild = validBuild(info.build);
       if (!role || currentBuild == null) return;
@@ -162,8 +165,9 @@ export function NexRideMobileUpdateGate() {
     setNotice("");
     const plugin = bridgeRef.current?.Plugins?.NexRideUpdates;
     try {
-      if (plugin?.startImmediateUpdate) {
-        await plugin.startImmediateUpdate();
+      if (plugin?.startImmediateUpdate || bridgeRef.current?.nativePromise) {
+        if (plugin?.startImmediateUpdate) await plugin.startImmediateUpdate();
+        else await bridgeRef.current!.nativePromise!("NexRideUpdates", "startImmediateUpdate", {});
         setNotice(language === "am" ? "የGoogle Play ዝማኔን ይጨርሱ።" : "Finish installing the update through Google Play.");
         return;
       }
@@ -172,6 +176,7 @@ export function NexRideMobileUpdateGate() {
     } finally { setOpening(false); }
     try {
       if (plugin?.openStore) await plugin.openStore();
+      else if (bridgeRef.current?.nativePromise) await bridgeRef.current.nativePromise("NexRideUpdates", "openStore", {});
       else window.location.assign(pending.release.storeUrl);
       setNotice(language === "am" ? "በGoogle Play ውስጥ አዲሱን ስሪት ይጫኑ።" : "Install the latest release in Google Play, then return to NexRide.");
     } catch {
