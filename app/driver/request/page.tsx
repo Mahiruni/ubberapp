@@ -7,6 +7,7 @@ import { DriverBottomSheet } from "../../../components/nexride/driver-bottom-she
 import { Icon } from "../../../components/nexride/ui";
 import { useOperationalTranslation } from "../../../components/nexride/operational-i18n";
 import { Dialog } from "../../../components/nexride/ui";
+import { resolveDriverPassOutcome } from "../../../lib/nexride-driver-pass";
 import { supabase } from "../../../lib/supabase";
 import { resolveSessionRole } from "../../../lib/nexride-account-role";
 import {
@@ -479,7 +480,8 @@ export default function DriverRideRequestPage() {
         status?: string; requestId?: string; forwarded?: boolean;
         anotherOfferActive?: boolean; currentStatus?: string;
       } | null;
-      if (error || !response || response.status !== "passed" || response.requestId !== offer.request_id) {
+      const outcome = error ? null : resolveDriverPassOutcome(response, offer.request_id);
+      if (!outcome) {
         if (response?.status === "expired") {
           setOffer(current => current ? { ...current, status: "expired" } : current);
         } else if (response?.status === "unavailable" || response?.status === "already_resolved") {
@@ -489,8 +491,7 @@ export default function DriverRideRequestPage() {
         return;
       }
       stopRideRequestAlert(offer.id);
-      setPassOutcome(response.forwarded ? "forwarded" :
-        response.anotherOfferActive ? "other_pending" : "no_drivers");
+      setPassOutcome(outcome);
       setOffer(current => current ? { ...current, status: "declined" } : current);
     } catch {
       setAcceptFailure(op("Could not pass this request. Check your connection and try again."));
