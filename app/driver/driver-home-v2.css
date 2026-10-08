@@ -343,3 +343,38 @@
   pointer-events:auto!important;
   touch-action:none!important;
 }
+
+
+/* Minimal Driver interaction wrapper — same visual restraint as Rider sheets. */
+.nr-driver-home-swipe[data-map-input-boundary="true"] {
+  width:min(480px,calc(100% - 24px))!important;
+  bottom:max(12px,env(safe-area-inset-bottom,0px))!important;
+  padding:4px!important;
+  border:1px solid var(--driver-border)!important;
+  border-radius:24px!important;
+  background:color-mix(in srgb,var(--driver-surface) 96%,transparent)!important;
+  box-shadow:0 7px 22px rgba(2,18,29,.12)!important;
+  backdrop-filter:blur(14px) saturate(1.06)!important;
+  -webkit-backdrop-filter:blur(14px) saturate(1.06)!important;
+}
+.nr-driver-home-swipe .nr-driver-availability-swipe {
+  min-height:58px!important;
+  height:58px!important;
+  border-radius:20px!important;
+  box-shadow:none!important;
+}
+.nr-driver-home-swipe .nr-driver-swipe-thumb {
+  top:4px!important;
+  width:50px!important;
+  height:50px!important;
+  box-shadow:0 3px 10px rgba(2,18,29,.16)!important;
+}
+.nr-driver-home-swipe .nr-driver-availability-swipe[data-online="true"] .nr-driver-swipe-thumb {
+  left:calc(100% - 54px)!important;
+}
+@media(max-width:430px){
+  .nr-driver-home-swipe[data-map-input-boundary="true"] {
+    width:calc(100% - 20px)!important;
+    bottom:max(10px,env(safe-area-inset-bottom,0px))!important;
+  }
+}
