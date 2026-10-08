@@ -8,7 +8,7 @@ on:
       - feature/rider-human-avatar-tracking
     paths:
       - .github/workflows/android-apks.yml
-      - android/mobile-updates/**
+      - native/android/**
       - scripts/configure-mobile-release.py
       - components/nexride/mobile-update-gate.tsx
       - app/api/mobile/release/route.ts

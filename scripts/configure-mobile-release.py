@@ -14,7 +14,7 @@ if not raw.isascii() or not raw.isdecimal() or int(raw) < 1 or int(raw) > 210000
     raise SystemExit("Invalid Android version code for " + role)
 code = int(raw)
 
-src = Path("android/mobile-updates/NexRideUpdatesPlugin.java")
+src = Path("native/android/NexRideUpdatesPlugin.java")
 dest = Path("android/app/src/main/java/com/nexride/updates/NexRideUpdatesPlugin.java")
 dest.parent.mkdir(parents=True, exist_ok=True)
 dest.write_text(src.read_text())
