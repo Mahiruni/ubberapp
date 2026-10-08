@@ -1,5 +1,6 @@
 import { authorizedRequestSupabase } from "../../../../lib/nexride-server-supabase";
 import { serverAdminSupabase } from "../../../../lib/nexride-server-admin";
+import { normalizeVehicleColor } from "../../../../lib/nexride-vehicle";
 
 const reply = (body: unknown, status = 200) =>
   Response.json(body, {
@@ -24,6 +25,7 @@ export async function POST(request: Request) {
   const licenseNumber = text(body.licenseNumber, 120);
   const licenseExpiry = text(body.licenseExpiry, 20);
   const vehicle = text(body.vehicle, 120);
+  const vehicleColor = normalizeVehicleColor(body.vehicleColor);
   const vehiclePlate = text(body.vehiclePlate, 60);
   const licenseDocumentPath = text(body.licenseDocumentPath, 300);
   const vehicleRegistrationPath = text(body.vehicleRegistrationPath, 300);
@@ -33,6 +35,7 @@ export async function POST(request: Request) {
     !licenseNumber ||
     !licenseExpiry ||
     !vehicle ||
+    !vehicleColor ||
     !vehiclePlate ||
     !licenseDocumentPath.startsWith(prefix) ||
     !vehicleRegistrationPath.startsWith(prefix)
@@ -56,19 +59,50 @@ export async function POST(request: Request) {
     if (profile?.role !== "driver") return reply({ status: "driver_required" }, 403);
     if (profile.account_status !== "active") return reply({ status: "account_inactive" }, 403);
 
-    const { data, error } = await admin
+    const metadataResult = await admin.auth.admin.updateUserById(
+      authorized.user.id,
+      {
+        user_metadata: {
+          ...(authorized.user.user_metadata || {}),
+          vehicle,
+          vehicle_color: vehicleColor,
+          vehicle_plate: vehiclePlate,
+        },
+      },
+    );
+
+    if (metadataResult.error)
+      return reply({ status: "vehicle_identity_save_failed" }, 500);
+
+    const commonUpdate = {
+      license_number: licenseNumber,
+      license_expiry: licenseExpiry,
+      vehicle,
+      vehicle_plate: vehiclePlate,
+      license_document_path: licenseDocumentPath,
+      vehicle_registration_path: vehicleRegistrationPath,
+    };
+
+    let result = await admin
       .from("drivers")
-      .update({
-        license_number: licenseNumber,
-        license_expiry: licenseExpiry,
-        vehicle,
-        vehicle_plate: vehiclePlate,
-        license_document_path: licenseDocumentPath,
-        vehicle_registration_path: vehicleRegistrationPath,
-      })
+      .update({ ...commonUpdate, vehicle_color: vehicleColor })
       .eq("id", authorized.user.id)
       .select("review_status,rejection_reason")
       .single();
+
+    if (
+      result.error &&
+      /vehicle_color|schema cache|column/i.test(result.error.message || "")
+    ) {
+      result = await admin
+        .from("drivers")
+        .update(commonUpdate)
+        .eq("id", authorized.user.id)
+        .select("review_status,rejection_reason")
+        .single();
+    }
+
+    const { data, error } = result;
 
     if (error || !data) {
       const message = error?.message || "";
