@@ -160,7 +160,6 @@ export function DriverWorkspace({
   useEffect(() => {
     let active = true;
     let driverChannel: ReturnType<typeof supabase.channel> | null = null;
-    let offerChannel: ReturnType<typeof supabase.channel> | null = null;
 
     (async () => {
       const { data, error: sessionError } = await supabase.auth.getSession();
@@ -242,54 +241,8 @@ export function DriverWorkspace({
         }
       }
 
-      const { data: pendingOffer } = await supabase
-        .from("ride_request_offers")
-        .select("id,expires_at")
-        .eq("driver_id", id)
-        .eq("status", "pending")
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (
-        active &&
-        pendingOffer &&
-        (!pendingOffer.expires_at || new Date(pendingOffer.expires_at).getTime() > Date.now())
-      ) {
-        emitNexRideFeedback({
-          event: "ride_request",
-          id: pendingOffer.id,
-          expiresAt: pendingOffer.expires_at,
-          title: "New ride request",
-          body: "Open NexRide to review this request.",
-          url: `/driver/request?offer=${pendingOffer.id}`,
-        });
-        router.push(`/driver/request?offer=${pendingOffer.id}`);
-      }
-
-
-      offerChannel = supabase
-        .channel(`driver-ride-offers-${id}`)
-        .on(
-          "postgres_changes",
-          { event: "INSERT", schema: "public", table: "ride_request_offers", filter: `driver_id=eq.${id}` },
-          (payload) => {
-            const next = payload.new as Record<string, unknown>;
-            if (next.status !== "pending" || typeof next.id !== "string") return;
-            const expiresAt = typeof next.expires_at === "string" ? new Date(next.expires_at).getTime() : null;
-            if (expiresAt !== null && expiresAt <= Date.now()) return;
-            emitNexRideFeedback({
-              event: "ride_request",
-              id: next.id,
-              expiresAt: typeof next.expires_at === "string" ? next.expires_at : null,
-              title: "New ride request",
-              body: "Open NexRide to review this request.",
-              url: `/driver/request?offer=${next.id}`,
-            });
-            router.push(`/driver/request?offer=${next.id}`);
-          },
-        )
-        .subscribe();
+      // Incoming offers are now monitored once, in DriverSessionBridge,
+      // which remains mounted across every signed-in driver route.
     })().catch(() => {
       if (active) {
         setError("Unable to load driver data.");
@@ -300,7 +253,6 @@ export function DriverWorkspace({
     return () => {
       active = false;
       if (driverChannel) supabase.removeChannel(driverChannel);
-      if (offerChannel) supabase.removeChannel(offerChannel);
     };
   }, [router]);
 
