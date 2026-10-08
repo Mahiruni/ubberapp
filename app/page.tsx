@@ -467,6 +467,15 @@ function AppWorkspace({
                 <Icon name={theme === "dark" ? "sun" : "moon"} size={19} />
               </button>
             )}
+            {mode === "rider" && (
+              <button
+                className="nr-avatar-button nr-rider-profile-top"
+                aria-label={t("profile")}
+                onClick={() => navigate("profile")}
+              >
+                {initials === "NR" ? <Icon name="user" size={20} /> : initials}
+              </button>
+            )}
             {mode === "driver" && (
               <button
                 className="nr-avatar-button"
@@ -500,6 +509,7 @@ function AppWorkspace({
               recenter={riderLocation.recenter}
               initials={initials}
               onProfile={() => navigate("profile")}
+              showProfile={false}
               journey={
                 riderHome
                   ? undefined
@@ -532,6 +542,7 @@ function AppWorkspace({
               recenter={riderLocation.recenter}
               initials={initials}
               onProfile={() => navigate("profile")}
+              showProfile={false}
               readOnly
               locked={requestPending}
               showNearbyDrivers={authenticated && mode === "rider"}
