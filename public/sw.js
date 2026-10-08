@@ -1,4 +1,4 @@
-const VERSION = "nexride-flagship-v4";
+const VERSION = "nexride-flagship-v5";
 const CORE_CACHE = VERSION + "-core";
 const RUNTIME_CACHE = VERSION + "-runtime";
 const CORE_ASSETS = [
@@ -14,7 +14,7 @@ const CORE_ASSETS = [
   "/icons/icon-maskable-512.png",
   "/fonts/noto-sans-ethiopic-400.woff2",
   "/fonts/noto-sans-ethiopic-700.woff2",
-  "/fonts/Benaiah-Ethiopic.woff2?v=4"
+  "/fonts/Benaiah/Benaiah-Bold-Ethiopic.woff2?v=5"
 ];
 
 self.addEventListener("install", (event) => {

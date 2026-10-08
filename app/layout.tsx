@@ -153,7 +153,7 @@ export default function RootLayout({
       <head>
         <link
           rel="preload"
-          href="/fonts/Benaiah-Ethiopic.woff2?v=4"
+          href="/fonts/Benaiah/Benaiah-Bold-Ethiopic.woff2?v=5"
           as="font"
           type="font/woff2"
           crossOrigin="anonymous"
