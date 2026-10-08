@@ -12,12 +12,14 @@ import {
   explicitSignOutRole,
   ONBOARDING_KEY,
   PREVIEW_ENABLED_KEY,
+  retryStartup,
 } from "../../lib/nexride-startup";
 import { driverResumeDestination } from "../../lib/nexride-driver-verification";
 import { resolveSessionRole } from "../../lib/nexride-account-role";
 import { ensureRiderProfile, RiderProfileBootstrapError } from "../../lib/nexride-rider-profile-bootstrap";
 import { nexrideAuthRedirectUrl } from "../../lib/nexride-auth-url";
 import { authErrorKey } from "../../lib/nexride-auth-errors";
+import { normalizeEthiopianPhone } from "../../lib/nexride-identity";
 
 export type RiderAuthMode = "signin" | "signup" | "forgot" | "reset";
 
@@ -72,6 +74,14 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
       try {
         const role = await resolveSessionRole(session);
         if (role === "driver") {
+          if (window.localStorage.getItem("nexride:active-account-role") === "rider") {
+            const membership = await supabase.from("account_roles").select("role")
+              .eq("user_id",session.user.id).eq("role","rider").maybeSingle();
+            if (!membership.error && membership.data) {
+              if (active) router.replace("/");
+              return;
+            }
+          }
           const destination = await driverResumeDestination(session);
           if (active) router.replace(destination);
           return;
@@ -177,8 +187,15 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
       clearExplicitSignOut();
       const role = await resolveSessionRole(data.session);
       if (role === "driver") {
+        const { error: riderAccessError } = await supabase.rpc("account_activate_rider_role");
+        if (riderAccessError) {
+          setError("NexRide could not enable Rider access for this account. Please try again.");
+          return;
+        }
+        window.localStorage.setItem("nexride:active-account-role","rider");
+        retryStartup(false);
         navigating = true;
-        router.replace(await driverResumeDestination(data.session));
+        router.replace("/");
         return;
       }
       if (role === "admin") {
@@ -212,7 +229,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
     if (busy) return;
 
     const name = fullName.trim();
-    const mobile = phone.trim();
+    const mobile = normalizeEthiopianPhone(phone) || phone.trim();
     const digits = mobile.replace(/\D/g, "");
 
     if (name.length < 2 || name.length > 80) {
