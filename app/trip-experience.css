@@ -39,3 +39,22 @@
 .nr-app button.nr-resume-trip:focus-visible{outline:3px solid #00a968;outline-offset:3px}
 .nr-real-trip-history{margin-bottom:20px}
 @media(max-width:800px){.nr-workspace.rider-trip-view .nr-stage{flex:1;min-height:0}.nr-trip-toolbar{padding:4px 8px;gap:6px}.nr-trip-toolbar span{font-size:11px}.nr-trip-toolbar button{padding:0 10px}}
+
+/* Rider cancellation dialog and confirmed outcome. */
+.nr-cancel-dialog-note{padding:16px 20px 8px;color:var(--nr-text,#102334);font-size:14px;line-height:1.55}
+.nr-cancel-safety-note{margin:4px 20px 12px;padding:12px 14px;border-radius:12px;background:#fff7e9;color:#745016;font-size:13px;line-height:1.55}
+.nr-cancel-dialog-actions{display:flex;gap:10px;flex-wrap:wrap;padding:12px 20px 20px}
+.nr-cancel-dialog-actions>.nr-button{flex:1;min-width:128px;min-height:48px}
+.nr-cancel-dialog-actions .nr-danger{color:#b42336;background:#fff2f3;border-color:#ecb9c2}
+.nr-trip-toolbar .nr-trip-cancel-trigger{border-color:#e1b4be;background:#fff5f6;color:#a12434;font-weight:700}
+.nr-trip-cancel-error{padding:10px 14px;color:#a12434;background:#fff3f4;font-size:13px;line-height:1.4}
+.nr-trip-cancelled{display:grid;place-items:center;height:100%;min-height:280px;background:var(--nr-surface,#fff);color:var(--nr-text,#102334);padding:24px}
+.nr-trip-cancelled-body{max-width:400px;text-align:center}
+.nr-trip-cancelled h1{font-size:24px;font-weight:800;letter-spacing:-.03em}
+.nr-trip-cancelled p{font-size:14px;line-height:1.5;margin:10px 0 20px}
+.nr-trip-cancelled .nr-button{display:flex;width:100%;margin:10px 0}
+.nr-cancel-success{display:grid;gap:8px;padding:16px 4px}
+.nr-cancel-success strong{font-size:20px}
+.nr-cancel-success p{font-size:13px}
+@media(max-width:420px){.nr-cancel-dialog-actions{flex-direction:column-reverse}.nr-cancel-dialog-actions>.nr-button{flex:auto;width:100%}}
+@media(prefers-reduced-motion:reduce){.nr-trip-cancel-trigger,.nr-cancel-dialog-actions .nr-button{transition:none!important}}

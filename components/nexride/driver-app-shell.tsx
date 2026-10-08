@@ -16,6 +16,7 @@ import { Icon, LanguageContext, type IconName } from "./ui";
 import { announceLanguage } from "./language-provider";
 import { supabase } from "../../lib/supabase";
 import { nexrideApiFetch } from "../../lib/nexride-api-auth";
+import { DriverCancellationNotice } from "./driver-cancellation-notice";
 import { markExplicitSignOut, retryStartup } from "../../lib/nexride-startup";
 
 export type DriverThemePreference = "system" | "light" | "dark";
@@ -499,6 +500,7 @@ function DriverShellChrome({ children }: { children: ReactNode }) {
   return (
     <div className="nr-driver-app-shell" data-theme={resolvedTheme} data-theme-preference={preference} data-trip-focus={tripFocus ? "true" : "false"} data-home={home ? "true" : "false"}>
       <DriverHeader pathname={pathname} />
+      <DriverCancellationNotice pathname={pathname} />
       <div className="nr-driver-shell-content" data-trip-focus={tripFocus ? "true" : "false"}>{children}</div>
     </div>
   );

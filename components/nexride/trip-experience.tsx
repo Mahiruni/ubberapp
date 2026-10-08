@@ -4,6 +4,8 @@ import { supabase } from '../../lib/supabase';
 import { mergeTrip, type TripSnapshot } from '../../lib/nexride-trip-data';
 import { readRiderTrip, sendTripMessage, submitRiderRating } from '../../lib/nexride-trip-service';
 import { emitNexRideFeedback } from '../../lib/nexride-feedback';
+import { nexrideApiFetch } from '../../lib/nexride-api-auth';
+import { Button, Dialog, useTranslation } from './ui';
 import type { PreviewTrip } from '../../lib/nexride-preview';
 import type { RiderScreen } from './rider';
 import { RiderSheetHandle } from './rider-sheet';
@@ -26,13 +28,50 @@ const writeCachedTrip = (tripId: string, snapshot: TripSnapshot) => {
   } catch {}
 };
 
-export function TripExperience({ screen, tripId, userId, preview, navigate, setPreview, safety }: {
+export function TripExperience({ screen, tripId, userId, preview, navigate, setPreview, safety, onCancelled }: {
   screen: 'trip' | 'live' | 'summary'; tripId: string | null; userId: string | null; preview: PreviewTrip | null;
-  navigate: (s: RiderScreen) => void; setPreview: (p: PreviewTrip) => void; safety: () => void;
+  navigate: (s: RiderScreen) => void; setPreview: (p: PreviewTrip) => void; safety: () => void; onCancelled?: () => void;
 }) {
   const frame = useRef<HTMLIFrameElement>(null), latest = useRef<TripSnapshot | null>(null), ready = useRef(false);
   const callbacks = useRef({ navigate, setPreview, safety, preview }); callbacks.current = { navigate, setPreview, safety, preview };
   const [connection, setConnection] = useState('Loading trip…');
+  const t = useTranslation();
+  const [cancelConfirm, setCancelConfirm] = useState(false);
+  const [cancelBusy, setCancelBusy] = useState(false);
+  const [cancelError, setCancelError] = useState('');
+  const [cancelled, setCancelled] = useState(false);
+  const [confirmedStatus, setConfirmedStatus] = useState<TripSnapshot['status'] | null>(null);
+  const cancelLock = useRef(false);
+  const cancelRide = async () => {
+    if (!tripId || !live || cancelLock.current) return;
+    cancelLock.current = true;
+    setCancelBusy(true);
+    setCancelError('');
+    try {
+      const response = await nexrideApiFetch('/api/rider/trips/' + encodeURIComponent(tripId) + '/cancel', {
+        method: 'POST', cache: 'no-store', body: JSON.stringify({}),
+      });
+      const result = await response.json().catch(() => null);
+      if (response.ok && result?.status === 'cancelled' && result?.requestId === tripId) {
+        setCancelConfirm(false);
+        setCancelled(true);
+        setConfirmedStatus('cancelled');
+        onCancelled?.();
+        // Only authoritative confirmation can end the active trip on-screen.
+      } else {
+        if (response.status === 409 && result?.currentStatus === 'completed') {
+          setCancelError(t('riderCancelAlreadyCompleted'));
+        } else {
+          setCancelError(t('riderCancelError'));
+        }
+      }
+    } catch {
+      setCancelError(t('riderCancelError'));
+    } finally {
+      cancelLock.current = false;
+      setCancelBusy(false);
+    }
+  };
   const file = screen === 'summary' ? 'completion.html' : screen === 'live' ? 'trip.html' : 'index.html';
   const live = !!tripId && !!userId;
 
@@ -63,6 +102,7 @@ export function TripExperience({ screen, tripId, userId, preview, navigate, setP
     let channel: ReturnType<typeof supabase.channel> | null = null;
     ready.current = false;
     latest.current = tripId ? readCachedTrip(tripId) : null;
+    setConfirmedStatus(latest.current?.status || null);
     let feedbackStatus = latest.current?.status || "";
 
     const send = (message: unknown) => frame.current?.contentWindow?.postMessage(message, window.location.origin);
@@ -124,6 +164,11 @@ export function TripExperience({ screen, tripId, userId, preview, navigate, setP
         }
         feedbackStatus = next.status || feedbackStatus;
         latest.current = mergeTrip(latest.current, next);
+        setConfirmedStatus(latest.current.status);
+        if (latest.current.status === 'cancelled') {
+          setCancelled(true);
+          callbacks.current.navigate; // Retain the trip screen until the rider acknowledges.
+        }
         writeCachedTrip(tripId, latest.current);
         failures = 0;
         publish();
@@ -235,6 +280,14 @@ export function TripExperience({ screen, tripId, userId, preview, navigate, setP
   }, [tripId, userId, live, file, screen]);
 
   if (tripId && !userId) return <section className="nr-trip-experience"><p role="status">Sign in to view this trip.</p><button onClick={() => navigate("home")}>Back to home</button></section>;
+  if (cancelled) return <section className="nr-trip-cancelled" role="status" aria-live="polite">
+    <div className="nr-trip-cancelled-body">
+      <h1>{t('riderCancelSuccess')}</h1>
+      <p>{t('riderCancelSuccessNote')}</p>
+      <Button onClick={() => { onCancelled?.(); navigate('home'); }}>{t('riderCancelHome')}</Button>
+      <Button variant="secondary" onClick={() => { onCancelled?.(); navigate('destination'); }}>{t('riderCancelNewRide')}</Button>
+    </div>
+  </section>;
   const defaultRatio = screen === 'summary' ? 0.66 : screen === 'live' ? 0.46 : 0.52;
   const snaps = screen === 'summary'
     ? [0.32, 0.66, 0.75] as const
@@ -253,8 +306,20 @@ export function TripExperience({ screen, tripId, userId, preview, navigate, setP
       <button onClick={() => window.location.assign('/rider/trips')}>Activity</button>
       <span role="status" aria-live="polite">{live ? connection : 'Preview ride'}</span>
       {screen !== 'summary' && <button onClick={openSafety}>Safety</button>}
+      {live && screen !== 'summary' && confirmedStatus !== 'completed' && confirmedStatus !== 'cancelled' &&
+        <button type="button" className="nr-trip-cancel-trigger" disabled={cancelBusy} onClick={() => { setCancelError(''); setCancelConfirm(true); }}>{t('matchingCancel')}</button>}
       {!live && screen !== 'summary' && <button onClick={() => { if (screen === 'live' && preview) setPreview({ ...preview, completed: true }); navigate(screen === 'trip' ? 'live' : 'summary'); }}>{screen === 'trip' ? 'Start trip' : 'Complete trip'}</button>}
     </div>
+    {cancelError && <p role="alert" className="nr-trip-cancel-error">{cancelError}</p>}
+    {cancelConfirm && <Dialog title={t('matchingCancelConfirm')} onClose={() => { if (!cancelBusy) setCancelConfirm(false); }}>
+      <p className="nr-cancel-dialog-note">{t('matchingCancelWarning')}</p>
+      {(confirmedStatus === 'in_trip' || screen === 'live') && <p className="nr-cancel-safety-note" role="note">{t('riderCancelSafety')}</p>}
+      {cancelError && <p role="alert" className="nr-trip-cancel-error">{cancelError}</p>}
+      <div className="nr-cancel-dialog-actions">
+        <Button variant="secondary" disabled={cancelBusy} onClick={() => setCancelConfirm(false)}>{t('matchingKeep')}</Button>
+        <Button variant="danger" disabled={cancelBusy} loading={cancelBusy} onClick={() => void cancelRide()}>{t('matchingConfirmCancel')}</Button>
+      </div>
+    </Dialog>}
     <iframe
       ref={frame}
       key={`${file}:${tripId || 'preview'}`}

@@ -199,7 +199,9 @@ export default function DriverNavigationPage() {
                 event: "cancelled",
                 id: `${loaded.requestId}:${status}:driver`,
                 title: "Ride cancelled",
-                body: "This assigned ride is no longer active.",
+                body: row.cancellation_reason === "rider_cancelled"
+                  ? "The rider has cancelled this trip. You can now receive another ride request."
+                  : "This assigned ride is no longer active.",
                 url: "/driver/home",
               });
               stopNexRideNavigationVoice();
@@ -224,6 +226,32 @@ export default function DriverNavigationPage() {
       if (channel) supabase.removeChannel(channel);
     };
   }, [loadTrip, router]);
+
+  useEffect(() => {
+    if (!trip || !driverId || ['completed','withdrawn','cancelled'].includes(trip.status)) return;
+    let active = true;
+    const sync = async () => {
+      if (!navigator.onLine) return;
+      const { data } = await supabase.from('ride_requests')
+        .select('status,cancellation_reason')
+        .eq('id', trip.requestId).eq('assigned_driver_id', driverId).maybeSingle();
+      if (!active || !data) return;
+      const status = normalizeStatus(data.status);
+      if (status === 'cancelled' || status === 'withdrawn') {
+        stopNexRideNavigationVoice();
+        setTrip(current => current ? { ...current, status } : current);
+      }
+    };
+    const onVisible = () => { if (document.visibilityState === 'visible') void sync(); };
+    window.addEventListener('online', sync);
+    document.addEventListener('visibilitychange', onVisible);
+    const timer = window.setInterval(() => void sync(), 10000);
+    return () => {
+      active = false; window.clearInterval(timer);
+      window.removeEventListener('online', sync);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+  }, [trip?.requestId, trip?.status, driverId]);
 
   useEffect(() => {
     if (typeof navigator === "undefined" || !navigator.geolocation) {
@@ -601,6 +629,17 @@ export default function DriverNavigationPage() {
   );
 
   if (!trip || !stage) return null;
+  if (trip.status === 'cancelled' || trip.status === 'withdrawn') return (
+    <main className="nr-app nr-driver-navigation-page" data-mode="driver">
+      <section className="nr-nav-unavailable" role="status" aria-live="polite">
+        <span><Icon name="info" size={25} /></span>
+        <h1>{op('Ride cancelled')}</h1>
+        <p>{op('The rider has cancelled this trip. You can now receive another ride request.')}</p>
+        <p>{op('If you are driving, stop safely before leaving this screen.')}</p>
+        <button onClick={() => router.replace('/driver/home')}>{op('Back to Driver Home')}</button>
+      </section>
+    </main>
+  );
 
   return (
     <main className="nr-app nr-driver-navigation-page" data-mode="driver">

@@ -78,7 +78,7 @@ test('a request receipt does not assign a driver; reconnection reads the same bo
   await expect(page.locator('.nr-confirmed-driver')).toHaveCount(0);
   broken = true; await reconnect(page);
   await expect(page.getByRole('heading', { name: 'Connection lost' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Cancel request', exact: true })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Cancel ride', exact: true })).toBeDisabled();
   broken = false; current = state('delayed', 2);
   await page.getByRole('button', { name: 'Reconnect', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Still finding your driver…' })).toBeVisible();
@@ -109,13 +109,13 @@ test('cancellation consequence is confirmed and waits for the authoritative canc
   });
   await submit(page);
   await expect(page.locator('.nr-match-summary')).toContainText('180 ETB');
-  await page.getByRole('button', { name: 'Cancel request', exact: true }).click();
-  await expect(page.getByRole('dialog')).toContainText('50 ETB');
+  await page.getByRole('button', { name: 'Cancel ride', exact: true }).click();
+  await expect(page.getByRole('dialog')).not.toContainText('Cancellation fee');
   await expect(page.getByRole('dialog')).toContainText('Provider cancellation rule');
-  await page.getByRole('button', { name: 'Keep my request' }).click();
+  await page.getByRole('button', { name: 'No, Keep Ride' }).click();
   expect(actions).toBe(0);
-  await page.getByRole('button', { name: 'Cancel request', exact: true }).click();
-  await page.getByRole('button', { name: 'Confirm cancellation' }).click();
+  await page.getByRole('button', { name: 'Cancel ride', exact: true }).click();
+  await page.getByRole('button', { name: 'Yes, Cancel Ride' }).click();
   await expect(page.getByRole('button', { name: 'Updating request…' })).toBeDisabled();
   await expect(page.getByRole('heading', { name: 'Request cancelled' })).toBeVisible();
   expect(actions).toBe(1);
@@ -132,7 +132,7 @@ test('driver acceptance during cancellation wins the race without inventing canc
     return r.fulfill({ json: current });
   });
   await submit(page);
-  await page.getByRole('button', { name: 'Cancel request', exact: true }).click();
+  await page.getByRole('button', { name: 'Cancel ride', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Meet your driver' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Request cancelled' })).not.toBeVisible();
   await expect(page.locator('.nr-confirmed-driver')).toContainText('Actual Driver');
@@ -151,7 +151,7 @@ test('malformed acceptance cannot show a driver and unknown cancellation cannot 
   await expect(page.locator('.nr-confirmed-driver')).toHaveCount(0);
   current = state('searching', 2); await page.getByRole('button', { name: 'Reconnect', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Finding your driver…' })).toBeVisible();
-  await page.getByRole('button', { name: 'Cancel request', exact: true }).click();
+  await page.getByRole('button', { name: 'Cancel ride', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Connection lost' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Request cancelled' })).not.toBeVisible();
   await expect(page.getByRole('button', { name: 'Change ride category', exact: true })).not.toBeVisible();

@@ -10,6 +10,7 @@ export function DriverMatching({ model, changeCategory, previewAssigned, home }:
 }) {
   const t = useTranslation(), language = useContext(LanguageContext);
   const [confirmVersion, setConfirmVersion] = useState<number | null>(null);
+  const [cancelSuccess, setCancelSuccess] = useState(false);
   const heading = useRef<HTMLHeadingElement>(null);
   const { request, snapshot, connectionLost, syncFailed, reconnecting, busy, actionFailed } = model;
   const status = snapshot?.status || 'searching';
@@ -26,17 +27,13 @@ export function DriverMatching({ model, changeCategory, previewAssigned, home }:
   const money = (n: number) => new Intl.NumberFormat(language === 'am' ? 'am-ET' : 'en-ET', { maximumFractionDigits: 2 }).format(n);
   const completeCancel = async (version?: number) => {
     const next = await model.action('cancel', version);
-    if (next?.status === 'cancelled') home();
+    if (next?.status === 'cancelled') setCancelSuccess(true);
   };
   const cancel = () => {
-    if (busy || reconnecting) return;
-    if (!snapshot) {
-      if (!preview) void completeCancel();
-      return;
-    }
-    if (!terms?.allowed) return;
-    if (terms.requiresConfirmation || (terms.fee !== null && terms.fee > 0)) setConfirmVersion(snapshot.version);
-    else void completeCancel(snapshot.version);
+    if (busy || reconnecting || terms?.allowed === false) return;
+    // All cancellations require a Yes/No decision, even before the first
+    // server snapshot arrives. The action handler fetches the current version.
+    setConfirmVersion(snapshot?.version ?? -1);
   };
   return <section className="nr-driver-matching" data-matching-state={connectionLost ? 'connection_lost' : degraded ? 'sync_problem' : status} aria-label={t('matchingScreen')}>
     <RiderSheetHandle
@@ -89,6 +86,12 @@ export function DriverMatching({ model, changeCategory, previewAssigned, home }:
       </div>
       {preview && <p className="nr-match-preview"><strong>{t('preview')}</strong> · {t('findingNote')}</p>}
       {actionFailed && <p className="nr-match-warning" role="alert">{t('matchingActionFailed')}</p>}
+      {cancelSuccess && <div className="nr-cancel-success" role="status">
+        <strong>{t('riderCancelSuccess')}</strong>
+        <p>{t('riderCancelSuccessNote')}</p>
+        <Button onClick={home}>{t('riderCancelHome')}</Button>
+        <Button variant="secondary" onClick={changeCategory}>{t('riderCancelNewRide')}</Button>
+      </div>}
       {preview && <details className="nr-match-preview-controls"><summary>{t('matchingPreviewControls')}</summary>
         <div>{(['searching', 'delayed', 'no_drivers', 'connection_lost'] as const).map(s => <button key={s} onClick={() => model.previewState(s)}>{t(s === 'searching' ? 'matchingSearchState' : s === 'delayed' ? 'matchingDelayed' : s === 'no_drivers' ? 'matchingEmpty' : 'matchingConnection')}</button>)}</div>
         <button className="nr-preview-assignment" onClick={previewAssigned}>{t('matchingPreviewAssigned')}<Icon name="arrow" size={16}/></button>
@@ -99,15 +102,15 @@ export function DriverMatching({ model, changeCategory, previewAssigned, home }:
       {!connectionLost && snapshot?.canRetry && <Button disabled={busy} loading={busy} onClick={() => void model.action('retry')}>{t(busy ? 'matchingUpdating' : 'matchingRetry')}</Button>}
       {['cancelled', 'no_drivers'].includes(status) && <Button variant="ghost" disabled={busy} onClick={home}>{t('home')}</Button>}
       {snapshot?.canChangeCategory && <Button variant="secondary" disabled={busy} onClick={changeCategory}>{t('matchingChangeCategory')}</Button>}
-      {!['cancelled', 'no_drivers'].includes(status) && <Button variant="ghost" disabled={busy || reconnecting || (preview ? !terms?.allowed : terms?.allowed === false)} onClick={cancel}>{t(busy ? 'matchingUpdating' : preview ? 'cancel' : 'matchingCancel')}</Button>}
+      {!cancelSuccess && !['cancelled', 'no_drivers'].includes(status) && <Button variant="ghost" disabled={busy || reconnecting || terms?.allowed === false} onClick={cancel}>{t(busy ? 'matchingUpdating' : 'matchingCancel')}</Button>}
       {!preview && !snapshot && <small className="nr-match-terms-note">{t('matchingTermsPending')}</small>}
     </footer>
-    {confirmVersion !== null && terms && <Dialog title={t('matchingCancelConfirm')} onClose={() => setConfirmVersion(null)}>
-      <p>{t('matchingCancelWarning')}</p>
-      {terms.reason && <p>{terms.reason}</p>}
-      {terms.fee !== null && <p className="nr-cancellation-fee">{t('matchingCancelFee')}: <strong>{money(terms.fee)} ETB</strong></p>}
-      <Button onClick={() => { const version = confirmVersion; setConfirmVersion(null); void completeCancel(version); }}>{t('matchingConfirmCancel')}</Button>
-      <Button variant="secondary" onClick={() => setConfirmVersion(null)}>{t('matchingKeep')}</Button>
+    {confirmVersion !== null && <Dialog title={t('matchingCancelConfirm')} onClose={() => setConfirmVersion(null)}>
+      <p className="nr-cancel-dialog-note">{t('matchingCancelWarning')}</p>
+      <div className="nr-cancel-dialog-actions">
+        <Button variant="secondary" onClick={() => setConfirmVersion(null)}>{t('matchingKeep')}</Button>
+        <Button variant="danger" onClick={() => { const version = confirmVersion; setConfirmVersion(null); void completeCancel(version < 0 ? undefined : version); }}>{t('matchingConfirmCancel')}</Button>
+      </div>
     </Dialog>}
   </section>;
 }

@@ -263,7 +263,7 @@ export function RiderWorkspace({
       previewAssigned={() => { setSelectedTripId(null); matching.clear(); navigate('trip'); }} />;
   if (screen === "trip" || screen === "live" || screen === "summary")
     return <TripExperience screen={screen} tripId={selectedTripId} userId={realTrips.userId} preview={trip}
-      navigate={navigate} setPreview={setTrip} safety={onSafety} />;
+      navigate={navigate} setPreview={setTrip} safety={onSafety} onCancelled={() => void realTrips.refresh()} />;
   if (screen === "wallet")
     return (
       <Sheet title={t("wallet")}>
