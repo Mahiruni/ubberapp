@@ -81,6 +81,7 @@ export default function DriverVehiclePage() {
 
               <div className="nr-vehicle-detail-grid">
                 <VehicleDetail label="Vehicle model" value={profile.vehicle || "Not provided"} />
+                <VehicleDetail label="Vehicle color" value={profile.vehicleColor || "Not provided"} />
                 <VehicleDetail label="License plate" value={profile.vehiclePlate || "Not provided"} />
                 <VehicleDetail label="Driver license" value={profile.licenseNumber ? "On file" : "Missing"} />
                 <VehicleDetail label="Registration document" value={profile.vehicleRegistrationPath ? "On file" : "Missing"} />
