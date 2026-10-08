@@ -64,7 +64,23 @@ const patterns: Record<NexRideSoundId, Pattern> = {
   offline: { notes: [[523.25, .08, .03], [349.23, .15, .045, .07]] },
   success: { notes: [[440, .08, .035], [587.33, .18, .055, .07]] },
   message: { notes: [[659.25, .08, .03], [783.99, .1, .035, .055]], wave: "sine" },
-  request: { notes: [[261.63, .16, .07], [392, .17, .08, .12], [523.25, .3, .09, .25]], wave: "triangle" },
+  request: {
+    // Incoming ride request: a recognisable ringtone-style phrase rather than
+    // a few notification beeps. One phrase is ~3.35s and is repeated with a
+    // short breathing gap while the offer remains actionable.
+    notes: [
+      [196, 3.12, .018, 0],
+      [392, .34, .048, 0],
+      [523.25, .38, .058, .34],
+      [659.25, .56, .068, .72],
+      [523.25, .30, .046, 1.42],
+      [659.25, .34, .056, 1.72],
+      [783.99, .58, .066, 2.06],
+      [659.25, .28, .050, 2.72],
+      [523.25, .42, .056, 2.98],
+    ],
+    wave: "triangle",
+  },
   rideAccepted: { notes: [[392, .08, .04], [523.25, .11, .05, .07], [659.25, .19, .06, .16]] },
   driverAssigned: { notes: [[329.63, .1, .04], [440, .12, .05, .09], [659.25, .24, .06, .19]] },
   driverArrived: { notes: [[523.25, .15, .055], [659.25, .17, .06, .19], [523.25, .24, .05, .38]] },
@@ -78,6 +94,7 @@ const patterns: Record<NexRideSoundId, Pattern> = {
 
 let context: AudioContext | null = null;
 let requestTimer: number | null = null;
+let requestStopTimer: number | null = null;
 const requestNodes = new Set<OscillatorNode>();
 const seen = new Map<string, number>();
 let spokenKey = "";
@@ -177,7 +194,9 @@ function hapticFor(event: NexRideFeedbackEvent) {
 
 export function stopRideRequestAlert() {
   if (typeof window !== "undefined" && requestTimer !== null) window.clearInterval(requestTimer);
+  if (typeof window !== "undefined" && requestStopTimer !== null) window.clearTimeout(requestStopTimer);
   requestTimer = null;
+  requestStopTimer = null;
   for (const node of requestNodes) {
     try { node.stop(); } catch {}
   }
@@ -187,14 +206,26 @@ export function stopRideRequestAlert() {
   }
 }
 
+const RIDE_REQUEST_ALERT_MAX_MS = 30_000;
+const RIDE_REQUEST_PHRASE_INTERVAL_MS = 3_750;
+
 function startRideRequestAlert() {
   stopRideRequestAlert();
+  let cycle = 0;
+
   const play = () => {
     schedulePattern("request", requestNodes);
-    hapticFor("ride_request");
+    // Keep vibration useful without buzzing continuously for the whole window.
+    if (cycle === 0 || cycle % 3 === 0) hapticFor("ride_request");
+    cycle += 1;
   };
+
   play();
-  if (typeof window !== "undefined") requestTimer = window.setInterval(play, 3200);
+
+  if (typeof window !== "undefined") {
+    requestTimer = window.setInterval(play, RIDE_REQUEST_PHRASE_INTERVAL_MS);
+    requestStopTimer = window.setTimeout(stopRideRequestAlert, RIDE_REQUEST_ALERT_MAX_MS);
+  }
 }
 
 function soundFor(event: NexRideFeedbackEvent): NexRideSoundId | null {
