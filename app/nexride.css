@@ -2179,3 +2179,34 @@
   .nr-driver-traffic-switch i,
   .nr-driver-map-controls>button{transition:none!important}
 }
+
+
+/* Unified NexRide wrapper language — Driver.
+   Mirrors Rider geometry while preserving Driver dark/light surfaces. */
+.nr-driver-sheet {
+  border:1px solid rgba(124,163,185,.18)!important;
+  border-bottom:0!important;
+  border-radius:24px 24px 0 0!important;
+  box-shadow:0 -7px 22px rgba(0,8,18,.16)!important;
+  backdrop-filter:blur(16px) saturate(1.08)!important;
+  -webkit-backdrop-filter:blur(16px) saturate(1.08)!important;
+  transition:height 300ms cubic-bezier(.22,1,.36,1)!important;
+}
+.nr-driver-sheet[data-dragging="true"] {
+  transition:none!important;
+}
+.nr-driver-sheet-grab {
+  min-height:42px!important;
+  flex-basis:42px!important;
+}
+.nr-driver-sheet-grab>span {
+  width:42px!important;
+  height:4px!important;
+  background:rgba(184,207,219,.38)!important;
+}
+.nr-driver-sheet-content {
+  scrollbar-width:thin;
+}
+.nr-driver-sheet-content :where(h1,h2,h3) {
+  letter-spacing:-.025em;
+}
