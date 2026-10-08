@@ -113,6 +113,16 @@
   flex:1;min-width:0;min-height:52px;border:0!important;background:transparent!important;color:#102334!important;
   padding:0!important;outline:0!important;box-shadow:none!important;font:inherit;font-size:15px!important
 }
+.nr-auth-input select{
+  flex:1;min-width:0;min-height:52px;border:0!important;background:transparent!important;color:#102334!important;
+  padding:0 28px 0 0!important;outline:0!important;box-shadow:none!important;font:inherit;font-size:15px!important;
+  appearance:none;-webkit-appearance:none;cursor:pointer
+}
+.nr-auth-select-row{position:relative}
+.nr-auth-select-row::after{
+  content:"⌄";position:absolute;right:14px;top:50%;transform:translateY(-52%);
+  color:#667587;font-size:16px;font-weight:800;pointer-events:none
+}
 .nr-auth-input input::placeholder{color:#8b99a5}
 .nr-profile-form .nr-button,.driver-auth-submit{
   min-height:56px!important;margin-top:4px!important;border:0!important;border-radius:16px!important;
@@ -628,4 +638,9 @@
     scrollbar-width:auto!important;
     padding-bottom:calc(48px + env(safe-area-inset-bottom))!important;
   }
+}
+
+@media (max-width:700px){
+  .nr-auth-experience[data-auth-mode] .nr-auth-input select{min-height:46px;font-size:16px!important}
+  .nr-auth-experience[data-auth-mode="signup"] .nr-auth-input select{min-height:42px}
 }
