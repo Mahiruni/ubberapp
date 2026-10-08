@@ -54,7 +54,8 @@ export function AdminAccountIdentities() {
     if(!document.storage_path)return;
     // Open a placeholder synchronously to avoid popup blockers, then navigate
     // only after RLS authorizes the 60-second private signed URL.
-    const tab=window.open("","_blank","noopener,noreferrer");
+    const tab=window.open("about:blank","_blank");
+    if (tab) tab.opener=null;
     const signed=await supabase.storage.from(document.storage_bucket)
       .createSignedUrl(document.storage_path,60);
     if(signed.error||!signed.data?.signedUrl){
