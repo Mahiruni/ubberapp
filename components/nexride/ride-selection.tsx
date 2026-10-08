@@ -432,6 +432,47 @@ export function RideSelection({
     </section>
   );
 }
+function RideVehicleIcon({ category }: { category: RideFare["category"] }) {
+  const isXL = category === "xl";
+  const isComfort = category === "comfort";
+  return (
+    <span
+      className="nr-ride-vehicle"
+      data-category={category}
+      aria-hidden="true"
+    >
+      <svg viewBox="0 0 72 44" role="presentation" focusable="false">
+        <path
+          className="nr-ride-vehicle-shadow"
+          d="M14 36.5c0 2.5 7.5 4.5 22 4.5s22-2 22-4.5H14Z"
+        />
+        <path
+          className="nr-ride-vehicle-shell"
+          d={
+            isXL
+              ? "M9 26.5 14.2 14c1.2-2.9 3.4-4.5 6.5-4.5h30.6c3.1 0 5.3 1.6 6.5 4.5L63 26.5v6.2c0 2-1.6 3.6-3.6 3.6h-4.1c-1.8 0-3.3-1.3-3.6-3H20.3c-.3 1.7-1.8 3-3.6 3h-4.1c-2 0-3.6-1.6-3.6-3.6v-6.2Z"
+              : isComfort
+                ? "M10 27 15.5 15.8c1.3-2.7 3.2-4 6.1-4h28.8c2.9 0 4.8 1.3 6.1 4L62 27v5.6c0 2-1.6 3.6-3.6 3.6h-3.7c-1.7 0-3.1-1.2-3.5-2.8H20.8c-.4 1.6-1.8 2.8-3.5 2.8h-3.7c-2 0-3.6-1.6-3.6-3.6V27Z"
+                : "M11 27.5 16.2 17c1.2-2.5 3.1-3.8 5.8-3.8h28c2.7 0 4.6 1.3 5.8 3.8L61 27.5v5c0 1.9-1.5 3.4-3.4 3.4h-3.4c-1.6 0-3-1.1-3.3-2.6H21.1c-.3 1.5-1.7 2.6-3.3 2.6h-3.4c-1.9 0-3.4-1.5-3.4-3.4v-5Z"
+          }
+        />
+        <path
+          className="nr-ride-vehicle-glass"
+          d={
+            isXL
+              ? "M20 14.1h31.8l4 10H16l4-10Z"
+              : "M21.1 16.1h29.8l3.7 8.5H17.4l3.7-8.5Z"
+          }
+        />
+        <path className="nr-ride-vehicle-light" d="M14.2 28.1h8v3.4h-8zm35.6 0h8v3.4h-8z" />
+        <path className="nr-ride-vehicle-grille" d="M27 29.2h18c1 0 1.8.8 1.8 1.8v1.1H25.2V31c0-1 .8-1.8 1.8-1.8Z" />
+        <circle className="nr-ride-vehicle-wheel" cx="19" cy="34.5" r="3.2" />
+        <circle className="nr-ride-vehicle-wheel" cx="53" cy="34.5" r="3.2" />
+      </svg>
+    </span>
+  );
+}
+
 function RideOption({
   fare,
   selected,
@@ -465,6 +506,7 @@ function RideOption({
         }
       }}
     >
+      <RideVehicleIcon category={fare.category} />
       <span className="nr-ride-copy">
         <strong>{t(fare.category)}</strong>
         <small>
