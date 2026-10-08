@@ -71,7 +71,7 @@ export function NexRideFeedbackSettings({
         <FeedbackToggle
           icon="bell"
           title={say("Incoming ride request alert", "የአዲስ ጉዞ ጥያቄ ማንቂያ")}
-          detail={say("Distinct repeating alert while a real request is actionable.", "እውነተኛ ጥያቄ ንቁ ሲሆን የሚደገም ልዩ ማንቂያ።")}
+          detail={say("Long ringtone-style alert for up to 30 seconds while a real request is actionable.", "እውነተኛ ጥያቄ ንቁ ሲሆን እስከ 30 ሰከንድ የሚቆይ ረዥም የጥሪ ድምፅ።")}
           checked={preferences.rideRequests}
           onChange={(value) => change("rideRequests", value)}
           emphasis
