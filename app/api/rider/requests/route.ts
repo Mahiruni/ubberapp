@@ -1,7 +1,9 @@
 import { liveFareSet } from "../../../../lib/nexride-live-pricing";
 import { authorizedRequestSupabase } from "../../../../lib/nexride-server-supabase";
+import { serverAdminSupabase } from "../../../../lib/nexride-server-admin";
 import { fareTotal, rideCategories } from "../../../../lib/nexride-booking";
 import {
+  insideAddisServiceRadius,
   insideBounds,
   serviceBounds,
   validPoint,
@@ -47,9 +49,11 @@ export async function POST(request: Request) {
     if (
       !insideBounds(pickup, area.bounds) ||
       !insideBounds(destination, area.bounds) ||
+      !insideAddisServiceRadius(pickup) ||
+      !insideAddisServiceRadius(destination) ||
       haversineMeters(pickup, destination) < 30
     )
-      return reply({ status: "failed" }, 422);
+      return reply({ status: "unavailable" }, 422);
     if (!rideCategories.includes(category) || paymentMethod !== "cash")
       return reply({ status: "failed" }, 400);
 
@@ -67,37 +71,208 @@ export async function POST(request: Request) {
       return reply({ status: "price_changed", fares }, 409);
     }
 
-    const { data, error } = await authorized.client.functions.invoke(
-      "nexride-rider-booking",
-      {
-        body: {
-          operation: "create",
-          pickupLocation: label(pickup, "Pickup"),
-          destinationLocation: label(destination, "Destination"),
-          pickupLat: pickup.lat,
-          pickupLng: pickup.lng,
-          destinationLat: destination.lat,
-          destinationLng: destination.lng,
-          category,
-          paymentMethod,
-          clientRequestKey: idempotencyKey,
-          pricingRevision: revision,
-        },
-      },
-    );
+    // Create the request directly on the trusted server after verifying the
+    // Rider JWT above. This keeps booking aligned with the app's current
+    // 100 km Addis service area instead of the older database RPC boundary.
+    const admin = serverAdminSupabase();
 
-    if (error) return reply({ status: "failed" }, 500);
+    const { data: profile, error: profileError } = await admin
+      .from("profiles")
+      .select("id,role,account_status")
+      .eq("id", authorized.user.id)
+      .maybeSingle();
 
-    const result = data as { requestId?: unknown; status?: unknown } | null;
     if (
-      result?.status !== "accepted" ||
-      typeof result.requestId !== "string" ||
-      !result.requestId
+      profileError ||
+      !profile ||
+      profile.role !== "rider" ||
+      profile.account_status !== "active"
     ) {
+      console.warn("nexride_booking_rejected", { reason: "rider_not_eligible" });
+      return reply({ status: "unavailable" }, 403);
+    }
+
+    const { data: existing, error: existingError } = await admin
+      .from("ride_requests")
+      .select("id,status,dispatch_state")
+      .eq("rider_id", authorized.user.id)
+      .eq("client_request_key", idempotencyKey)
+      .maybeSingle();
+
+    if (existingError) {
+      console.error("nexride_booking_lookup_failed", {
+        code: existingError.code || "unknown",
+      });
       return reply({ status: "failed" }, 500);
     }
 
-    return reply({ status: "accepted", requestId: result.requestId }, 201);
+    if (existing?.id) {
+      return reply({ status: "accepted", requestId: existing.id }, 200);
+    }
+
+    const { data: active, error: activeError } = await admin
+      .from("ride_requests")
+      .select("id,status,dispatch_state")
+      .eq("rider_id", authorized.user.id)
+      .in("status", ["pending", "accepted", "arrived_pickup", "in_trip"])
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (activeError) {
+      console.error("nexride_booking_active_lookup_failed", {
+        code: activeError.code || "unknown",
+      });
+      return reply({ status: "failed" }, 500);
+    }
+
+    if (active?.id) {
+      if (active.status === "pending" && active.dispatch_state === "no_drivers") {
+        const { error: cancelOldError } = await admin
+          .from("ride_requests")
+          .update({
+            status: "cancelled",
+            cancellation_reason: "superseded_by_new_request",
+          })
+          .eq("id", active.id)
+          .eq("rider_id", authorized.user.id);
+
+        if (cancelOldError) {
+          console.error("nexride_booking_supersede_failed", {
+            code: cancelOldError.code || "unknown",
+          });
+          return reply({ status: "failed" }, 500);
+        }
+      } else {
+        // A Rider must never get a generic failure just because an earlier
+        // request is still active. Resume that authoritative request instead.
+        return reply({ status: "accepted", requestId: active.id }, 200);
+      }
+    }
+
+    const directKm = haversineMeters(pickup, destination) / 1000;
+    const roadKm = Math.max(0.5, directKm * 1.28);
+    const durationMinutes = Math.max(4, Math.ceil((roadKm / 22) * 60));
+    const quotedFare = fareTotal(current);
+    if (quotedFare === null) return reply({ status: "failed" }, 400);
+
+    const { data: created, error: createError } = await admin
+      .from("ride_requests")
+      .insert({
+        rider_id: authorized.user.id,
+        pickup_location: label(pickup, "Pickup"),
+        destination_location: label(destination, "Destination"),
+        pickup_lat: pickup.lat,
+        pickup_lng: pickup.lng,
+        destination_lat: destination.lat,
+        destination_lng: destination.lng,
+        ride_category: category,
+        estimated_trip_fare_etb: quotedFare,
+        estimated_trip_distance_km: Number(roadKm.toFixed(2)),
+        estimated_trip_duration_minutes: durationMinutes,
+        payment_method: paymentMethod,
+        payment_status: "pending",
+        status: "pending",
+        dispatch_state: "searching",
+        dispatch_started_at: new Date().toISOString(),
+        client_request_key: idempotencyKey,
+        pricing_revision: revision,
+      })
+      .select("id")
+      .single();
+
+    if (createError || !created?.id) {
+      // A concurrent retry can win either unique constraint. Resolve it to the
+      // authoritative active/idempotent request instead of failing the Rider.
+      if (createError?.code === "23505") {
+        const { data: raced } = await admin
+          .from("ride_requests")
+          .select("id")
+          .eq("rider_id", authorized.user.id)
+          .in("status", ["pending", "accepted", "arrived_pickup", "in_trip"])
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (raced?.id)
+          return reply({ status: "accepted", requestId: raced.id }, 200);
+      }
+
+      console.error("nexride_booking_create_failed", {
+        code: createError?.code || "unknown",
+      });
+      return reply({ status: "failed" }, 500);
+    }
+
+    // Dispatch to eligible online drivers. Distance/ETA may be enriched later;
+    // an offer itself is enough for the Driver request UI/realtime flow.
+    const { data: driverRows, error: driversError } = await admin
+      .from("drivers")
+      .select("id,updated_at")
+      .eq("review_status", "approved")
+      .eq("is_online", true)
+      .order("updated_at", { ascending: false })
+      .limit(24);
+
+    let eligibleDriverIds: string[] = [];
+    if (!driversError && driverRows?.length) {
+      const candidateIds = driverRows.map((driver) => String(driver.id));
+
+      const [{ data: driverProfiles }, { data: busyRows }] = await Promise.all([
+        admin
+          .from("profiles")
+          .select("id")
+          .in("id", candidateIds)
+          .eq("role", "driver")
+          .eq("account_status", "active"),
+        admin
+          .from("ride_requests")
+          .select("assigned_driver_id")
+          .in("assigned_driver_id", candidateIds)
+          .in("status", ["accepted", "arrived_pickup", "in_trip"]),
+      ]);
+
+      const activeProfileIds = new Set(
+        (driverProfiles || []).map((row) => String(row.id)),
+      );
+      const busyDriverIds = new Set(
+        (busyRows || [])
+          .map((row) => row.assigned_driver_id)
+          .filter(Boolean)
+          .map(String),
+      );
+
+      eligibleDriverIds = candidateIds
+        .filter(
+          (id) => activeProfileIds.has(id) && !busyDriverIds.has(id),
+        )
+        .slice(0, 8);
+    }
+
+    if (eligibleDriverIds.length) {
+      const expiresAt = new Date(Date.now() + 30_000).toISOString();
+      const { error: offerError } = await admin.from("ride_request_offers").insert(
+        eligibleDriverIds.map((driverId) => ({
+          request_id: created.id,
+          driver_id: driverId,
+          pickup_distance_km: null,
+          pickup_eta_minutes: null,
+          expires_at: expiresAt,
+        })),
+      );
+
+      if (offerError) {
+        console.error("nexride_booking_dispatch_failed", {
+          code: offerError.code || "unknown",
+        });
+      }
+    } else {
+      await admin
+        .from("ride_requests")
+        .update({ dispatch_state: "no_drivers" })
+        .eq("id", created.id);
+    }
+
+    return reply({ status: "accepted", requestId: created.id }, 201);
   } catch {
     return reply({ status: "failed" }, 400);
   }
