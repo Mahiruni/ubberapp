@@ -77,7 +77,7 @@ export function useRiderTripLocationPublisher(
           sentAt: now,
         };
       }
-    }).finally(() => { pending.current = false; });
+    }).then(() => { pending.current = false; }, () => { if (!cancelled) setShareError(true); pending.current = false; });
 
     return () => { cancelled = true; };
   }, [active, tripId, userId, position?.lat, position?.lng, position?.timestamp, position?.accuracy]);
