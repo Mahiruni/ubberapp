@@ -1,15 +1,77 @@
 @font-face {
   font-family: "Benaiah NexRide";
-  src: url("/fonts/Benaiah-Ethiopic.woff2") format("woff2");
+  src: url("/fonts/Benaiah-Ethiopic.woff2?v=4") format("woff2");
   font-display: swap;
   font-style: normal;
-  /* The supplied Benaiah face is NexRide's single Ethiopic master.
-     Map it across UI weights so 400/500/600/700/800/900 requests do not
-     fall through to a system Ethiopic font. */
-  font-weight: 100 900;
+  font-weight: 400;
   unicode-range:
     U+1200-139F,
-    U+2D80-2DDF,
+    U+2D80-2DFF,
+    U+AB00-AB2F,
+    U+1E7E0-1E7FF;
+}
+
+@font-face {
+  font-family: "Benaiah NexRide";
+  src: url("/fonts/Benaiah-Ethiopic.woff2?v=4") format("woff2");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 500;
+  unicode-range:
+    U+1200-139F,
+    U+2D80-2DFF,
+    U+AB00-AB2F,
+    U+1E7E0-1E7FF;
+}
+
+@font-face {
+  font-family: "Benaiah NexRide";
+  src: url("/fonts/Benaiah-Ethiopic.woff2?v=4") format("woff2");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 600;
+  unicode-range:
+    U+1200-139F,
+    U+2D80-2DFF,
+    U+AB00-AB2F,
+    U+1E7E0-1E7FF;
+}
+
+@font-face {
+  font-family: "Benaiah NexRide";
+  src: url("/fonts/Benaiah-Ethiopic.woff2?v=4") format("woff2");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 700;
+  unicode-range:
+    U+1200-139F,
+    U+2D80-2DFF,
+    U+AB00-AB2F,
+    U+1E7E0-1E7FF;
+}
+
+@font-face {
+  font-family: "Benaiah NexRide";
+  src: url("/fonts/Benaiah-Ethiopic.woff2?v=4") format("woff2");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 800;
+  unicode-range:
+    U+1200-139F,
+    U+2D80-2DFF,
+    U+AB00-AB2F,
+    U+1E7E0-1E7FF;
+}
+
+@font-face {
+  font-family: "Benaiah NexRide";
+  src: url("/fonts/Benaiah-Ethiopic.woff2?v=4") format("woff2");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 900;
+  unicode-range:
+    U+1200-139F,
+    U+2D80-2DFF,
     U+AB00-AB2F,
     U+1E7E0-1E7FF;
 }
