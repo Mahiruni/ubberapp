@@ -248,3 +248,95 @@
 @media (prefers-reduced-motion:reduce) {
   .nr-driver-app-shell[data-trip-focus="true"] .nr-driver-sheet {transition:none!important}
 }
+
+
+/* Driver availability signature control — definitive, viewport-measured thumb.
+   Scoped rules intentionally supersede earlier legacy swipe declarations. */
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-control-panel .nr-driver-availability-swipe {
+  --nr-offline-soft-red:#D95B61;
+  --nr-online-emerald:#00C878;
+  height:60px!important;
+  min-height:60px!important;
+  border-radius:999px!important;
+  background:var(--nr-offline-soft-red)!important;
+  color:#fff!important;
+  border:1px solid rgba(89,26,38,.24)!important;
+  box-shadow:inset 0 -6px 12px rgba(91,31,42,.09)!important;
+  -webkit-tap-highlight-color:transparent!important;
+  touch-action:none!important;
+  transition:background-color 230ms cubic-bezier(.2,.8,.2,1),box-shadow 230ms ease;
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-control-panel .nr-driver-availability-swipe[data-online="false"]:not(:disabled):hover {background:#C94D55!important}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-control-panel .nr-driver-availability-swipe[data-online="false"][data-dragging="true"] {background:#B9444D!important}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-control-panel .nr-driver-availability-swipe[data-online="true"] {
+  background:#00C878!important;
+  color:#042A1D!important;
+  border-color:#00AD69!important;
+  box-shadow:inset 0 -4px 12px rgba(0,89,49,.08)!important;
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-control-panel .nr-driver-availability-swipe[data-online="true"][data-dragging="true"] {background:#00AD69!important}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-control-panel .nr-driver-swipe-thumb,
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-swipe[data-snap="minimal"] .nr-driver-home-control-panel .nr-driver-swipe-thumb {
+  position:absolute!important;
+  top:4px!important;
+  left:4px!important;
+  width:50px!important;
+  height:50px!important;
+  border-radius:50%!important;
+  border:1px solid rgba(255,255,255,.85)!important;
+  background:linear-gradient(155deg,#fff 5%,#f6fafb 100%)!important;
+  color:#B9444D!important;
+  transform:translate3d(var(--nr-swipe-x,0px),0,0)!important;
+  box-shadow:0 4px 12px rgba(56,28,35,.22),inset 0 1px 0 #fff!important;
+  pointer-events:none!important;
+  will-change:transform;
+  transition:transform 235ms cubic-bezier(.2,.84,.2,1),box-shadow 200ms ease!important;
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-control-panel .nr-driver-availability-swipe[data-online="true"] .nr-driver-swipe-thumb {
+  left:4px!important;
+  color:#008F59!important;
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-control-panel .nr-driver-availability-swipe[data-dragging="true"] .nr-driver-swipe-thumb {
+  transform:translate3d(var(--nr-swipe-x,0px),0,0) scale(.97)!important;
+  box-shadow:0 7px 16px rgba(33,24,25,.22),inset 0 1px 0 #fff!important;
+  transition:box-shadow 140ms ease!important;
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-control-panel .nr-driver-swipe-label {
+  position:absolute;
+  inset:0 62px!important;
+  display:flex!important;
+  justify-content:center!important;
+  align-items:center!important;
+  color:inherit!important;
+  font-size:13px!important;
+  font-weight:750!important;
+  line-height:1.22!important;
+  letter-spacing:-.015em;
+  text-align:center!important;
+  white-space:normal!important;
+  text-wrap:balance;
+  overflow:hidden;
+  pointer-events:none;
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-control-panel .nr-driver-availability-swipe[data-online="false"] .nr-driver-swipe-label {
+  text-shadow:0 1px 2px rgba(81,20,28,.35);
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-swipe-release{display:none!important}
+.nr-driver-app-shell[data-home="true"] .nr-driver-availability-swipe[data-ready="true"] .nr-driver-swipe-instruction{display:none!important}
+.nr-driver-app-shell[data-home="true"] .nr-driver-availability-swipe[data-ready="true"] .nr-driver-swipe-release{display:block!important}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-control-panel .nr-driver-availability-swipe:disabled {opacity:.68!important;cursor:not-allowed}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-control-panel .nr-driver-availability-swipe:focus-visible {outline:3px solid #00C878!important;outline-offset:4px!important}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-control-panel .nr-driver-home-control-online {font-size:12px}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-control-panel .nr-driver-home-control-state strong {color:var(--driver-text-primary)!important}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-control-panel .nr-driver-home-control-state small {color:var(--driver-text-secondary)!important}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-control-panel .nr-driver-home-control-meta {color:var(--driver-text-secondary)!important}
+@media(max-width:390px){
+  .nr-driver-app-shell[data-home="true"] .nr-driver-home-control-panel .nr-driver-swipe-label {font-size:11.5px!important;inset:0 55px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .nr-driver-app-shell[data-home="true"] .nr-driver-home-control-panel .nr-driver-availability-swipe,
+  .nr-driver-app-shell[data-home="true"] .nr-driver-home-control-panel .nr-driver-swipe-thumb {
+    transition:none!important;
+    animation:none!important;
+  }
+}
