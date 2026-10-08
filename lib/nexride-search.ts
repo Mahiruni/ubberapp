@@ -6,12 +6,14 @@ export type Endpoint = Place & {
   accuracy?: number;
 };
 export type Bounds = [number, number, number, number];
-// Addis metro coverage: central Addis plus the practical surrounding urban belt
-// (Burayu/Sebeta/Holeta to the west, Sululta/Sendafa to the north,
-// Legetafo/Legedadi to the east, and Gelan/Dukem/Bishoftu to the south-east).
-// Provider search still ranks nearby/core Addis results first.
+// NexRide serves Addis Ababa and its surrounding urban region only.
+// Provider search uses a ~100 km bounding box for efficiency, then every
+// result is filtered by an exact great-circle radius from central Addis.
+export const ADDIS_CENTER = { lat: 9.008, lng: 38.775 } as const;
+export const ADDIS_MAX_RADIUS_METERS = 100_000;
 export const ADDIS_CORE_BOUNDS: Bounds = [38.66, 8.84, 38.91, 9.11];
-export const PREVIEW_BOUNDS: Bounds = [38.45, 8.65, 39.12, 9.28];
+export const ADDIS_SEARCH_BOUNDS: Bounds = [37.866, 8.11, 39.684, 9.906];
+export const PREVIEW_BOUNDS: Bounds = ADDIS_SEARCH_BOUNDS;
 
 export const ADDIS_SUBCITIES = [
   { en: "Addis Ketema", am: "አዲስ ከተማ", aliases: ["addis ketema", "addis ketema sub city"] },
@@ -44,6 +46,28 @@ export function insideBounds(p: { lat: number; lng: number }, bounds: Bounds) {
     p.lat >= bounds[1] &&
     p.lng <= bounds[2] &&
     p.lat <= bounds[3]
+  );
+}
+export function distanceMeters(
+  a: { lat: number; lng: number },
+  b: { lat: number; lng: number },
+) {
+  const earthRadius = 6_371_000;
+  const toRadians = (value: number) => (value * Math.PI) / 180;
+  const dLat = toRadians(b.lat - a.lat);
+  const dLng = toRadians(b.lng - a.lng);
+  const lat1 = toRadians(a.lat);
+  const lat2 = toRadians(b.lat);
+  const h =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
+  return 2 * earthRadius * Math.asin(Math.min(1, Math.sqrt(h)));
+}
+
+export function insideAddisServiceRadius(p: { lat: number; lng: number }) {
+  return (
+    validPoint(p) &&
+    distanceMeters(ADDIS_CENTER, p) <= ADDIS_MAX_RADIUS_METERS
   );
 }
 export function serviceBounds(raw?: string): {
@@ -230,7 +254,9 @@ function localSearchText(p: Place) {
 export function searchPreviewPlaces(query: string) {
   const q = normalizeSearch(query);
   const unique = places.filter(
-    (p, i) => places.findIndex((a) => placeKey(a) === placeKey(p)) === i,
+    (p, i) =>
+      insideAddisServiceRadius(p) &&
+      places.findIndex((a) => placeKey(a) === placeKey(p)) === i,
   );
 
   if (!q) {
