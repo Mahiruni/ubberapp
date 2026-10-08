@@ -17,9 +17,9 @@ import type { LocationStatus, RiderLocation } from "../../lib/nexride-location";
 type HomeSheetSnap = "collapsed" | "medium" | "expanded";
 
 const visibleRatio: Record<HomeSheetSnap, number> = {
-  collapsed: 0.27,
-  medium: 0.46,
-  expanded: 0.75,
+  collapsed: 0.29,
+  medium: 0.5,
+  expanded: 0.78,
 };
 
 const snapHeight = (snap: HomeSheetSnap, viewportHeight: number) => {
@@ -125,8 +125,8 @@ export function RiderHomePanel({
   const withResistance = (raw: number) => {
     const min = minHeight();
     const max = maxHeight();
-    if (raw < min) return min + (raw - min) * 0.16;
-    if (raw > max) return max + (raw - max) * 0.16;
+    if (raw < min) return min + (raw - min) * 0.22;
+    if (raw > max) return max + (raw - max) * 0.22;
     return raw;
   };
 
@@ -190,12 +190,13 @@ export function RiderHomePanel({
     if (!dragActive.current) return;
     const now = performance.now();
     const elapsed = Math.max(1, now - drag.current.lastAt);
-    drag.current.velocity = -(clientY - drag.current.lastY) / elapsed;
+    const instantVelocity = -(clientY - drag.current.lastY) / elapsed;
+    drag.current.velocity = drag.current.velocity * 0.62 + instantVelocity * 0.38;
     drag.current.lastY = clientY;
     drag.current.lastAt = now;
 
     const delta = drag.current.startY - clientY;
-    if (Math.abs(delta) > 5) drag.current.moved = true;
+    if (Math.abs(delta) > 4) drag.current.moved = true;
     paintHeight(withResistance(drag.current.startHeight + delta));
   };
 
@@ -209,7 +210,7 @@ export function RiderHomePanel({
     const clamped = Math.min(max, Math.max(min, heightRef.current));
     const projected = Math.min(
       max,
-      Math.max(min, clamped + drag.current.velocity * 170),
+      Math.max(min, clamped + drag.current.velocity * 230),
     );
     applySnap(nearestSnap(projected));
   };
@@ -244,6 +245,7 @@ export function RiderHomePanel({
     let startY = 0;
     let touchId = -1;
     let handedToSheet = false;
+    let startedOnControl = false;
 
     const start = (event: TouchEvent) => {
       event.stopPropagation();
@@ -252,6 +254,10 @@ export function RiderHomePanel({
       touchId = touch.identifier;
       startY = touch.clientY;
       handedToSheet = false;
+      const target = event.target;
+      startedOnControl =
+        target instanceof Element &&
+        Boolean(target.closest("button,a,input,textarea,select,[role='button'],.nr-list-row"));
     };
 
     const move = (event: TouchEvent) => {
@@ -261,8 +267,19 @@ export function RiderHomePanel({
       );
       if (!touch) return;
 
-      const downward = touch.clientY - startY;
-      if (!handedToSheet && scroller.scrollTop <= 1 && downward > 7) {
+      const deltaY = touch.clientY - startY;
+      const atTop = scroller.scrollTop <= 1;
+      const verticalIntent = Math.abs(deltaY) > 6;
+      const canExpandFromBody = deltaY < 0 && snap !== "expanded";
+      const canCollapseFromBody = deltaY > 0;
+
+      if (
+        !handedToSheet &&
+        !startedOnControl &&
+        atTop &&
+        verticalIntent &&
+        (canExpandFromBody || canCollapseFromBody)
+      ) {
         handedToSheet = true;
         beginDrag(startY);
         drag.current.moved = true;
@@ -292,7 +309,7 @@ export function RiderHomePanel({
       scroller.removeEventListener("touchend", end);
       scroller.removeEventListener("touchcancel", end);
     };
-  }, [viewportHeight]);
+  }, [viewportHeight, snap]);
 
   const toggleSnap = () => {
     if (drag.current.moved) {
