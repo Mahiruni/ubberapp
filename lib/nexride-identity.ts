@@ -24,3 +24,13 @@ export function identityDocumentReusable(status: string): boolean {
 export function canReuseRiderAccount(primaryRole: string, riderMembership: boolean): boolean {
   return primaryRole === "rider" || (primaryRole === "driver" && riderMembership);
 }
+/** Match the active, reusable document to both its type and issuing jurisdiction. */
+export function sameIdentityDocumentScope(
+  record: { document_type: string; issuing_country: string; status: string },
+  type: string,
+  country: string,
+): boolean {
+  return record.document_type === type &&
+    record.issuing_country === country.trim().toUpperCase() &&
+    identityDocumentReusable(record.status);
+}

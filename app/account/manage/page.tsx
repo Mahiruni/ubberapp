@@ -10,6 +10,7 @@ import {
 import {
   IDENTITY_DOCUMENT_TYPES, identityDocumentLabel, identityDocumentReusable,
   normalizeEthiopianPhone,
+  sameIdentityDocumentScope,
 } from "../../../lib/nexride-identity";
 import { LanguageContext } from "../../../components/nexride/ui";
 import "./manage.css";
@@ -160,7 +161,7 @@ export default function NexRideManageAccountPage() {
 
   async function sendIdentity(event: FormEvent) {
     event.preventDefault();
-    if (documents.some(d => d.document_type === documentType && identityDocumentReusable(d.status))) {
+    if (documents.some(d => sameIdentityDocumentScope(d, documentType, documentCountry))) {
       setNotice("Your existing identity document is already submitted or verified. Reuse that record.");
       return;
     }
@@ -291,7 +292,7 @@ export default function NexRideManageAccountPage() {
 
   const back=profile?.role==="driver"?"/driver/profile":"/";
   const activeDocs=documents.filter(d=>identityDocumentReusable(d.status));
-  const existingDocument=activeDocs.find(d=>d.document_type===documentType);
+  const existingDocument=activeDocs.find(d=>sameIdentityDocumentScope(d,documentType,documentCountry));
   return (
     <main className="nex-manage">
       <div className="nex-manage-top">
@@ -362,12 +363,12 @@ export default function NexRideManageAccountPage() {
                   {IDENTITY_DOCUMENT_TYPES.map(d=><option key={d.value} value={d.value}>{d.label}</option>)}
                 </select>
               </label>
+              <label>{say("Issuing country (2-letter code)","ሀገር")}
+                <input value={documentCountry} maxLength={2} onChange={e=>setDocumentCountry(e.target.value.toUpperCase())} required pattern="[A-Za-z]{2}"/>
+              </label>
               {existingDocument ? <div className="nex-manage-notice">
                 {say("This document is already submitted or approved. No new upload is needed. Replacement requires review.","ይህ ሰነድ ቀድሞ ተመዝግቧል።")}
               </div> : <>
-                <label>{say("Issuing country (2-letter code)","ሀገር")}
-                  <input value={documentCountry} maxLength={2} onChange={e=>setDocumentCountry(e.target.value.toUpperCase())} required pattern="[A-Za-z]{2}"/>
-                </label>
                 <label>{say("Document number (kept private)","የሰነድ ቁጥር")}
                   <input value={documentNumber} onChange={e=>setDocumentNumber(e.target.value)} autoComplete="off" maxLength={80} required/>
                 </label>
