@@ -1559,3 +1559,63 @@
     bottom:calc(var(--nr-flow-sheet-height) + 8px)!important;
   }
 }
+
+
+/* Persistent Rider sheet surface across navigation states.
+   The host remains transparent so rounded corners reveal the map, but each
+   actual Rider screen root owns an explicit glass surface. This prevents the
+   wrapper from visually disappearing when navigation swaps Home/Destination/
+   Rides/Matching/Trip content. */
+@media (max-width:800px) {
+  .nr-app[data-mode="rider"] .rider-map-flow
+    .nr-rider-flow-panel > :is(
+      .nr-rider-home-sheet,
+      .nr-destination-panel,
+      .nr-ride-selection,
+      .nr-driver-matching,
+      .nr-trip-experience
+    ) {
+    display:flex!important;
+    flex-direction:column!important;
+    width:100%!important;
+    height:100%!important;
+    min-height:0!important;
+    max-height:100%!important;
+    opacity:1!important;
+    visibility:visible!important;
+    overflow:hidden!important;
+    border:1px solid color-mix(in srgb,var(--line) 62%,transparent)!important;
+    border-bottom:0!important;
+    border-radius:24px 24px 0 0!important;
+    background:color-mix(in srgb,var(--surface) 88%,transparent)!important;
+    color:var(--text)!important;
+    box-shadow:
+      0 -1px 0 rgba(255,255,255,.58),
+      0 -10px 30px rgba(4,28,48,.12),
+      0 -28px 70px rgba(4,28,48,.08)!important;
+    backdrop-filter:blur(26px) saturate(138%)!important;
+    -webkit-backdrop-filter:blur(26px) saturate(138%)!important;
+    pointer-events:auto!important;
+  }
+
+  .nr-app[data-mode="rider"][data-theme="dark"] .rider-map-flow
+    .nr-rider-flow-panel > :is(
+      .nr-rider-home-sheet,
+      .nr-destination-panel,
+      .nr-ride-selection,
+      .nr-driver-matching,
+      .nr-trip-experience
+    ) {
+    background:rgba(4,28,48,.86)!important;
+    border-color:rgba(168,194,207,.16)!important;
+    box-shadow:
+      0 -1px 0 rgba(255,255,255,.07),
+      0 -12px 34px rgba(0,8,18,.30),
+      0 -30px 76px rgba(0,8,18,.20)!important;
+  }
+
+  /* Prevent transition flashes while React swaps Rider screens. */
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-rider-flow-panel {
+    min-height:var(--nr-flow-sheet-height)!important;
+  }
+}
