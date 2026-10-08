@@ -37,6 +37,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -411,18 +412,52 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
     return (
       <>
         <span className="nr-rider-entry-kicker">NEXRIDE · RIDER</span>
-        <h1>Create your account</h1>
-        <p>Book rides, save places, and keep every trip in one place.</p>
-        <form className="nr-profile-form" onSubmit={signUp} aria-busy={busy}>
+        <h1>{t("createAccount")}</h1>
+        <p>{t("createAccountIntro")}</p>
+        <form className="nr-profile-form nr-auth-signup-form" onSubmit={signUp} aria-busy={busy}>
           <InputField label={t("fullName")} autoComplete="name" required maxLength={80} value={fullName} onChange={(event) => setFullName(event.target.value)} />
-          <InputField label={t("phoneNumber")} type="tel" autoComplete="tel" required value={phone} onChange={(event) => setPhone(event.target.value)} />
-          <InputField label={t("authEmail")} type="email" autoComplete="email" required value={email} onChange={(event) => setEmail(event.target.value)} />
-          <InputField label={t("password")} type="password" autoComplete="new-password" required minLength={8} value={password} onChange={(event) => setPassword(event.target.value)} />
-          <InputField label={t("confirmPassword")} type="password" autoComplete="new-password" required minLength={8} value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} />
-          {error && <p className="nr-auth-error" role="alert">{error}</p>}
-          <Button type="submit" disabled={busy} loading={busy}>
-            {t(busy ? "creatingAccount" : "createAccount")}
-          </Button>
+          <InputField label={t("phoneNumber")} type="tel" inputMode="tel" autoComplete="tel" required value={phone} onChange={(event) => setPhone(event.target.value)} />
+          <InputField label={t("authEmail")} type="email" inputMode="email" autoComplete="email" required value={email} onChange={(event) => setEmail(event.target.value)} />
+          <label className="nr-input-field nr-auth-password-field">
+            <span>{t("password")}</span>
+            <div className="nr-auth-password-row">
+              <input
+                type={showPassword ? "text" : "password"}
+                autoComplete="new-password"
+                required
+                minLength={8}
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                aria-describedby="rider-password-help"
+              />
+              <button type="button" className="nr-auth-password-toggle" onClick={() => setShowPassword((value) => !value)} aria-pressed={showPassword}>
+                {showPassword ? "Hide" : "Show"}
+              </button>
+            </div>
+          </label>
+          <p id="rider-password-help" className="nr-auth-helper">Use at least 8 characters.</p>
+          <label className="nr-input-field nr-auth-password-field">
+            <span>{t("confirmPassword")}</span>
+            <div className="nr-auth-password-row">
+              <input
+                type={showPassword ? "text" : "password"}
+                autoComplete="new-password"
+                required
+                minLength={8}
+                value={confirmPassword}
+                onChange={(event) => setConfirmPassword(event.target.value)}
+              />
+              <button type="button" className="nr-auth-password-toggle" onClick={() => setShowPassword((value) => !value)} aria-pressed={showPassword}>
+                {showPassword ? "Hide" : "Show"}
+              </button>
+            </div>
+          </label>
+          {error && <p id="rider-signup-error" className="nr-auth-error" role="alert">{error}</p>}
+          <div className="nr-auth-cta-dock">
+            <Button type="submit" disabled={busy} loading={busy}>
+              {t(busy ? "creatingAccount" : "createAccount")}
+            </Button>
+          </div>
         </form>
         <div className="nr-auth-divider"><span>or</span></div>
         <p className="nr-auth-switch">
@@ -486,8 +521,14 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
       <h1>Sign in</h1>
       <p>Sign in to book a ride or manage your trips.</p>
       <form className="nr-profile-form" onSubmit={signIn} aria-busy={busy}>
-        <InputField label={t("authEmail")} type="email" autoComplete="username" required value={email} onChange={(event) => setEmail(event.target.value)} />
-        <InputField label={t("password")} type="password" autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} />
+        <InputField label={t("authEmail")} type="email" inputMode="email" autoComplete="username" required value={email} onChange={(event) => setEmail(event.target.value)} />
+        <label className="nr-input-field nr-auth-password-field">
+          <span>{t("password")}</span>
+          <div className="nr-auth-password-row">
+            <input type={showPassword ? "text" : "password"} autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} />
+            <button type="button" className="nr-auth-password-toggle" onClick={() => setShowPassword((value) => !value)} aria-pressed={showPassword}>{showPassword ? "Hide" : "Show"}</button>
+          </div>
+        </label>
         {error && <p className="nr-auth-error" role="alert">{error}</p>}
         {notice && <p className="nr-auth-notice" role="status">{notice}</p>}
         <Button type="submit" disabled={busy} loading={busy}>
