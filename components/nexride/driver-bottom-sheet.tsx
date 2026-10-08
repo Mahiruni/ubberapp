@@ -5,9 +5,9 @@ import { useRef, useState, type CSSProperties, type PointerEvent, type ReactNode
 type DriverSheetSnap = "collapsed" | "medium" | "expanded";
 
 const SNAP_RATIO: Record<DriverSheetSnap, number> = {
-  collapsed: 0.29,
-  medium: 0.5,
-  expanded: 0.78,
+  collapsed: 0.34,
+  medium: 0.55,
+  expanded: 0.82,
 };
 
 const ORDER: DriverSheetSnap[] = ["collapsed", "medium", "expanded"];
@@ -66,8 +66,8 @@ export function DriverBottomSheet({
     const delta = event.clientY - current.startY;
     if (Math.abs(delta) > 4) current.moved = true;
     const next = Math.max(
-      vh * 0.26,
-      Math.min(vh * 0.8, current.startHeight - delta),
+      vh * 0.33,
+      Math.min(vh * 0.84, current.startHeight - delta),
     );
     setDragHeight(next);
   };

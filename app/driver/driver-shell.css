@@ -398,3 +398,62 @@ html[lang="am"] .nr-driver-menu-footer :where(strong,small,span,button,p){
   backdrop-filter:none!important;
   -webkit-backdrop-filter:none!important;
 }
+
+/* Unified NexRide Driver operational wrappers — clean solid surfaces,
+   predictable touch hierarchy, compact typography and safe-area support. */
+.nr-driver-app-shell :is(.nr-driver-sheet,.nr-request-sheet,.nr-nav-bottom-card){
+  --nr-driver-panel-radius:22px;
+  border:1px solid var(--driver-border)!important;
+  border-bottom:0!important;
+  border-radius:var(--nr-driver-panel-radius) var(--nr-driver-panel-radius) 0 0!important;
+  background:var(--driver-surface)!important;
+  color:var(--driver-text-primary)!important;
+  box-shadow:0 -8px 30px rgba(4,28,48,.18)!important;
+  backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+  overflow:hidden!important;
+  pointer-events:auto!important;
+  overscroll-behavior:contain;
+}
+.nr-driver-app-shell .nr-driver-sheet{
+  min-height:min(34dvh,290px);
+  max-height:calc(100dvh - env(safe-area-inset-top,0px) - 58px);
+  touch-action:pan-y;
+  isolation:isolate;
+}
+.nr-driver-app-shell .nr-driver-sheet-grab{
+  display:flex;justify-content:center;align-items:center;
+  height:35px!important;min-height:35px!important;width:100%;
+  background:var(--driver-surface)!important;
+  border:0!important;cursor:ns-resize;
+  touch-action:none;
+}
+.nr-driver-app-shell .nr-driver-sheet-grab>span{
+  width:36px!important;height:4px!important;
+  border-radius:999px!important;background:var(--driver-text-secondary)!important;
+  opacity:.4;
+}
+.nr-driver-app-shell .nr-driver-sheet-content{
+  min-height:0;overflow-y:auto;overscroll-behavior:contain;
+  touch-action:pan-y;
+  padding-bottom:max(14px,env(safe-area-inset-bottom,0px));
+}
+.nr-driver-app-shell :is(.nr-driver-sheet,.nr-request-sheet,.nr-nav-bottom-card) button{
+  -webkit-tap-highlight-color:transparent;
+}
+.nr-driver-app-shell :is(.nr-driver-sheet,.nr-request-sheet,.nr-nav-bottom-card) button:focus-visible{
+  outline:3px solid var(--driver-accent)!important;outline-offset:2px;
+}
+.nr-driver-app-shell :where(.nr-driver-sheet,.nr-request-sheet,.nr-nav-bottom-card) :is(h1,h2,h3){
+  letter-spacing:-.025em;line-height:1.25;
+}
+@media(min-width:760px){
+ .nr-driver-app-shell :is(.nr-driver-sheet,.nr-request-sheet,.nr-nav-bottom-card){
+   border-bottom:1px solid var(--driver-border)!important;
+   border-radius:22px!important;
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ .nr-driver-app-shell :is(.nr-driver-sheet,.nr-request-sheet,.nr-nav-bottom-card) *{
+   transition-duration:.01ms!important;animation-duration:.01ms!important;
+ }
+}
