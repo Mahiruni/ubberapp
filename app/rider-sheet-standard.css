@@ -1728,3 +1728,46 @@
     visibility:visible!important;
   }
 }
+
+
+/* Standard NexRide Rider sheet — solid, clean, production UI.
+   No glassmorphism. The persistent wrapper remains authoritative. */
+@media (max-width:800px) {
+  .nr-app[data-mode="rider"] .rider-map-flow
+    .nr-rider-flow-panel > .nr-rider-persistent-wrapper:not([hidden]) {
+    border:1px solid var(--line)!important;
+    border-bottom:0!important;
+    border-radius:24px 24px 0 0!important;
+    background:var(--surface)!important;
+    color:var(--text)!important;
+    box-shadow:0 -6px 20px rgba(4,28,48,.10)!important;
+    backdrop-filter:none!important;
+    -webkit-backdrop-filter:none!important;
+  }
+
+  .nr-app[data-mode="rider"][data-theme="dark"] .rider-map-flow
+    .nr-rider-flow-panel > .nr-rider-persistent-wrapper:not([hidden]) {
+    background:var(--surface)!important;
+    border-color:var(--line)!important;
+    box-shadow:0 -6px 22px rgba(0,8,18,.24)!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow
+    .nr-rider-persistent-wrapper:not([hidden]) > :is(
+      .nr-rider-home-sheet,
+      .nr-destination-panel,
+      .nr-ride-selection,
+      .nr-driver-matching,
+      .nr-trip-experience
+    ) {
+    background:transparent!important;
+    backdrop-filter:none!important;
+    -webkit-backdrop-filter:none!important;
+    box-shadow:none!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-home-sheet-grab-area,
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-home-sheet-scroll {
+    background:transparent!important;
+  }
+}
