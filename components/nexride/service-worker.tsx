@@ -3,6 +3,10 @@ import { useEffect } from "react";
 
 export function ServiceWorkerRegistration() {
   useEffect(() => {
+    const onMessage = (event: MessageEvent) => {
+      if (event.data?.type === "nexride-update") window.dispatchEvent(new Event("nexride:check-updates"));
+    };
+    navigator.serviceWorker?.addEventListener("message", onMessage);
     if (
       process.env.NODE_ENV !== "production" ||
       !("serviceWorker" in navigator)
@@ -16,6 +20,7 @@ export function ServiceWorkerRegistration() {
       .catch(() => {
         // PWA enhancement must never block the ride experience.
       });
+    return () => navigator.serviceWorker?.removeEventListener("message", onMessage);
   }, []);
 
   return null;

@@ -8,6 +8,10 @@ on:
       - feature/rider-human-avatar-tracking
     paths:
       - .github/workflows/android-apks.yml
+      - android/mobile-updates/**
+      - scripts/configure-mobile-release.py
+      - components/nexride/mobile-update-gate.tsx
+      - app/api/mobile/release/route.ts
 
 permissions:
   contents: read
@@ -53,7 +57,7 @@ jobs:
       - name: Install web and Capacitor dependencies
         run: |
           npm install --no-audit --no-fund
-          npm install --no-save --package-lock=false --no-audit --no-fund @capacitor/core@8 @capacitor/cli@8 @capacitor/android@8
+          npm install --no-save --package-lock=false --no-audit --no-fund @capacitor/core@8 @capacitor/cli@8 @capacitor/android@8 @capacitor/app@8
 
       - name: Configure separate Android application
         env:
@@ -84,6 +88,13 @@ jobs:
         run: |
           npx cap add android
           npx cap sync android
+
+      - name: Configure native Google Play updates
+        env:
+          NEXRIDE_ROLE: ${{ matrix.role }}
+          NEXRIDE_RIDER_ANDROID_VERSION_CODE: ${{ vars.NEXRIDE_RIDER_ANDROID_VERSION_CODE || '1' }}
+          NEXRIDE_DRIVER_ANDROID_VERSION_CODE: ${{ vars.NEXRIDE_DRIVER_ANDROID_VERSION_CODE || '1' }}
+        run: python3 scripts/configure-mobile-release.py
 
       - name: Apply minimum Android permissions
         run: |

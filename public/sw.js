@@ -104,6 +104,11 @@ self.addEventListener("push", (event) => {
   const url = typeof data.url === "string" && data.url.startsWith("/") ? data.url : "/";
   const tag = typeof data.tag === "string" ? data.tag : undefined;
 
+  if (data.type === "nexride-update") {
+    event.waitUntil(self.clients.matchAll({ type: "window", includeUncontrolled: true })
+      .then((clients) => clients.forEach((client) => client.postMessage({ type: "nexride-update" }))));
+  }
+
   event.waitUntil(
     self.registration.showNotification(title, {
       body,
