@@ -23,7 +23,8 @@ function nextId() { return "offer-unit-" + ++serial; }
 beforeEach(() => {
   vi.useFakeTimers();
   vi.setSystemTime(new Date("2026-10-08T12:00:00Z"));
-  players = [];
+  // Keep the cached Audio instance across tests, as the production module does.
+  vi.clearAllMocks();
   vi.stubGlobal("window", {
     localStorage: { getItem: () => null },
     dispatchEvent: () => true,
