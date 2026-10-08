@@ -9,6 +9,8 @@ import { useRiderLocation } from "../../lib/nexride-location";
 import { DriverEarningsScreen } from "./driver-earnings";
 import { DriverProfileScreen } from "./driver-profile";
 import { DriverAvailabilitySwipe } from "./driver-availability-swipe";
+import { DriverDockHandle } from "./driver-dock-handle";
+import { type DriverDockSnap } from "../../lib/nexride-driver-dock";
 import { supabase } from "../../lib/supabase";
 import { resolveSessionRole } from "../../lib/nexride-account-role";
 import { nexrideApiFetch } from "../../lib/nexride-api-auth";
@@ -125,6 +127,7 @@ export function DriverWorkspace({
   const [error, setError] = useState("");
   const [locationPermission, setLocationPermission] = useState<LocationPermission>("checking");
   const [alertPermission, setAlertPermission] = useState<NotificationPermission | "unsupported">("unsupported");
+  const [dockSnap, setDockSnap] = useState<DriverDockSnap>("compact");
   useEffect(() => {
     if (typeof Notification === "undefined") return;
     const sync = () => setAlertPermission(Notification.permission);
@@ -659,6 +662,7 @@ export function DriverWorkspace({
         <div
           className="nr-driver-home-swipe"
           data-map-input-boundary="true"
+          data-snap={dockSnap}
           onPointerDown={(event) => event.stopPropagation()}
           onPointerMove={(event) => event.stopPropagation()}
           onPointerUp={(event) => event.stopPropagation()}
@@ -671,8 +675,9 @@ export function DriverWorkspace({
           onDoubleClick={(event) => event.stopPropagation()}
         >
           <div className="nr-driver-home-control-panel">
+            <DriverDockHandle snap={dockSnap} onChange={setDockSnap} language={language} />
             <div className="nr-driver-home-control-heading">
-              <div className="nr-driver-home-control-state">
+              <div className="nr-driver-home-control-state" aria-live="polite" aria-atomic="true">
                 <span className="nr-driver-home-control-brand">NEXRIDE · DRIVER</span>
                 <strong>{state.online ? say("Ready for rides", "ለጉዞ ዝግጁ") : say("You're offline", "ከመስመር ውጭ ነዎት")}</strong>
                 <small>{state.online
@@ -683,6 +688,7 @@ export function DriverWorkspace({
                 <span aria-hidden="true" />{state.online ? say("Online", "መስመር ላይ") : say("Offline", "ከመስመር ውጭ")}
               </span>
             </div>
+            <div className="nr-driver-dock-extra" id="nr-driver-dock-extra">
             <div className="nr-driver-home-control-meta" aria-label={say("Operational status", "የኦፕሬሽን ሁኔታ")}>
               <span><Icon name="navigation" size={15} />{mapLocation.status === "ready" ? say("GPS ready", "GPS ዝግጁ") : say("GPS needs attention", "GPS ማረጋገጥ ያስፈልጋል")}</span>
               <button
@@ -697,6 +703,7 @@ export function DriverWorkspace({
                   : alertPermission === "unsupported" ? say("In-app alerts", "የውስጥ ማሳወቂያ")
                   : say("Enable alerts", "ማሳወቂያን አንቃ")}
               </button>
+            </div>
             </div>
             <DriverAvailabilitySwipe
               online={state.online}

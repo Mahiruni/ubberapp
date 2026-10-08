@@ -20,6 +20,7 @@ import "./resilience.css";
 import "./live-location.css";
 import "./driver/driver-shell.css";
 import "./audio-system.css";
+import "./driver/driver-dock-premium.css";
 
 const description =
   "Book reliable rides across Addis Ababa with NexRide, a rider and driver mobility platform built for Ethiopia.";

@@ -32,6 +32,7 @@ export function DriverBottomSheet({
     lastAt: number;
     velocity: number;
     moved: boolean;
+    height: number;
   } | null>(null);
   const suppressClick = useRef(false);
 
@@ -48,6 +49,7 @@ export function DriverBottomSheet({
       lastAt: performance.now(),
       velocity: 0,
       moved: false,
+      height,
     };
     event.currentTarget.setPointerCapture(event.pointerId);
     setDragHeight(height);
@@ -66,9 +68,10 @@ export function DriverBottomSheet({
     const delta = event.clientY - current.startY;
     if (Math.abs(delta) > 4) current.moved = true;
     const next = Math.max(
-      vh * 0.33,
-      Math.min(vh * 0.84, current.startHeight - delta),
+      Math.min(vh * 0.45, 220),
+      Math.min(vh * 0.82, current.startHeight - delta),
     );
+    current.height = next;
     setDragHeight(next);
   };
 
@@ -77,7 +80,7 @@ export function DriverBottomSheet({
     if (!current) return;
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
     const vh = viewportHeight();
-    const currentHeight = dragHeight ?? current.startHeight;
+    const currentHeight = current.height;
     const ratio = currentHeight / vh;
     let next = ORDER.reduce((best, item) =>
       Math.abs(SNAP_RATIO[item] - ratio) < Math.abs(SNAP_RATIO[best] - ratio) ? item : best,
@@ -92,6 +95,11 @@ export function DriverBottomSheet({
     drag.current = null;
     setDragHeight(null);
     setSnap(next);
+  };
+
+  const cancel = () => {
+    drag.current = null;
+    setDragHeight(null);
   };
 
   const cycle = () => {
@@ -124,7 +132,7 @@ export function DriverBottomSheet({
         onPointerDown={begin}
         onPointerMove={move}
         onPointerUp={finish}
-        onPointerCancel={finish}
+        onPointerCancel={cancel}
       >
         <span aria-hidden="true" />
       </button>

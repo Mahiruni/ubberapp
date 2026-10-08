@@ -53,7 +53,7 @@ export function DriverAvailabilitySwipe({
   };
 
   const startDrag = (event: ReactPointerEvent<HTMLButtonElement>) => {
-    if (disabled || updating) return;
+    if (disabled || updating || (event.pointerType === "mouse" && event.button !== 0)) return;
     maxOffsetRef.current = measure();
     draggingRef.current = true;
     draggedRef.current = false;
@@ -92,12 +92,14 @@ export function DriverAvailabilitySwipe({
     setDragOffset(null);
   };
 
-  const activate = () => {
+  // A pointer tap must never toggle availability accidentally. Keyboard and
+  // assistive-technology activation remain available through a native click.
+  const activate = (event: React.MouseEvent<HTMLButtonElement>) => {
     if (suppressClickRef.current) {
       suppressClickRef.current = false;
       return;
     }
-    if (disabled || updating || draggedRef.current) {
+    if (event.detail !== 0 || disabled || updating || draggedRef.current) {
       draggedRef.current = false;
       return;
     }
@@ -119,6 +121,7 @@ export function DriverAvailabilitySwipe({
       type="button"
       role="switch"
       aria-checked={online}
+      aria-description="Swipe to confirm. Keyboard: Enter or Space toggles availability."
       aria-label={
         online
           ? say("Driver online. Swipe or activate to go offline.", "አሽከርካሪው መስመር ላይ ነው። ከመስመር ውጭ ለመውጣት ያንሸራትቱ ወይም ያግብሩ።")
