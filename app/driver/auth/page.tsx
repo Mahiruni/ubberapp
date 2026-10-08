@@ -1,15 +1,15 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useContext, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
-import { Brand, Icon, useTranslation } from "../../../components/nexride/ui";
+import { Brand, Icon, LanguageContext, useTranslation } from "../../../components/nexride/ui";
 import { supabase } from "../../../lib/supabase";
 import { clearExplicitSignOut, enterDriver, explicitSignOutRole } from "../../../lib/nexride-startup";
 import { driverResumeDestination } from "../../../lib/nexride-driver-verification";
 import { resolveSessionRole } from "../../../lib/nexride-account-role";
 import { authErrorKey } from "../../../lib/nexride-auth-errors";
+import { announceLanguage } from "../../../components/nexride/language-provider";
 import "../driver-welcome.css";
 import "./driver-auth.css";
 import "../../auth-experience.css";
@@ -18,8 +18,10 @@ import "../../detail-system.css";
 export default function DriverAuth() {
   const router = useRouter();
   const t = useTranslation();
+  const language = useContext(LanguageContext);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -89,8 +91,7 @@ export default function DriverAuth() {
     <main className="nr-auth-experience driver-auth-page" data-auth-mode="signin" data-mode="driver">
       <div className="nr-auth-page">
         <section className="nr-auth-shell nr-auth-shell-driver">
-          <div className="nr-auth-hero" aria-hidden="true">
-            <Image src="/images/addis-nexride-auth.webp" alt="" fill priority sizes="(max-width: 760px) 100vw, 760px" quality={86} />
+          <div className="nr-auth-hero nr-auth-hero-brand nr-auth-hero-driver" aria-hidden="true">
             <div className="nr-auth-hero-wash driver" />
             <div className="nr-auth-hero-top">
               <Brand />
@@ -99,18 +100,28 @@ export default function DriverAuth() {
             <div className="nr-auth-hero-copy">
               <span>NEXRIDE · DRIVER</span>
               <strong>Drive. Earn.<br />Grow.</strong>
+              <div className="nr-auth-hero-points">
+                <span>One account</span>
+                <span>Verified access</span>
+                <span>Driver-ready</span>
+              </div>
             </div>
-            </div>
+          </div>
 
           <div className="nr-auth-content">
-            <Link href="/driver" className="nr-auth-back">← Back</Link>
+            <div className="nr-auth-content-tools">
+              <Link href="/driver" className="nr-auth-back">← Back</Link>
+              <button type="button" className="nr-auth-language-toggle" onClick={() => announceLanguage(language === "en" ? "am" : "en")}>
+                {language === "en" ? "አማርኛ" : "English"}
+              </button>
+            </div>
             <span className="driver-auth-role">{t("driverAccount").toUpperCase()}</span>
             <h1>{t("driverSignInTitle")}</h1>
             <p>{t("driverSignInIntro")}</p>
 
             <form onSubmit={submit} className="nr-auth-form">
               <label><span>Email address</span><div className="nr-auth-input"><Icon name="user" size={19}/><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username" placeholder="Email address" required /></div></label>
-              <label><span>Password</span><div className="nr-auth-input"><Icon name="shield" size={19}/><input type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" placeholder="Password" required /></div></label>
+              <label><span>{t("password")}</span><div className="nr-auth-input nr-auth-password-row"><Icon name="shield" size={19}/><input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" placeholder={t("password")} required /><button type="button" className="nr-auth-password-toggle" onClick={() => setShowPassword((value) => !value)} aria-pressed={showPassword}>{showPassword ? "Hide" : "Show"}</button></div></label>
               {error && <div className="driver-auth-error" role="alert">{error}</div>}
               {notice && <div className="driver-auth-notice" role="status">{notice}</div>}
               <button className="driver-auth-submit" type="submit" disabled={busy}>{busy ? t("signingIn") : t("signIn")}</button>
