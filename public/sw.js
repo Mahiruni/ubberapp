@@ -1,4 +1,4 @@
-const VERSION = "nexride-flagship-v6";
+const VERSION = "nexride-flagship-v7";
 const CORE_CACHE = VERSION + "-core";
 const RUNTIME_CACHE = VERSION + "-runtime";
 const CORE_ASSETS = [

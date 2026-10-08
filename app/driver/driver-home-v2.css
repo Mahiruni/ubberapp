@@ -378,3 +378,93 @@
     bottom:max(10px,env(safe-area-inset-bottom,0px))!important;
   }
 }
+
+/* NexRide Driver 2026: purposeful, compact map-first command wrapper.
+   Entire opaque control island intercepts pointer events; no touches leak
+   through to the Mapbox map. Keep swipe mechanics and safe areas intact. */
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-swipe[data-map-input-boundary="true"]{
+  width:min(460px,calc(100% - 24px))!important;
+  bottom:max(12px,env(safe-area-inset-bottom,0px))!important;
+  z-index:1000!important;
+  padding:0!important;
+  border:1px solid var(--driver-border)!important;
+  border-radius:24px!important;
+  background:var(--driver-surface)!important;
+  box-shadow:0 12px 42px rgba(4,28,48,.22)!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  overflow:hidden!important;
+  touch-action:auto!important;
+  contain:none!important;
+}
+.nr-driver-home-control-panel{
+  display:flex;flex-direction:column;gap:12px;
+  padding:16px 16px 13px;color:var(--driver-text-primary);
+  background:var(--driver-surface);isolation:isolate;pointer-events:auto;
+}
+.nr-driver-home-control-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.nr-driver-home-control-state{display:flex;flex-direction:column;gap:4px;min-width:0}
+.nr-driver-home-control-brand{font-size:9px;font-weight:850;letter-spacing:.13em;color:var(--driver-text-secondary)}
+.nr-driver-home-control-state strong{font-size:19px;line-height:1.2;letter-spacing:-.035em;font-weight:800;color:var(--driver-text-primary)}
+.nr-driver-home-control-state small{font-size:11px;line-height:1.45;color:var(--driver-text-secondary);max-width:29rem}
+.nr-driver-home-control-online{
+  display:inline-flex;align-items:center;gap:6px;flex:0 0 auto;white-space:nowrap;
+  padding:6px 9px;min-height:28px;border-radius:999px;
+  color:var(--driver-text-secondary);background:var(--driver-bg);
+  border:1px solid var(--driver-border);font-size:10px;font-weight:850
+}
+.nr-driver-home-control-online[data-online="true"]{color:#006f42;background:#d9fae9;border-color:#a4e4bf}
+.nr-driver-home-control-online>span{width:7px;height:7px;border-radius:50%;background:currentColor}
+.nr-driver-home-control-meta{
+  display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:10.5px;
+  color:var(--driver-text-secondary);
+}
+.nr-driver-home-control-meta>span{
+  display:flex;align-items:center;gap:6px;padding:7px 10px;border:1px solid var(--driver-border);
+  border-radius:10px;background:var(--driver-surface-elevated)
+}
+.nr-driver-home-control-panel .nr-driver-availability-swipe{
+  min-height:58px!important;height:58px!important;
+  border-radius:15px!important;
+  box-shadow:none!important;
+  touch-action:none!important;
+}
+.nr-driver-home-control-panel .nr-driver-swipe-thumb{border-radius:13px!important}
+.nr-driver-home-quick-actions{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;
+  border-top:1px solid var(--driver-border);padding-top:12px
+}
+.nr-driver-home-quick-actions button{
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  min-height:44px;padding:7px 5px;border:0;border-radius:12px;
+  background:var(--driver-bg);color:var(--driver-text-primary);
+  font-size:11px;font-weight:760;cursor:pointer;
+}
+.nr-driver-home-quick-actions button:hover{background:color-mix(in srgb,var(--driver-accent) 12%,var(--driver-bg))}
+.nr-driver-home-quick-actions button:active{transform:scale(.98)}
+.nr-driver-home-quick-actions button:focus-visible{outline:3px solid var(--driver-accent);outline-offset:2px}
+.nr-driver-app-shell[data-theme="dark"] .nr-driver-home-control-online[data-online="true"]{
+  color:#84edb9;background:#0b4b39;border-color:#176b51;
+}
+.nr-driver-home-map-canvas .nr-map-control-stack{
+  top:calc(env(safe-area-inset-top,0px) + 74px)!important;
+}
+.nr-driver-home-map-canvas .mapboxgl-ctrl-bottom-left,
+.nr-driver-home-map-canvas .mapboxgl-ctrl-bottom-right{
+  bottom:calc(265px + env(safe-area-inset-bottom,0px))!important;
+}
+@media(max-width:430px){
+  .nr-driver-app-shell[data-home="true"] .nr-driver-home-swipe[data-map-input-boundary="true"]{
+    bottom:max(8px,env(safe-area-inset-bottom,0px))!important;width:calc(100% - 16px)!important;
+  }
+  .nr-driver-home-control-panel{padding:13px 13px 11px;gap:10px}
+  .nr-driver-home-control-state strong{font-size:18px}
+}
+@media(max-height:650px){
+  .nr-driver-home-control-state small,.nr-driver-home-control-meta{display:none}
+  .nr-driver-home-control-panel{gap:8px;padding:10px 12px}
+  .nr-driver-home-quick-actions{padding-top:8px}
+}
+@media(prefers-reduced-motion:reduce){
+  .nr-driver-home-quick-actions button{transition:none!important}
+}

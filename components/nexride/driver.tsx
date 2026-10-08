@@ -341,62 +341,13 @@ export function DriverWorkspace({
     };
   }, []);
 
+  // Persistent app-shell runtime owns live GPS and offer subscriptions.
+  // Android may suspend a minimized PWA: never silently log the driver out
+  // or flip the server's Online state because visibility or GPS was paused.
   useEffect(() => {
-    if (!driverId || !state.online || (locationPermission !== "denied" && locationPermission !== "unsupported")) return;
-
-    void (async () => {
-      try {
-        const response = await nexrideApiFetch("/api/driver/availability", {
-          method: "PATCH",
-          body: JSON.stringify({ online: false }),
-        });
-        if (!response.ok) throw new Error("offline_failed");
-        const payload = await response.json();
-        if (payload?.driver) {
-          setState((current) => mergeDriverState(current, payload.driver as Record<string, unknown>));
-        } else {
-          setState((current) => ({ ...current, online: false }));
-        }
-      } catch {
-        setError("Location access was lost. Go offline and restore location access.");
-      }
-    })();
+    if (!driverId || !state.online || locationPermission !== "denied") return;
+    setError("Location access is unavailable. Keep NexRide open and restore GPS for accurate ride matching.");
   }, [driverId, locationPermission, state.online]);
-
-  useEffect(() => {
-    if (!driverId || !state.online || typeof navigator === "undefined" || !navigator.geolocation) return;
-
-    let lastSent = 0;
-    const watchId = navigator.geolocation.watchPosition(
-      (position) => {
-        const now = Date.now();
-        if (now - lastSent < 12000) return;
-        lastSent = now;
-        void (async () => {
-          try {
-            await nexrideApiFetch("/api/driver/availability", {
-              method: "PATCH",
-              body: JSON.stringify({
-                location: {
-                  latitude: position.coords.latitude,
-                  longitude: position.coords.longitude,
-                  accuracy: Number.isFinite(position.coords.accuracy) ? position.coords.accuracy : null,
-                },
-              }),
-            });
-          } catch {}
-        })();
-      },
-      (positionError) => {
-        if (positionError.code === positionError.PERMISSION_DENIED) {
-          setLocationPermission("denied");
-        }
-      },
-      { enableHighAccuracy: true, maximumAge: 10000, timeout: 12000 },
-    );
-
-    return () => navigator.geolocation.clearWatch(watchId);
-  }, [driverId, state.online]);
 
   const initials = useMemo(
     () => state.name.trim().split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "DR",
@@ -602,6 +553,7 @@ export function DriverWorkspace({
         const confirmed = payload.driver as Record<string, unknown>;
         setState((current) => mergeDriverState(current, confirmed));
         if ((confirmed.is_online === true) === nextOnline) {
+          window.dispatchEvent(new Event("nexride:driver-availability-changed"));
           emitNexRideFeedback({ event: nextOnline ? "driver_online" : "driver_offline" });
         }
       }
@@ -748,13 +700,36 @@ export function DriverWorkspace({
           onClick={(event) => event.stopPropagation()}
           onDoubleClick={(event) => event.stopPropagation()}
         >
-          <DriverAvailabilitySwipe
-            online={state.online}
-            updating={updating}
-            disabled={loading || (!state.online && !verified)}
-            labelOverride={swipeFeedback}
-            onToggle={toggleAvailability}
-          />
+          <div className="nr-driver-home-control-panel">
+            <div className="nr-driver-home-control-heading">
+              <div className="nr-driver-home-control-state">
+                <span className="nr-driver-home-control-brand">NEXRIDE · DRIVER</span>
+                <strong>{state.online ? say("Ready for rides", "ለጉዞ ዝግጁ") : say("You're offline", "ከመስመር ውጭ ነዎት")}</strong>
+                <small>{state.online
+                  ? say("You can receive ride requests when this app is minimized. GPS updates may pause in the background.", "መተግበሪያው ሲቀነስም የጉዞ ጥያቄ ሊደርስዎት ይችላል። የGPS ዝመና ሊቋረጥ ይችላል።")
+                  : say("Swipe to start receiving ride requests", "ጉዞ ለመቀበል ያንሸራትቱ")}</small>
+              </div>
+              <span className="nr-driver-home-control-online" data-online={state.online ? "true" : "false"}>
+                <span aria-hidden="true" />{state.online ? say("Online", "መስመር ላይ") : say("Offline", "ከመስመር ውጭ")}
+              </span>
+            </div>
+            <div className="nr-driver-home-control-meta" aria-label={say("Operational status", "የኦፕሬሽን ሁኔታ")}>
+              <span><Icon name="navigation" size={15} />{mapLocation.status === "ready" ? say("GPS ready", "GPS ዝግጁ") : say("GPS needs attention", "GPS ማረጋገጥ ያስፈልጋል")}</span>
+              <span><Icon name="bell" size={15} />{say("Ride alerts", "የጉዞ ማሳወቂያ")}</span>
+            </div>
+            <DriverAvailabilitySwipe
+              online={state.online}
+              updating={updating}
+              disabled={loading || (!state.online && !verified)}
+              labelOverride={swipeFeedback}
+              onToggle={toggleAvailability}
+            />
+            <nav className="nr-driver-home-quick-actions" aria-label={say("Driver quick actions", "የአሽከርካሪ ፈጣን አማራጮች")}>
+              <button type="button" onClick={() => router.push("/driver/activity")}><Icon name="list" size={16} />{say("Activity", "እንቅስቃሴ")}</button>
+              <button type="button" onClick={() => router.push("/driver/earnings")}><Icon name="wallet" size={16} />{say("Earnings", "ገቢ")}</button>
+              <button type="button" onClick={() => router.push("/driver/profile/settings")}><Icon name="settings" size={16} />{say("Settings", "ቅንብሮች")}</button>
+            </nav>
+          </div>
         </div>
       </section>
     </div>
