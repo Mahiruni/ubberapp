@@ -526,7 +526,7 @@ function AppWorkspace({
               showNearbyDrivers={
                 authenticated &&
                 mode === "rider" &&
-                ["home", "destination", "rides", "finding"].includes(screen)
+                ["home", "destination", "rides", "finding", "trip", "live"].includes(screen)
               }
               onStartRoute={
                 screen === "destination" && journey.canContinue

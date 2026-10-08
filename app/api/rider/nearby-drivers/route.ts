@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { haversineMeters } from "../../../../lib/location";
+import { NEARBY_DRIVER_RADIUS_METERS, withinNearbyDriverRadius } from "../../../../lib/nexride-nearby-vehicles";
 import { authorizedRequestSupabase } from "../../../../lib/nexride-server-supabase";
 import { serverAdminSupabase } from "../../../../lib/nexride-server-admin";
 import {
@@ -9,8 +10,8 @@ import {
 } from "../../../../lib/nexride-search";
 
 const MAX_DRIVER_RESULTS = 10;
-const MAX_DRIVER_QUERY = 80;
-const MAX_DISTANCE_METERS = 8_000;
+// Do not arbitrarily discard nearby cars after the latest 80 city-wide pings.
+const MAX_DRIVER_QUERY = 500;
 const LOCATION_FRESHNESS_MS = 60_000;
 
 const reply = (body: unknown, status = 200) =>
@@ -149,8 +150,7 @@ export async function GET(request: Request) {
 
         const distanceMeters = haversineMeters(riderPoint, location);
         if (
-          !Number.isFinite(distanceMeters) ||
-          distanceMeters > MAX_DISTANCE_METERS
+          !withinNearbyDriverRadius(distanceMeters)
         )
           return [];
 
@@ -175,6 +175,7 @@ export async function GET(request: Request) {
       vehicles,
       updatedAt: new Date().toISOString(),
       freshnessSeconds: LOCATION_FRESHNESS_MS / 1000,
+      radiusMeters: NEARBY_DRIVER_RADIUS_METERS,
     });
   } catch {
     return reply({ status: "unavailable", vehicles: [] }, 503);

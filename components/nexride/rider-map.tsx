@@ -12,6 +12,7 @@ import { endpointName } from "./destination";
 import type { Journey } from "../../lib/nexride-journey";
 import type { LocationStatus, RiderLocation } from "../../lib/nexride-location";
 import { nexrideApiFetch } from "../../lib/nexride-api-auth";
+import { withinNearbyDriverRadius } from "../../lib/nexride-nearby-vehicles";
 import {
   formatDistance,
   formatDuration,
@@ -1128,7 +1129,11 @@ export function RiderMap({
           "/api/rider/nearby-drivers?" + params.toString(),
           { cache: "no-store", signal: controller.signal },
         );
-        if (!active || !response.ok) return;
+        if (!active) return;
+        if (!response.ok) {
+          setNearbyDrivers([]);
+          return;
+        }
         const payload = await response.json();
         const raw = Array.isArray(payload?.vehicles) ? payload.vehicles : [];
         const next = raw
@@ -1148,7 +1153,9 @@ export function RiderMap({
               Number.isFinite(item.lng) &&
               Math.abs(item.lng) <= 180 &&
               Number.isFinite(item.distanceMeters) &&
-              item.distanceMeters >= 0,
+              withinNearbyDriverRadius(item.distanceMeters) &&
+              Number.isFinite(Date.parse(item.updatedAt)) &&
+              Date.now() - Date.parse(item.updatedAt) <= 60_000,
           )
           .slice(0, 10);
         setNearbyDrivers(next);
@@ -1170,12 +1177,14 @@ export function RiderMap({
       if (document.visibilityState === "visible") void loadNearbyDrivers();
     };
     document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("online", onVisible);
 
     return () => {
       active = false;
       controller?.abort();
       window.clearInterval(timer);
       document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("online", onVisible);
     };
   }, [
     showNearbyDrivers,

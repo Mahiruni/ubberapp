@@ -562,3 +562,7 @@
 @media (prefers-reduced-motion: reduce) {
   .nr-nearby-car-marker { transition: none !important; }
 }
+
+/* High-contrast NexRide car pins in the one-kilometre rider supply area. */
+.nr-nearby-car-marker{z-index:15;opacity:1}
+.nr-nearby-car-brand{border:1px solid rgba(4,28,48,.13)}

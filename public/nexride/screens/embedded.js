@@ -12,7 +12,19 @@
   const point=p=>p&&Number.isFinite(p.lat)&&Number.isFinite(p.lng)&&Math.abs(p.lat)<=90&&Math.abs(p.lng)<=180;
   const current=(booking,context)=>context?.trackingCurrent??(['approaching','arrived','in_trip'].includes(booking.status)&&navigator.onLine&&booking.tracking&&Date.now()-booking.tracking.updatedAt>=-5000&&Date.now()-booking.tracking.updatedAt<45000);
   const stop=()=>{cancelAnimationFrame(frame);frame=0;if(target&&car)car.setLatLng(target);target=null;};
-  const icon=kind=>L.divIcon({className:'nexride-map-pin '+kind,html:kind==='vehicle'?'↗':kind==='destination'?'D':'P',iconSize:[32,32],iconAnchor:[16,16]});
+  const carMark = '<span class="nexride-map-car-badge" aria-hidden="true">NexRide</span>' +
+    '<svg class="nexride-map-car-svg" viewBox="0 0 56 36" aria-hidden="true" focusable="false">' +
+    '<path fill="rgba(4,28,48,.18)" d="M10 26c0 4 4 6 18 6s18-2 18-6H10Z"/>' +
+    '<path fill="#041c30" d="M8 21.5 12.2 12c1.2-2.8 3.2-4.2 6.2-4.2h19.2c3 0 5 1.4 6.2 4.2L48 21.5v7.2c0 1.7-1.3 3-3 3h-2.5c-1.7 0-3-1.3-3-3v-.8h-23v.8c0 1.7-1.3 3-3 3H11c-1.7 0-3-1.3-3-3v-7.2Z"/>' +
+    '<path fill="#dcecf3" d="m16.6 12.1-2.5 7h27.8l-2.5-7c-.4-1-1.2-1.5-2.3-1.5H18.9c-1.1 0-1.9.5-2.3 1.5Z"/>' +
+    '<path fill="#00c878" d="M12.4 22.1h7.2v3.1h-7.2zm24 0h7.2v3.1h-7.2z"/>' +
+    '</svg>';
+  const icon=kind=>L.divIcon({
+    className:'nexride-map-pin '+kind,
+    html:kind==='vehicle'?carMark:kind==='destination'?'D':'P',
+    iconSize:kind==='vehicle'?[64,60]:[32,32],
+    iconAnchor:kind==='vehicle'?[32,49]:[16,16]
+  });
   let fitted=false;
   const fitOptions=()=>innerWidth<=760?{paddingTopLeft:[25,190],paddingBottomRight:[25,(document.querySelector('.ride-panel')?.getBoundingClientRect().height||300)+25],maxZoom:15}:{paddingTopLeft:[35,170],paddingBottomRight:[425,40],maxZoom:15};
   return {
@@ -28,16 +40,18 @@
    },
    updateMap(booking,context={}){
     if(!map)return;
-    const marker=(existing,p,kind)=>{if(!point(p)){existing?.remove();return null;}if(!existing)existing=L.marker([p.lat,p.lng],{icon:icon(kind),keyboard:true,title:kind==='destination'?'Destination':kind==='vehicle'?'Last reported vehicle position':'Pickup'}).addTo(map);else existing.setLatLng([p.lat,p.lng]);return existing;};
+    const marker=(existing,p,kind)=>{if(!point(p)){existing?.remove();return null;}if(!existing)existing=L.marker([p.lat,p.lng],{icon:icon(kind),keyboard:true,title:kind==='destination'?'Destination':kind==='vehicle'?'NexRide driver car · last reported position':'Pickup'}).addTo(map);else existing.setLatLng([p.lat,p.lng]);return existing;};
     pickup=marker(pickup,booking.pickup,'pickup');destination=marker(destination,booking.destination,'destination');
     const route=booking.route?.points||booking.tracking?.route;
     line?.remove();line=null;if(Array.isArray(route)&&route.length>1&&route.every(point))line=L.polyline(route.map(p=>[p.lat,p.lng]),{color:booking.status==='in_trip'?'#062b47':'#00a976',weight:5}).addTo(map);
     const fix=booking.tracking,active=['approaching','arrived','in_trip'].includes(booking.status);
-    if(!active||!point(fix)||fix.driverId!==booking.driver?.id){stop();car?.remove();car=null;accuracy?.remove();accuracy=null;lastFix=null;}
+    // Keep the assigned car even when driver profile details are temporarily unavailable.
+    if(!active||!point(fix)||!fix.driverId||(booking.driver?.id&&fix.driverId!==booking.driver.id)){stop();car?.remove();car=null;accuracy?.remove();accuracy=null;lastFix=null;}
     else{
      const next=[fix.lat,fix.lng],fresh=current(booking,context),newer=!lastFix||fix.updatedAt>lastFix.updatedAt,same=lastFix?.driverId===fix.driverId;
      if(!fresh||context.connected===false)stop();
      if(!car){car=marker(null,fix,'vehicle');lastFix={...fix};}
+     car?.getElement().classList.toggle('is-stale',!fresh||context.connected===false);
      else if(newer||!same){
       const animate=newer&&same&&fresh&&Date.now()-lastFix.updatedAt<45000&&!reduced.matches&&context.connected!==false;
       stop();if(animate){const from=car.getLatLng(),start=performance.now();target=next;const step=t=>{const progress=Math.min(1,(t-start)/650),ease=progress*progress*(3-2*progress);car.setLatLng([from.lat+(next[0]-from.lat)*ease,from.lng+(next[1]-from.lng)*ease]);if(progress<1)frame=requestAnimationFrame(step);else{frame=0;target=null;}};frame=requestAnimationFrame(step);}else car.setLatLng(next);
