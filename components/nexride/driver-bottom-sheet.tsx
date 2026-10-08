@@ -5,9 +5,9 @@ import { useRef, useState, type CSSProperties, type PointerEvent, type ReactNode
 type DriverSheetSnap = "collapsed" | "medium" | "expanded";
 
 const SNAP_RATIO: Record<DriverSheetSnap, number> = {
-  collapsed: 0.27,
-  medium: 0.46,
-  expanded: 0.73,
+  collapsed: 0.29,
+  medium: 0.5,
+  expanded: 0.78,
 };
 
 const ORDER: DriverSheetSnap[] = ["collapsed", "medium", "expanded"];
@@ -25,7 +25,15 @@ export function DriverBottomSheet({
 }) {
   const [snap, setSnap] = useState<DriverSheetSnap>(defaultSnap);
   const [dragHeight, setDragHeight] = useState<number | null>(null);
-  const drag = useRef<{ startY: number; startHeight: number; lastY: number; lastAt: number; velocity: number } | null>(null);
+  const drag = useRef<{
+    startY: number;
+    startHeight: number;
+    lastY: number;
+    lastAt: number;
+    velocity: number;
+    moved: boolean;
+  } | null>(null);
+  const suppressClick = useRef(false);
 
   const viewportHeight = () => Math.max(1, window.visualViewport?.height || window.innerHeight || 800);
   const heightFor = (value: DriverSheetSnap) => viewportHeight() * SNAP_RATIO[value];
@@ -39,6 +47,7 @@ export function DriverBottomSheet({
       lastY: event.clientY,
       lastAt: performance.now(),
       velocity: 0,
+      moved: false,
     };
     event.currentTarget.setPointerCapture(event.pointerId);
     setDragHeight(height);
@@ -49,11 +58,17 @@ export function DriverBottomSheet({
     if (!current) return;
     const now = performance.now();
     const elapsed = Math.max(1, now - current.lastAt);
-    current.velocity = (event.clientY - current.lastY) / elapsed;
+    const instantVelocity = (event.clientY - current.lastY) / elapsed;
+    current.velocity = current.velocity * 0.62 + instantVelocity * 0.38;
     current.lastY = event.clientY;
     current.lastAt = now;
     const vh = viewportHeight();
-    const next = Math.max(vh * 0.24, Math.min(vh * 0.75, current.startHeight - (event.clientY - current.startY)));
+    const delta = event.clientY - current.startY;
+    if (Math.abs(delta) > 4) current.moved = true;
+    const next = Math.max(
+      vh * 0.26,
+      Math.min(vh * 0.8, current.startHeight - delta),
+    );
     setDragHeight(next);
   };
 
@@ -68,17 +83,22 @@ export function DriverBottomSheet({
       Math.abs(SNAP_RATIO[item] - ratio) < Math.abs(SNAP_RATIO[best] - ratio) ? item : best,
     "medium" as DriverSheetSnap);
 
-    if (Math.abs(current.velocity) > 0.45) {
+    if (Math.abs(current.velocity) > 0.38) {
       const index = ORDER.indexOf(next);
       next = current.velocity < 0 ? ORDER[Math.min(ORDER.length - 1, index + 1)] : ORDER[Math.max(0, index - 1)];
     }
 
+    suppressClick.current = current.moved;
     drag.current = null;
     setDragHeight(null);
     setSnap(next);
   };
 
   const cycle = () => {
+    if (suppressClick.current) {
+      suppressClick.current = false;
+      return;
+    }
     const index = ORDER.indexOf(snap);
     setSnap(ORDER[(index + 1) % ORDER.length]);
   };
@@ -91,6 +111,7 @@ export function DriverBottomSheet({
     <section
       className={`nr-driver-sheet ${className}`.trim()}
       data-snap={snap}
+      data-dragging={dragHeight !== null || undefined}
       style={style}
       aria-label={label}
       onPointerDown={(event) => event.stopPropagation()}
