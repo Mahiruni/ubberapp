@@ -167,7 +167,7 @@ export function TripExperience({ screen, tripId, userId, preview, navigate, setP
         setConfirmedStatus(latest.current.status);
         if (latest.current.status === 'cancelled') {
           setCancelled(true);
-          callbacks.current.navigate; // Retain the trip screen until the rider acknowledges.
+          // Retain the trip screen until the rider acknowledges.
         }
         writeCachedTrip(tripId, latest.current);
         failures = 0;

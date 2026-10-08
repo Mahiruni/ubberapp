@@ -113,8 +113,8 @@ export default function RiderTripsPage() {
                     <small>{new Date(rideDate(ride)).toLocaleString("en-ET", { dateStyle: "medium", timeStyle: "short" })}</small>
                   </span>
                   <span className="nr-history-side">
-                    <strong>{amount.amount === null ? "—" : amount.amount.toLocaleString("en-ET") + " ETB"}</strong>
-                    <span className="nr-history-status">{op(formatRideStatus(ride.status))}{amount.amount !== null && !amount.final ? " · estimate" : ""}</span>
+                    <strong>{cancelled ? op("No cancellation fee") : amount.amount === null ? "—" : amount.amount.toLocaleString("en-ET") + " ETB"}</strong>
+                    <span className="nr-history-status">{ride.status === "cancelled" && ride.cancellationReason === "rider_cancelled" ? op("Cancelled by rider") : op(formatRideStatus(ride.status))}{!cancelled && amount.amount !== null && !amount.final ? " · estimate" : ""}</span>
                   </span>
                 </button>
               );

@@ -146,10 +146,10 @@ export default function RiderReceiptPage() {
               <div className="nr-receipt-hero-top">
                 <div>
                   <span className="kicker">{ride.category.toUpperCase()}</span>
-                  <h2>{amount?.amount === null ? op("Fare unavailable") : amount?.amount?.toLocaleString("en-ET") + " ETB"}</h2>
+                  <h2>{ride.status === "cancelled" || ride.status === "withdrawn" ? op("No cancellation fee") : amount?.amount === null ? op("Fare unavailable") : amount?.amount?.toLocaleString("en-ET") + " ETB"}</h2>
                 </div>
                 <span className={"nr-receipt-status " + (ride.status === "completed" ? "completed" : ride.status === "cancelled" || ride.status === "withdrawn" ? "cancelled" : "")}>
-                  {op(formatRideStatus(ride.status))}
+                  {ride.status === "cancelled" && ride.cancellationReason === "rider_cancelled" ? op("Cancelled by rider") : op(formatRideStatus(ride.status))}
                 </span>
               </div>
 
@@ -160,9 +160,9 @@ export default function RiderReceiptPage() {
             </section>
 
             <section className="nr-receipt-grid" aria-label="Receipt summary">
-              <ReceiptValue label={op("Fare")} value={amount?.amount === null ? op("Unavailable") : amount?.amount?.toLocaleString("en-ET") + " ETB"} note={amount?.final ? op("Final fare") : op("Estimated fare")} />
+              <ReceiptValue label={ride.status === "cancelled" || ride.status === "withdrawn" ? op("Cancellation") : op("Fare")} value={ride.status === "cancelled" || ride.status === "withdrawn" ? op("No cancellation fee") : amount?.amount === null ? op("Unavailable") : amount?.amount?.toLocaleString("en-ET") + " ETB"} note={ride.status === "cancelled" || ride.status === "withdrawn" ? op("Cancellation does not incur a penalty.") : amount?.final ? op("Final fare") : op("Estimated fare")} />
               <ReceiptValue label={op("Payment method")} value={ride.paymentMethod === "cash" ? op("Cash") : ride.paymentMethod === "chapa" ? op("Online payment · Chapa") : op("Not available")} note={ride.paymentMethod === "cash" ? op("Cash is handled directly with the driver.") : op("Current status")} />
-              <ReceiptValue label={op("Payment status")} value={ride.paymentMethod === "cash" ? op(ride.paymentStatus === "paid" ? "Paid" : "Cash payment") : op(ride.paymentStatus)} note={ride.paymentMethod === "cash" ? op("No online payment required.") : ride.paymentStatus === "paid" ? op("Confirmed") : op("Current status")} />
+              <ReceiptValue label={op("Payment status")} value={ride.paymentMethod === "cash" && (ride.status === "cancelled" || ride.status === "withdrawn") && ride.paymentStatus !== "paid" ? op("No cash payment required") : ride.paymentMethod === "cash" ? op(ride.paymentStatus === "paid" ? "Paid" : "Cash payment") : op(ride.paymentStatus)} note={ride.paymentMethod === "cash" ? op("No online payment required.") : ride.paymentStatus === "paid" ? op("Confirmed") : op("Current status")} />
               <ReceiptValue label={op("Rating")} value={rating ? rating.score + " / 5" : op("Not rated")} note={op("Your feedback")} />
             </section>
 

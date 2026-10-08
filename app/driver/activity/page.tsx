@@ -19,6 +19,7 @@ type ActivityRow = {
   created_at: string;
   completed_at: string | null;
   cancelled_at: string | null;
+  cancellation_reason: string | null;
 };
 
 const toneFor = (status: string): "neutral" | "success" | "warning" | "danger" | "info" => {
@@ -51,7 +52,7 @@ export default function DriverActivityPage() {
     setFailed(false);
     const result = await supabase
       .from("ride_requests")
-      .select("id,status,pickup_location,destination_location,ride_category,estimated_trip_fare_etb,final_fare_etb,created_at,completed_at,cancelled_at")
+      .select("id,status,pickup_location,destination_location,ride_category,estimated_trip_fare_etb,final_fare_etb,created_at,completed_at,cancelled_at,cancellation_reason")
       .eq("assigned_driver_id", id)
       .order("created_at", { ascending: false })
       .limit(40);
@@ -174,7 +175,7 @@ export default function DriverActivityPage() {
               return (
                 <article key={row.id} className="rounded-[22px] border border-white/8 bg-white/[.055] p-4 shadow-[0_12px_30px_rgba(0,0,0,.12)]">
                   <div className="flex items-center justify-between gap-3">
-                    <StatusChip tone={toneFor(row.status)}>{labelFor(row.status)}</StatusChip>
+                    <StatusChip tone={toneFor(row.status)}>{row.status === "cancelled" && row.cancellation_reason === "rider_cancelled" ? "Cancelled by rider" : labelFor(row.status)}</StatusChip>
                     <time className="text-xs tabular-nums text-white/50" dateTime={row.created_at}>
                       {new Intl.DateTimeFormat("en-ET", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).format(new Date(row.created_at))}
                     </time>
@@ -191,7 +192,7 @@ export default function DriverActivityPage() {
                   </div>
                   <div className="mt-4 flex items-end justify-between gap-3 border-t border-white/8 pt-3">
                     <div><small className="block text-[10px] uppercase tracking-[.1em] text-white/45">Ride</small><strong className="text-sm capitalize">{row.ride_category || "Ride"}</strong></div>
-                    <div className="text-right"><small className="block text-[10px] uppercase tracking-[.1em] text-white/45">Fare</small><strong className="text-base tabular-nums">ETB {money(fare)}</strong></div>
+                    <div className="text-right"><small className="block text-[10px] uppercase tracking-[.1em] text-white/45">{row.status === "cancelled" || row.status === "withdrawn" ? "Cancellation" : "Fare"}</small><strong className="text-base tabular-nums">{row.status === "cancelled" || row.status === "withdrawn" ? "No cancellation fee" : "ETB " + money(fare)}</strong></div>
                   </div>
                 </article>
               );
