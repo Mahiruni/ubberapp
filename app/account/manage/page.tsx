@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useContext, useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
+import { nexrideApiFetch } from "../../../lib/nexride-api-auth";
 import {
   explicitSignOutRole, retryStartup,
 } from "../../../lib/nexride-startup";
@@ -277,16 +278,25 @@ export default function NexRideManageAccountPage() {
     event.preventDefault();
     if (!user?.email || !profile) return;
     await run(async()=>{
-      const auth=await supabase.auth.signInWithPassword({email:user.email!,password:deletePassword});
-      if(auth.error || auth.data.user?.id!==user.id){
-        setNotice("Reauthentication failed. No deletion request was submitted.");
-        return;
+      // Reauthenticate on the server. The browser never writes deletion
+      // requests directly and stays signed in with its existing session.
+      const response=await nexrideApiFetch("/api/account/deletion-request",{
+        method:"POST",body:JSON.stringify({password:deletePassword,confirm:true}),
+      });
+      const result=await response.json().catch(()=>({status:"account_review_unavailable"}));
+      if(!response.ok){
+        const message=result.status==="reauthentication_failed"
+          ? "Password confirmation failed. No deletion request was submitted."
+          : result.status==="outstanding_obligations"
+            ? "Finish active trips or unresolved payouts before requesting deletion."
+            : "Account deletion review could not be requested. Please try again.";
+        setNotice(message);return;
       }
-      const result=await supabase.from("account_deletion_requests").insert({user_id:user.id});
-      if(result.error) throw result.error;
-      setDeletePassword(""); setDeleteConfirm(false);
+      setDeletePassword("");setDeleteConfirm(false);
       await reload();
-      setNotice("Deletion request received for review. Your account and records have not been deleted.");
+      setNotice(result.status==="already_requested"
+        ? "You already have an open deletion-review request."
+        : "Deletion request received for authorized review. Your account and records remain intact.");
     });
   }
 
