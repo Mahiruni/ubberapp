@@ -9,6 +9,7 @@ import type { DriverReviewStatus } from "../../../lib/nexride-driver-verificatio
 import { resolveSessionRole } from "../../../lib/nexride-account-role";
 import { nexrideApiFetch } from "../../../lib/nexride-api-auth";
 import { VEHICLE_COLOR_OPTIONS } from "../../../lib/nexride-vehicle";
+import { unsubmittedDriverEvidencePaths } from "../../../lib/nexride-driver-evidence";
 import "../auth/driver-auth.css";
 import "../onboarding/driver-onboarding.css";
 import "../../detail-system.css";
@@ -88,7 +89,6 @@ export default function DriverVerificationPage() {
             const raw = sessionStorage.getItem("nexride.driver.verification.draft." + session.user.id);
             if (raw) {
               const draft = JSON.parse(raw);
-              if (typeof draft.licenseNumber === "string") setLicenseNumber(draft.licenseNumber.slice(0, 120));
               if (typeof draft.licenseExpiry === "string") setLicenseExpiry(draft.licenseExpiry.slice(0, 20));
               if (typeof draft.vehicle === "string") setVehicle(draft.vehicle.slice(0, 120));
               if (typeof draft.vehicleColor === "string") setVehicleColor(draft.vehicleColor.slice(0, 32));
@@ -111,10 +111,11 @@ export default function DriverVerificationPage() {
     try {
       sessionStorage.setItem(
         "nexride.driver.verification.draft." + driverId,
-        JSON.stringify({ licenseNumber, licenseExpiry, vehicle, vehicleColor, plate }),
+        // Sensitive government document numbers must not persist in browser storage.
+        JSON.stringify({ licenseExpiry, vehicle, vehicleColor, plate }),
       );
     } catch {}
-  }, [driverId, loading, status, editingApproved, licenseNumber, licenseExpiry, vehicle, vehicleColor, plate]);
+  }, [driverId, loading, status, editingApproved, licenseExpiry, vehicle, vehicleColor, plate]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -151,56 +152,75 @@ export default function DriverVerificationPage() {
     const registrationPath = registrationFile
       ? `${session.user.id}/vehicle-registration-${Date.now()}.${extensionFor(registrationFile)}`
       : existingRegistrationPath;
-    // Reuse existing private records. Never overwrite a previously submitted
-    // document or ask to upload it again when it is already present.
-    if (licenseFile) {
-      const upload=await supabase.storage.from("driver-verification")
-        .upload(licensePath,licenseFile,{upsert:false,contentType:licenseFile.type});
-      if(upload.error){setError("Driver license upload failed.");setBusy(false);return;}
-    }
-    if (registrationFile) {
-      const upload=await supabase.storage.from("driver-verification")
-        .upload(registrationPath,registrationFile,{upsert:false,contentType:registrationFile.type});
-      if(upload.error){setError("Vehicle document upload failed.");setBusy(false);return;}
-    }
+    // Upload to unique private paths and remember only paths created during
+    // this attempt. Never delete or overwrite prior verified evidence.
+    const uploadedPaths: string[] = [];
+    const discardIncomplete = async () => {
+      const paths = unsubmittedDriverEvidencePaths(uploadedPaths, [
+        existingLicensePath, existingRegistrationPath,
+      ]);
+      if (paths.length) {
+        // Database Storage policies forbid deletion if a concurrent request
+        // already committed the path, protecting evidence after a lost reply.
+        await supabase.storage.from("driver-verification").remove(paths).catch(() => {});
+      }
+    };
+    try {
+      if (licenseFile) {
+        const uploaded = await supabase.storage.from("driver-verification")
+          .upload(licensePath, licenseFile, { upsert: false, contentType: licenseFile.type });
+        if (uploaded.error) throw new Error("Driver license upload failed.");
+        uploadedPaths.push(licensePath);
+      }
+      if (registrationFile) {
+        const uploaded = await supabase.storage.from("driver-verification")
+          .upload(registrationPath, registrationFile, { upsert: false, contentType: registrationFile.type });
+        if (uploaded.error) throw new Error("Vehicle document upload failed.");
+        uploadedPaths.push(registrationPath);
+      }
 
-    const response = await nexrideApiFetch("/api/driver/verification", {
-      method: "POST",
-      body: JSON.stringify({
-        licenseNumber: licenseNumber.trim(),
-        licenseExpiry,
-        vehicle: vehicle.trim(),
-        vehicleColor,
-        vehiclePlate: plate.trim(),
-        licenseDocumentPath: licensePath,
-        vehicleRegistrationPath: registrationPath,
-      }),
-    });
-    const payload = await response.json().catch(() => ({}));
-
-    if (!response.ok) {
-      const message =
-        payload?.status === "license_expired"
-          ? "Your driver license must have a future expiry date."
-          : payload?.status === "verification_locked"
-            ? "Approved or suspended verification cannot be replaced from this screen."
-            : payload?.status === "identity_ownership_review_required"
-              ? "This identity needs an ownership or replacement review. Visit Manage Account for help."
-              : payload?.status === "verification_document_missing"
-                ? "One of your document files is missing. Please upload the missing file again; existing files are kept."
-                : payload?.status === "verification_document_invalid"
-                  ? "A document is empty, unsupported or larger than 8 MB. Upload a valid JPG, PNG, WebP or PDF."
-                  : "We couldn’t submit your verification. Try again.";
-      setError(message);
+      const response = await nexrideApiFetch("/api/driver/verification", {
+        method: "POST",
+        body: JSON.stringify({
+          licenseNumber: licenseNumber.trim(),
+          licenseExpiry,
+          vehicle: vehicle.trim(),
+          vehicleColor,
+          vehiclePlate: plate.trim(),
+          licenseDocumentPath: licensePath,
+          vehicleRegistrationPath: registrationPath,
+        }),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        await discardIncomplete();
+        const message =
+          payload?.status === "license_expired"
+            ? "Your driver license must have a future expiry date."
+            : payload?.status === "verification_locked"
+              ? "Approved or suspended verification cannot be replaced from this screen."
+              : payload?.status === "identity_ownership_review_required"
+                ? "This identity needs an ownership or replacement review. Visit Manage Account for help."
+                : payload?.status === "verification_document_missing"
+                  ? "One of your document files is missing. Existing submitted files are kept."
+                  : payload?.status === "verification_document_invalid"
+                    ? "A document is empty, unsupported or larger than 8 MB. Upload a valid JPG, PNG, WebP or PDF."
+                    : "We couldn't submit your verification. Try again.";
+        setError(message);
+        return;
+      }
+      setStatus((payload.reviewStatus as DriverReviewStatus) || "pending");
+      setExistingLicensePath(licensePath);
+      setExistingRegistrationPath(registrationPath);
+      setLicenseFile(null);
+      setRegistrationFile(null);
+      try { sessionStorage.removeItem("nexride.driver.verification.draft." + session.user.id); } catch {}
+    } catch {
+      await discardIncomplete();
+      setError("Verification could not be confirmed. Check your connection and retry. Your existing submitted documents are preserved.");
+    } finally {
       setBusy(false);
-      return;
     }
-
-    setStatus((payload.reviewStatus as DriverReviewStatus) || "pending");
-    setExistingLicensePath(licensePath);
-    setExistingRegistrationPath(registrationPath);
-    try { sessionStorage.removeItem("nexride.driver.verification.draft." + session.user.id); } catch {}
-    setBusy(false);
   }
 
   if (loading) return <main className="driver-onboarding-page" aria-busy="true" />;
