@@ -18,3 +18,9 @@ export function identityDocumentLabel(key: string): string {
 export function identityDocumentReusable(status: string): boolean {
   return status === "approved" || status === "pending";
 }
+
+/** A Driver's primary role is preserved when their existing account also
+ * has a server-authorized Rider membership. Admin identities are excluded. */
+export function canReuseRiderAccount(primaryRole: string, riderMembership: boolean): boolean {
+  return primaryRole === "rider" || (primaryRole === "driver" && riderMembership);
+}

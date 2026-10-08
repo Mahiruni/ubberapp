@@ -1,5 +1,6 @@
 import { authorizedRequestSupabase } from "../../../../lib/nexride-server-supabase";
 import { serverAdminSupabase } from "../../../../lib/nexride-server-admin";
+import { canReuseRiderAccount } from "../../../../lib/nexride-identity";
 
 const reply = (body: unknown, status = 200) =>
   Response.json(body, {
@@ -43,12 +44,26 @@ export async function POST(request: Request) {
     if (lookupError) return reply({ error: "profile_lookup_failed" }, 503);
 
     if (existing) {
-      if (existing.role === "driver" || existing.role === "admin") {
+      // One real Supabase identity may have Rider and Driver access.
+      // Never rewrite a driver's primary role just to restore Rider.
+      if (existing.role === "admin") {
         return reply({ error: "role_conflict" }, 409);
       }
-
       if (existing.account_status && existing.account_status !== "active") {
         return reply({ error: "account_inactive" }, 403);
+      }
+
+      if (existing.role === "driver") {
+        const { data: membership, error: membershipError } = await admin
+          .from("account_roles")
+          .select("role")
+          .eq("user_id", authorized.user.id)
+          .eq("role", "rider")
+          .maybeSingle();
+        if (membershipError) return reply({ error: "role_lookup_failed" }, 503);
+        if (!canReuseRiderAccount(existing.role, membership?.role === "rider"))
+          return reply({ error: "role_conflict" }, 409);
+        return reply({ status: "ready", role: "rider", reusedIdentity: true });
       }
 
       const patch: Record<string, unknown> = {};

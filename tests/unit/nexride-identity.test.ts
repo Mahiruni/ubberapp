@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { normalizeEthiopianPhone, identityDocumentReusable } from "../../lib/nexride-identity";
+import { normalizeEthiopianPhone, identityDocumentReusable, canReuseRiderAccount } from "../../lib/nexride-identity";
 describe("NexRide Ethiopian identity normalization", () => {
   it("treats Ethiopian local, national and international phone formats identically", () => {
     expect(normalizeEthiopianPhone("0912345678")).toBe("+251912345678");
@@ -13,6 +13,13 @@ describe("NexRide Ethiopian identity normalization", () => {
     expect(normalizeEthiopianPhone("12345")).toBeNull();
     expect(normalizeEthiopianPhone("+15551234567")).toBeNull();
     expect(normalizeEthiopianPhone("+251112345678")).toBeNull();
+  });
+  it("allows a verified Driver to reuse their identity only with authorized Rider membership", () => {
+    expect(canReuseRiderAccount("driver",true)).toBe(true);
+    expect(canReuseRiderAccount("driver",false)).toBe(false);
+    expect(canReuseRiderAccount("rider",true)).toBe(true);
+    expect(canReuseRiderAccount("rider",false)).toBe(true);
+    expect(canReuseRiderAccount("admin",true)).toBe(false);
   });
   it("reuses approved/pending documents instead of repeatedly asking to upload", () => {
     expect(identityDocumentReusable("approved")).toBe(true);

@@ -14,6 +14,8 @@ import {
 import { useRouter } from "next/navigation";
 import { supabase } from "../../lib/supabase";
 import { driverResumeDestination } from "../../lib/nexride-driver-verification";
+import { resolveSessionRole } from "../../lib/nexride-account-role";
+import { ACTIVE_ACCOUNT_ROLE_KEY } from "../../lib/nexride-startup";
 import { ensureRiderProfile } from "../../lib/nexride-rider-profile-bootstrap";
 import "../nexride.css";
 import "./rider-entry.css";
@@ -43,10 +45,19 @@ function RiderWelcome() {
         setCheckingSession(false);
         return;
       }
-      if (data.session.user.user_metadata?.role === "driver") {
-        const destination = await driverResumeDestination(data.session);
-        if (active) router.replace(destination);
-        return;
+      const accountRole = await resolveSessionRole(data.session).catch(() => "");
+      if (!active || explicitSignOutRole(window.localStorage)) return;
+      if (accountRole === "driver") {
+        const prefersRider = window.localStorage.getItem(ACTIVE_ACCOUNT_ROLE_KEY) === "rider";
+        const membership = prefersRider
+          ? await supabase.from("account_roles").select("role")
+              .eq("user_id", data.session.user.id).eq("role", "rider").maybeSingle()
+          : null;
+        if (!prefersRider || membership?.error || membership?.data?.role !== "rider") {
+          const destination = await driverResumeDestination(data.session);
+          if (active) router.replace(destination);
+          return;
+        }
       }
       try {
         await ensureRiderProfile(data.session);
