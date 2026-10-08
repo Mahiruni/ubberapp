@@ -312,3 +312,53 @@ html[lang="am"] .nr-driver-menu-footer :where(strong,small,span,button,p){
 .nr-driver-menu-language button[data-active="true"]{
   box-shadow:none!important;
 }
+
+
+/* Deep glass Driver wrappers — same visual language as Rider, without any
+   opaque rectangular backing behind rounded sheet corners. */
+.nr-driver-app-shell :is(
+  .nr-driver-sheet,
+  .nr-request-sheet,
+  .nr-nav-bottom-card
+) {
+  overflow:hidden!important;
+  border:1px solid color-mix(in srgb,var(--driver-border) 76%,transparent)!important;
+  border-bottom:0!important;
+  border-radius:24px 24px 0 0!important;
+  background:color-mix(in srgb,var(--driver-overlay) 86%,transparent)!important;
+  box-shadow:
+    0 -1px 0 rgba(255,255,255,.06),
+    0 -12px 34px rgba(0,8,18,.26),
+    0 -30px 76px rgba(0,8,18,.18)!important;
+  backdrop-filter:blur(26px) saturate(132%)!important;
+  -webkit-backdrop-filter:blur(26px) saturate(132%)!important;
+}
+
+.nr-driver-app-shell[data-theme="light"] :is(
+  .nr-driver-sheet,
+  .nr-request-sheet,
+  .nr-nav-bottom-card
+) {
+  background:color-mix(in srgb,#ffffff 88%,transparent)!important;
+  border-color:rgba(102,133,151,.16)!important;
+  box-shadow:
+    0 -1px 0 rgba(255,255,255,.68),
+    0 -10px 30px rgba(4,28,48,.11),
+    0 -28px 70px rgba(4,28,48,.07)!important;
+}
+
+.nr-driver-app-shell .nr-driver-sheet-grab,
+.nr-driver-app-shell .nr-driver-sheet-content {
+  background:transparent!important;
+}
+
+@media(min-width:760px){
+  .nr-driver-app-shell :is(
+    .nr-driver-sheet,
+    .nr-request-sheet,
+    .nr-nav-bottom-card
+  ){
+    border-bottom:1px solid color-mix(in srgb,var(--driver-border) 76%,transparent)!important;
+    border-radius:24px!important;
+  }
+}
