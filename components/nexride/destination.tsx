@@ -269,7 +269,7 @@ export function DestinationPanel({
         all.findIndex((candidate) => placeKey(candidate) === placeKey(item)) === index,
     )
     .filter((item) => !shortcut || item.source === "preview")
-    .slice(0, 8);
+    .slice(0, 16);
   const keyboardOpen = j.viewport.keyboard;
   const showSuggestions =
     keyboardOpen ||
