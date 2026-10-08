@@ -14,6 +14,7 @@ export type DriverProfileData = {
   rating: number | null;
   completedTrips: number | null;
   vehicle: string;
+  vehicleColor: string;
   vehiclePlate: string;
   licenseNumber: string;
   licenseExpiry: string;
@@ -73,6 +74,7 @@ export async function loadDriverProfileData(userId: string): Promise<DriverProfi
     rating: number(driver?.rating),
     completedTrips: tripsResult.error ? null : tripsResult.count ?? 0,
     vehicle: text(driver?.vehicle) || text(metadata.vehicle),
+    vehicleColor: text(metadata.vehicle_color),
     vehiclePlate: text(driver?.vehicle_plate) || text(metadata.vehicle_plate),
     licenseNumber: text(driver?.license_number),
     licenseExpiry: text(driver?.license_expiry),
