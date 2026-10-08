@@ -82,6 +82,7 @@ describe("rider initialization", () => {
     let resume!: (value: unknown) => void;
     getSession.mockImplementationOnce(() => new Promise(resolve => { resume = resolve; }));
     const pending = initializeRider();
+    await vi.waitFor(() => expect(getSession).toHaveBeenCalledOnce());
     values.set(EXPLICIT_SIGNOUT_KEY, "rider");
     resume({ data: { session }, error: null });
     const result = await pending;
