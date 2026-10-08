@@ -1300,3 +1300,81 @@
     transition:none!important;
   }
 }
+
+
+/* Unified NexRide wrapper language — Rider.
+   Minimal map sheet: quiet border, compact handle, restrained depth. */
+@media (max-width:800px) {
+  .nr-app[data-mode="rider"] .rider-map-flow :is(
+    .nr-rider-home-sheet,
+    .nr-destination-panel,
+    .nr-ride-selection,
+    .nr-driver-matching,
+    .nr-assigned-driver-panel,
+    .nr-trip-experience-panel
+  ) {
+    border:1px solid color-mix(in srgb,var(--line) 88%,transparent)!important;
+    border-bottom:0!important;
+    border-radius:24px 24px 0 0!important;
+    background:var(--surface)!important;
+    box-shadow:0 -7px 22px rgba(4,28,48,.075)!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow :is(
+    .nr-home-sheet-drag-zone,
+    .nr-flow-sheet-handle
+  ) {
+    min-height:42px!important;
+    height:42px!important;
+    padding:0!important;
+    display:grid!important;
+    place-items:center!important;
+    touch-action:none!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-home-sheet-drag-zone .nr-home-handle,
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-flow-sheet-handle > span {
+    width:42px!important;
+    height:4px!important;
+    border-radius:999px!important;
+    background:color-mix(in srgb,var(--muted) 34%,transparent)!important;
+    box-shadow:none!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-home-sheet-grab-area {
+    min-height:86px!important;
+    padding:0 16px 10px!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-home-sheet-scroll,
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-destination-body,
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-ride-selection-body {
+    padding-left:16px!important;
+    padding-right:16px!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow :is(
+    .nr-rider-home-intro h2,
+    .nr-destination-panel h1,
+    .nr-ride-selection h1
+  ) {
+    letter-spacing:-.025em!important;
+    line-height:1.18!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow :is(
+    .nr-home-kicker,
+    .nr-destination-panel small,
+    .nr-ride-selection small
+  ) {
+    line-height:1.35!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow[data-sheet-dragging="true"] :is(
+    .nr-rider-home-sheet,
+    .nr-destination-panel,
+    .nr-ride-selection
+  ) {
+    box-shadow:0 -9px 26px rgba(4,28,48,.095)!important;
+  }
+}
