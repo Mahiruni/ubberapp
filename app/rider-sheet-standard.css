@@ -1500,3 +1500,62 @@
     border-radius:24px 24px 0 0!important;
   }
 }
+
+
+/* True under-sheet map composition.
+   The map spans both grid rows visually, so rounded/glass sheet corners reveal
+   the live map instead of the rectangular lower-row background. The panel still
+   owns all input in row 2 through the existing invisible shield. */
+@media (max-width:800px) {
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-stage.with-map {
+    position:relative!important;
+    background:transparent!important;
+    isolation:isolate;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-rider-map-surface {
+    grid-column:1!important;
+    grid-row:1 / 3!important;
+    align-self:stretch!important;
+    justify-self:stretch!important;
+    width:100%!important;
+    height:100%!important;
+    min-height:100%!important;
+    max-height:none!important;
+    z-index:0!important;
+    border-radius:0!important;
+    overflow:hidden!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-rider-flow-panel {
+    grid-column:1!important;
+    grid-row:2!important;
+    z-index:20!important;
+    background:transparent!important;
+    overflow:visible!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-rider-flow-panel > div:not([hidden]) {
+    position:relative!important;
+    z-index:2!important;
+    border-radius:24px 24px 0 0!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-rider-map-input-shield {
+    z-index:1!important;
+    background:transparent!important;
+  }
+
+  /* Map chrome must stay above the visible sheet edge now that the map spans
+     underneath it. */
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-map-attribution {
+    bottom:calc(var(--nr-flow-sheet-height) + 4px)!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow :is(
+    .nr-map-route-summary,
+    .nr-map-ride-label
+  ) {
+    bottom:calc(var(--nr-flow-sheet-height) + 8px)!important;
+  }
+}
