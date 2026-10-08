@@ -214,3 +214,29 @@
   .nr-nav-bottom-card .nr-driver-sheet-content{padding:18px 20px 22px}
   .nr-nav-status{right:474px;bottom:28px}
 }
+
+
+/* Minimal Driver navigation wrapper — aligned with Rider sheet geometry. */
+.nr-driver-navigation-page .nr-nav-bottom-card {
+  border:1px solid rgba(124,163,185,.18)!important;
+  border-bottom:0!important;
+  border-radius:24px 24px 0 0!important;
+  background:rgba(4,28,48,.985)!important;
+  box-shadow:0 -7px 22px rgba(0,8,18,.18)!important;
+}
+.nr-driver-navigation-page .nr-nav-bottom-card .nr-driver-sheet-content {
+  padding:0 16px calc(18px + env(safe-area-inset-bottom))!important;
+}
+.nr-driver-navigation-page .nr-nav-trip-progress {
+  margin-bottom:10px!important;
+  padding-bottom:10px!important;
+}
+.nr-driver-navigation-page .nr-nav-current-destination h1 {
+  font-size:21px!important;
+  line-height:1.18!important;
+  letter-spacing:-.025em!important;
+}
+.nr-driver-navigation-page .nr-nav-current-destination p {
+  margin-top:4px!important;
+  line-height:1.45!important;
+}
