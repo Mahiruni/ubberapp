@@ -1771,3 +1771,135 @@
     background:transparent!important;
   }
 }
+
+
+/* FINAL RIDER WRAPPER INVARIANT
+   The Rider wrapper is a permanent viewport-anchored bottom sheet.
+   It no longer depends on the stage grid's second row, so navigation,
+   keyboard, route, loading, matching, or request state cannot make it vanish. */
+@media (max-width:800px) {
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-stage.with-map {
+    display:block!important;
+    position:absolute!important;
+    inset:0!important;
+    width:100%!important;
+    height:100%!important;
+    min-height:100%!important;
+    overflow:hidden!important;
+    background:var(--bg)!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-rider-map-surface {
+    position:absolute!important;
+    inset:0!important;
+    width:100%!important;
+    height:100%!important;
+    min-height:100%!important;
+    max-height:none!important;
+    z-index:0!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-rider-flow-panel {
+    position:absolute!important;
+    left:0!important;
+    right:0!important;
+    bottom:0!important;
+    top:auto!important;
+    z-index:30!important;
+    display:block!important;
+    width:100%!important;
+    height:clamp(
+      220px,
+      var(--nr-flow-sheet-height,46dvh),
+      calc(var(--nr-viewport-height,100dvh) - 72px)
+    )!important;
+    min-height:220px!important;
+    max-height:calc(var(--nr-viewport-height,100dvh) - 72px)!important;
+    margin:0!important;
+    padding:0!important;
+    opacity:1!important;
+    visibility:visible!important;
+    overflow:visible!important;
+    transform:none!important;
+    pointer-events:auto!important;
+    background:transparent!important;
+    border:0!important;
+    box-shadow:none!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow
+    .nr-rider-flow-panel > .nr-rider-persistent-wrapper:not([hidden]) {
+    position:absolute!important;
+    inset:0!important;
+    display:block!important;
+    width:100%!important;
+    height:100%!important;
+    min-height:100%!important;
+    max-height:100%!important;
+    opacity:1!important;
+    visibility:visible!important;
+    transform:none!important;
+    pointer-events:auto!important;
+    overflow:hidden!important;
+    background:var(--surface)!important;
+    border:1px solid var(--line)!important;
+    border-bottom:0!important;
+    border-radius:24px 24px 0 0!important;
+    box-shadow:0 -6px 20px rgba(4,28,48,.10)!important;
+    backdrop-filter:none!important;
+    -webkit-backdrop-filter:none!important;
+  }
+
+  .nr-app[data-mode="rider"][data-theme="dark"] .rider-map-flow
+    .nr-rider-flow-panel > .nr-rider-persistent-wrapper:not([hidden]) {
+    background:var(--surface)!important;
+    border-color:var(--line)!important;
+    box-shadow:0 -6px 22px rgba(0,8,18,.24)!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow
+    .nr-rider-persistent-wrapper:not([hidden]) > * {
+    max-width:100%!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow
+    .nr-rider-persistent-wrapper:not([hidden]) > :is(
+      .nr-rider-home-sheet,
+      .nr-destination-panel,
+      .nr-ride-selection,
+      .nr-driver-matching,
+      .nr-trip-experience
+    ) {
+    display:flex!important;
+    flex-direction:column!important;
+    width:100%!important;
+    height:100%!important;
+    min-height:0!important;
+    max-height:100%!important;
+    opacity:1!important;
+    visibility:visible!important;
+    overflow:hidden!important;
+    background:transparent!important;
+    border:0!important;
+    box-shadow:none!important;
+  }
+
+  /* Keyboard/search expands the permanent wrapper; it never swaps or hides it. */
+  .nr-app[data-mode="rider"] .rider-map-flow[data-keyboard="true"].rider-search-view
+    .nr-rider-flow-panel {
+    height:calc(var(--nr-viewport-height,100dvh) - 72px)!important;
+    min-height:calc(var(--nr-viewport-height,100dvh) - 72px)!important;
+    max-height:calc(var(--nr-viewport-height,100dvh) - 72px)!important;
+  }
+
+  /* Map chrome follows the physical wrapper edge. */
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-map-attribution {
+    bottom:calc(
+      clamp(
+        220px,
+        var(--nr-flow-sheet-height,46dvh),
+        calc(var(--nr-viewport-height,100dvh) - 72px)
+      ) + 4px
+    )!important;
+  }
+}
