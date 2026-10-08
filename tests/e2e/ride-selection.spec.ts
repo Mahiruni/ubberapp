@@ -109,7 +109,7 @@ test("temporary fare-service error automatically retries and recovers", async ({
   });
   await openRides(page);
   await expect(page.getByRole("radio", { name: /Economy/ })).toBeVisible();
-  await expect(page.locator(".nr-ride-selection")).toContainText("Confirmed quote");
+  await expect(page.locator(".nr-ride-selection footer .nr-button")).toBeEnabled();
   expect(attempts).toBe(2);
 });
 test("persistent fare outage shows safe samples but prevents real booking", async ({ page }) => {
@@ -123,7 +123,7 @@ test("persistent fare outage shows safe samples but prevents real booking", asyn
   await expect(page.locator(".nr-ride-selection")).toContainText(
     "Sample calculation, not a live quote",
   );
-  await expect(page.getByRole("button", { name: "Request Ride", exact: true })).toBeDisabled();
+  await expect(page.locator(".nr-ride-selection footer .nr-button")).toBeDisabled();
   expect(attempts).toBe(3);
 });
 test("unavailable categories cannot be selected and all charges appear before request", async ({
