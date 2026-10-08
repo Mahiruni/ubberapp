@@ -480,3 +480,32 @@
   .nr-request-sheet .nr-driver-sheet-content{padding:18px 20px 22px}
   .nr-request-back{top:28px;left:28px}
 }
+
+
+/* Minimal Driver request wrapper — aligned with Rider sheet geometry. */
+.nr-driver-request-page .nr-request-sheet {
+  border:1px solid rgba(124,163,185,.18)!important;
+  border-bottom:0!important;
+  border-radius:24px 24px 0 0!important;
+  background:rgba(4,28,48,.985)!important;
+  box-shadow:0 -7px 22px rgba(0,8,18,.18)!important;
+}
+.nr-driver-request-page .nr-request-sheet .nr-driver-sheet-content {
+  padding:0 16px calc(18px + env(safe-area-inset-bottom))!important;
+}
+.nr-driver-request-page .nr-request-heading {
+  gap:12px!important;
+  margin-bottom:2px!important;
+}
+.nr-driver-request-page .nr-request-heading h1 {
+  font-size:22px!important;
+  line-height:1.18!important;
+  letter-spacing:-.025em!important;
+}
+.nr-driver-request-page .nr-request-route {
+  margin:16px 0 14px!important;
+}
+.nr-driver-request-page .nr-request-summary {
+  padding:11px 12px!important;
+  border-radius:13px!important;
+}
