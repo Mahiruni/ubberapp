@@ -139,7 +139,6 @@ async function geocode(
     q,
     country: "et",
     proximity: `${proximity.lng},${proximity.lat}`,
-    bbox: PREVIEW_BOUNDS.join(","),
     autocomplete: "true",
     limit: "10",
     language: language === "am" ? "am,en" : "en,am",
@@ -166,7 +165,6 @@ async function searchPlaces(
     access_token: token,
     country: "ET",
     proximity: `${proximity.lng},${proximity.lat}`,
-    bbox: PREVIEW_BOUNDS.join(","),
     limit: "10",
     language,
   });
@@ -242,7 +240,7 @@ export async function GET(request: Request) {
     return response({
       status: "ready",
       results: cached.results,
-      coverage: "addis-metro",
+      coverage: "ethiopia-search-addis-ranked",
       cached: true,
     });
   }
@@ -282,7 +280,7 @@ export async function GET(request: Request) {
     return response({
       status: "ready",
       results,
-      coverage: "addis-metro",
+      coverage: "ethiopia-search-addis-ranked",
       sources: ["nexride-local", "mapbox-searchbox", "mapbox-geocoding"],
     });
   } catch {
