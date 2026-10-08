@@ -36,18 +36,17 @@ export function validMatch(value: unknown, requestId: string): value is MatchSna
 export function normalizeMatch(value: unknown, requestId: string): MatchSnapshot | null {
   if (!value || typeof value !== 'object') return null;
   const raw = value as Record<string, unknown>;
-  const rawDriver = raw.driver;
-  const normalized =
-    rawDriver && typeof rawDriver === 'object' &&
-    !Object.prototype.hasOwnProperty.call(rawDriver, 'pickupMinutes')
-      ? {
-          ...raw,
-          driver: {
-            ...(rawDriver as Record<string, unknown>),
-            pickupMinutes: null,
-          },
-        }
-      : raw;
+  const rawDriver = raw.driver, rawCancellation = raw.cancellation;
+  const normalized = {
+    ...raw,
+    // Repair snapshots produced by old deployments which omitted null fields.
+    ...(rawCancellation && typeof rawCancellation === 'object'
+      ? { cancellation: { reason: null, ...(rawCancellation as Record<string, unknown>) } }
+      : {}),
+    ...(rawDriver && typeof rawDriver === 'object'
+      ? { driver: { pickupMinutes: null, ...(rawDriver as Record<string, unknown>) } }
+      : {}),
+  };
   return validMatch(normalized, requestId) ? normalized as MatchSnapshot : null;
 }
 export function newerMatch(current: MatchSnapshot | null, next: MatchSnapshot) {

@@ -31,6 +31,7 @@ export function useMatching() {
   const lock = useRef(false);
   const actionController = useRef<AbortController | null>(null);
   const reconnectController = useRef<AbortController | null>(null);
+  const reconnectPending = useRef(false);
   const connectionLostRef = useRef(connectionLost);
   const syncFailedRef = useRef(syncFailed);
 
@@ -76,11 +77,13 @@ export function useMatching() {
     let timer: ReturnType<typeof setTimeout> | undefined;
     let controller: AbortController | undefined;
     let generation = 0;
+    let failedReads = 0;
 
     const schedule = () => {
       if (!active) return;
       clearTimeout(timer);
-      timer = setTimeout(read, 5000);
+      // Avoid hammering the API when a connection is unstable.
+      timer = setTimeout(read, Math.min(30000, 5000 * 2 ** Math.min(failedReads, 3)));
     };
 
     const read = async () => {
@@ -101,6 +104,7 @@ export function useMatching() {
         );
 
         if (active && readGeneration === generation) {
+          failedReads = 0;
           merge(value);
           setConnectionLost(false);
           setSyncFailed(false);
@@ -113,6 +117,7 @@ export function useMatching() {
           readGeneration === generation &&
           !localController.signal.aborted
         ) {
+          failedReads += 1;
           const offline =
             typeof navigator !== "undefined" && navigator.onLine === false;
           setConnectionLost(offline);
@@ -125,10 +130,12 @@ export function useMatching() {
     };
 
     const resume = () => {
+      if (typeof navigator !== "undefined" && navigator.onLine === false) return;
       clearTimeout(timer);
+      failedReads = 0;
       setReconnecting(true);
-      setConnectionLost(false);
-      setSyncFailed(false);
+      // Only clear a stale/error banner once the server actually confirms
+      // a snapshot. Repeated presses must not imply a successful reconnect.
       void read();
     };
 
@@ -176,7 +183,9 @@ export function useMatching() {
     return () => {
       void supabase.removeChannel(channel);
     };
-  }, [request, terminal, refresh]);
+  // A realtime event triggers a new poll; it must not tear down the realtime
+  // subscription itself (or cause a subscription/refresh feedback loop).
+  }, [request?.requestId, request?.source, terminal]);
 
   useEffect(
     () => () => {
@@ -336,7 +345,7 @@ export function useMatching() {
 
   const reconnect = async (): Promise<MatchSnapshot | null> => {
     const selected = requestRef.current;
-    if (!selected || lock.current) return null;
+    if (!selected || lock.current || reconnectPending.current) return null;
 
     if (selected.source === "preview") {
       setConnectionLost(false);
@@ -346,6 +355,7 @@ export function useMatching() {
       return snapshotRef.current;
     }
 
+    reconnectPending.current = true;
     reconnectController.current?.abort();
     const controller = new AbortController();
     reconnectController.current = controller;
@@ -378,6 +388,7 @@ export function useMatching() {
     } finally {
       if (reconnectController.current === controller)
         reconnectController.current = null;
+      reconnectPending.current = false;
       setReconnecting(false);
       setRefresh((n) => n + 1);
     }

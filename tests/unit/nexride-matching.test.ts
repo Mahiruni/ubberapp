@@ -19,6 +19,17 @@ describe('confirmed matching snapshots', () => {
     const normalized = normalizeMatch(raw, 'request-1');
     expect(normalized?.driver?.pickupMinutes).toBeNull();
   });
+  it('accepts legacy live snapshots with omitted null cancellation reasons', () => {
+    const legacy = snapshot('searching', 3);
+    const value = {
+      ...legacy,
+      cancellation: { allowed: true, requiresConfirmation: false, fee: 0 },
+    };
+    const normalized = normalizeMatch(value, 'request-1');
+    expect(normalized?.cancellation.reason).toBeNull();
+    expect(normalized?.status).toBe('searching');
+    expect(validMatch(normalized, 'request-1')).toBe(true);
+  });
   it('rejects mismatched IDs, invalid versions/fees and duplicate request capabilities', () => {
     expect(validMatch(snapshot(), 'other')).toBe(false);
     expect(validMatch({ ...snapshot(), version: NaN }, 'request-1')).toBe(false);

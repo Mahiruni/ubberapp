@@ -1,4 +1,5 @@
 import { authorizedRequestSupabase } from "../../../../../lib/nexride-server-supabase";
+import { serverAdminSupabase } from "../../../../../lib/nexride-server-admin";
 
 const reply = (body: unknown, status = 200) =>
   Response.json(body, { status, headers: { "Cache-Control": "no-store" } });
@@ -13,18 +14,17 @@ function stableSnapshot(value: unknown) {
   if (!value || typeof value !== "object") return value;
   const record = value as Record<string, unknown>;
   const driver = record.driver;
-  if (
-    !driver ||
-    typeof driver !== "object" ||
-    Object.prototype.hasOwnProperty.call(driver, "pickupMinutes")
-  )
-    return value;
+  const cancellation = record.cancellation;
   return {
     ...record,
-    driver: {
-      ...(driver as Record<string, unknown>),
-      pickupMinutes: null,
-    },
+    // Older database responses stripped nullable keys. Normalize them at the
+    // API boundary so healthy requests never look like connection failures.
+    ...(cancellation && typeof cancellation === "object"
+      ? { cancellation: { reason: null, ...(cancellation as Record<string, unknown>) } }
+      : {}),
+    ...(driver && typeof driver === "object"
+      ? { driver: { pickupMinutes: null, ...(driver as Record<string, unknown>) } }
+      : {}),
   };
 }
 
@@ -35,13 +35,24 @@ export async function GET(request: Request, context: RouteContext) {
   const authorized = await authorizedRequestSupabase(request);
   if (!authorized) return reply({ status: "unavailable" }, 401);
 
-  const { data, error } = await authorized.client.functions.invoke(
-    "nexride-rider-booking",
-    { body: { operation: "snapshot", requestId } },
-  );
-
-  if (error || !data) return reply({ status: "unavailable" }, 500);
-  return reply(stableSnapshot(data));
+  // The token was verified above. Query the authoritative Postgres snapshot
+  // directly rather than depending on a second Edge Function authentication
+  // hop for every poll and manual refresh.
+  try {
+    const { data, error } = await serverAdminSupabase().rpc(
+      "rider_match_snapshot_server",
+      { p_actor: authorized.user.id, p_request_id: requestId },
+    );
+    if (error) {
+      console.error("rider_matching_snapshot_failed", { code: error.code || "unknown" });
+      return reply({ status: "unavailable" }, error.message?.includes("REQUEST_NOT_FOUND") ? 404 : 503);
+    }
+    if (!data) return reply({ status: "unavailable" }, 503);
+    return reply(stableSnapshot(data));
+  } catch {
+    console.error("rider_matching_snapshot_service_unavailable");
+    return reply({ status: "unavailable" }, 503);
+  }
 }
 
 export async function POST(request: Request, context: RouteContext) {
@@ -64,25 +75,27 @@ export async function POST(request: Request, context: RouteContext) {
       return reply({ status: "invalid" }, 400);
     }
 
-    const { data, error } = await authorized.client.functions.invoke(
-      "nexride-rider-booking",
+    const { data, error } = await serverAdminSupabase().rpc(
+      "rider_request_action_server",
       {
-        body: {
-          operation: "action",
-          requestId,
-          expectedVersion,
-          action,
-        },
+        p_actor: authorized.user.id,
+        p_request_id: requestId,
+        p_expected_version: expectedVersion,
+        p_action: action,
       },
     );
 
-    if (error || !data) return reply({ status: "unavailable" }, 500);
+    if (error) {
+      console.error("rider_matching_action_failed", { code: error.code || "unknown" });
+      return reply({ status: "unavailable" }, error.message?.includes("REQUEST_NOT_FOUND") ? 404 : 503);
+    }
 
     const result = data as { conflict?: unknown; snapshot?: unknown } | null;
-    if (!result?.snapshot) return reply({ status: "unavailable" }, 500);
+    if (!result?.snapshot) return reply({ status: "unavailable" }, 503);
 
     return reply(stableSnapshot(result.snapshot), result.conflict === true ? 409 : 200);
   } catch {
-    return reply({ status: "invalid" }, 400);
+    console.error("rider_matching_action_service_unavailable");
+    return reply({ status: "unavailable" }, 503);
   }
 }
