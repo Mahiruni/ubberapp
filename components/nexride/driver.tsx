@@ -241,6 +241,7 @@ export function DriverWorkspace({
         emitNexRideFeedback({
           event: "ride_request",
           id: pendingOffer.id,
+          expiresAt: pendingOffer.expires_at,
           title: "New ride request",
           body: "Open NexRide to review this request.",
           url: `/driver/request?offer=${pendingOffer.id}`,
@@ -262,6 +263,7 @@ export function DriverWorkspace({
             emitNexRideFeedback({
               event: "ride_request",
               id: next.id,
+              expiresAt: typeof next.expires_at === "string" ? next.expires_at : null,
               title: "New ride request",
               body: "Open NexRide to review this request.",
               url: `/driver/request?offer=${next.id}`,

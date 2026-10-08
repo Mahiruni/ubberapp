@@ -6,8 +6,8 @@ import { primeNexRideAudio, stopNexRideNavigationVoice, stopRideRequestAlert } f
 export function NexRideFeedbackBootstrap() {
   useEffect(() => {
     const unlock = () => { void primeNexRideAudio(); };
-    window.addEventListener("pointerdown", unlock, { once: true, passive: true });
-    window.addEventListener("keydown", unlock, { once: true });
+    window.addEventListener("pointerdown", unlock, { passive: true });
+    window.addEventListener("keydown", unlock);
 
     const onPageHide = () => {
       stopRideRequestAlert();

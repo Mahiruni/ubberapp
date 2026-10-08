@@ -79,6 +79,25 @@ const patterns: Record<NexRideSoundId, Pattern> = {
 let context: AudioContext | null = null;
 let requestAudio: HTMLAudioElement | null = null;
 let requestAudioPrimed = false;
+
+export const RIDE_REQUEST_ALERT_DURATION_MS = 30_000;
+export const RIDE_REQUEST_SOUND_STATE_EVENT = "nexride:ride-request-sound-state";
+type ActiveRideAlert = { offerId: string; endsAt: number; timer: ReturnType<typeof setTimeout> };
+let activeRideAlert: ActiveRideAlert | null = null;
+let rideRequestSoundBlocked = false;
+const recentlyAlerted = new Map<string, number>();
+
+export function isRideRequestSoundBlocked() {
+  return rideRequestSoundBlocked && !!activeRideAlert;
+}
+export function isRideRequestAlertActive(offerId?: string) {
+  return !!activeRideAlert && Date.now() < activeRideAlert.endsAt &&
+    (!offerId || activeRideAlert.offerId === offerId);
+}
+function soundState(blocked: boolean) {
+  rideRequestSoundBlocked = blocked;
+  if (typeof window !== "undefined") window.dispatchEvent(new Event(RIDE_REQUEST_SOUND_STATE_EVENT));
+}
 const seen = new Map<string, number>();
 let spokenKey = "";
 
@@ -147,14 +166,25 @@ export async function primeNexRideAudio() {
     }
   } catch {}
 
-  if (ringtone && !requestAudioPrimed) {
+  if (ringtone && activeRideAlert) {
+    // A driver tap unlocks autoplay if the browser blocked the incoming alert.
+    // Never mute or pause the active request audio while priming.
     try {
-      const wasMuted = ringtone.muted;
-      ringtone.muted = true;
       await ringtone.play();
-      ringtone.pause();
-      ringtone.currentTime = 0;
-      ringtone.muted = wasMuted;
+      requestAudioPrimed = true;
+      soundState(false);
+    } catch {
+      soundState(true);
+    }
+  } else if (ringtone && !requestAudioPrimed) {
+    // Prime a separate silent element: the old primer could pause a live
+    // ringtone when the notification arrived during its async play().
+    const silent = new Audio("/audio/nexride-driver-request.mp3?v=1");
+    silent.muted = true;
+    try {
+      await silent.play();
+      silent.pause();
+      silent.currentTime = 0;
       requestAudioPrimed = true;
     } catch {}
   }
@@ -201,30 +231,64 @@ function hapticFor(event: NexRideFeedbackEvent) {
   else if (event !== "ride_request_stop") vibrate(28);
 }
 
-export function stopRideRequestAlert() {
+/** Stop immediately; optional offer ID protects a newer alert from stale events. */
+export function stopRideRequestAlert(offerId?: string) {
+  if (offerId && activeRideAlert?.offerId !== offerId) return;
+  if (activeRideAlert) clearTimeout(activeRideAlert.timer);
+  activeRideAlert = null;
   const ringtone = requestAudio;
   if (ringtone) {
-    try {
-      ringtone.pause();
-      ringtone.currentTime = 0;
-    } catch {}
+    try { ringtone.pause(); ringtone.currentTime = 0; } catch {}
+  }
+  rideRequestSoundBlocked = false;
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event(RIDE_REQUEST_SOUND_STATE_EVENT));
   }
   if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") {
     try { navigator.vibrate(0); } catch {}
   }
 }
 
-function startRideRequestAlert() {
+/** One incoming offer = one 30-second audible window, never reset on routing. */
+export function startRideRequestAlert(offerId: string, expiresAt?: string | null) {
+  if (typeof window === "undefined" || !offerId) return;
+  if (isRideRequestAlertActive(offerId)) return;
+  const now = Date.now();
+  const lastStart = recentlyAlerted.get(offerId);
+  if (lastStart && now - lastStart < 5 * 60_000) return;
+  const expiry = expiresAt ? Date.parse(expiresAt) : NaN;
+  const endsAt = Math.min(
+    now + RIDE_REQUEST_ALERT_DURATION_MS,
+    Number.isFinite(expiry) ? expiry : Infinity,
+  );
+  if (endsAt <= now) return;
   stopRideRequestAlert();
-  const ringtone = getRideRequestAudio();
+  recentlyAlerted.set(offerId, now);
+  for (const [id, time] of recentlyAlerted) {
+    if (now - time > 5 * 60_000) recentlyAlerted.delete(id);
+  }
+  activeRideAlert = {
+    offerId,
+    endsAt,
+    timer: setTimeout(() => stopRideRequestAlert(offerId), endsAt - now),
+  };
   hapticFor("ride_request");
+  const ringtone = getRideRequestAudio();
   if (!ringtone) return;
-
   try {
     ringtone.loop = true;
     ringtone.currentTime = 0;
-    void ringtone.play().catch(() => {});
-  } catch {}
+    void ringtone.play().then(() => {
+      if (isRideRequestAlertActive(offerId)) {
+        requestAudioPrimed = true;
+        soundState(false);
+      }
+    }).catch(() => {
+      if (isRideRequestAlertActive(offerId)) soundState(true);
+    });
+  } catch {
+    if (isRideRequestAlertActive(offerId)) soundState(true);
+  }
 }
 
 function soundFor(event: NexRideFeedbackEvent): NexRideSoundId | null {
@@ -294,29 +358,31 @@ export function emitNexRideFeedback(input: {
   title?: string;
   body?: string;
   url?: string;
+  expiresAt?: string | null;
 }) {
-  const { event, id, title, body, url } = input;
+  const { event, id, title, body, url, expiresAt } = input;
   if (event === "ride_request_stop") {
     stopRideRequestAlert();
     return;
   }
-  const dedupeKey = id ? event + ":" + id : undefined;
-  if (isDuplicate(dedupeKey)) return;
-
   const preferences = readNexRideFeedbackPreferences();
   if (!categoryEnabled(event, preferences)) return;
 
+  // Audio starts synchronously, independently from notification de-duplication.
+  // A route transition from Dashboard -> Request must not cut it off.
+  if (event === "ride_request" && preferences.sounds && id) {
+    startRideRequestAlert(id, expiresAt);
+  }
+  const dedupeKey = id ? event + ":" + id : undefined;
+  if (isDuplicate(dedupeKey)) return;
   if (event === "safety") stopRideRequestAlert();
-
-  void primeNexRideAudio().then(() => {
-    if (!preferences.sounds) return;
-    if (event === "ride_request") startRideRequestAlert();
-    else {
+  if (event !== "ride_request") {
+    void primeNexRideAudio().then(() => {
+      if (!preferences.sounds) return;
       const sound = soundFor(event);
       if (sound) schedulePattern(sound);
-    }
-  });
-
+    });
+  }
   if (event !== "ride_request") hapticFor(event);
   if (title && body) void showSystemNotification(title, body, dedupeKey, url);
 }

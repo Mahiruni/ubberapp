@@ -23,3 +23,6 @@
 .nr-driver-request-page .nr-request-heading{align-items:center}
 @media(max-width:430px){.nr-feedback-settings{padding:12px;border-radius:18px}.nr-feedback-row{padding:10px}.nr-feedback-heading small,.nr-feedback-copy small,.nr-feedback-notifications small{font-size:10px}.nr-feedback-notifications{grid-template-columns:auto 1fr}.nr-feedback-notifications button{grid-column:2;justify-self:start}}
 @media(prefers-reduced-motion:reduce){.nr-feedback-row input,.nr-feedback-row input:after{transition:none!important}}
+
+.nr-driver-request-unmute{position:fixed;z-index:250;left:50%;top:calc(72px + env(safe-area-inset-top));transform:translateX(-50%);width:min(calc(100% - 32px),420px);padding:12px 14px;min-height:46px;border:2px solid #00c878;border-radius:14px;background:#041c30;color:#fff;font-weight:750;font-size:13px;box-shadow:0 8px 24px #041c3066;cursor:pointer}
+.nr-driver-request-unmute:focus-visible{outline:3px solid #00c878;outline-offset:3px}

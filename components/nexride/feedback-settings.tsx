@@ -71,7 +71,7 @@ export function NexRideFeedbackSettings({
         <FeedbackToggle
           icon="bell"
           title={say("Incoming ride request alert", "የአዲስ ጉዞ ጥያቄ ማንቂያ")}
-          detail={say("Loops the NexRide request ringtone until the ride is accepted, declined, expired or withdrawn.", "የጉዞ ጥያቄው እስኪቀበል፣ እስኪከለከል፣ ጊዜው እስኪያልቅ ወይም እስኪሰረዝ ድረስ የNexRide የጥሪ ድምፅ ይደገማል።")}
+          detail={say("Repeats the incoming ride ringtone for up to 30 seconds. Stops sooner if the offer is accepted, declined, withdrawn or expires.", "የአዲስ ጉዞ ጥሪ ድምፅ እስከ 30 ሰከንድ ይደገማል። ጥያቄው ሲቀበል፣ ሲከለከል ወይም ሲያበቃ ቀድሞ ይቆማል።")}
           checked={preferences.rideRequests}
           onChange={(value) => change("rideRequests", value)}
           emphasis

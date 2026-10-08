@@ -8,7 +8,10 @@ import { Icon } from "../../../components/nexride/ui";
 import { useOperationalTranslation } from "../../../components/nexride/operational-i18n";
 import { supabase } from "../../../lib/supabase";
 import { resolveSessionRole } from "../../../lib/nexride-account-role";
-import { emitNexRideFeedback, stopRideRequestAlert } from "../../../lib/nexride-feedback";
+import {
+  emitNexRideFeedback, stopRideRequestAlert,
+  isRideRequestSoundBlocked, primeNexRideAudio, RIDE_REQUEST_SOUND_STATE_EVENT,
+} from "../../../lib/nexride-feedback";
 import "../../nexride.css";
 import "./driver-request.css";
 import "../../detail-system.css";
@@ -78,6 +81,7 @@ export default function DriverRideRequestPage() {
   const [submitting, setSubmitting] = useState<"accept" | "decline" | null>(null);
   const [acceptFailure, setAcceptFailure] = useState("");
   const [secondsRemaining, setSecondsRemaining] = useState<number | null>(null);
+  const [soundBlocked, setSoundBlocked] = useState(false);
   const [requestRoute, setRequestRoute] = useState<NavigationCoordinate[]>([]);
   const [requestSegments, setRequestSegments] = useState<NavigationTrafficSegment[]>([]);
   const [driverPosition, setDriverPosition] = useState<NavigationCoordinate | null>(null);
@@ -335,25 +339,30 @@ export default function DriverRideRequestPage() {
   }, [offer?.expires_at, offer?.status]);
 
   useEffect(() => {
-    if (!offer?.id || offer.status !== "pending") {
-      stopRideRequestAlert();
+    const sync = () => setSoundBlocked(isRideRequestSoundBlocked());
+    window.addEventListener(RIDE_REQUEST_SOUND_STATE_EVENT, sync);
+    sync();
+    return () => window.removeEventListener(RIDE_REQUEST_SOUND_STATE_EVENT, sync);
+  }, []);
+
+  useEffect(() => {
+    // Do not stop a Dashboard-started ringtone before this page has loaded
+    // the offer. Its global timer owns the entire 30-second window.
+    if (!offer?.id) return;
+    const expiry = offer.expires_at ? Date.parse(offer.expires_at) : NaN;
+    if (offer.status !== "pending" || (Number.isFinite(expiry) && expiry <= Date.now())) {
+      stopRideRequestAlert(offer.id);
       return;
     }
     emitNexRideFeedback({
       event: "ride_request",
       id: offer.id,
+      expiresAt: offer.expires_at,
       title: "New ride request",
       body: "Review the pickup, destination, ETA and payout.",
       url: `/driver/request?offer=${offer.id}`,
     });
-    const expiresAt = offer.expires_at ? new Date(offer.expires_at).getTime() : null;
-    const timer = expiresAt && expiresAt > Date.now()
-      ? window.setTimeout(stopRideRequestAlert, expiresAt - Date.now())
-      : null;
-    return () => {
-      if (timer) window.clearTimeout(timer);
-      stopRideRequestAlert();
-    };
+    // Re-rendering/unmounting does not end a still-pending ride's audio.
   }, [offer?.id, offer?.status, offer?.expires_at]);
 
     const expiredByTime = offer?.status === "pending" && secondsRemaining === 0;
@@ -405,7 +414,7 @@ export default function DriverRideRequestPage() {
       return;
     }
 
-    stopRideRequestAlert();
+    stopRideRequestAlert(offer.id);
     emitNexRideFeedback({
       event: "ride_accepted",
       id: offer.id,
@@ -438,13 +447,23 @@ export default function DriverRideRequestPage() {
       return;
     }
 
-    stopRideRequestAlert();
+    stopRideRequestAlert(offer.id);
     setOffer((current) => current ? { ...current, status: "declined" } : current);
     setSubmitting(null);
   }
 
   return (
     <main className="nr-app nr-driver-request-page" data-mode="driver">
+      {offer?.status === "pending" && soundBlocked && (
+        <button
+          type="button"
+          className="nr-driver-request-unmute"
+          onClick={() => { void primeNexRideAudio(); }}
+          aria-label={op("Enable incoming ride request sound")}
+        >
+          {op("Tap to enable the 30-second ride request sound")}
+        </button>
+      )}
       <div className="nr-driver-request-map">
         <DriverNavigationMap
           vehicle={driverPosition}
