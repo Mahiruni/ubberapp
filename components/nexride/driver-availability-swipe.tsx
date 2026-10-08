@@ -55,6 +55,11 @@ export function DriverAvailabilitySwipe({
   const startDrag = (event: ReactPointerEvent<HTMLButtonElement>) => {
     if (disabled || updating || (event.pointerType === "mouse" && event.button !== 0)) return;
     maxOffsetRef.current = measure();
+    const rect = event.currentTarget.getBoundingClientRect();
+    const thumbSize = Math.min(58, Math.max(52, rect.height - 8));
+    const thumbLeft = online ? rect.right - thumbSize - 4 : rect.left + 4;
+    // Do not start a swipe by tapping the opposite end of the track.
+    if (event.clientX < thumbLeft - 8 || event.clientX > thumbLeft + thumbSize + 8) return;
     draggingRef.current = true;
     draggedRef.current = false;
     setDragOffset(online ? maxOffsetRef.current : 0);
@@ -75,8 +80,10 @@ export function DriverAvailabilitySwipe({
     const offset = pointerOffset(event);
     const max = Math.max(1, maxOffsetRef.current);
     const progress = offset / max;
-    const completed = online ? progress <= 0.28 : progress >= 0.72;
+    const completed = draggedRef.current && (online ? progress <= 0.28 : progress >= 0.72);
     setDragOffset(null);
+    // Suppress the synthetic click after a handled pointer gesture.
+    if (draggedRef.current) suppressClickRef.current = true;
 
     if (completed) {
       suppressClickRef.current = true;
