@@ -34,6 +34,8 @@ export default function DriverVerificationPage() {
   const [plate, setPlate] = useState("");
   const [licenseFile, setLicenseFile] = useState<File | null>(null);
   const [registrationFile, setRegistrationFile] = useState<File | null>(null);
+  const [existingLicensePath, setExistingLicensePath] = useState("");
+  const [existingRegistrationPath, setExistingRegistrationPath] = useState("");
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [editingApproved, setEditingApproved] = useState(false);
@@ -64,7 +66,7 @@ export default function DriverVerificationPage() {
 
       const { data, error: loadError } = await supabase
         .from("drivers")
-        .select("license_number,license_expiry,vehicle,vehicle_color,vehicle_plate,review_status,rejection_reason")
+        .select("license_number,license_expiry,vehicle,vehicle_color,vehicle_plate,review_status,rejection_reason,license_document_path,vehicle_registration_path")
         .eq("id", session.user.id)
         .maybeSingle();
 
@@ -75,6 +77,8 @@ export default function DriverVerificationPage() {
         setStatus(next || "draft");
         setReason(data.rejection_reason || "");
         setLicenseNumber(data.license_number || "");
+        setExistingLicensePath(data.license_document_path || "");
+        setExistingRegistrationPath(data.vehicle_registration_path || "");
         setLicenseExpiry(data.license_expiry || "");
         setVehicle(data.vehicle || session.user.user_metadata?.vehicle || "");
         setVehicleColor(data.vehicle_color || session.user.user_metadata?.vehicle_color || "");
@@ -117,11 +121,11 @@ export default function DriverVerificationPage() {
     if (busy) return;
     setError("");
 
-    if (!licenseFile || !registrationFile) {
-      setError("Upload both your driver license and vehicle registration.");
+    if ((!licenseFile && !existingLicensePath) || (!registrationFile && !existingRegistrationPath)) {
+      setError("Upload only the missing documents. Existing submitted files are retained.");
       return;
     }
-    for (const file of [licenseFile, registrationFile]) {
+    for (const file of [licenseFile, registrationFile].filter((entry):entry is File=>entry!==null)) {
       if (!allowedTypes.has(file.type)) {
         setError("Use JPG, PNG, WebP, or PDF documents.");
         return;
@@ -141,18 +145,23 @@ export default function DriverVerificationPage() {
       return;
     }
 
-    const licensePath = `${session.user.id}/driver-license.${extensionFor(licenseFile)}`;
-    const registrationPath = `${session.user.id}/vehicle-registration.${extensionFor(registrationFile)}`;
-
-    const [licenseUpload, registrationUpload] = await Promise.all([
-      supabase.storage.from("driver-verification").upload(licensePath, licenseFile, { upsert: true, contentType: licenseFile.type }),
-      supabase.storage.from("driver-verification").upload(registrationPath, registrationFile, { upsert: true, contentType: registrationFile.type }),
-    ]);
-
-    if (licenseUpload.error || registrationUpload.error) {
-      setError(licenseUpload.error?.message || registrationUpload.error?.message || "Document upload failed.");
-      setBusy(false);
-      return;
+    const licensePath = licenseFile
+      ? `${session.user.id}/driver-license-${Date.now()}.${extensionFor(licenseFile)}`
+      : existingLicensePath;
+    const registrationPath = registrationFile
+      ? `${session.user.id}/vehicle-registration-${Date.now()}.${extensionFor(registrationFile)}`
+      : existingRegistrationPath;
+    // Reuse existing private records. Never overwrite a previously submitted
+    // document or ask to upload it again when it is already present.
+    if (licenseFile) {
+      const upload=await supabase.storage.from("driver-verification")
+        .upload(licensePath,licenseFile,{upsert:false,contentType:licenseFile.type});
+      if(upload.error){setError("Driver license upload failed.");setBusy(false);return;}
+    }
+    if (registrationFile) {
+      const upload=await supabase.storage.from("driver-verification")
+        .upload(registrationPath,registrationFile,{upsert:false,contentType:registrationFile.type});
+      if(upload.error){setError("Vehicle document upload failed.");setBusy(false);return;}
     }
 
     const response = await nexrideApiFetch("/api/driver/verification", {
@@ -175,13 +184,17 @@ export default function DriverVerificationPage() {
           ? "Your driver license must have a future expiry date."
           : payload?.status === "verification_locked"
             ? "Approved or suspended verification cannot be replaced from this screen."
-            : "We couldn’t submit your verification. Try again.";
+            : payload?.status === "identity_ownership_review_required"
+              ? "This identity needs an ownership or replacement review. Visit Manage Account for help."
+              : "We couldn’t submit your verification. Try again.";
       setError(message);
       setBusy(false);
       return;
     }
 
     setStatus((payload.reviewStatus as DriverReviewStatus) || "pending");
+    setExistingLicensePath(licensePath);
+    setExistingRegistrationPath(registrationPath);
     try { sessionStorage.removeItem("nexride.driver.verification.draft." + session.user.id); } catch {}
     setBusy(false);
   }
@@ -219,8 +232,8 @@ export default function DriverVerificationPage() {
               <label>Vehicle color<select value={vehicleColor} onChange={(e) => setVehicleColor(e.target.value)} required><option value="">Choose color</option>{VEHICLE_COLOR_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.en}</option>)}</select></label>
             </div>
             <label>Vehicle plate<input value={plate} onChange={(e) => setPlate(e.target.value)} required /></label>
-            <label>Driver license document<input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" onChange={(e) => setLicenseFile(e.target.files?.[0] || null)} required /></label>
-            <label>Vehicle registration document<input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" onChange={(e) => setRegistrationFile(e.target.files?.[0] || null)} required /></label>
+            <label>Driver license document {existingLicensePath && <small>Already submitted — upload only to replace</small>}<input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" onChange={(e) => setLicenseFile(e.target.files?.[0] || null)} required={!existingLicensePath} /></label>
+            <label>Vehicle registration document {existingRegistrationPath && <small>Already submitted — upload only to replace</small>}<input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" onChange={(e) => setRegistrationFile(e.target.files?.[0] || null)} required={!existingRegistrationPath} /></label>
             <small className="driver-auth-draft-note">Text fields are kept on this device if you navigate back. For security, browsers require document files to be selected again.</small>
             {error && <div className="driver-auth-error" role="alert">{error}</div>}
             <button className="driver-auth-submit" type="submit" disabled={busy}>{busy ? "Submitting…" : "Submit for review"}</button>
