@@ -217,11 +217,14 @@ export function DriverAvailabilitySwipe({
     ? online
       ? say("Going offline…", "ከመስመር ውጭ በመውጣት ላይ…")
       : say("Going online…", "ወደ መስመር በመግባት ላይ…")
-    : labelOverride || (
-      online
-        ? say("Swipe left to go offline", "ከመስመር ውጭ ለመውጣት ወደ ግራ ያንሸራትቱ")
-        : say("Swipe right to go online", "ወደ መስመር ለመግባት ወደ ቀኝ ያንሸራትቱ")
-    );
+    : labelOverride || (online ? say("Go offline", "ከመስመር ውጭ") : say("Go online", "መስመር ላይ"));
+  const hint = updating
+    ? say("Confirming availability", "ሁኔታው በመረጋገጥ ላይ")
+    : labelOverride
+      ? say("Review your driver status", "የአሽከርካሪ ሁኔታን ይመልከቱ")
+      : online
+        ? say("Swipe left to confirm", "ለማረጋገጥ ወደ ግራ ያንሸራትቱ")
+        : say("Swipe right to confirm", "ለማረጋገጥ ወደ ቀኝ ያንሸራትቱ");
 
   return (
     <button
@@ -255,10 +258,15 @@ export function DriverAvailabilitySwipe({
       onClick={activate}
     >
       <span className="nr-driver-swipe-label" aria-hidden="true">
-        <span className="nr-driver-swipe-instruction">{label}</span>
-        <span className="nr-driver-swipe-release">{online
-          ? say("Release to go offline", "ከመስመር ውጭ ለመውጣት ይልቀቁ")
-          : say("Release to go online", "መስመር ላይ ለመግባት ይልቀቁ")}</span>
+        <span className="nr-driver-swipe-instruction">
+          <strong className="nr-driver-swipe-primary">{label}</strong>
+          <small className="nr-driver-swipe-hint">{hint}</small>
+        </span>
+        <span className="nr-driver-swipe-release">
+          <strong>{online
+            ? say("Release to go offline", "ከመስመር ውጭ ለመውጣት ይልቀቁ")
+            : say("Release to go online", "መስመር ላይ ለመግባት ይልቀቁ")}</strong>
+        </span>
       </span>
       <span ref={thumbRef} className="nr-driver-swipe-thumb" aria-hidden="true">
         {updating ? <span className="nr-driver-swipe-spinner" /> : <Icon name={online ? "back" : "arrow"} size={21} />}

@@ -679,7 +679,7 @@ export function DriverWorkspace({
             <div className="nr-driver-home-control-heading">
               <div className="nr-driver-home-control-state" aria-live="polite" aria-atomic="true">
                 <span className="nr-driver-home-control-brand">NEXRIDE · DRIVER</span>
-                <strong>{state.online ? say("Ready for rides", "ለጉዞ ዝግጁ") : say("You're offline", "ከመስመር ውጭ ነዎት")}</strong>
+                <strong>{state.online ? say("Ready for rides", "ለጉዞ ዝግጁ") : say("Ready when you are", "ሲዘጋጁ ይጀምሩ")}</strong>
                 <small>{state.online
                   ? say("Online stays active when minimized. Android may pause GPS and delay alerts until you reopen NexRide.", "መተግበሪያው ሲቀነስ የመስመር ላይ ሁኔታዎ ይቀጥላል። Android GPSን እና ማሳወቂያዎችን ሊያዘገይ ይችላል።")
                   : say("Swipe to start receiving ride requests", "ጉዞ ለመቀበል ያንሸራትቱ")}</small>
