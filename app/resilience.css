@@ -130,3 +130,11 @@ html[data-nr-network="reconnecting"] .nr-mapbox-surface {
     transition: none !important;
   }
 }
+
+
+/* Connectivity is an internal resilience concern only.
+   Never surface connection strength/state chrome in the product UI. */
+.nr-network-banner,
+.nr-network-live {
+  display:none!important;
+}
