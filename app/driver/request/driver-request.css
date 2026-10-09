@@ -551,3 +551,42 @@
 .nr-request-confirm-actions button:focus-visible{outline:3px solid #00c878;outline-offset:2px}
 @media(max-width:350px){.nr-driver-request-page .nr-request-actions-primary{gap:7px}.nr-driver-request-page .nr-request-actions :is(.nr-request-accept,.nr-request-decline){font-size:13px}}
 @media(prefers-reduced-motion:reduce){.nr-driver-request-page .nr-request-actions button{transition:none}}
+
+
+/* Content-aware offer sheet, legible copy and equal action sizing. */
+.nr-driver-app-shell .nr-driver-request-page .nr-request-sheet{padding:0!important;overflow:hidden!important}
+.nr-driver-request-page .nr-request-sheet .nr-driver-sheet-content{
+  padding:0 16px calc(16px + env(safe-area-inset-bottom,0px))!important;
+}
+.nr-driver-request-page .nr-request-route-copy strong{
+  overflow-wrap:anywhere;
+  line-height:1.45;
+}
+.nr-driver-request-page .nr-request-summary{
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  padding:1px!important;
+  gap:1px!important;
+}
+.nr-driver-request-page .nr-request-summary :is(small,strong){
+  display:block;
+  white-space:normal!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+  overflow-wrap:anywhere;
+  line-height:1.4;
+}
+.nr-driver-request-page .nr-request-approach{
+  flex-wrap:wrap;
+  align-items:center;
+  row-gap:6px;
+  line-height:1.35;
+}
+.nr-driver-request-page .nr-request-actions :is(.nr-request-accept,.nr-request-decline,.nr-request-pass){
+  white-space:normal!important;
+  line-height:1.3;
+  text-align:center;
+}
+.nr-driver-request-page .nr-request-state{min-height:0;padding:16px 4px 12px}
+@media(min-width:760px){
+  .nr-driver-request-page .nr-request-sheet .nr-driver-sheet-content{padding:0 20px 20px!important}
+}
