@@ -399,3 +399,41 @@ body{min-width:320px;overflow-x:hidden}
 @media(max-width:800px){
   .rider-home-view .nr-panel{margin:0 0 10px!important}
 }
+
+
+/* 2026 interaction quality pass — no layout or business-logic overrides.
+   Map gestures remain Mapbox-owned; only explicit sheet handles capture drags. */
+.nr-app :is(.nr-flow-sheet-handle,.nr-driver-sheet-grab) {
+  touch-action:none!important;
+  cursor:ns-resize;
+  user-select:none;
+  -webkit-user-select:none;
+  -webkit-tap-highlight-color:transparent;
+}
+.nr-app :is(.nr-flow-sheet-handle,.nr-driver-sheet-grab):active:not(:disabled) {
+  transform:none!important;
+}
+.nr-app :is(.nr-destination-body,.nr-ride-selection-body,.nr-matching-body,.nr-driver-sheet-content,.nr-chat-thread) {
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+}
+.nr-app :is(.nr-flow-sheet-handle,.nr-driver-sheet-grab):focus-visible {
+  outline:3px solid #00c878!important;
+  outline-offset:2px;
+}
+.nr-app :is(.nr-rider-home-sheet,.nr-destination-panel,.nr-ride-selection,.nr-driver-matching,.nr-driver-sheet) {
+  min-width:0;
+}
+.nr-app :is(.nr-button,.nr-icon-button,.nr-list-row,.nr-ride-card,.nr-ride-selection button) {
+  -webkit-tap-highlight-color:transparent;
+}
+.nr-app :is(.nr-button,.nr-icon-button,.nr-list-row):not(:disabled) {
+  transition-duration:200ms;
+  transition-timing-function:cubic-bezier(.2,.8,.2,1);
+}
+@media(prefers-reduced-motion:reduce) {
+  .nr-app :is(.nr-flow-sheet-handle,.nr-driver-sheet-grab,.nr-button,.nr-icon-button,.nr-list-row) {
+    transition:none!important;
+    animation:none!important;
+  }
+}
