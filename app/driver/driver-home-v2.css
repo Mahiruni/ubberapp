@@ -578,3 +578,8 @@
   width:20px;
   height:20px;
 }
+
+/* Keep Driver command-wrapper actions individually visible and thumb-friendly. */
+.nr-driver-home-quick-actions{grid-template-columns:minmax(0,1fr)!important;align-items:stretch!important}
+.nr-driver-home-quick-actions button{width:100%;min-height:48px!important;justify-content:center!important;font-size:13px!important;padding:11px 14px!important;white-space:normal!important}
+.nr-driver-home-control-panel{min-width:0;max-height:min(76dvh,620px);overflow-y:auto;overscroll-behavior:contain}
