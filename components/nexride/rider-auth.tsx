@@ -43,7 +43,9 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
-  const [checkingSession, setCheckingSession] = useState(mode === "signin");
+  // Keep the sign-in form available immediately after explicit logout;
+  // an optional session-restore check must never hide the password field.
+  const [checkingSession, setCheckingSession] = useState(false);
 
   useEffect(() => {
     let active = true;
