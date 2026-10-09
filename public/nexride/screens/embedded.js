@@ -51,12 +51,12 @@
      const next=[fix.lat,fix.lng],fresh=current(booking,context),newer=!lastFix||fix.updatedAt>lastFix.updatedAt,same=lastFix?.driverId===fix.driverId;
      if(!fresh||context.connected===false)stop();
      if(!car){car=marker(null,fix,'vehicle');lastFix={...fix};}
-     car?.getElement().classList.toggle('is-stale',!fresh||context.connected===false);
      else if(newer||!same){
       const animate=newer&&same&&fresh&&Date.now()-lastFix.updatedAt<45000&&!reduced.matches&&context.connected!==false;
       stop();if(animate){const from=car.getLatLng(),start=performance.now();target=next;const step=t=>{const progress=Math.min(1,(t-start)/650),ease=progress*progress*(3-2*progress);car.setLatLng([from.lat+(next[0]-from.lat)*ease,from.lng+(next[1]-from.lng)*ease]);if(progress<1)frame=requestAnimationFrame(step);else{frame=0;target=null;}};frame=requestAnimationFrame(step);}else car.setLatLng(next);
       lastFix={...fix};
      }
+     car?.getElement()?.classList.toggle('is-stale',!fresh||context.connected===false);
      accuracy?.remove();accuracy=null;if(Number.isFinite(fix.accuracyMeters)&&fix.accuracyMeters>0)accuracy=L.circle(next,{radius:fix.accuracyMeters,color:'#517684',weight:1,fillOpacity:.08}).addTo(map);
     }
     const points=[booking.pickup,booking.destination,fix,...(route||[])].filter(point).map(p=>[p.lat,p.lng]);if(!fitted&&points.length){map.fitBounds(points,fitOptions());fitted=true;}
