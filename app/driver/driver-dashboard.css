@@ -1024,3 +1024,7 @@
   }
   .nr-driver-app-shell .nr-driver-bottom-nav button{min-height:56px}
 }
+
+/* Biloo-inspired Driver shell tokens. Safety and live status semantics stay distinct. */
+.nr-driver-page{--driver-accent:#5145e5;--driver-bg:#202133;--driver-surface:#292a3e;--driver-surface-elevated:#34344d;--driver-border:#48475d;--driver-text-primary:#f8f8ff}
+.nr-driver-page :is(button,a,input,select):focus-visible{outline-color:#a89fff}
