@@ -761,3 +761,226 @@
     padding:8px 6px!important;
   }
 }
+
+
+/* NexRide Dispatch 2026 — legible authoritative countdown and actions. */
+.nr-driver-app-shell .nr-driver-request-page .nr-request-sheet .nr-request-heading{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-sheet .nr-request-eyebrow{
+  color:#008b58!important;
+  font-size:10px;
+  font-weight:850;
+  letter-spacing:.12em;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-sheet .nr-request-heading h1{
+  font-size:clamp(19px,4.6vw,25px)!important;
+  line-height:1.12;
+  color:#102334!important;
+  text-wrap:balance;
+}
+.nr-driver-request-page .nr-request-deadline{
+  flex:0 0 auto;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:2px;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-countdown{
+  --request-ring:#00a866;
+  display:grid!important;
+  position:relative;
+  place-items:center;
+  padding:0!important;
+  width:64px;
+  height:64px;
+  min-width:64px;
+  border:0!important;
+  border-radius:50%;
+  background:#ffffff!important;
+  color:#102334!important;
+  box-shadow:none!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-countdown[data-urgency="warning"]{
+  --request-ring:#c58a18;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-countdown[data-urgency="critical"]{
+  --request-ring:#c6283a;
+}
+.nr-driver-request-page .nr-request-countdown-ring{
+  position:absolute;
+  inset:0;
+  display:block;
+  width:100%;
+  height:100%;
+  transform:rotate(-90deg);
+  overflow:visible;
+}
+.nr-driver-request-page .nr-request-countdown-ring circle{
+  fill:none;
+  stroke-width:5px;
+}
+.nr-driver-request-page .nr-request-countdown-ring .track{
+  stroke:#e4eaf0;
+}
+.nr-driver-request-page .nr-request-countdown-ring .progress{
+  stroke:var(--request-ring);
+  stroke-linecap:round;
+  transition:stroke-dashoffset .35s linear,stroke .2s ease;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-countdown strong{
+  z-index:1;
+  font-size:16px;
+  font-weight:900;
+  line-height:1;
+  font-variant-numeric:tabular-nums;
+  color:#102334!important;
+}
+.nr-driver-request-page .nr-request-skip{
+  border:0;
+  min-width:60px;
+  min-height:28px;
+  padding:3px 7px;
+  border-radius:8px;
+  background:transparent;
+  color:#007448;
+  font-size:12px;
+  font-weight:800;
+  text-decoration:underline;
+  text-underline-offset:3px;
+  cursor:pointer;
+}
+.nr-driver-request-page .nr-request-skip:hover:not(:disabled){
+  background:#eafff3;
+}
+.nr-driver-request-page .nr-request-skip:disabled{
+  color:#95a6af;
+  cursor:not-allowed;
+}
+.nr-driver-request-page .nr-request-skip:focus-visible{
+  outline:3px solid #00c878;
+  outline-offset:2px;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-sheet>.nr-driver-sheet-footer{
+  background:#ffffff!important;
+  border-color:#e4eaf0!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-sheet>.nr-driver-sheet-content{
+  scrollbar-width:thin;
+  scrollbar-color:#c8d6dd transparent;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-driver-sheet-footer :is(
+ .nr-request-accept,.nr-request-decline,.nr-request-pass
+){
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  min-height:52px!important;
+  font-weight:850;
+  letter-spacing:-.01em;
+  -webkit-tap-highlight-color:transparent;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-driver-sheet-footer .nr-request-accept{
+  color:#032b20!important;
+  background:#00c878!important;
+  border-color:#00c878!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-driver-sheet-footer .nr-request-decline{
+  color:#ffffff!important;
+  background:#c6283a!important;
+  border-color:#c6283a!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-driver-sheet-footer .nr-request-pass{
+  color:#ffffff!important;
+  background:#931c30!important;
+  border-color:#931c30!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-driver-sheet-footer :is(
+ .nr-request-accept,.nr-request-decline,.nr-request-pass
+):disabled{
+  opacity:.48;
+  cursor:not-allowed;
+}
+/* Decline confirmation is a focused, keyboard-accessible choice sheet. */
+.nr-request-confirm-content{
+  max-height:min(70dvh,560px);
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  padding:14px 18px max(16px,env(safe-area-inset-bottom,0px));
+  color:#102334;
+  background:#ffffff;
+}
+.nr-request-confirm-content p{
+  color:#667587!important;
+  line-height:1.48;
+  font-size:13px;
+  margin:0 0 12px;
+}
+.nr-request-reasons{
+  display:grid;
+  gap:7px;
+  margin-bottom:16px;
+}
+.nr-request-reason{
+  display:flex;
+  align-items:center;
+  gap:11px;
+  min-height:48px;
+  padding:10px 12px;
+  border:1px solid #dfe7eb;
+  border-radius:12px;
+  background:#ffffff;
+  color:#102334;
+  cursor:pointer;
+  font-size:13px;
+  font-weight:700;
+}
+.nr-request-reason[data-selected="true"]{
+  border-color:#00a86b;
+  background:#effbf4;
+  color:#006f45;
+}
+.nr-request-reason input{
+  appearance:auto!important;
+  width:17px;
+  height:17px;
+  margin:0;
+  flex:none;
+  accent-color:#008b58;
+  cursor:inherit;
+}
+.nr-request-reason span{flex:1;min-width:0;overflow-wrap:anywhere}
+.nr-request-reason svg{opacity:0;color:#008b58}
+.nr-request-reason[data-selected="true"] svg{opacity:1}
+.nr-request-reason:focus-within{
+  outline:3px solid rgba(0,200,120,.25);
+  outline-offset:1px;
+}
+.nr-request-confirm-actions{
+  position:sticky;
+  bottom:0;
+  background:#ffffff;
+  padding-top:9px;
+  border-top:1px solid #edf1f3;
+}
+.nr-request-confirm-actions .nr-request-confirm-yes{
+  background:#c6283a;
+  border-color:#c6283a;
+  color:#ffffff;
+}
+@media(max-width:360px){
+  .nr-driver-app-shell .nr-driver-request-page .nr-request-countdown{
+    width:56px;height:56px;min-width:56px;
+  }
+  .nr-driver-app-shell .nr-driver-request-page .nr-request-countdown strong{font-size:14px}
+  .nr-driver-app-shell .nr-driver-request-page .nr-request-sheet .nr-request-heading{gap:8px}
+  .nr-request-reason{font-size:12px}
+}
+@media(prefers-reduced-motion:reduce){
+  .nr-driver-request-page .nr-request-countdown-ring .progress{transition:none}
+}
