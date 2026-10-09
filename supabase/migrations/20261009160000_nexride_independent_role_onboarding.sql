@@ -33,7 +33,11 @@ grant select on public.account_role_onboarding to authenticated;
 insert into public.account_role_onboarding(user_id,role,status,completed_at)
 select ar.user_id,ar.role,
   case
-    when ar.role='rider' then 'completed'
+    when ar.role='rider' and u.email_confirmed_at is not null
+      and length(trim(coalesce(p.full_name,''))) between 2 and 80
+      and length(regexp_replace(coalesce(p.phone,''),'[^0-9]','','g')) between 7 and 15
+      then 'completed'
+    when ar.role='rider' then 'incomplete'
     when d.review_status='approved' then 'approved'
     when d.review_status='suspended' then 'suspended'
     when d.review_status='rejected' then 'rejected'
@@ -41,10 +45,15 @@ select ar.user_id,ar.role,
     else 'incomplete'
   end,
   case
-    when ar.role='rider' or d.review_status='approved' then now()
+    when (ar.role='rider' and u.email_confirmed_at is not null
+      and length(trim(coalesce(p.full_name,''))) between 2 and 80
+      and length(regexp_replace(coalesce(p.phone,''),'[^0-9]','','g')) between 7 and 15)
+      or (ar.role='driver' and d.review_status='approved') then now()
     else null
   end
 from public.account_roles ar
+join auth.users u on u.id=ar.user_id
+left join public.profiles p on p.id=ar.user_id
 left join public.drivers d on d.id=ar.user_id and ar.role='driver'
 on conflict (user_id,role) do nothing;
 
