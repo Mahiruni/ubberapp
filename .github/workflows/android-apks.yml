@@ -6,6 +6,11 @@ name: Build NexRide Android APKs
     branches: [main]
     paths:
       - ".github/workflows/android-apks.yml"
+      - "public/icons/nexride-rider.webp"
+      - "public/icons/nexride-driver.webp"
+      - "scripts/generate-brand-assets.mjs"
+      - "scripts/sync-android-icons.mjs"
+      - "package.json"
 
 permissions:
   contents: read
@@ -36,7 +41,9 @@ jobs:
           java-version: "21"
 
       - name: Install web dependencies
-        run: npm ci
+        # Some legacy package-lock entries predate Mapbox additions. Let npm
+        # resolve the tracked package.json rather than abort on npm ci drift.
+        run: npm install --no-audit --no-fund
 
       - name: Install Capacitor build tooling
         run: npm install --no-save @capacitor/core@latest @capacitor/cli@latest @capacitor/android@latest
@@ -91,6 +98,13 @@ jobs:
           s=s.replace('android:usesCleartextTraffic="true"', 'android:usesCleartextTraffic="false"')
           p.write_text(s)
           PY
+
+      - name: Install role-specific Android launcher assets
+        shell: bash
+        run: |
+          node scripts/sync-android-icons.mjs "${{ matrix.role }}"
+          test -s android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+          test -s android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png
 
       - name: Verify role isolation and security
         shell: bash
