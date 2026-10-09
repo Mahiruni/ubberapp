@@ -405,7 +405,7 @@ export function RiderHomePanel({
           aria-label={t("destination")}
         >
           <Icon name="search" size={22} />
-          <span>{t("whereTo")}</span>
+          <span>{language === "am" ? "ጉዞዎን ያቅዱ" : "Plan your ride"}</span>
           <span className="nr-search-arrow">
             <Icon name="arrow" size={20} />
           </span>
