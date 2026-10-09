@@ -399,7 +399,8 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
       localStorage.setItem(PREVIEW_ENABLED_KEY, "true");
     } catch {}
 
-    clearExplicitSignOut();
+    // Exploring a preview must never remove an explicit logout barrier:
+    // only a successful credential-based sign-in may restore auth access.
     enterRider(null);
     router.replace("/");
   };
