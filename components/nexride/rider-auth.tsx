@@ -446,6 +446,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
             <div className="nr-auth-password-row">
               <input
                 type={showPassword ? "text" : "password"}
+                aria-label={t("password")}
                 autoComplete="new-password"
                 required
                 minLength={8}
@@ -468,6 +469,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
                 required
                 minLength={8}
                 value={confirmPassword}
+                aria-label={t("confirmPassword")}
                 onChange={(event) => setConfirmPassword(event.target.value)}
               />
               <button type="button" className="nr-auth-password-toggle" onClick={() => setShowPassword((value) => !value)} aria-pressed={showPassword}>
@@ -548,7 +550,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
         <label className="nr-input-field nr-auth-password-field">
           <span>{t("password")}</span>
           <div className="nr-auth-password-row">
-            <input type={showPassword ? "text" : "password"} autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} />
+            <input type={showPassword ? "text" : "password"} aria-label={t("password")} autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} />
             <button type="button" className="nr-auth-password-toggle" onClick={() => setShowPassword((value) => !value)} aria-pressed={showPassword}>{showPassword ? "Hide" : "Show"}</button>
           </div>
         </label>
