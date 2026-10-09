@@ -193,6 +193,22 @@ export async function PATCH(request: Request) {
       }
 
       updatedDriver = onlineData;
+
+      if (body.online === true && current.is_online !== true) {
+        // Online was confirmed by the authenticated Driver's RLS update.
+        // Offer a previously pending Rider request immediately, without a
+        // Rider retry. The periodic database dispatcher remains the fallback
+        // if another worker currently holds the request lock.
+        const { error: waitingDispatchError } = await admin.rpc(
+          "nexride_dispatch_waiting_for_driver_server",
+          { p_driver_id: authorized.user.id },
+        );
+        if (waitingDispatchError) {
+          console.warn("nexride_newly_online_dispatch_deferred", {
+            code: waitingDispatchError.code || "unknown",
+          });
+        }
+      }
     }
 
     return reply({
