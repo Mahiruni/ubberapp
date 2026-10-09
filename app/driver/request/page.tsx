@@ -580,7 +580,32 @@ export default function DriverRideRequestPage() {
         <Icon name="back" />
       </button>
 
-      <DriverBottomSheet className="nr-request-sheet" label="Ride request details" defaultSnap="medium">
+      <DriverBottomSheet
+        className="nr-request-sheet"
+        label="Ride request details"
+        defaultSnap="medium"
+        footer={!loading && offer && request && (visibleStatus === "pending" || visibleStatus === "failed") ? (
+            <div className="nr-request-actions" aria-label={op("Respond to ride request")}>
+              <div className="nr-request-actions-primary">
+                <button type="button" className="nr-request-accept"
+                  disabled={Boolean(submitting)} onClick={() => void acceptRide()}>
+                  <Icon name="check" size={18} />
+                  {submitting === "accept" ? op("Accepting…") : op("Accept")}
+                </button>
+                <button type="button" className="nr-request-decline"
+                  disabled={Boolean(submitting)} onClick={() => setConfirmAction("decline")}>
+                  <Icon name="close" size={18} />
+                  {op("Decline")}
+                </button>
+              </div>
+              <button type="button" className="nr-request-pass"
+                disabled={Boolean(submitting)} onClick={() => setConfirmAction("pass")}>
+                <Icon name="arrow" size={18} />
+                {op("Pass to Another Driver")}
+              </button>
+            </div>
+        ) : undefined}
+      >
 
         {loading ? (
           <div className="nr-request-loading" aria-busy="true">
@@ -707,25 +732,7 @@ export default function DriverRideRequestPage() {
               </div>
             )}
 
-            <div className="nr-request-actions" aria-label={op("Respond to ride request")}>
-              <div className="nr-request-actions-primary">
-                <button type="button" className="nr-request-accept"
-                  disabled={Boolean(submitting)} onClick={() => void acceptRide()}>
-                  <Icon name="check" size={18} />
-                  {submitting === "accept" ? op("Accepting…") : op("Accept")}
-                </button>
-                <button type="button" className="nr-request-decline"
-                  disabled={Boolean(submitting)} onClick={() => setConfirmAction("decline")}>
-                  <Icon name="close" size={18} />
-                  {op("Decline")}
-                </button>
-              </div>
-              <button type="button" className="nr-request-pass"
-                disabled={Boolean(submitting)} onClick={() => setConfirmAction("pass")}>
-                <Icon name="arrow" size={18} />
-                {op("Pass to Another Driver")}
-              </button>
-            </div>
+
           </>
         )}
       </DriverBottomSheet>
