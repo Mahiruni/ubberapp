@@ -37,3 +37,34 @@ test("legacy auth URL redirects one-way to Rider sign-in", async ({ page }) => {
   await expect(page.getByText("NEXRIDE · RIDER")).toBeVisible();
   await expect(page.getByLabel("Email address", { exact: true })).toBeVisible();
 });
+
+test("logout never restores a saved Rider session automatically", async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem("nexride:explicit-signout", "rider");
+    localStorage.setItem("nexride:onboarding-complete", "true");
+    localStorage.removeItem("nexride:preview-enabled");
+  });
+  await page.goto("/");
+  await expect(page).toHaveURL(/\/rider\/sign-in$/);
+  await expect(page.getByLabel("Password", { exact: true })).toBeVisible();
+  await page.reload();
+  await expect(page).toHaveURL(/\/rider\/sign-in$/);
+  await expect(page.getByLabel("Password", { exact: true })).toBeVisible();
+});
+
+test("Rider planning opens with Pickup focused and Plan your ride text", async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem("nexride:explicit-signout", "rider");
+    localStorage.setItem("nexride:preview-enabled", "true");
+    localStorage.setItem("nexride:onboarding-complete", "true");
+  });
+  await page.goto("/");
+  const planner = page.getByRole("button", { name: "Search destination", exact: true });
+  await expect(planner).toContainText("Plan your ride");
+  await planner.click();
+  const pickup = page.locator(".nr-endpoint-fields input").first();
+  const destination = page.locator(".nr-endpoint-fields input").last();
+  await expect(pickup).toBeFocused();
+  await expect(pickup).toHaveAttribute("placeholder", "Plan your ride");
+  await expect(destination).not.toBeFocused();
+});
