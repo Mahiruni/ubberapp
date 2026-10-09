@@ -771,13 +771,31 @@ export default function DriverRideRequestPage() {
               </div>
             )}
 
-            <div className="nr-request-route">
-              <div className="nr-request-route-line"><span className="dot pickup" /><i /></div>
+            <section
+              className="nr-request-route nr-request-route-horizontal"
+              role="group"
+              aria-label={op("Pickup to destination")}
+              data-driving={offer.status === "pending" && secondsRemaining !== 0 ? "true" : "false"}
+            >
               <div className="nr-request-route-copy">
-                <div><small>Pickup</small><strong>{request.pickup_location}</strong></div>
-                <div><small>Destination</small><strong>{request.destination_location}</strong></div>
+                <div className="nr-request-route-stop pickup">
+                  <small>{op("Pickup")}</small>
+                  <strong>{request.pickup_location}</strong>
+                </div>
+                <div className="nr-request-route-stop destination">
+                  <small>{op("Destination")}</small>
+                  <strong>{request.destination_location}</strong>
+                </div>
               </div>
-            </div>
+              <div className="nr-request-road" aria-hidden="true">
+                <span className="nr-request-road-endpoint pickup" />
+                <div className="nr-request-road-track">
+                  <span className="nr-request-road-centerline" />
+                  <span className="nr-request-road-car">🚗</span>
+                </div>
+                <span className="nr-request-road-endpoint destination" />
+              </div>
+            </section>
 
             <div className="nr-request-summary">
               <div><small>Ride</small><strong>{request.ride_category}</strong></div>
