@@ -21,7 +21,7 @@ vi.mock("../../lib/supabase", () => ({
   supabase: {
     auth: { getSession },
     from: () => {
-      const query = {
+      const query: any = {
         select: () => query,
         eq: () => query,
         maybeSingle: getOnboarding,
