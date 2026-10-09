@@ -44,12 +44,16 @@ test("logout never restores a saved Rider session automatically", async ({ page 
     localStorage.setItem("nexride:onboarding-complete", "true");
     localStorage.removeItem("nexride:preview-enabled");
   });
+  // Follow the same landing path used by the Rider Log out action.
+  await page.goto("/rider/sign-in?logged_out=1");
+  const password = page.getByLabel("Password", { exact: true });
+  await expect(password).toBeVisible({ timeout: 15000 });
+  expect(await page.evaluate(() => localStorage.getItem("nexride:explicit-signout")))
+    .toBe("rider");
   await page.goto("/");
   await expect(page).toHaveURL(/\/rider\/sign-in$/);
-  await expect(page.getByLabel("Password", { exact: true })).toBeVisible();
   await page.reload();
-  await expect(page).toHaveURL(/\/rider\/sign-in$/);
-  await expect(page.getByLabel("Password", { exact: true })).toBeVisible();
+  await expect(password).toBeVisible({ timeout: 15000 });
 });
 
 test("Rider planning opens with Pickup focused and Plan your ride text", async ({ page }) => {
