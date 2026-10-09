@@ -479,7 +479,7 @@ function DriverShellChrome({ children }: { children: ReactNode }) {
   const home = pathname === "/driver/home";
 
   return (
-    <div className="nr-driver-app-shell" data-theme={resolvedTheme} data-theme-preference={preference} data-trip-focus={tripFocus ? "true" : "false"} data-home={home ? "true" : "false"} data-driver-menu-open={menuOpen ? "true" : "false"}>
+    <div className="nr-driver-app-shell" data-theme={resolvedTheme} data-theme-preference={preference} data-trip-focus={tripFocus ? "true" : "false"} data-home={home ? "true" : "false"} data-request-map={pathname.startsWith("/driver/request") ? "true" : "false"} data-driver-menu-open={menuOpen ? "true" : "false"}>
       <DriverHeader pathname={pathname} menuOpen={menuOpen} onMenuOpenChange={setMenuOpen} />
       <DriverSessionBridge />
       <DriverCancellationNotice pathname={pathname} />
