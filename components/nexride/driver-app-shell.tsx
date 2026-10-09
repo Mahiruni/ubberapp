@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { createPortal } from "react-dom";
 import {
   createContext,
   useCallback,
@@ -8,12 +9,13 @@ import {
   useEffect,
   useMemo,
   useRef,
+  useId,
   useState,
   type ReactNode,
 } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Icon, LanguageContext, type IconName } from "./ui";
-import { DRIVER_CORE_MENU_ITEMS, driverCoreMenuForPath } from "../../lib/nexride-driver-menu";
+import { DRIVER_CORE_MENU_ITEMS, DRIVER_MENU_FOOTER_LINKS, driverCoreMenuForPath } from "../../lib/nexride-driver-menu";
 import { supabase } from "../../lib/supabase";
 import { DriverCancellationNotice } from "./driver-cancellation-notice";
 import { DriverSessionBridge } from "./driver-session-bridge";
@@ -115,9 +117,16 @@ export function driverNavForPath(pathname: string): DriverNavId {
 function DriverHamburgerMenu({ activeOverride }: { activeOverride?: DriverNavId }) {
   const pathname = usePathname();
   const language = useContext(LanguageContext);
+  const { resolvedTheme } = useDriverTheme();
   const [open, setOpen] = useState(false);
   const [identity, setIdentity] = useState({ name: "Driver", avatarUrl: "" });
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLElement>(null);
+  const instanceId = useId();
+  const drawerId = `nr-driver-menu-${instanceId}`;
+  const titleId = `nr-driver-menu-title-${instanceId}`;
+  const say = (en: string, am: string) => language === "am" ? am : en;
   const selectedId = driverCoreMenuForPath(pathname) ??
     (activeOverride === "earnings" ? "earnings"
       : activeOverride === "messages" ? "support"
@@ -138,27 +147,50 @@ function DriverHamburgerMenu({ activeOverride }: { activeOverride?: DriverNavId 
         (typeof metadata.avatarUrl === "string" && metadata.avatarUrl) ||
         "";
       setIdentity({ name, avatarUrl });
-    });
+    }).catch(() => {});
     return () => { mounted = false; };
   }, []);
 
+  // A portalled dialog cannot be trapped under the map, fixed trip wrapper, or header.
   useEffect(() => {
     if (!open) return;
     const priorOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    const selector = 'a[href],button:not([disabled]),[tabindex]:not([tabindex="-1"])';
+    const focusTimer = window.requestAnimationFrame(() => closeRef.current?.focus());
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setOpen(false);
+        return;
+      }
+      if (event.key !== "Tab" || !panelRef.current) return;
+      const elements = Array.from(panelRef.current.querySelectorAll<HTMLElement>(selector))
+        .filter(element => element.getClientRects().length > 0);
+      if (!elements.length) return;
+      const first = elements[0];
+      const last = elements[elements.length - 1];
+      if (event.shiftKey && (document.activeElement === first || !panelRef.current.contains(document.activeElement))) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && (document.activeElement === last || !panelRef.current.contains(document.activeElement))) {
+        event.preventDefault();
+        first.focus();
+      }
     };
-    window.addEventListener("keydown", onKey);
-    window.requestAnimationFrame(() => closeRef.current?.focus());
+    document.addEventListener("keydown", onKey);
     return () => {
+      document.removeEventListener("keydown", onKey);
+      window.cancelAnimationFrame(focusTimer);
       document.body.style.overflow = priorOverflow;
-      window.removeEventListener("keydown", onKey);
+      window.requestAnimationFrame(() => triggerRef.current?.focus());
     };
   }, [open]);
 
+  useEffect(() => { setOpen(false); }, [pathname]);
+
   const initials = useMemo(
-    () => identity.name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "DR",
+    () => identity.name.split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]).join("").toUpperCase() || "DR",
     [identity.name],
   );
 
@@ -175,7 +207,7 @@ function DriverHamburgerMenu({ activeOverride }: { activeOverride?: DriverNavId 
         aria-current={selected ? "page" : undefined}
         onClick={() => setOpen(false)}
       >
-        <span className="nr-driver-menu-row-icon"><Icon name={item.icon} size={21} /></span>
+        <span className="nr-driver-menu-row-icon"><Icon name={item.icon} size={20} /></span>
         <span className="nr-driver-menu-row-copy"><strong>{label}</strong><small>{detail}</small></span>
         {selected ? <span className="nr-driver-menu-active-dot" aria-hidden="true" /> : <Icon name="chevron" size={16} />}
       </Link>
@@ -185,43 +217,81 @@ function DriverHamburgerMenu({ activeOverride }: { activeOverride?: DriverNavId 
   return (
     <>
       <button
+        ref={triggerRef}
         type="button"
         className="nr-driver-menu-trigger"
         data-open={open ? "true" : "false"}
-        onClick={() => setOpen((value) => !value)}
+        onClick={() => setOpen(value => !value)}
         aria-expanded={open}
-        aria-controls="nr-driver-menu"
-        aria-label={language === "am" ? (open ? "ምናሌን ዝጋ" : "የአሽከርካሪ ምናሌን ክፈት") : (open ? "Close driver menu" : "Open driver menu")}
+        aria-controls={drawerId}
+        aria-haspopup="dialog"
+        aria-label={say(open ? "Close driver menu" : "Open driver menu", open ? "የአሽከርካሪ ምናሌን ዝጋ" : "የአሽከርካሪ ምናሌን ክፈት")}
       >
         <span aria-hidden="true" />
         <span aria-hidden="true" />
         <span aria-hidden="true" />
       </button>
-
-      {open && (
-        <div className="nr-driver-menu-layer" role="presentation">
-          <button className="nr-driver-menu-backdrop" type="button" aria-label={language === "am" ? "ምናሌን ዝጋ" : "Close menu"} onClick={() => setOpen(false)} />
-          <aside id="nr-driver-menu" className="nr-driver-menu-panel" role="dialog" aria-modal="true" aria-labelledby="nr-driver-menu-title">
-            <div className="nr-driver-menu-head">
-              <div className="nr-driver-menu-identity">
-                <div className="nr-driver-menu-avatar">
-                  {identity.avatarUrl ? <img src={identity.avatarUrl} alt="" /> : <span>{initials}</span>}
+      {open && typeof document !== "undefined" && createPortal(
+        <div className="nr-driver-menu-layer nr-driver-menu-overlay" data-theme={resolvedTheme}>
+          <button className="nr-driver-menu-backdrop" type="button" tabIndex={-1} aria-label={say("Close menu", "ምናሌን ዝጋ")} onClick={() => setOpen(false)} />
+          <aside ref={panelRef} id={drawerId} className="nr-driver-menu-panel" role="dialog" aria-modal="true" aria-labelledby={titleId}>
+            <div className="nr-driver-menu-scroll">
+              <header className="nr-driver-menu-head">
+                <div className="nr-driver-menu-identity">
+                  <div className="nr-driver-menu-avatar">
+                    {identity.avatarUrl ? <img src={identity.avatarUrl} alt="" /> : <span>{initials}</span>}
+                  </div>
+                  <div>
+                    <small>{say("NEXRIDE · DRIVER", "NEXRIDE · አሽከርካሪ")}</small>
+                    <strong id={titleId}>{identity.name}</strong>
+                  </div>
                 </div>
-                <div>
-                  <small>{language === "am" ? "NEXRIDE · አሽከርካሪ" : "NEXRIDE · DRIVER"}</small>
-                  <strong id="nr-driver-menu-title">{identity.name}</strong>
-                </div>
-              </div>
-              <button ref={closeRef} type="button" className="nr-driver-menu-close" onClick={() => setOpen(false)} aria-label={language === "am" ? "ዝጋ" : "Close"}>
-                <Icon name="close" size={21} />
-              </button>
+                <button ref={closeRef} type="button" className="nr-driver-menu-close" onClick={() => setOpen(false)} aria-label={say("Close menu", "ዝጋ")}>
+                  <Icon name="close" size={21} />
+                </button>
+              </header>
+              <div className="nr-driver-menu-section-label">{say("Your NexRide", "የእርስዎ NexRide")}</div>
+              <nav className="nr-driver-menu-nav nr-driver-menu-nav-core" aria-label={say("Driver navigation", "የአሽከርካሪ አሰሳ")}>
+                {menuRows}
+              </nav>
             </div>
 
-            <nav className="nr-driver-menu-nav nr-driver-menu-nav-core" aria-label={language === "am" ? "የአሽከርካሪ አስፈላጊ ምናሌ" : "Driver essential menu"}>
-              {menuRows}
-            </nav>
+            <footer className="nr-driver-menu-promo" aria-label={say("Driver quick access", "ፈጣን መዳረሻ")}>
+              <div className="nr-driver-menu-promo-hero">
+                <div className="nr-driver-menu-promo-brand">
+                  <span className="nr-driver-menu-promo-mark"><img src="/brand/nexride-mark.svg" alt="" width="33" height="33" /></span>
+                  <div><strong>NexRide</strong><small>{say("Drive. Earn. Grow.", "ያሽከርክሩ። ያግኙ። ያድጉ።")}</small></div>
+                </div>
+                <div className="nr-driver-menu-car-track" aria-hidden="true">
+                  <svg className="nr-driver-menu-car-motion" viewBox="0 0 116 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M10 43h98" stroke="#75BDA8" strokeWidth="1.4" strokeLinecap="round" strokeDasharray="5 6" opacity=".55" />
+                    <path d="M19 35V28c0-2 2-4 4-4h9l10-12c1.2-1.5 3.2-2 5-2h24c3 0 5 1 7 3l9 11h9c3 0 5 3 5 6v8H19v-3Z" fill="#F2FAF7" />
+                    <path d="M44 14h26c2 0 3 1 4 2l7 8H35l9-10Z" fill="#60CEB7" />
+                    <path d="M58 15v9" stroke="#0D4050" strokeWidth="2" />
+                    <path d="M22 38h77" stroke="#0D4050" strokeWidth="3" strokeLinecap="round" />
+                    <circle className="nr-driver-menu-car-wheel" cx="37" cy="38" r="8" fill="#092238" stroke="#DCFDF0" strokeWidth="2" />
+                    <circle className="nr-driver-menu-car-wheel" cx="82" cy="38" r="8" fill="#092238" stroke="#DCFDF0" strokeWidth="2" />
+                    <circle cx="37" cy="38" r="3" fill="#38D9A0" />
+                    <circle cx="82" cy="38" r="3" fill="#38D9A0" />
+                    <path d="M95 29h5" stroke="#F8D678" strokeWidth="3" strokeLinecap="round" />
+                  </svg>
+                </div>
+              </div>
+              <div className="nr-driver-menu-promo-label">{say("QUICK ACCESS", "ፈጣን መዳረሻ")}</div>
+              <div className="nr-driver-menu-promo-links">
+                {DRIVER_MENU_FOOTER_LINKS.map((item) => (
+                  <Link key={item.id} href={item.href} onClick={() => setOpen(false)}>
+                    <Icon name={item.icon} size={18} />
+                    <span>{language === "am" ? item.am : item.en}</span>
+                    <Icon name="chevron" size={14} />
+                  </Link>
+                ))}
+              </div>
+              <small className="nr-driver-menu-promo-tagline">{say("Better Rides. A Brighter Tomorrow.", "የተሻለ ጉዞ። ብሩህ ነገ።")}</small>
+            </footer>
           </aside>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

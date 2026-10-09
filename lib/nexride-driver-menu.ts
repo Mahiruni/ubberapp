@@ -56,6 +56,13 @@ export const DRIVER_CORE_MENU_ITEMS = [
   },
 ] as const;
 
+/** Useful destinations, grouped only in the contrasting drawer footer. */
+export const DRIVER_MENU_FOOTER_LINKS = [
+  { id: "dashboard", icon: "home", href: "/driver/home", en: "Dashboard", am: "መነሻ" },
+  { id: "activity", icon: "clock", href: "/driver/activity", en: "Trip activity", am: "የጉዞ እንቅስቃሴ" },
+  { id: "documents", icon: "card", href: "/driver/profile/documents", en: "My documents", am: "የእኔ ሰነዶች" },
+] as const;
+
 export type DriverCoreMenuId = (typeof DRIVER_CORE_MENU_ITEMS)[number]["id"];
 
 export function driverCoreMenuForPath(pathname: string): DriverCoreMenuId | null {
