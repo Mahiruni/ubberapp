@@ -67,10 +67,6 @@ const coordinate = (lat: unknown, lng: unknown): NavigationCoordinate | null => 
 const normalizeStatus = (v: unknown): TripStatus | null =>
   v === "accepted" || v === "arrived_pickup" || v === "in_trip" || v === "completed" || v === "withdrawn" || v === "cancelled" ? v : null;
 
-function navigationUrl(target: NavigationCoordinate | null, label: string) {
-  const destination = target ? `${target.lat},${target.lng}` : label;
-  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}&travelmode=driving&dir_action=navigate`;
-}
 function distanceLabel(value: number | null) {
   if (value === null) return "Distance unavailable";
   return value < 1 ? `${Math.max(1, Math.round(value * 1000))} m` : `${value.toFixed(1)} km`;
@@ -405,9 +401,9 @@ export default function DriverNavigationPage() {
         if (!response.ok || body?.status !== "ready") {
           if (response.status === 503 || body?.status === "provider_unavailable") {
             routeBackoffUntilRef.current = Date.now() + 60000;
-            setNativeRouteNotice(op("NexRide road guidance is temporarily unavailable. Google Maps remains available."));
+            setNativeRouteNotice(op("NexRide route guidance is temporarily unavailable. Your trip controls remain available."));
           } else if (response.status !== 409) {
-            setNativeRouteNotice(op("Road guidance could not refresh. The last route and Google Maps remain available."));
+            setNativeRouteNotice(op("Road guidance could not refresh. The last route will remain visible."));
           }
           return;
         }
@@ -492,7 +488,7 @@ export default function DriverNavigationPage() {
         routeBackoffUntilRef.current = 0;
         setNativeRouteNotice("");
       } catch {
-        setNativeRouteNotice(op("Road guidance could not refresh. Google Maps remains available."));
+        setNativeRouteNotice(op("Road guidance could not refresh. Check GPS and your connection."));
       } finally {
         routePendingRef.current = false;
       }
@@ -513,7 +509,6 @@ export default function DriverNavigationPage() {
     return { target: "destination" as const, title: trip.status === "completed" ? "Trip completed" : "Trip unavailable", destination: trip.destination, coordinate: trip.destinationCoordinate, distance: null, eta: null, badge: trip.status === "completed" ? "COMPLETED" : "ENDED" };
   }, [trip]);
 
-  const mapsUrl = stage ? navigationUrl(stage.coordinate, stage.destination) : "";
   const canNavigate = trip?.status === "accepted" || trip?.status === "in_trip";
   const invalidTrip = trip?.status === "withdrawn" || trip?.status === "cancelled";
   const activeRoute =
@@ -658,7 +653,7 @@ export default function DriverNavigationPage() {
                 ? trafficLabel
                   ? `${op("Route guidance")} · ${trafficLabel}`
                   : op("Route guidance")
-                : op("Google Maps is also available")}
+                : op("Checking route guidance…")}
             </em>
           )}
         </div>
@@ -707,17 +702,15 @@ export default function DriverNavigationPage() {
         {invalidTrip ? (
           <button className="nr-nav-stage-primary" onClick={() => router.replace("/driver/home")}>{op("Back to Driver Home")}</button>
         ) : trip.status === "accepted" ? (
-          <div className="nr-nav-stage-actions">
-            <a className="nr-nav-stage-primary" href={mapsUrl} target="_blank" rel="noreferrer"><Icon name="navigation" size={19} /> {op("Open Google Maps")}</a>
-            <button className="nr-nav-stage-secondary" disabled={busy} onClick={() => transition("arrived_pickup")}>{busy ? op("Updating…") : op("Arrived at pickup")}</button>
-          </div>
+          <button type="button" className="nr-nav-stage-primary" disabled={busy} onClick={() => void transition("arrived_pickup")}>
+            <Icon name="check" size={19} />{busy ? op("Updating…") : op("Arrived at pickup")}
+          </button>
         ) : trip.status === "arrived_pickup" ? (
           <button className="nr-nav-stage-primary" disabled={busy} onClick={() => setConfirmAction("in_trip")}><Icon name="navigation" size={19} /> {busy ? op("Starting…") : op("Start trip")}</button>
         ) : trip.status === "in_trip" ? (
-          <div className="nr-nav-stage-actions">
-            <a className="nr-nav-stage-primary" href={mapsUrl} target="_blank" rel="noreferrer"><Icon name="navigation" size={19} /> {op("Open Google Maps")}</a>
-            <button className="nr-nav-stage-secondary complete" disabled={busy} onClick={() => setConfirmAction("completed")}>{busy ? op("Completing…") : op("Complete trip")}</button>
-          </div>
+          <button type="button" className="nr-nav-stage-primary" disabled={busy} onClick={() => setConfirmAction("completed")}>
+            <Icon name="check" size={19} />{busy ? op("Completing…") : op("Complete trip")}
+          </button>
         ) : (
           <div className="nr-nav-stage-actions">
             <button className="nr-nav-stage-primary" onClick={() => router.replace("/driver/earnings")}><Icon name="money" size={19} /> {op("View earnings")}</button>
@@ -725,7 +718,7 @@ export default function DriverNavigationPage() {
           </div>
         )}
 
-        {canNavigate && <div className="nr-nav-handoff"><Icon name="info" size={15} /><span>{nativeRoute?.target === stage.target ? "NexRide keeps the route updated from your location. Google Maps is also available for turn-by-turn guidance." : "Route guidance is unavailable right now. Use Google Maps for turn-by-turn directions."}</span></div>}
+        {canNavigate && !activeRoute && <div className="nr-nav-handoff"><Icon name="info" size={15} /><span>{op("Live route guidance is unavailable. Check your location and connection; trip actions are still available.")}</span></div>}
       </DriverBottomSheet>
 
       {confirmAction && (
