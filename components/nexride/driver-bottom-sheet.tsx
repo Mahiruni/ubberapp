@@ -17,11 +17,14 @@ export function DriverBottomSheet({
   className = "",
   label,
   defaultSnap = "medium",
+  footer,
 }: {
   children: ReactNode;
   className?: string;
   label: string;
   defaultSnap?: DriverSheetSnap;
+  /** Optional pinned controls, outside the scrollable detail body. */
+  footer?: ReactNode;
 }) {
   const [snap, setSnap] = useState<DriverSheetSnap>(defaultSnap);
   const [dragHeight, setDragHeight] = useState<number | null>(null);
@@ -160,6 +163,7 @@ export function DriverBottomSheet({
         <span aria-hidden="true" />
       </button>
       <div className="nr-driver-sheet-content">{children}</div>
+      {footer != null && <div className="nr-driver-sheet-footer">{footer}</div>}
     </section>
   );
 }
