@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { EntryShell } from "../../components/nexride/entry";
 import { Button, Icon, StatusBanner, useTranslation } from "../../components/nexride/ui";
 import {
+  clearExplicitSignOut,
   enterRider,
   explicitSignOutRole,
   ONBOARDING_KEY,
