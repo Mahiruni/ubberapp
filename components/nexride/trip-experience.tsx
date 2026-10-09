@@ -41,6 +41,8 @@ export function TripExperience({ screen, tripId, userId, preview, navigate, setP
   const [cancelError, setCancelError] = useState('');
   const [cancelled, setCancelled] = useState(false);
   const [confirmedStatus, setConfirmedStatus] = useState<TripSnapshot['status'] | null>(null);
+  const [tripSnapshot, setTripSnapshot] = useState<TripSnapshot | null>(null);
+  const [embeddedReady, setEmbeddedReady] = useState(false);
   const cancelLock = useRef(false);
   const cancelRide = async () => {
     if (!tripId || !live || cancelLock.current) return;
@@ -101,7 +103,9 @@ export function TripExperience({ screen, tripId, userId, preview, navigate, setP
     let failures = 0, pollTimer: number | null = null, reconnectTimer: number | null = null;
     let channel: ReturnType<typeof supabase.channel> | null = null;
     ready.current = false;
+    setEmbeddedReady(false);
     latest.current = tripId ? readCachedTrip(tripId) : null;
+    setTripSnapshot(latest.current);
     setConfirmedStatus(latest.current?.status || null);
     let feedbackStatus = latest.current?.status || "";
 
@@ -164,6 +168,7 @@ export function TripExperience({ screen, tripId, userId, preview, navigate, setP
         }
         feedbackStatus = next.status || feedbackStatus;
         latest.current = mergeTrip(latest.current, next);
+        setTripSnapshot(latest.current);
         setConfirmedStatus(latest.current.status);
         if (latest.current.status === 'cancelled') {
           setCancelled(true);
@@ -213,8 +218,14 @@ export function TripExperience({ screen, tripId, userId, preview, navigate, setP
         send({ type: 'nexride:initialize', live, tripId, preview: live ? null : callbacks.current.preview });
         return;
       }
+      if (message.type === 'nexride:screen-error') {
+        setEmbeddedReady(false);
+        setConnection('Trip details could not load. Showing confirmed ride information.');
+        return;
+      }
       if (message.type === 'nexride:subscribed') {
         ready.current = true;
+        setEmbeddedReady(true);
         publish();
         if (live) send({ type: 'nexride:connection', connected });
         return;
@@ -295,7 +306,14 @@ export function TripExperience({ screen, tripId, userId, preview, navigate, setP
       ? [0.28, 0.46, 0.72] as const
       : [0.28, 0.52, 0.75] as const;
 
-  return <section className="nr-trip-experience" aria-label={screen === 'summary' ? 'Trip receipt and rating' : 'Your trip'}>
+  const displayStatus = tripSnapshot?.status === 'approaching' ? 'Driver on the way'
+    : tripSnapshot?.status === 'arrived' ? 'Your driver has arrived'
+    : tripSnapshot?.status === 'in_trip' ? 'Trip in progress'
+    : tripSnapshot?.status === 'completed' ? 'Trip completed'
+    : tripSnapshot?.status === 'reassigning' ? 'Finding your driver'
+    : tripSnapshot?.status === 'cancelled' ? 'Ride cancelled'
+    : screen === 'live' ? 'Active trip' : screen === 'summary' ? 'Trip summary' : 'Your driver';
+  return <section className="nr-trip-experience" data-embedded-ready={embeddedReady ? 'true' : 'false'} aria-label={screen === 'summary' ? 'Trip receipt and rating' : 'Your trip'}>
     <RiderSheetHandle
       label={screen === 'summary' ? 'Resize trip summary panel' : screen === 'live' ? 'Resize active trip panel' : 'Resize driver panel'}
       defaultRatio={defaultRatio}
@@ -303,7 +321,7 @@ export function TripExperience({ screen, tripId, userId, preview, navigate, setP
       storageKey={`nexride.rider.sheet.${screen}`}
     />
     <div className="nr-trip-toolbar">
-      <button onClick={() => window.location.assign('/rider/trips')}>Activity</button>
+      {screen === 'summary' && <button onClick={() => window.location.assign('/rider/trips')}>Activity</button>}
       <span role="status" aria-live="polite">{live ? connection : 'Preview ride'}</span>
       {screen !== 'summary' && <button onClick={openSafety}>Safety</button>}
       {live && screen !== 'summary' && confirmedStatus !== 'completed' && confirmedStatus !== 'cancelled' &&
@@ -320,14 +338,40 @@ export function TripExperience({ screen, tripId, userId, preview, navigate, setP
         <Button variant="danger" disabled={cancelBusy} loading={cancelBusy} onClick={() => void cancelRide()}>{t('matchingConfirmCancel')}</Button>
       </div>
     </Dialog>}
-    <iframe
-      ref={frame}
-      key={`${file}:${tripId || 'preview'}`}
-      className="nr-trip-frame"
-      title={screen === 'summary' ? 'NexRide trip receipt and rating' : screen === 'live' ? 'NexRide active trip' : 'NexRide assigned driver'}
-      onLoad={() => frame.current?.contentWindow?.postMessage({ type: 'nexride:ping' }, window.location.origin)}
-      src={`/nexride/screens/${file}?embedded=1${live ? '&live=1' : ''}`}
-      allow="web-share; clipboard-write"
-    />
+    <div className="nr-trip-frame-shell" data-ready={embeddedReady ? 'true' : 'false'}>
+      <iframe
+        ref={frame}
+        key={`${file}:${tripId || 'preview'}`}
+        className="nr-trip-frame"
+        title={screen === 'summary' ? 'NexRide trip receipt and rating' : screen === 'live' ? 'NexRide active trip' : 'NexRide assigned driver'}
+        onLoad={() => frame.current?.contentWindow?.postMessage({ type: 'nexride:ping' }, window.location.origin)}
+        src={`/nexride/screens/${file}?embedded=1${live ? '&live=1' : ''}`}
+        allow="web-share; clipboard-write"
+      />
+      {!embeddedReady && (
+        <div className="nr-trip-frame-fallback" role="status">
+          <h2>{displayStatus}</h2>
+          <p>{connection}</p>
+          {(tripSnapshot || preview) && (
+            <div className="nr-trip-fallback-route">
+              <div><small>Pickup</small><strong>{tripSnapshot?.pickup.name || preview?.pickup || 'Pickup location pending'}</strong></div>
+              <div><small>Destination</small><strong>{tripSnapshot?.destination.name || preview?.destination || 'Destination pending'}</strong></div>
+            </div>
+          )}
+          {tripSnapshot?.driver && (
+            <div className="nr-trip-fallback-driver">
+              <strong>{tripSnapshot.driver.name || 'Your assigned driver'}</strong>
+              <span>{[
+                tripSnapshot.driver.vehicle.model,
+                tripSnapshot.driver.vehicle.color,
+                tripSnapshot.driver.vehicle.plate,
+              ].filter(Boolean).join(' · ') || 'Vehicle details pending'}</span>
+            </div>
+          )}
+          {live && tripId && <button type="button" className="nr-trip-fallback-chat"
+            onClick={() => window.location.assign('/trip/chat?ride=' + encodeURIComponent(tripId) + '&role=rider')}>Chat with driver</button>}
+        </div>
+      )}
+    </div>
   </section>;
 }
