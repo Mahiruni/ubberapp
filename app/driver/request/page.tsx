@@ -656,7 +656,7 @@ export default function DriverRideRequestPage() {
               <button type="button" className="nr-request-pass"
                 disabled={Boolean(submitting) || secondsRemaining === 0} onClick={() => void passRide()}>
                 <Icon name="arrow" size={18} />
-                {op("Pass to Another Driver")}
+                {op("Pass/Skip")}
               </button>
             </div>
         ) : undefined}
@@ -733,9 +733,6 @@ export default function DriverRideRequestPage() {
                     </svg>
                     <strong>{secondsRemaining}s</strong>
                   </div>
-                  <button type="button" className="nr-request-skip"
-                    disabled={Boolean(submitting) || secondsRemaining === 0}
-                    onClick={() => void passRide()}>{op("Skip")}</button>
                 </div>
               )}
             </div>
