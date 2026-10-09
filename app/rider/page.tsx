@@ -15,7 +15,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "../../lib/supabase";
 import { resolveSessionRole } from "../../lib/nexride-account-role";
 import { ACTIVE_ACCOUNT_ROLE_KEY } from "../../lib/nexride-startup";
-import { ensureRiderProfile } from "../../lib/nexride-rider-profile-bootstrap";
+import { ensureRiderProfile, RiderProfileBootstrapError } from "../../lib/nexride-rider-profile-bootstrap";
 import "../nexride.css";
 import "./rider-entry.css";
 
@@ -101,8 +101,13 @@ function RiderWelcome() {
       window.localStorage.setItem(ACTIVE_ACCOUNT_ROLE_KEY, "rider");
       enterRider(data.session);
       router.replace("/");
-    } catch {
-      setSwitchError("Unable to confirm Rider access right now. Please try again.");
+    } catch (cause) {
+      if (cause instanceof RiderProfileBootstrapError &&
+        cause.code === "rider_profile_incomplete") {
+        router.push("/rider/complete-profile");
+      } else {
+        setSwitchError("Unable to confirm Rider access right now. Please try again.");
+      }
     } finally {
       setSwitchingRole(false);
     }
