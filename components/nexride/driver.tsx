@@ -679,24 +679,28 @@ export function DriverWorkspace({
                   ? say("Online stays active when minimized. Android may pause GPS and delay alerts until you reopen NexRide.", "መተግበሪያው ሲቀነስ የመስመር ላይ ሁኔታዎ ይቀጥላል። Android GPSን እና ማሳወቂያዎችን ሊያዘገይ ይችላል።")
                   : say("Swipe to start receiving ride requests", "ጉዞ ለመቀበል ያንሸራትቱ")}</small>
               </div>
-              <span className="nr-driver-home-control-online" data-online={state.online ? "true" : "false"}>
-                <span aria-hidden="true" />{state.online ? say("Online", "መስመር ላይ") : say("Offline", "ከመስመር ውጭ")}
-              </span>
-            </div>
-            <div className="nr-driver-home-control-meta" aria-label={say("Operational status", "የኦፕሬሽን ሁኔታ")}>
-              <span><Icon name="navigation" size={15} />{mapLocation.status === "ready" ? say("GPS ready", "GPS ዝግጁ") : say("GPS needs attention", "GPS ማረጋገጥ ያስፈልጋል")}</span>
-              <button
-                type="button"
-                disabled={alertPermission === "granted" || alertPermission === "unsupported" || alertPermission === "denied"}
-                onClick={() => void enableDriverAlerts()}
-                aria-label={say("Enable ride notifications", "የጉዞ ማሳወቂያዎችን አንቃ")}
-              >
-                <Icon name="bell" size={15} />
-                {alertPermission === "granted" ? say("Alerts enabled", "ማሳወቂያ በርቷል")
-                  : alertPermission === "denied" ? say("Alerts blocked", "ማሳወቂያ ታግዷል")
-                  : alertPermission === "unsupported" ? say("In-app alerts", "የውስጥ ማሳወቂያ")
-                  : say("Enable alerts", "ማሳወቂያን አንቃ")}
-              </button>
+              <div className="nr-driver-home-control-tools">
+                <span className="nr-driver-home-control-online" data-online={state.online ? "true" : "false"}>
+                  <span aria-hidden="true" />{state.online ? say("Online", "መስመር ላይ") : say("Offline", "ከመስመር ውጭ")}
+                </span>
+                <button
+                  type="button"
+                  className="nr-driver-home-alert-icon"
+                  data-permission={alertPermission}
+                  disabled={alertPermission !== "default"}
+                  onClick={() => void enableDriverAlerts()}
+                  aria-label={alertPermission === "granted" ? say("Ride notifications enabled", "የጉዞ ማሳወቂያዎች በርተዋል")
+                    : alertPermission === "denied" ? say("Ride notifications blocked in device settings", "የጉዞ ማሳወቂያዎች በመሣሪያ ቅንብሮች ታግደዋል")
+                    : alertPermission === "unsupported" ? say("In-app alerts only", "የውስጥ መተግበሪያ ማሳወቂያዎች ብቻ")
+                    : say("Enable ride notifications", "የጉዞ ማሳወቂያዎችን አንቃ")}
+                  title={alertPermission === "granted" ? say("Alerts enabled", "ማሳወቂያ በርቷል")
+                    : alertPermission === "denied" ? say("Alerts blocked in device settings", "ማሳወቂያ በመሣሪያ ቅንብሮች ታግዷል")
+                    : alertPermission === "unsupported" ? say("In-app alerts", "የውስጥ ማሳወቂያ")
+                    : say("Enable alerts", "ማሳወቂያን አንቃ")}
+                >
+                  <Icon name="bell" size={20} />
+                </button>
+              </div>
             </div>
             <DriverAvailabilitySwipe
               online={state.online}
