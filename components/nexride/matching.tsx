@@ -102,7 +102,7 @@ export function DriverMatching({ model, changeCategory, previewAssigned, home }:
       {!connectionLost && snapshot?.canRetry && <Button disabled={busy} loading={busy} onClick={() => void model.action('retry')}>{t(busy ? 'matchingUpdating' : 'matchingRetry')}</Button>}
       {['cancelled', 'no_drivers'].includes(status) && <Button variant="ghost" disabled={busy} onClick={home}>{t('home')}</Button>}
       {snapshot?.canChangeCategory && <Button variant="secondary" disabled={busy} onClick={changeCategory}>{t('matchingChangeCategory')}</Button>}
-      {!cancelSuccess && !['cancelled', 'no_drivers'].includes(status) && <Button variant="ghost" disabled={busy || reconnecting || terms?.allowed === false} onClick={cancel}>{t(busy ? 'matchingUpdating' : 'matchingCancel')}</Button>}
+      {!cancelSuccess && !['cancelled', 'no_drivers'].includes(status) && <Button variant="danger" className="nr-rider-cancel-button" disabled={busy || reconnecting || terms?.allowed === false} onClick={cancel}><Icon name="close" size={17} />{t(busy ? 'matchingUpdating' : 'matchingCancel')}</Button>}
       {!preview && !snapshot && <small className="nr-match-terms-note">{t('matchingTermsPending')}</small>}
     </footer>
     {confirmVersion !== null && <Dialog title={t('matchingCancelConfirm')} onClose={() => setConfirmVersion(null)}>
