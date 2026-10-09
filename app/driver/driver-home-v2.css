@@ -382,7 +382,17 @@
 /* NexRide Driver 2026: purposeful, compact map-first command wrapper.
    Entire opaque control island intercepts pointer events; no touches leak
    through to the Mapbox map. Keep swipe mechanics and safe areas intact. */
+/* Rider-matched white command surface regardless of the Driver app's
+   surrounding theme. Scope tokens here so map/navigation and the rest of
+   the Driver experience keep their own light/dark palettes. */
 .nr-driver-app-shell[data-home="true"] .nr-driver-home-swipe[data-map-input-boundary="true"]{
+  --driver-surface:#ffffff;
+  --driver-surface-elevated:#f5f7f9;
+  --driver-bg:#f5f7f9;
+  --driver-border:#e4eaf0;
+  --driver-text-primary:#102334;
+  --driver-text-secondary:#667587;
+  color-scheme:light;
   width:min(460px,calc(100% - 24px))!important;
   bottom:max(12px,env(safe-area-inset-bottom,0px))!important;
   z-index:1000!important;
@@ -462,8 +472,10 @@
 .nr-driver-home-quick-actions button:hover{background:color-mix(in srgb,var(--driver-accent) 12%,var(--driver-bg))}
 .nr-driver-home-quick-actions button:active{transform:scale(.98)}
 .nr-driver-home-quick-actions button:focus-visible{outline:3px solid var(--driver-accent);outline-offset:2px}
+/* The white Driver command wrapper uses Rider-light status chip contrast,
+   even when the rest of the Driver app is using its dark theme. */
 .nr-driver-app-shell[data-theme="dark"] .nr-driver-home-control-online[data-online="true"]{
-  color:#84edb9;background:#0b4b39;border-color:#176b51;
+  color:#006f42;background:#d9fae9;border-color:#a4e4bf;
 }
 .nr-driver-home-map-canvas .nr-map-control-stack{
   top:calc(env(safe-area-inset-top,0px) + 74px)!important;
