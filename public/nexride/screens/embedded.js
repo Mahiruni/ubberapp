@@ -78,12 +78,15 @@
    if(!api)throw Error('Trip screen is unavailable');
    if(message.live){
     if(typeof message.tripId!=='string'||!message.tripId)throw Error('Trip reference unavailable');
-    const service={bookingId:message.tripId,tripId:message.tripId,subscribe(next,lost,connected){subscription=next;onDisconnect=lost;onConnect=connected;post({type:'nexride:subscribed'});return()=>{subscription=null;};},submitRating:input=>request('submitRating',input),sendMessage:input=>request('sendMessage',input),getCancellationQuote:input=>request('getCancellationQuote',input)};
+    const service={bookingId:message.tripId,tripId:message.tripId,subscribe(next,lost,connected){subscription=next;onDisconnect=lost;onConnect=connected;return()=>{subscription=null;};},submitRating:input=>request('submitRating',input),sendMessage:input=>request('sendMessage',input),getCancellationQuote:input=>request('getCancellationQuote',input)};
     if(!window.NexRideCompletion&&window.L)Object.assign(service,geographicMap());
     if(typeof api.connect!=='function')throw Error('Trip screen did not initialize');
     await api.connect(service);
-   }else{api.setPreviewTrip?.(message.preview);post({type:'nexride:subscribed'});}
+    if(!subscription)throw Error('Live trip subscription unavailable');
+   }else{api.setPreviewTrip?.(message.preview);}
    document.documentElement.classList.remove('nexride-awaiting');
+   // Notify the parent only after this screen has actually become visible.
+   post({type:'nexride:subscribed'});
   } catch {
    // Do not display sample rider/vehicle data on an uninitialized live screen.
    // The React parent shows the last confirmed trip snapshot instead.
