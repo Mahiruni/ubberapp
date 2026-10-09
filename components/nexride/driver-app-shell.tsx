@@ -96,7 +96,6 @@ const NAV_DETAILS: Record<DriverNavId, { en: string; am: string }> = {
 function DriverHamburgerMenu({ activeOverride }: { activeOverride?: DriverNavId }) {
   const pathname = usePathname();
   const language = useContext(LanguageContext);
-  const theme = useDriverTheme();
   const [open, setOpen] = useState(false);
   const [identity, setIdentity] = useState({ name: "Driver", avatarUrl: "" });
   const [signingOut, setSigningOut] = useState(false);
