@@ -110,3 +110,117 @@
   .nr-earnings-metrics{grid-template-columns:1fr}
   .nr-earnings-metric{min-height:86px}
 }
+
+
+/* Light-only Earnings system: accessible neutral surfaces, emerald for data. */
+.nr-driver-app-shell :is(.nr-driver-page,.nr-earnings-report-page) .nr-earnings-head h1,
+.nr-driver-app-shell .nr-earnings-total,
+.nr-driver-app-shell .nr-earnings-metric strong,
+.nr-driver-app-shell .nr-report-summary-card strong,
+.nr-driver-app-shell .nr-report-section strong{
+  color:#102334!important;
+  font-variant-numeric:tabular-nums;
+}
+.nr-driver-app-shell .nr-earnings-periods{
+  background:#edf2f4!important;
+  border-color:#dfe7eb!important;
+  border-radius:15px;
+  padding:4px;
+}
+.nr-driver-app-shell .nr-earnings-periods button{
+  color:#526b79!important;
+  min-height:44px!important;
+}
+.nr-driver-app-shell .nr-earnings-periods button.active{
+  color:#007448!important;
+  background:#ffffff!important;
+  box-shadow:0 2px 8px rgba(16,35,52,.10)!important;
+}
+.nr-driver-app-shell :is(
+  .nr-earnings-total-card,.nr-earnings-metric,.nr-earnings-state,
+  .nr-earnings-report-action,.nr-earnings-loading,
+  .nr-report-summary-card,.nr-report-section,.nr-report-ledger-item
+){
+  background:#ffffff!important;
+  border:1px solid #dfe7eb!important;
+  border-radius:18px;
+  color:#102334!important;
+  box-shadow:0 5px 22px rgba(16,35,52,.045)!important;
+}
+.nr-driver-app-shell .nr-earnings-total-card{
+  padding:clamp(18px,4vw,26px);
+  border-radius:22px;
+}
+.nr-driver-app-shell :is(
+  .nr-earnings-total-top span,.nr-earnings-total-top small,
+  .nr-earnings-total small,.nr-earnings-definition,.nr-earnings-chart-labels,
+  .nr-earnings-chart-summary,.nr-earnings-metric small,
+  .nr-report-row span,.nr-report-note,.nr-earnings-chart-empty
+){
+  color:#667587!important;
+}
+.nr-driver-app-shell .nr-earnings-definition{
+  font-size:11px!important;
+  line-height:1.55!important;
+}
+.nr-driver-app-shell .nr-earnings-total{
+  display:block;
+  font-size:clamp(32px,8vw,44px);
+  line-height:1.14;
+  overflow-wrap:anywhere;
+}
+.nr-driver-app-shell .nr-earnings-chart{
+  border-top-color:#e4eaf0;
+}
+.nr-driver-app-shell .nr-earnings-chart-empty,
+.nr-driver-app-shell .nr-report-note{
+  border-radius:12px;
+  background:#f5f7f9!important;
+}
+.nr-driver-app-shell .nr-earnings-partial-badge{
+  color:#855d0b!important;
+  background:#fff7e7!important;
+  border-color:#efdbaf!important;
+}
+.nr-driver-app-shell .nr-earnings-metric-icon{
+  color:#008a56!important;
+  background:#eafff3!important;
+}
+.nr-driver-app-shell .nr-earnings-state{
+  color:#526b79!important;
+}
+.nr-driver-app-shell .nr-earnings-report-action{
+  min-height:50px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  font-size:13px;
+  font-weight:770;
+  text-decoration:none;
+}
+.nr-driver-app-shell .nr-earnings-report-action:hover{
+  border-color:#bfe2d0!important;
+  background:#f7fbf9!important;
+}
+.nr-driver-app-shell .nr-report-row,
+.nr-driver-app-shell .nr-report-ledger-item{
+  border-color:#e4eaf0!important;
+}
+.nr-driver-app-shell .nr-earnings-loading span{
+  background:#e6ecef!important;
+}
+@media(max-width:520px){
+  .nr-driver-app-shell .nr-earnings-metrics{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:9px;
+  }
+  .nr-driver-app-shell .nr-earnings-metrics .nr-earnings-metric:last-child:nth-child(odd){
+    grid-column:1/-1;
+  }
+  .nr-driver-app-shell .nr-earnings-metric{
+    min-height:100px;
+    padding:13px;
+  }
+  .nr-driver-app-shell .nr-earnings-head h1{font-size:25px}
+}
