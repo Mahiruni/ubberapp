@@ -163,8 +163,8 @@ export default function DriverNavigationPage() {
         .eq("id", ride.rider_id)
         .maybeSingle();
       const rawPhone = typeof contact?.phone === "string" ? contact.phone : "";
-      const dialable = rawPhone.replace(/[^+\\d]/g, "");
-      setRiderPhone(/^\\+?\\d{7,15}$/.test(dialable) ? dialable : "");
+      const dialable = rawPhone.replace(/[^+\d]/g, "");
+      setRiderPhone(/^\+?\d{7,15}$/.test(dialable) ? dialable : "");
     }
     return next;
   }, []);
