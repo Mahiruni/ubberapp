@@ -34,6 +34,15 @@ describe("NexRide explicit logout", () => {
       expect(getSession).toHaveBeenCalledOnce();
     });
   }
+  it("discards stale Rider/Driver navigation and preview flags on logout", async () => {
+    data.set("nexride:active-account-role", "driver");
+    data.set("nexride:preview-enabled", "true");
+    await signOutNexRide("rider");
+    expect(data.has("nexride:active-account-role")).toBe(false);
+    expect(data.has("nexride:preview-enabled")).toBe(false);
+    expect(explicitSignOutRole(storage)).toBe("rider");
+  });
+
   it("retains the logout barrier when clearing local credentials fails", async () => {
     signOut.mockResolvedValueOnce({ error: new Error("offline") });
     await expect(signOutNexRide("driver")).rejects.toThrow("offline");
