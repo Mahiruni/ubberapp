@@ -203,73 +203,20 @@ export async function POST(request: Request) {
       return reply({ status: "failed" }, 500);
     }
 
-    // Dispatch to eligible online drivers. Distance/ETA may be enriched later;
-    // an offer itself is enough for the Driver request UI/realtime flow.
-    const { data: driverRows, error: driversError } = await admin
-      .from("drivers")
-      .select("id,updated_at")
-      .eq("review_status", "approved")
-      .eq("is_online", true)
-      .order("updated_at", { ascending: false })
-      .limit(24);
-
-    let eligibleDriverIds: string[] = [];
-    if (!driversError && driverRows?.length) {
-      const candidateIds = driverRows.map((driver) => String(driver.id));
-
-      const [{ data: driverProfiles }, { data: busyRows }] = await Promise.all([
-        admin
-          .from("profiles")
-          .select("id")
-          .in("id", candidateIds)
-          .eq("role", "driver")
-          .eq("account_status", "active"),
-        admin
-          .from("ride_requests")
-          .select("assigned_driver_id")
-          .in("assigned_driver_id", candidateIds)
-          .in("status", ["accepted", "arrived_pickup", "in_trip"]),
-      ]);
-
-      const activeProfileIds = new Set(
-        (driverProfiles || []).map((row) => String(row.id)),
-      );
-      const busyDriverIds = new Set(
-        (busyRows || [])
-          .map((row) => row.assigned_driver_id)
-          .filter(Boolean)
-          .map(String),
-      );
-
-      eligibleDriverIds = candidateIds
-        .filter(
-          (id) => activeProfileIds.has(id) && !busyDriverIds.has(id),
-        )
-        .slice(0, 8);
-    }
-
-    if (eligibleDriverIds.length) {
-      const expiresAt = new Date(Date.now() + 30_000).toISOString();
-      const { error: offerError } = await admin.from("ride_request_offers").insert(
-        eligibleDriverIds.map((driverId) => ({
-          request_id: created.id,
-          driver_id: driverId,
-          pickup_distance_km: null,
-          pickup_eta_minutes: null,
-          expires_at: expiresAt,
-        })),
-      );
-
-      if (offerError) {
-        console.error("nexride_booking_dispatch_failed", {
-          code: offerError.code || "unknown",
-        });
-      }
-    } else {
-      await admin
-        .from("ride_requests")
-        .update({ dispatch_state: "no_drivers" })
-        .eq("id", created.id);
+    // The trusted database dispatcher selects exactly one approved Online
+    // Driver and keeps this request eligible if no one is Online yet.
+    // Reusing the existing request/offer IDs prevents duplicate calls when a
+    // Driver comes Online while the Rider is already searching.
+    const { error: dispatchError } = await admin.rpc("rider_dispatch_pending_server", {
+      p_actor: authorized.user.id,
+      p_request_id: created.id,
+    });
+    if (dispatchError) {
+      // The request was committed. Never ask the Rider to place another one:
+      // existing Rider polling and pg_cron will retry it automatically.
+      console.warn("nexride_initial_dispatch_deferred", {
+        code: dispatchError.code || "unknown",
+      });
     }
 
     return reply({ status: "accepted", requestId: created.id }, 201);
