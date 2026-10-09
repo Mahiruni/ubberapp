@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { DriverWorkspace, type DriverScreen } from "../../../components/nexride/driver";
 import { supabase } from "../../../lib/supabase";
 import { explicitSignOutRole } from "../../../lib/nexride-startup";
-import { getDriverReviewStatus } from "../../../lib/nexride-driver-verification";
+import { driverResumeDestination } from "../../../lib/nexride-driver-verification";
 import { resolveSessionRole } from "../../../lib/nexride-account-role";
 import "../../../app/nexride.css";
 import "../../../app/driver/driver-dashboard.css";
@@ -51,20 +51,13 @@ export default function DriverHomePage() {
         router.replace("/");
         return;
       }
-      if (session.user.user_metadata?.driver_onboarding_complete !== true) {
-        router.replace("/driver/onboarding");
+      // Onboarding and approval are separate server-owned states. Never
+      // grant access solely because user metadata says onboarding is complete.
+      const destination = await driverResumeDestination(session);
+      if (!active) return;
+      if (destination !== "/driver/home") {
+        router.replace(destination);
         return;
-      }
-
-      try {
-        const status = await getDriverReviewStatus(session.user.id);
-        if (!active) return;
-        if (status === "draft" || status === "rejected") {
-          router.replace("/driver/verification");
-          return;
-        }
-      } catch {
-        // Keep the driver shell reachable if the verification service is temporarily unavailable.
       }
       setChecking(false);
     }).catch(() => router.replace("/driver/auth"));
