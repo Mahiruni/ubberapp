@@ -179,12 +179,12 @@ export default function DriverProfileSettingsPage() {
               <div className="nr-profile-panel-head">
                 <div>
                   <h2>App preferences</h2>
-                  <p>Theme and language apply across the complete Driver experience.</p>
+                  <p>NexRide uses a consistent light appearance. Choose your preferred language below.</p>
                 </div>
               </div>
               <div className="nr-driver-preference-block">
                 <div className="nr-driver-preference-label">
-                  <div><strong>Appearance</strong><small>Follow your phone or choose a fixed theme.</small></div>
+                  <div><strong>Appearance</strong><small>NexRide's standard light theme is always active.</small></div>
                 </div>
                 <DriverThemeSelector />
               </div>
