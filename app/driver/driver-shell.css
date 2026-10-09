@@ -655,3 +655,30 @@ html[lang="am"] .nr-driver-menu-footer :where(strong,small,span,button,p){
 @media(max-width:560px){
   .nr-driver-app-shell .nr-driver-page{padding-left:14px!important;padding-right:14px!important}
 }
+
+
+/* Driver drawer and bottom wrapper are mutually exclusive visual layers.
+   Keep the sheets mounted: ride state, map subscriptions, swipe state and
+   snap position are preserved while the hamburger menu is open. */
+.nr-driver-app-shell[data-driver-menu-open="true"] .nr-driver-shell-content :is(
+  .nr-driver-sheet,
+  .nr-driver-home-swipe,
+  .nr-request-sheet,
+  .nr-nav-bottom-card
+){
+  visibility:hidden!important;
+  opacity:0!important;
+  pointer-events:none!important;
+  transition:none!important;
+}
+/* The home availability swipe has a high map-interaction z-index; when the
+   drawer opens its header must sit above the map and other controls. */
+.nr-driver-app-shell[data-driver-menu-open="true"] :is(
+  .nr-driver-home-menu-host,
+  .nr-driver-global-header
+){
+  z-index:1200!important;
+}
+.nr-driver-app-shell[data-driver-menu-open="true"] .nr-driver-menu-layer{
+  pointer-events:auto!important;
+}
