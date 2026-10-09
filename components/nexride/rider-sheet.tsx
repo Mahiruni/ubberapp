@@ -32,6 +32,7 @@ export function RiderSheetHandle({
 }: RiderSheetHandleProps) {
   const handleRef = useRef<HTMLButtonElement | null>(null);
   const frameRef = useRef<number | null>(null);
+  const scheduledHeightRef = useRef(0);
   const ratioRef = useRef(ratio ?? defaultRatio);
   const draggingRef = useRef(false);
   const drag = useRef({
@@ -53,14 +54,17 @@ export function RiderSheetHandle({
   const paint = (nextRatio: number) => {
     const next = clamp(nextRatio, snaps[0], snaps[2]);
     ratioRef.current = next;
-    setCurrentRatio(next);
     const height = Math.max(
       120,
       Math.min(viewportHeight() * next, viewportHeight() - 140),
     );
+    // Always paint the latest drag geometry. React state updates are batched
+    // to the same animation frame instead of running on every pointer event.
+    scheduledHeightRef.current = height;
     if (frameRef.current !== null) return;
     frameRef.current = requestAnimationFrame(() => {
-      root()?.style.setProperty("--nr-flow-sheet-height", `${height}px`);
+      root()?.style.setProperty("--nr-flow-sheet-height", `${scheduledHeightRef.current}px`);
+      setCurrentRatio(ratioRef.current);
       frameRef.current = null;
     });
   };
@@ -136,8 +140,11 @@ export function RiderSheetHandle({
     let next = ratio ?? defaultRatio;
     if (ratio === undefined && storageKey) {
       try {
-        const stored = Number(sessionStorage.getItem(storageKey));
-        if (Number.isFinite(stored)) next = clamp(stored, snaps[0], snaps[2]);
+        const saved = sessionStorage.getItem(storageKey);
+        if (saved !== null) {
+          const stored = Number(saved);
+          if (Number.isFinite(stored)) next = clamp(stored, snaps[0], snaps[2]);
+        }
       } catch {}
     }
     ratioRef.current = next;
@@ -259,10 +266,10 @@ export function RiderSheetHandle({
       settle(ordered[Math.max(0, nearestIndex - 1)]);
     } else if (event.key === "Home") {
       event.preventDefault();
-      settle(ordered[ordered.length - 1]);
+      settle(ordered[0]);
     } else if (event.key === "End") {
       event.preventDefault();
-      settle(ordered[0]);
+      settle(ordered[ordered.length - 1]);
     }
   };
 
