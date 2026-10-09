@@ -71,9 +71,9 @@ export default function Home() {
     cached?.preferences.language || "en",
   );
   const [mode, setMode] = useState<Mode>(cached?.preferences.mode || "rider");
-  const [theme, setTheme] = useState<"light" | "dark">(
-    cached?.preferences.theme || "light",
-  );
+  // Rider UI uses one permanent light design; legacy dark preferences are ignored.
+  const theme: "light" | "dark" = "light";
+  const setTheme = (_next: "light" | "dark") => {};
   const [profile, setProfile] = useState<PreviewProfile>(
     cached?.preferences.profile || emptyProfile,
   );
@@ -103,7 +103,6 @@ export default function Home() {
         setIsAdmin(accountRole === "admin");
         setLanguage(p.language);
         setMode(p.mode);
-        setTheme(p.theme);
         setProfile(p.profile);
         setTrip(p.trip);
         if (result.destination !== "/") {
@@ -459,16 +458,6 @@ function AppWorkspace({
               <Icon name="globe" size={17} />
               <span>{language === "en" ? "አማርኛ" : "EN"}</span>
             </button>
-            {mode === "rider" && (
-              <button
-                className="nr-theme-button"
-                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                aria-label={theme === "dark" ? "Use light theme" : "Use dark theme"}
-                aria-pressed={theme === "dark"}
-              >
-                <Icon name={theme === "dark" ? "sun" : "moon"} size={19} />
-              </button>
-            )}
             {mode === "rider" && (
               <button
                 className="nr-avatar-button nr-rider-profile-top"
@@ -840,25 +829,6 @@ function AppWorkspace({
                   </button>
                 </div>
               </div>
-              {mode === "rider" && (
-                <div className="nr-settings-row">
-                  <strong>{t("appearance")}</strong>
-                  <div className="nr-segmented">
-                    <button
-                      aria-pressed={theme === "light"}
-                      onClick={() => setTheme("light")}
-                    >
-                      {t("light")}
-                    </button>
-                    <button
-                      aria-pressed={theme === "dark"}
-                      onClick={() => setTheme("dark")}
-                    >
-                      {t("dark")}
-                    </button>
-                  </div>
-                </div>
-              )}
               <NexRideFeedbackSettings role="driver" language={language} />
               <StatusBanner>{t("localAccount")}</StatusBanner>
               <Button variant="secondary" onClick={() => setPanel("reset")}>
