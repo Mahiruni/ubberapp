@@ -500,3 +500,81 @@
   .nr-driver-home-quick-actions button{transition:none!important}
 }
 
+
+
+/* Rider-aligned Driver map controls: compact, square-rounded, no bulky pills. */
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-map-canvas .nr-map-control-stack{
+  top:calc(env(safe-area-inset-top,0px) + 72px)!important;
+  right:max(12px,env(safe-area-inset-right,0px))!important;
+  gap:8px!important;
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-map-canvas .nr-map-touch-control{
+  display:grid!important;
+  place-items:center!important;
+  width:44px!important;
+  height:44px!important;
+  min-width:44px!important;
+  min-height:44px!important;
+  padding:0!important;
+  border-radius:13px!important;
+  border:1px solid #e2e8ec!important;
+  background:#ffffff!important;
+  color:#102334!important;
+  box-shadow:0 3px 11px rgba(4,28,48,.11)!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  touch-action:manipulation!important;
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-map-canvas .nr-map-touch-control svg{
+  width:19px!important;
+  height:19px!important;
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-map-canvas .nr-map-touch-control .nr-traffic-control-icon{
+  transform:scale(.88);
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-map-canvas .nr-map-layer-menu{
+  top:calc(env(safe-area-inset-top,0px) + 72px)!important;
+  right:max(64px,calc(env(safe-area-inset-right,0px) + 64px))!important;
+  width:min(170px,calc(100vw - 88px))!important;
+  padding:5px!important;
+  border:1px solid #e4eaf0!important;
+  border-radius:14px!important;
+  background:#ffffff!important;
+  color:#102334!important;
+  box-shadow:0 8px 22px rgba(4,28,48,.12)!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-map-canvas .nr-map-layer-menu button{
+  min-height:42px!important;
+  font-size:12px!important;
+  border-radius:10px!important;
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-menu-host .nr-driver-menu-trigger{
+  width:44px!important;
+  height:44px!important;
+  min-width:44px!important;
+  min-height:44px!important;
+  border-radius:13px!important;
+  border:1px solid #e2e8ec!important;
+  background:#ffffff!important;
+  color:#102334!important;
+  box-shadow:0 3px 11px rgba(4,28,48,.11)!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-profile{
+  width:44px!important;
+  height:44px!important;
+  min-width:44px!important;
+  min-height:44px!important;
+  border-radius:13px!important;
+  border:1px solid #e2e8ec!important;
+  background:#ffffff!important;
+  color:#102334!important;
+  box-shadow:0 3px 11px rgba(4,28,48,.11)!important;
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-profile svg{
+  width:20px;
+  height:20px;
+}
