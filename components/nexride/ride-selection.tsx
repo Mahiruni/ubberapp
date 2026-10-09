@@ -126,14 +126,38 @@ export function RideSelection({
             <Icon name="info" />
             <p>
               {model.loadError === "auth"
-                ? "Use an active Rider account to enable live booking."
-                : model.loadError === "journey"
-                  ? "Choose a valid pickup and destination within the service area."
-                  : t("faresFailed")}
+                ? "Your NexRide session is not active. Sign in to book a real ride."
+                : model.loadError === "profile"
+                  ? "Your NexRide account is recognized. Complete the missing Rider details to book."
+                  : model.loadError === "offline"
+                    ? "You are currently Online as a Driver or handling a trip. Go Offline and finish active trips before requesting as a Rider."
+                    : model.loadError === "role"
+                      ? "Use your existing NexRide account to activate Rider access. A second account is not needed."
+                      : model.loadError === "suspended"
+                        ? "This account cannot book rides right now. Contact NexRide support."
+                        : model.loadError === "journey"
+                          ? "Choose a valid pickup and destination within the service area."
+                          : t("faresFailed")}
             </p>
             {model.loadError === "auth" ? (
               <Link href="/rider/sign-in" className="nr-preview-ride-link">
                 {t("signIn")} <Icon name="arrow" size={16} />
+              </Link>
+            ) : model.loadError === "profile" ? (
+              <Link href="/rider/complete-profile" className="nr-preview-ride-link">
+                Complete Rider profile <Icon name="arrow" size={16} />
+              </Link>
+            ) : model.loadError === "offline" ? (
+              <Link href="/driver/home" className="nr-preview-ride-link">
+                Go Offline as Driver <Icon name="arrow" size={16} />
+              </Link>
+            ) : model.loadError === "role" ? (
+              <Link href="/rider" className="nr-preview-ride-link">
+                Enable Rider access <Icon name="arrow" size={16} />
+              </Link>
+            ) : model.loadError === "suspended" ? (
+              <Link href="/support?role=rider" className="nr-preview-ride-link">
+                Contact support <Icon name="arrow" size={16} />
               </Link>
             ) : model.loadError === "journey" ? (
               <Button variant="secondary" onClick={back}>{t("editJourney")}</Button>

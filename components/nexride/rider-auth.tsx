@@ -80,7 +80,15 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
             const membership = await supabase.from("account_roles").select("role")
               .eq("user_id",session.user.id).eq("role","rider").maybeSingle();
             if (!membership.error && membership.data) {
-              if (active) router.replace("/");
+              try {
+                await ensureRiderProfile(session);
+                if (active) router.replace("/");
+              } catch (cause) {
+                if (active && cause instanceof RiderProfileBootstrapError &&
+                    cause.code === "rider_profile_incomplete")
+                  router.replace("/rider/complete-profile");
+                else if (active) router.replace("/rider");
+              }
               return;
             }
           }
@@ -101,6 +109,11 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
       } catch (cause) {
         if (!active) return;
 
+        if (cause instanceof RiderProfileBootstrapError &&
+            cause.code === "rider_profile_incomplete") {
+          router.replace("/rider/complete-profile");
+          return;
+        }
         if (cause instanceof RiderProfileBootstrapError && cause.code === "role_conflict") {
           await supabase.auth.signOut({ scope: "local" });
           if (active) {
@@ -189,13 +202,16 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
       clearExplicitSignOut();
       const role = await resolveSessionRole(data.session);
       if (role === "driver") {
-        const { error: riderAccessError } = await supabase.rpc("account_activate_rider_role");
-        if (riderAccessError) {
-          setError("NexRide could not enable Rider access for this account. Please try again.");
+        const { data: activated, error: riderAccessError } =
+          await supabase.rpc("account_activate_rider_role");
+        if (riderAccessError || activated !== "ready") {
+          setError("Go Offline and finish any active Driver trip before enabling Rider access.");
           return;
         }
-        window.localStorage.setItem("nexride:active-account-role","rider");
-        retryStartup(false);
+        await ensureRiderProfile(data.session);
+        window.localStorage.setItem("nexride:active-account-role", "rider");
+        markAuthenticated();
+        enterRider(data.session);
         navigating = true;
         router.replace("/");
         return;
@@ -213,7 +229,11 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
       navigating = true;
       router.replace("/");
     } catch (cause) {
-      if (cause instanceof RiderProfileBootstrapError && cause.code === "role_conflict") {
+      if (cause instanceof RiderProfileBootstrapError &&
+          cause.code === "rider_profile_incomplete") {
+        navigating = true;
+        router.replace("/rider/complete-profile");
+      } else if (cause instanceof RiderProfileBootstrapError && cause.code === "role_conflict") {
         await supabase.auth.signOut({ scope: "local" });
         setError(t("riderAuthOnly"));
       } else if (cause instanceof RiderProfileBootstrapError) {

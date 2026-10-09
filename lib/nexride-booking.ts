@@ -158,7 +158,17 @@ export const bookingAdapter = {
           }
         } else if (![429, 502, 503, 504].includes(response.status)) {
           // Do not repeatedly retry invalid journeys or ineligible accounts.
-          throw new Error(`fares_http_${response.status}`);
+          // Keep public-facing failures actionable without treating an
+          // incomplete Rider profile as a bad password.
+          const payload = await response.json().catch(() => null);
+          const status = typeof payload?.status === "string" ? payload.status : "";
+          const eligibility = [
+            "rider_profile_incomplete",
+            "driver_offline_required",
+            "rider_account_required",
+            "account_inactive",
+          ].includes(status) ? status : "";
+          throw new Error(`fares_http_${response.status}${eligibility ? "_" + eligibility : ""}`);
         } else {
           lastFailure = new Error(`fares_http_${response.status}`);
         }
@@ -168,7 +178,7 @@ export const bookingAdapter = {
         // Authorization/validation failures must not be retried.
         if (
           error instanceof Error &&
-          /^fares_http_(400|401|403|404|422)$/.test(error.message)
+          /^fares_http_(400|401|403|404|422)(?:_.*)?$/.test(error.message)
         )
           throw error;
       }
