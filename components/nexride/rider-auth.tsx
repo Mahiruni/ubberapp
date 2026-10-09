@@ -98,6 +98,12 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
       } catch (cause) {
         if (!active) return;
 
+        if (cause instanceof RiderProfileBootstrapError &&
+          cause.code === "rider_profile_incomplete") {
+          if (active) router.replace("/rider/complete-profile");
+          return;
+        }
+
         if (cause instanceof RiderProfileBootstrapError && cause.code === "role_conflict") {
           await supabase.auth.signOut({ scope: "local" });
           if (active) {
@@ -213,7 +219,11 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
       navigating = true;
       router.replace("/");
     } catch (cause) {
-      if (cause instanceof RiderProfileBootstrapError && cause.code === "role_conflict") {
+      if (cause instanceof RiderProfileBootstrapError &&
+        cause.code === "rider_profile_incomplete") {
+        navigating = true;
+        router.replace("/rider/complete-profile");
+      } else if (cause instanceof RiderProfileBootstrapError && cause.code === "role_conflict") {
         await supabase.auth.signOut({ scope: "local" });
         setError(t("riderAuthOnly"));
       } else if (cause instanceof RiderProfileBootstrapError) {
@@ -294,8 +304,14 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
 
       navigating = true;
       router.replace("/rider/sign-in?created=1");
-    } catch {
-      setError(t("createAccountFailure"));
+    } catch (cause) {
+      if (cause instanceof RiderProfileBootstrapError &&
+        cause.code === "rider_profile_incomplete") {
+        navigating = true;
+        router.replace("/rider/complete-profile");
+      } else {
+        setError(t("createAccountFailure"));
+      }
     } finally {
       if (!navigating) setBusy(false);
     }
