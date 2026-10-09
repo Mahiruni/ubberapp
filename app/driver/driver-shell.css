@@ -457,3 +457,41 @@ html[lang="am"] .nr-driver-menu-footer :where(strong,small,span,button,p){
    transition-duration:.01ms!important;animation-duration:.01ms!important;
  }
 }
+
+
+/* Snap heights cap the visible content: never create an empty expanded panel.
+   Shared by ride requests and native trip navigation. */
+.nr-driver-app-shell .nr-driver-sheet {
+  display:flex!important;
+  flex-direction:column!important;
+  box-sizing:border-box!important;
+  height:fit-content!important;
+  min-height:0!important;
+  max-height:min(var(--nr-driver-sheet-height,55dvh),calc(100dvh - var(--driver-header-total) - 10px))!important;
+  overflow:hidden!important;
+  overscroll-behavior:contain;
+  pointer-events:auto!important;
+}
+.nr-driver-app-shell .nr-driver-sheet-grab {
+  flex:0 0 35px!important;
+  padding:0!important;
+}
+.nr-driver-app-shell .nr-driver-sheet-content {
+  flex:0 1 auto!important;
+  min-height:0!important;
+  max-height:100%!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  overflow-wrap:anywhere;
+  -webkit-overflow-scrolling:touch;
+}
+.nr-driver-app-shell .nr-driver-sheet-content :is(button,a){
+  box-sizing:border-box;
+  min-width:0;
+  white-space:normal;
+}
+@media(min-width:760px){
+  .nr-driver-app-shell .nr-driver-sheet{
+    max-height:min(var(--nr-driver-sheet-height,65dvh),calc(100dvh - var(--driver-header-total) - 44px))!important;
+  }
+}
