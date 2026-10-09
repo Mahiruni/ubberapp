@@ -82,8 +82,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
               return;
             }
           }
-          const destination = await driverResumeDestination(session);
-          if (active) router.replace(destination);
+          if (active) router.replace("/rider");
           return;
         }
         if (role === "admin") {
@@ -187,12 +186,15 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
       clearExplicitSignOut();
       const role = await resolveSessionRole(data.session);
       if (role === "driver") {
-        const { error: riderAccessError } = await supabase.rpc("account_activate_rider_role");
-        if (riderAccessError) {
-          setError("NexRide could not enable Rider access for this account. Please try again.");
+        const { data: activated, error: riderAccessError } = await supabase.rpc("account_activate_rider_role");
+        if (riderAccessError || activated !== "ready") {
+          setError("Go Offline and finish active Driver trips before enabling Rider access.");
           return;
         }
+        await ensureRiderProfile(data.session);
         window.localStorage.setItem("nexride:active-account-role","rider");
+        markAuthenticated();
+        enterRider(data.session);
         retryStartup(false);
         navigating = true;
         router.replace("/");
