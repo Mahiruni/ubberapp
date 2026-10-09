@@ -37,6 +37,7 @@ export async function resolveRiderEligibility(
   ]);
   if (membership.error || onboarding.error) return "temporarily_unavailable";
   if (membership.data?.role !== "rider") return "rider_account_required";
+  if (onboarding.data?.status === "suspended") return "account_inactive";
   if (onboarding.data?.status !== "completed") return "rider_profile_incomplete";
 
   if (profile.role === "rider") return "eligible";
