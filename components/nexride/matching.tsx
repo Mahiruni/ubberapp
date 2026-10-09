@@ -58,6 +58,12 @@ export function DriverMatching({ model, changeCategory, previewAssigned, home }:
         <h1 tabIndex={-1} ref={heading}>{t(title)}</h1>
         <p>{t(connectionLost ? 'matchingConnectionNote' : degraded ? 'matchingSyncProblemNote' : status === 'assigned' ? 'matchingAcceptedNote' : status === 'no_drivers' ? 'matchingEmptyNote' : status === 'cancelled' ? 'matchingCancelledNote' : status === 'delayed' ? 'matchingDelayedNote' : 'matchingNote')}</p>
       </header>
+      {!preview && searching && <p className="nr-match-waiting-note" role="status">
+        <Icon name="clock" size={16} />
+        {language === "am"
+          ? "አሁን አሽከርካሪ ካልተገኘ አዲስ አሽከርካሪ መስመር ላይ ሲገባ ጥያቄዎ በራስ-ሰር ይላካል። ለመገናኘት የአሽከርካሪው ፈቃድ ያስፈልጋል።"
+          : "No Driver Online yet? We’ll automatically send your request when an eligible Driver becomes available. Your Driver must accept to confirm the ride."}
+      </p>}
       <span className="nr-sr-only" role="status" aria-live="polite" aria-atomic="true">{t(title)}</span>
       {searching && <div className="nr-match-progress" aria-label={t('matchingProgress')}>
         <span><Icon name="check" size={16} />{t('matchingRequestSent')}</span><span className="nr-match-progress-line" />
