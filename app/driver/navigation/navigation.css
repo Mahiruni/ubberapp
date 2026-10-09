@@ -240,3 +240,64 @@
   margin-top:4px!important;
   line-height:1.45!important;
 }
+
+
+/* Balanced trip controls, with no blank space at the expanded snap. */
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-bottom-card{padding:0!important}
+.nr-driver-navigation-page .nr-nav-bottom-card .nr-driver-sheet-content{
+  padding:0 16px calc(16px + env(safe-area-inset-bottom,0px))!important;
+}
+.nr-driver-navigation-page .nr-nav-bottom-card :is(.nr-nav-stage-primary,.nr-nav-stage-secondary){
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:9px;
+  width:100%;
+  min-width:0;
+  min-height:52px!important;
+  padding:12px 14px!important;
+  margin-top:12px;
+  font-size:14px!important;
+  line-height:1.25!important;
+  font-weight:800;
+  text-align:center;
+  white-space:normal;
+  overflow-wrap:anywhere;
+}
+.nr-driver-navigation-page .nr-nav-stage-actions{
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:10px;
+  margin-top:12px;
+}
+.nr-driver-navigation-page .nr-nav-stage-actions :is(.nr-nav-stage-primary,.nr-nav-stage-secondary){margin-top:0}
+.nr-driver-navigation-page .nr-nav-current-destination h1{
+  overflow-wrap:anywhere;
+  font-size:clamp(18px,4.6vw,22px)!important;
+}
+.nr-driver-navigation-page .nr-nav-utility-row button{
+  min-width:0;
+  padding:8px 5px;
+  min-height:46px;
+  font-size:11px;
+  line-height:1.25;
+  white-space:normal;
+}
+.nr-driver-navigation-page .nr-nav-trip-meta{
+  flex-wrap:wrap;
+  font-size:10px;
+  line-height:1.35;
+}
+.nr-driver-navigation-page .nr-nav-status{
+  bottom:calc(var(--nr-driver-sheet-actual-height,34dvh) + 12px);
+  max-height:120px;
+  overflow-y:auto;
+}
+@media(min-width:760px){
+  .nr-driver-navigation-page .nr-nav-bottom-card .nr-driver-sheet-content{padding:0 20px 20px!important}
+  .nr-driver-navigation-page .nr-nav-status{bottom:28px}
+}
+@media(max-width:360px){
+  .nr-driver-navigation-page .nr-nav-utility-row button{font-size:10px;gap:4px}
+  .nr-driver-navigation-page .nr-nav-stage-actions{gap:7px}
+  .nr-driver-navigation-page .nr-nav-stage-actions :is(.nr-nav-stage-primary,.nr-nav-stage-secondary){font-size:12px!important;padding:10px 7px!important}
+}
