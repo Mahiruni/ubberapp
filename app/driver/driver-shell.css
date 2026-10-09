@@ -495,3 +495,64 @@ html[lang="am"] .nr-driver-menu-footer :where(strong,small,span,button,p){
     max-height:min(var(--nr-driver-sheet-height,65dvh),calc(100dvh - var(--driver-header-total) - 44px))!important;
   }
 }
+
+
+/* DRIVER LIGHT-ONLY WRAPPERS
+   Keep map and full-page theme preferences unchanged; sheet-local tokens
+   never permit a dark panel from system theme, theme toggle or trip state. */
+.nr-driver-app-shell :is(
+  .nr-driver-home-swipe,
+  .nr-driver-sheet,
+  .nr-request-sheet,
+  .nr-nav-bottom-card,
+  .nr-pickup-card
+) {
+  --driver-bg:#f5f7f9;
+  --driver-surface:#ffffff;
+  --driver-surface-elevated:#f5f7f9;
+  --driver-overlay:#ffffff;
+  --driver-border:#e4eaf0;
+  --driver-text-primary:#102334;
+  --driver-text-secondary:#667587;
+  --surface:#ffffff;
+  --surface-alt:#f5f7f9;
+  --text:#102334;
+  --muted:#667587;
+  --line:#e4eaf0;
+  --nr-text:#102334;
+  --nr-border:#e4eaf0;
+  --nr-surface:#ffffff;
+  --nr-surface-raised:#f5f7f9;
+  color-scheme:light;
+  color:#102334!important;
+  border-color:#e4eaf0!important;
+  background:#ffffff!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+.nr-driver-app-shell[data-theme="dark"] :is(
+  .nr-driver-home-swipe,
+  .nr-driver-sheet,
+  .nr-request-sheet,
+  .nr-nav-bottom-card,
+  .nr-pickup-card
+) {
+  color:#102334!important;
+  border-color:#e4eaf0!important;
+  background:#ffffff!important;
+}
+/* Sheet grab handle and content must not inherit a dark panel layer. */
+.nr-driver-app-shell .nr-driver-sheet .nr-driver-sheet-grab,
+.nr-driver-app-shell .nr-driver-sheet .nr-driver-sheet-content {
+  background:transparent!important;
+  color:#102334;
+}
+.nr-driver-app-shell .nr-driver-sheet .nr-driver-sheet-grab>span{
+  background:#8d9ca7!important;
+  opacity:.65;
+}
+/* Keep the Driver home wrapper's control area as one flat Rider-like surface. */
+.nr-driver-app-shell .nr-driver-home-swipe .nr-driver-home-control-panel{
+  color:#102334!important;
+  background:#ffffff!important;
+}
