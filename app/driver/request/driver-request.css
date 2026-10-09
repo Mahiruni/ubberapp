@@ -1033,23 +1033,30 @@
   position:relative;
   width:100%;
   min-width:0;
-  height:30px;
-  overflow:hidden;
-  background:#d8e1e6;
-  border-top:2px solid #aebfc9;
-  border-bottom:2px solid #aebfc9;
+  height:3px;
+  overflow:visible;
+  background:#92adbb;
+  border:0;
+  border-radius:999px;
 }
-.nr-driver-app-shell .nr-driver-request-page .nr-request-road-centerline{
+.nr-driver-app-shell .nr-driver-request-page .nr-request-road-distance{
   position:absolute;
-  left:0;
-  right:0;
+  z-index:3;
+  left:50%;
   top:50%;
-  height:2px;
-  transform:translateY(-50%);
-  background:repeating-linear-gradient(
-    90deg,#ffffff 0 13px,transparent 13px 25px
-  );
-  opacity:.96;
+  transform:translate(-50%,-50%);
+  max-width:calc(100% - 70px);
+  padding:5px 9px;
+  border:1px solid #dce5ea;
+  border-radius:999px;
+  background:#ffffff;
+  box-shadow:0 2px 6px rgba(16,35,52,.08);
+  color:#102334;
+  font-size:11px;
+  font-weight:850;
+  font-variant-numeric:tabular-nums;
+  white-space:nowrap;
+  line-height:1.1;
 }
 .nr-driver-app-shell .nr-driver-request-page .nr-request-road-car{
   position:absolute;
@@ -1094,7 +1101,7 @@
 @media(prefers-reduced-motion:reduce){
   .nr-driver-app-shell .nr-driver-request-page .nr-request-route-horizontal .nr-request-road-car{
     animation:none!important;
-    left:calc(50% - 15px);
+    left:8%;
   }
 }
 
