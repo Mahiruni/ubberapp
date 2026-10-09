@@ -682,3 +682,64 @@ html[lang="am"] .nr-driver-menu-footer :where(strong,small,span,button,p){
 .nr-driver-app-shell[data-driver-menu-open="true"] .nr-driver-menu-layer{
   pointer-events:auto!important;
 }
+
+
+/* Compact Rider-style controls on Driver request/active-trip Mapbox maps.
+   Functional map controls, compass, traffic and layer actions are unchanged. */
+.nr-driver-app-shell .nr-driver-shell-content .nr-driver-map-controls{
+  z-index:9!important;
+  right:max(12px,env(safe-area-inset-right,0px))!important;
+  top:max(116px,calc(env(safe-area-inset-top,0px) + 98px))!important;
+  gap:8px!important;
+}
+.nr-driver-app-shell .nr-driver-shell-content .nr-driver-map-controls>button{
+  display:grid!important;
+  place-items:center!important;
+  width:44px!important;
+  height:44px!important;
+  min-width:44px!important;
+  min-height:44px!important;
+  padding:0!important;
+  border:1px solid #e2e8ec!important;
+  border-radius:13px!important;
+  background:#ffffff!important;
+  color:#102334!important;
+  box-shadow:0 3px 11px rgba(4,28,48,.11)!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  touch-action:manipulation!important;
+}
+.nr-driver-app-shell .nr-driver-shell-content .nr-driver-map-controls>button svg{
+  width:19px!important;
+  height:19px!important;
+}
+.nr-driver-app-shell .nr-driver-shell-content .nr-driver-map-controls>button:focus-visible{
+  outline:3px solid #00c878!important;
+  outline-offset:2px!important;
+}
+.nr-driver-app-shell .nr-driver-shell-content .nr-driver-layer-menu{
+  z-index:10!important;
+  right:max(64px,calc(env(safe-area-inset-right,0px) + 64px))!important;
+  top:max(116px,calc(env(safe-area-inset-top,0px) + 98px))!important;
+  width:min(170px,calc(100vw - 88px))!important;
+  padding:5px!important;
+  border-radius:14px!important;
+  border:1px solid #e4eaf0!important;
+  background:#ffffff!important;
+  color:#102334!important;
+  box-shadow:0 8px 22px rgba(4,28,48,.12)!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+.nr-driver-app-shell .nr-driver-shell-content .nr-driver-layer-menu>button{
+  min-height:43px!important;
+  padding:0 10px!important;
+  border-bottom:1px solid #edf1f3!important;
+  border-radius:10px!important;
+  background:transparent!important;
+  color:#102334!important;
+  font-size:12px!important;
+}
+.nr-driver-app-shell .nr-driver-shell-content .nr-driver-layer-menu>button:hover{
+  background:#effaf5!important;
+}
