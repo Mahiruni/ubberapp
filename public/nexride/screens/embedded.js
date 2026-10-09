@@ -74,13 +74,21 @@
   if(message.type!=='nexride:initialize'||initialized||!!message.live!==liveRequested)return;
   initialized=true;
   const api=window.NexRideCompletion||window.NexRideTrip||window.NexRide;
-  if(message.live){
-   if(typeof message.tripId!=='string'||!message.tripId)return;
-   const service={bookingId:message.tripId,tripId:message.tripId,subscribe(next,lost,connected){subscription=next;onDisconnect=lost;onConnect=connected;post({type:'nexride:subscribed'});return()=>{subscription=null;};},submitRating:input=>request('submitRating',input),sendMessage:input=>request('sendMessage',input),getCancellationQuote:input=>request('getCancellationQuote',input)};
-   if(!window.NexRideCompletion&&window.L)Object.assign(service,geographicMap());
-   await api.connect(service);
-  }else{api.setPreviewTrip?.(message.preview);post({type:'nexride:subscribed'});}
-  document.documentElement.classList.remove('nexride-awaiting');
+  try {
+   if(!api)throw Error('Trip screen is unavailable');
+   if(message.live){
+    if(typeof message.tripId!=='string'||!message.tripId)throw Error('Trip reference unavailable');
+    const service={bookingId:message.tripId,tripId:message.tripId,subscribe(next,lost,connected){subscription=next;onDisconnect=lost;onConnect=connected;post({type:'nexride:subscribed'});return()=>{subscription=null;};},submitRating:input=>request('submitRating',input),sendMessage:input=>request('sendMessage',input),getCancellationQuote:input=>request('getCancellationQuote',input)};
+    if(!window.NexRideCompletion&&window.L)Object.assign(service,geographicMap());
+    if(typeof api.connect!=='function')throw Error('Trip screen did not initialize');
+    await api.connect(service);
+   }else{api.setPreviewTrip?.(message.preview);post({type:'nexride:subscribed'});}
+   document.documentElement.classList.remove('nexride-awaiting');
+  } catch {
+   // Do not display sample rider/vehicle data on an uninitialized live screen.
+   // The React parent shows the last confirmed trip snapshot instead.
+   post({type:'nexride:screen-error'});
+  }
  });
  post({type:'nexride:ready'});
 })();
