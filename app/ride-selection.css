@@ -14,10 +14,10 @@
   flex-direction: column;
   overflow: hidden;
   background: #fff;
-  color: #102334;
+  color: #19172a;
   border: 1px solid #e1e7ed;
   border-radius: 22px;
-  box-shadow: 0 8px 30px #041c3008;
+  box-shadow: 0 8px 30px #28217f08;
 }
 .nr-ride-selection > header {
   padding: 18px 20px 8px;
@@ -35,7 +35,7 @@
 .nr-ride-selection .nr-icon-button {
   background: white;
   border-color: #e1e7ed;
-  color: #102334;
+  color: #19172a;
 }
 .nr-ride-selection-body {
   padding: 0 20px 16px;
@@ -65,12 +65,12 @@
   flex-shrink: 0;
   width: 7px;
   height: 7px;
-  background: #00c878;
+  background: #5145e5;
   border: 0;
   margin: 0;
 }
 .nr-ride-route-line .nr-route-dot.end {
-  background: #041c30;
+  background: #28217f;
 }
 .nr-ride-route-line svg {
   flex-shrink: 0;
@@ -89,7 +89,7 @@
   padding: 12px 10px;
   min-height: 94px;
   border-color: #e1e7ed;
-  color: #102334;
+  color: #19172a;
   background: white;
   gap: 9px;
 }
@@ -102,7 +102,7 @@
   cursor: default;
 }
 .nr-ride-selection .nr-ride-card.unavailable {
-  background: #f5f7f9;
+  background: #f7f7fb;
 }
 .nr-ride-selection .nr-ride-copy strong {
   font-size: 15px;
@@ -139,7 +139,7 @@
   color: #667587;
 }
 .nr-fare-explanation > strong {
-  color: #102334;
+  color: #19172a;
   font-size: 13px;
 }
 .nr-fare-explanation p {
@@ -169,7 +169,7 @@
   border-top: 1px solid #e1e7ed;
   margin: 9px 0 0;
   padding-top: 9px;
-  color: #102334;
+  color: #19172a;
 }
 .nr-fare-state {
   margin: 14px 0;
@@ -229,8 +229,8 @@
   min-height: 50px;
 }
 .nr-ride-selection footer .nr-button:not(:disabled) {
-  background: #00c878;
-  color: #041c30;
+  background: #5145e5;
+  color: #28217f;
 }
 .nr-request-total {
   font-size: 13px;
@@ -274,7 +274,7 @@
   flex-shrink: 0;
   background: white;
   border-color: #e1e7ed;
-  color: #102334;
+  color: #19172a;
 }
 .nr-map-ride-label > div {
   background: white;
@@ -283,7 +283,7 @@
   padding: 10px 12px;
   min-width: 0;
   max-width: 360px;
-  box-shadow: 0 2px 12px #041c3008;
+  box-shadow: 0 2px 12px #28217f08;
 }
 .nr-map-ride-label strong,
 .nr-map-ride-label small {
@@ -294,7 +294,7 @@
 }
 .nr-map-ride-label strong {
   font-size: 13px;
-  color: #102334;
+  color: #19172a;
 }
 .nr-map-ride-label small {
   font-size: 12px;
@@ -337,8 +337,8 @@
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  border: 2px solid #041c3030;
-  border-top-color: #041c30;
+  border: 2px solid #28217f30;
+  border-top-color: #28217f;
   animation: nr-request-spin 0.8s linear infinite;
 }
 .nr-payment-choices {
@@ -508,7 +508,7 @@
   border-color: var(--line);
 }
 .rider-ride-view .nr-recenter {
-  color: #102334;
+  color: #19172a;
 }
 
 
@@ -540,9 +540,9 @@
 
 .nr-ride-selection .nr-ride-vehicle-shell { fill:#16384d; }
 .nr-ride-selection .nr-ride-vehicle-glass { fill:#dcecf3; }
-.nr-ride-selection .nr-ride-vehicle-light { fill:#00c878; }
+.nr-ride-selection .nr-ride-vehicle-light { fill:#5145e5; }
 .nr-ride-selection .nr-ride-vehicle-grille { fill:#294f66; }
-.nr-ride-selection .nr-ride-vehicle-wheel { fill:#041c30; }
+.nr-ride-selection .nr-ride-vehicle-wheel { fill:#28217f; }
 .nr-ride-selection .nr-ride-vehicle-shadow { fill:rgba(4,28,48,.13); }
 
 .nr-ride-selection .nr-ride-vehicle[data-category="comfort"] {
