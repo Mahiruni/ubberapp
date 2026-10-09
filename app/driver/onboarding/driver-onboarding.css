@@ -8,3 +8,45 @@
 @media (max-width: 520px) { .driver-form-grid { grid-template-columns: 1fr; } }
 
 .driver-auth-secondary{width:100%;min-height:48px;margin-top:9px;border:1px solid #31556d;border-radius:13px;background:#0a3049;color:#e8f2f7;font-weight:800}
+
+
+/* Light-only Driver onboarding and vehicle/document verification forms. */
+.nr-driver-app-shell .driver-onboarding-page{
+  color-scheme:light;
+  color:#102334!important;
+  background:#f5f7f9!important;
+}
+.nr-driver-app-shell .driver-onboarding-card{
+  max-width:680px;
+  background:#ffffff;
+  border:1px solid #dfe7eb;
+  border-radius:22px;
+  padding:clamp(16px,3vw,28px);
+  box-shadow:0 10px 32px rgba(16,35,52,.055);
+}
+.nr-driver-app-shell .driver-onboarding-card :is(h1,h2,h3,.nr-brand strong){
+  color:#102334!important;
+}
+.nr-driver-app-shell .driver-onboarding-card :is(label,small,p){
+  color:#526b79;
+}
+.nr-driver-app-shell .driver-onboarding-card :is(input,select,textarea){
+  min-height:46px;
+  color:#102334!important;
+  background:#ffffff!important;
+  border:1px solid #ccd9df!important;
+  border-radius:12px;
+}
+.nr-driver-app-shell .driver-auth-notice{
+  color:#007448!important;
+  background:#eafff3!important;
+  border-color:#bfe8d5!important;
+}
+.nr-driver-app-shell .driver-auth-notice a{
+  color:#006c42!important;
+}
+.nr-driver-app-shell .driver-auth-secondary{
+  color:#102334!important;
+  background:#f5f7f9!important;
+  border-color:#dfe7eb!important;
+}
