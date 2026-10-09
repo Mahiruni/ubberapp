@@ -34,34 +34,9 @@ export type RiderMenuId =
 
 type RiderTheme = "light" | "dark";
 
+/* Legacy dark preference is intentionally ignored: Rider pages stay light. */
 export function usePersistedRiderTheme(): RiderTheme {
-  const [theme, setTheme] = useState<RiderTheme>("light");
-
-  useEffect(() => {
-    const readTheme = () => {
-      try {
-        const raw =
-          localStorage.getItem(PREVIEW_STORAGE_KEY) ||
-          localStorage.getItem("nexride-state") ||
-          "{}";
-        const state = JSON.parse(raw) as { theme?: unknown };
-        setTheme(state.theme === "dark" ? "dark" : "light");
-      } catch {
-        setTheme("light");
-      }
-    };
-
-    readTheme();
-    const onStorage = (event: StorageEvent) => {
-      if (event.key === PREVIEW_STORAGE_KEY || event.key === "nexride-state") {
-        readTheme();
-      }
-    };
-    window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
-  }, []);
-
-  return theme;
+  return "light";
 }
 
 const hrefs: Record<RiderMenuId, string> = {
