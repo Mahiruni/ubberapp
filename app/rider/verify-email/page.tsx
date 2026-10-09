@@ -11,6 +11,7 @@ const validEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 export default function EmailVerification() {
   const router = useRouter();
   const [purpose, setPurpose] = useState<Purpose>("signup");
+  const [returnRole, setReturnRole] = useState<"rider" | "driver">("rider");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [password, setPassword] = useState("");
@@ -28,7 +29,7 @@ export default function EmailVerification() {
       const result = await supabase.auth.verifyOtp({email: email.trim().toLowerCase(), token: code, type: purpose === "signup" ? "signup" : "recovery"});
       if (result.error) { setError("The code is invalid or expired. Request a new code if necessary."); return; }
       if (purpose === "recovery") { setVerified(true); setMessage("Email confirmed. Choose a new password."); }
-      else { setMessage("Email verified successfully."); router.replace("/rider/sign-in?confirmed=1"); }
+      else { setMessage("Email verified successfully."); router.replace(returnRole === "driver" ? "/driver/auth?confirmed=1" : "/rider/sign-in?confirmed=1"); }
     } catch { setError("Verification could not be completed. Check your connection."); }
     finally { setBusy(false); }
   }
@@ -37,7 +38,7 @@ export default function EmailVerification() {
     setBusy(true); setError(""); setMessage("");
     try {
       const result = purpose === "signup"
-        ? await supabase.auth.resend({type:"signup",email:email.trim().toLowerCase(),options:{emailRedirectTo:window.location.origin+"/rider/sign-in?confirmed=1"}})
+        ? await supabase.auth.resend({type:"signup",email:email.trim().toLowerCase(),options:{emailRedirectTo:window.location.origin+(returnRole === "driver" ? "/driver/auth?confirmed=1" : "/rider/sign-in?confirmed=1")}})
         : await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(),{redirectTo:window.location.origin+"/rider/reset-password"});
       if (result.error) { setError("Unable to send an email right now. Please wait before trying again."); return; }
       setLastSent(Date.now());
@@ -54,7 +55,7 @@ export default function EmailVerification() {
       const result = await supabase.auth.updateUser({password});
       if (result.error) { setError("Password update failed. Please try again."); return; }
       await supabase.auth.signOut();
-      router.replace("/rider/sign-in?passwordUpdated=1");
+      router.replace(returnRole === "driver" ? "/driver/auth?passwordUpdated=1" : "/rider/sign-in?passwordUpdated=1");
     } catch { setError("Password update failed. Please try again."); }
     finally { setBusy(false); }
   }
@@ -64,7 +65,7 @@ export default function EmailVerification() {
       <h1 style={{fontSize:28,letterSpacing:"-.04em",marginBottom:8}}>{verified?"Create a new password":"Verify your email"}</h1>
       <p style={{color:"#55546B",lineHeight:1.5}}>{verified?"Secure your account with a new password.":"Enter the unique six-digit code sent to your inbox."}</p>
       {!verified ? <form onSubmit={verify} style={{display:"grid",gap:14}}>
-        <label>Verification purpose<select value={purpose} onChange={e=>{setPurpose(e.target.value as Purpose);setCode("");setError("");}} style={field}><option value="signup">Confirm new account</option><option value="recovery">Reset forgotten password</option></select></label>
+        <label>Account type<select value={returnRole} onChange={e=>setReturnRole(e.target.value as "rider" | "driver")} style={field}><option value="rider">Rider</option><option value="driver">Driver</option></select></label>\n        <label>Verification purpose<select value={purpose} onChange={e=>{setPurpose(e.target.value as Purpose);setCode("");setError("");}} style={field}><option value="signup">Confirm new account</option><option value="recovery">Reset forgotten password</option></select></label>
         <label>Email address<input required type="email" autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)} style={field} placeholder="you@example.com"/></label>
         <label>Six-digit code<input required type="text" inputMode="numeric" autoComplete="one-time-code" maxLength={6} pattern="[0-9]{6}" value={code} onChange={e=>setCode(e.target.value.replace(/\D/g,"").slice(0,6))} style={{...field,letterSpacing:".35em",fontSize:23,textAlign:"center"}} placeholder="000000"/></label>
         <button disabled={busy} type="submit" style={action}>{busy?"Verifying…":"Verify email"}</button>
