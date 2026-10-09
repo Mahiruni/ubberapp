@@ -193,6 +193,18 @@ export async function PATCH(request: Request) {
       }
 
       updatedDriver = onlineData;
+
+      if (body.online === true && current.is_online !== true) {
+        const { error: dispatchError } = await admin.rpc(
+          "nexride_dispatch_waiting_for_driver_server",
+          { p_driver_id: authorized.user.id },
+        );
+        if (dispatchError) {
+          console.warn("nexride_waiting_dispatch_deferred", {
+            code: dispatchError.code || "unknown",
+          });
+        }
+      }
     }
 
     return reply({
