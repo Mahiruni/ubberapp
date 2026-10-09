@@ -1,9 +1,9 @@
 {
-  "id": "/",
-  "name": "NexRide Rider",
-  "short_name": "NexRide Rider",
-  "description": "Request safe, comfortable rides in Addis Ababa with NexRide Rider.",
-  "start_url": "/",
+  "id": "/driver",
+  "name": "NexRide Driver",
+  "short_name": "NexRide Driver",
+  "description": "Drive, earn and grow with NexRide Driver in Addis Ababa.",
+  "start_url": "/driver",
   "scope": "/",
   "display": "standalone",
   "display_override": [
@@ -18,71 +18,71 @@
   "categories": [
     "travel",
     "navigation",
-    "lifestyle"
+    "business"
   ],
   "icons": [
     {
-      "src": "/icons/icon-72.png",
+      "src": "/icons/driver-icon-72.png",
       "sizes": "72x72",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icons/icon-96.png",
+      "src": "/icons/driver-icon-96.png",
       "sizes": "96x96",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icons/icon-128.png",
+      "src": "/icons/driver-icon-128.png",
       "sizes": "128x128",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icons/icon-144.png",
+      "src": "/icons/driver-icon-144.png",
       "sizes": "144x144",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icons/icon-152.png",
+      "src": "/icons/driver-icon-152.png",
       "sizes": "152x152",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icons/icon-192.png",
+      "src": "/icons/driver-icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icons/icon-384.png",
+      "src": "/icons/driver-icon-384.png",
       "sizes": "384x384",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icons/icon-512.png",
+      "src": "/icons/driver-icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icons/icon-maskable-192.png",
+      "src": "/icons/driver-icon-maskable-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "/icons/icon-maskable-384.png",
+      "src": "/icons/driver-icon-maskable-384.png",
       "sizes": "384x384",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "/icons/icon-maskable-512.png",
+      "src": "/icons/driver-icon-maskable-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
@@ -90,26 +90,24 @@
   ],
   "shortcuts": [
     {
-      "name": "Book a ride",
-      "short_name": "Book ride",
-      "description": "Open NexRide to request a ride.",
-      "url": "/",
+      "name": "Go Online",
+      "short_name": "Drive",
+      "url": "/driver/home",
       "icons": [
         {
-          "src": "/icons/icon-192.png",
+          "src": "/icons/driver-icon-192.png",
           "sizes": "192x192",
           "type": "image/png"
         }
       ]
     },
     {
-      "name": "My rides",
-      "short_name": "My rides",
-      "description": "Open your NexRide trip history.",
-      "url": "/rider/trips",
+      "name": "Requests",
+      "short_name": "Requests",
+      "url": "/driver/activity",
       "icons": [
         {
-          "src": "/icons/icon-192.png",
+          "src": "/icons/driver-icon-192.png",
           "sizes": "192x192",
           "type": "image/png"
         }

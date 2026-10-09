@@ -1,17 +1,22 @@
-const VERSION = "nexride-flagship-v7";
+const VERSION = "nexride-role-icons-v8";
 const CORE_CACHE = VERSION + "-core";
 const RUNTIME_CACHE = VERSION + "-runtime";
 const CORE_ASSETS = [
   "/offline.html",
   "/manifest.webmanifest",
+  "/driver.webmanifest",
   "/favicon.svg",
   "/favicon.ico",
   "/favicon-32x32.png",
   "/apple-touch-icon.png",
+  "/driver-apple-touch-icon.png",
+  "/driver-favicon-32x32.png",
   "/brand/nexride-mark.svg",
   "/icons/icon-192.png",
+  "/icons/driver-icon-192.png",
   "/icons/icon-512.png",
   "/icons/icon-maskable-512.png",
+  "/icons/driver-icon-maskable-512.png",
   "/fonts/noto-sans-ethiopic-400.woff2",
   "/fonts/noto-sans-ethiopic-700.woff2",
   "/fonts/Benaiah/Benaiah-Bold-Ethiopic.woff2?v=5",
@@ -69,8 +74,11 @@ self.addEventListener("fetch", (event) => {
     url.pathname === "/favicon.svg" ||
     url.pathname === "/favicon.ico" ||
     url.pathname.startsWith("/favicon-") ||
+    url.pathname.startsWith("/driver-favicon") ||
+    url.pathname === "/driver-apple-touch-icon.png" ||
     url.pathname === "/apple-touch-icon.png" ||
-    url.pathname === "/manifest.webmanifest";
+    url.pathname === "/manifest.webmanifest" ||
+    url.pathname === "/driver.webmanifest";
 
   if (!cacheable) return;
 
@@ -108,8 +116,10 @@ self.addEventListener("push", (event) => {
     self.registration.showNotification(title, {
       body,
       tag,
-      icon: "/icons/icon-192.png",
-      badge: "/favicon-32x32.png",
+      icon: url.startsWith("/driver")
+        ? "/icons/driver-icon-192.png" : "/icons/icon-192.png",
+      badge: url.startsWith("/driver")
+        ? "/driver-favicon-32x32.png" : "/favicon-32x32.png",
       data: { url },
       renotify: false,
     })
