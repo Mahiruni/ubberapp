@@ -312,3 +312,13 @@
   .nr-driver-app-shell .nr-driver-profile-summary-v2{grid-template-columns:repeat(2,minmax(0,1fr))}
   .nr-driver-app-shell .nr-driver-profile-quick-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
+
+/* Keep the approved profile's "View documents" CTA legible in every theme. */
+.nr-driver-app-shell .nr-driver-profile-v2 .nr-driver-verification-card.approved > button {
+  color:#ffffff!important;
+  background:#0b3049!important;
+  border-color:#0b3049!important;
+}
+.nr-driver-app-shell .nr-driver-profile-v2 .nr-driver-verification-card.approved > button svg {
+  color:inherit;
+}
