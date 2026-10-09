@@ -939,3 +939,88 @@
 @media(prefers-reduced-motion:reduce){
   .nr-driver-page *, .nr-driver-bottom-nav *{transition:none!important;animation:none!important}
 }
+
+
+/* Light-only Driver dashboard, activity and shared navigation.
+   No structural change to live maps, availability swipe, realtime requests. */
+.nr-driver-app-shell .nr-driver-page{
+  --driver-line:#dfe7eb;
+  color:#102334!important;
+  background:#f5f7f9!important;
+}
+.nr-driver-app-shell .nr-driver-page :is(h1,h2,h3,strong){
+  color:#102334;
+}
+.nr-driver-app-shell .nr-driver-page p,
+.nr-driver-app-shell .nr-driver-page :is(.nr-driver-kicker,.nr-driver-metric-grid .nr-metric em){
+  color:#667587!important;
+}
+.nr-driver-app-shell :is(
+  .nr-driver-card,.nr-availability-card,.nr-driver-earnings-card,
+  .nr-driver-profile-card,.nr-driver-list-card,
+  .nr-driver-metric-grid .nr-metric,.nr-driver-action-row,
+  .nr-driver-notice,.nr-driver-loading,.nr-driver-operational-card
+){
+  color:#102334!important;
+  background:#ffffff!important;
+  border:1px solid #dfe7eb!important;
+  box-shadow:0 4px 18px rgba(16,35,52,.045)!important;
+}
+.nr-driver-app-shell :is(.nr-trip-route span,.nr-driver-status-pill,.nr-driver-skeleton){
+  background:#edf2f4!important;
+  color:#415768!important;
+}
+.nr-driver-app-shell :is(.nr-driver-icon-btn,.nr-driver-avatar-button){
+  background:#ffffff!important;
+  color:#102334!important;
+  border:1px solid #dfe7eb!important;
+}
+.nr-driver-app-shell .nr-driver-primary.secondary-state{
+  background:#f5f7f9!important;
+  color:#102334!important;
+  border:1px solid #dfe7eb!important;
+}
+.nr-driver-app-shell .nr-driver-notice.pending{
+  background:#fff8e9!important;
+  color:#83570a!important;
+  border-color:#efdbaf!important;
+}
+.nr-driver-app-shell .nr-driver-notice.blocked{
+  background:#fff1f2!important;
+  color:#8b303e!important;
+  border-color:#f1cbd0!important;
+}
+.nr-driver-app-shell .nr-driver-bottom-nav{
+  background:rgba(255,255,255,.98)!important;
+  border-color:#dfe7eb!important;
+  box-shadow:0 -7px 24px rgba(16,35,52,.06)!important;
+}
+.nr-driver-app-shell .nr-driver-bottom-nav button{
+  color:#667587!important;
+}
+.nr-driver-app-shell .nr-driver-bottom-nav button.active{
+  color:#007448!important;
+  background:#eafff3!important;
+}
+.nr-driver-app-shell .nr-driver-bottom-nav button.active .nr-driver-nav-icon{
+  color:#007448!important;
+  background:#eafff3!important;
+}
+.nr-driver-app-shell .nr-driver-activity-page :is(
+  article,.nr-driver-activity-summary,.nr-activity-row
+){
+  background:#ffffff!important;
+  color:#102334!important;
+  border:1px solid #dfe7eb!important;
+  border-radius:16px;
+}
+.nr-driver-app-shell .nr-driver-activity-page :is(p,small,time){
+  color:#667587!important;
+}
+.nr-driver-app-shell .nr-driver-activity-page strong{color:#102334!important}
+@media(max-width:560px){
+  .nr-driver-app-shell .nr-driver-page{
+    padding-inline:14px!important;
+  }
+  .nr-driver-app-shell .nr-driver-bottom-nav button{min-height:56px}
+}
