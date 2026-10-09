@@ -7,6 +7,7 @@ import { Brand, Icon, LanguageContext, useTranslation } from "../../../component
 import { supabase } from "../../../lib/supabase";
 import { nexrideAuthRedirectUrl } from "../../../lib/nexride-auth-url";
 import { resolveSessionRole } from "../../../lib/nexride-account-role";
+import { driverResumeDestination } from "../../../lib/nexride-driver-verification";
 import { announceLanguage } from "../../../components/nexride/language-provider";
 import { VEHICLE_COLOR_OPTIONS } from "../../../lib/nexride-vehicle";
 import { normalizeEthiopianPhone } from "../../../lib/nexride-identity";
@@ -60,9 +61,11 @@ export default function DriverOnboarding() {
         if(owner.data?.phone)setPhone(owner.data.phone);
       }
       if (role !== "driver") return;
-      if (data.session.user.user_metadata?.driver_onboarding_complete === true) {
-        router.replace("/driver/verification");
-      }
+      // Resume from the authoritative Driver state rather than a mutable
+      // completion flag. A previously approved Driver need not reapply.
+      const destination = await driverResumeDestination(data.session);
+      if (active && destination !== "/driver/onboarding" && destination !== "/driver/auth")
+        router.replace(destination);
     });
     return () => { active = false; };
   }, [router]);
