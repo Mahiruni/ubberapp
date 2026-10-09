@@ -533,8 +533,8 @@
   border:1px solid #577389!important;
 }
 .nr-driver-request-page .nr-request-actions .nr-request-pass{
-  width:100%!important;background:#0c2b41!important;
-  border:1px solid #42657b!important;color:#f5f9fb!important;
+  width:100%!important;background:#2563eb!important;
+  border:1px solid #2563eb!important;color:#ffffff!important;
   min-height:54px!important;
 }
 .nr-driver-request-page .nr-request-actions :is(button:disabled){opacity:.5;cursor:not-allowed}
@@ -658,9 +658,9 @@
   border-color:#dce5eb!important;
 }
 .nr-driver-app-shell .nr-driver-request-page .nr-request-actions .nr-request-pass{
-  background:#ffffff!important;
-  color:#415768!important;
-  border-color:#dce5eb!important;
+  background:#2563eb!important;
+  color:#ffffff!important;
+  border-color:#2563eb!important;
 }
 /* Back is a floating control, but should also read clearly on the dark map. */
 .nr-driver-app-shell .nr-driver-request-page .nr-request-back{
@@ -729,8 +729,8 @@
   color:#ffffff!important;
 }
 .nr-driver-app-shell .nr-driver-request-page .nr-driver-sheet-footer .nr-request-pass{
-  background:#931c30!important;
-  border:1px solid #931c30!important;
+  background:#2563eb!important;
+  border:1px solid #2563eb!important;
   color:#ffffff!important;
 }
 .nr-driver-app-shell .nr-driver-request-page .nr-driver-sheet-footer :is(.nr-request-decline,.nr-request-pass) svg{
@@ -742,8 +742,8 @@
   border-color:#a51c2d!important;
 }
 .nr-driver-app-shell .nr-driver-request-page .nr-driver-sheet-footer .nr-request-pass:hover:not(:disabled){
-  background:#741425!important;
-  border-color:#741425!important;
+  background:#1d4ed8!important;
+  border-color:#1d4ed8!important;
 }
 .nr-driver-app-shell .nr-driver-request-page .nr-driver-sheet-footer .nr-request-actions button:focus-visible{
   outline:3px solid #007448!important;
@@ -785,10 +785,8 @@
 .nr-driver-request-page .nr-request-deadline{
   flex:0 0 auto;
   display:flex;
-  flex-direction:column;
   align-items:center;
   justify-content:center;
-  gap:2px;
 }
 .nr-driver-app-shell .nr-driver-request-page .nr-request-countdown{
   --request-ring:#00a866;
@@ -840,31 +838,6 @@
   font-variant-numeric:tabular-nums;
   color:#102334!important;
 }
-.nr-driver-request-page .nr-request-skip{
-  border:0;
-  min-width:60px;
-  min-height:28px;
-  padding:3px 7px;
-  border-radius:8px;
-  background:transparent;
-  color:#007448;
-  font-size:12px;
-  font-weight:800;
-  text-decoration:underline;
-  text-underline-offset:3px;
-  cursor:pointer;
-}
-.nr-driver-request-page .nr-request-skip:hover:not(:disabled){
-  background:#eafff3;
-}
-.nr-driver-request-page .nr-request-skip:disabled{
-  color:#95a6af;
-  cursor:not-allowed;
-}
-.nr-driver-request-page .nr-request-skip:focus-visible{
-  outline:3px solid #00c878;
-  outline-offset:2px;
-}
 .nr-driver-app-shell .nr-driver-request-page .nr-request-sheet>.nr-driver-sheet-footer{
   background:#ffffff!important;
   border-color:#e4eaf0!important;
@@ -897,8 +870,8 @@
 }
 .nr-driver-app-shell .nr-driver-request-page .nr-driver-sheet-footer .nr-request-pass{
   color:#ffffff!important;
-  background:#931c30!important;
-  border-color:#931c30!important;
+  background:#2563eb!important;
+  border-color:#2563eb!important;
 }
 .nr-driver-app-shell .nr-driver-request-page .nr-driver-sheet-footer :is(
  .nr-request-accept,.nr-request-decline,.nr-request-pass
