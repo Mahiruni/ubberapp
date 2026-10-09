@@ -195,12 +195,17 @@ export function DriverSessionBridge() {
           event: "UPDATE", schema: "public", table: "drivers", filter: "id=eq." + id,
         }, payload => {
           const data = payload.new as DriverOnline;
+          const wasOnline = activeOnline;
           activeOnline = data.is_online === true && data.review_status === "approved";
           if (activeOnline) {
             startGps();
-            navigator.geolocation?.getCurrentPosition(sendGps, () => {}, {
-              enableHighAccuracy: true, maximumAge: 5_000, timeout: 12_000,
-            });
+            // Location-only row updates also fire this subscription. Only
+            // reacquire a one-shot GPS fix when availability turns Online.
+            if (!wasOnline) {
+              navigator.geolocation?.getCurrentPosition(sendGps, () => {}, {
+                enableHighAccuracy: true, maximumAge: 5_000, timeout: 12_000,
+              });
+            }
             void readPending();
           } else {
             stopGps();
