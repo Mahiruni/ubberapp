@@ -1118,8 +1118,11 @@ export function RiderMap({
     let controller: AbortController | null = null;
 
     const loadNearbyDrivers = async () => {
-      controller?.abort();
-      controller = new AbortController();
+      // A slow mobile connection must not cause the next 3-second poll to
+      // abort an in-progress result. The request is cancelled on unmount.
+      if (controller) return;
+      const pending = new AbortController();
+      controller = pending;
       try {
         const params = new URLSearchParams({
           lat: String(position.lat),
@@ -1127,11 +1130,14 @@ export function RiderMap({
         });
         const response = await nexrideApiFetch(
           "/api/rider/nearby-drivers?" + params.toString(),
-          { cache: "no-store", signal: controller.signal },
+          { cache: "no-store", signal: pending.signal },
         );
         if (!active) return;
         if (!response.ok) {
-          setNearbyDrivers([]);
+          // Keep only still-fresh markers during transient server failures.
+          setNearbyDrivers((current) => current.filter(
+            (item) => Date.now() - Date.parse(item.updatedAt) <= 60_000,
+          ));
           return;
         }
         const payload = await response.json();
@@ -1158,14 +1164,26 @@ export function RiderMap({
               Date.now() - Date.parse(item.updatedAt) <= 60_000,
           )
           .slice(0, 10);
-        setNearbyDrivers(next);
+        setNearbyDrivers((current) => {
+          if (current.length === next.length && current.every((item, index) =>
+            item.key === next[index].key &&
+            item.lat === next[index].lat &&
+            item.lng === next[index].lng &&
+            item.updatedAt === next[index].updatedAt
+          )) return current;
+          return next;
+        });
       } catch (error) {
         if (
           active &&
           !(error instanceof DOMException && error.name === "AbortError")
         ) {
-          setNearbyDrivers([]);
+          setNearbyDrivers((current) => current.filter(
+            (item) => Date.now() - Date.parse(item.updatedAt) <= 60_000,
+          ));
         }
+      } finally {
+        if (controller === pending) controller = null;
       }
     };
 
