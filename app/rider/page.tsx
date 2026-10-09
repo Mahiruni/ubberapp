@@ -91,28 +91,42 @@ function RiderWelcome() {
 
   return (
     <div className="nr-rider-welcome">
-      <span className="nr-rider-entry-kicker">NEXRIDE · RIDER</span>
-      <h1>{t("welcome")}</h1>
-      <p>{t("brandMessage")}</p>
-      <div className="nr-rider-entry-benefits" aria-label="Rider experience">
-        <span><Icon name="pin" size={18} /> Pickup & destination</span>
-        <span><Icon name="navigation" size={18} /> Ride choices</span>
-        <span><Icon name="shield" size={18} /> Safety & support</span>
+      <div className="nr-rider-welcome-intro">
+        <span className="nr-rider-entry-kicker">
+          <Icon name="navigation" size={15} />
+          NEXRIDE · RIDER
+        </span>
+        <h1>{t("welcome")}</h1>
+        <p>{t("brandMessage")}</p>
       </div>
 
-      <p>{t("onboardingIntro")}</p>
+      <div className="nr-rider-entry-benefits" aria-label="Rider experience">
+        <span><Icon name="pin" size={18} /> Pickup & drop-off</span>
+        <span><Icon name="navigation" size={18} /> Ride choices</span>
+        <span><Icon name="shield" size={18} /> Safety first</span>
+      </div>
 
       <div className="nr-rider-entry-actions">
-        <Link className="nr-button nr-primary" href="/rider/sign-up">{t("createAccount")}</Link>
-        <Link className="nr-button nr-secondary" href="/rider/sign-in">{t("signIn")}</Link>
+        <Link className="nr-rider-get-started" href="/rider/sign-up">
+          <span>{t("createAccount")}</span>
+          <Icon name="arrow" size={20} />
+        </Link>
+        <Link className="nr-rider-welcome-sign-in" href="/rider/sign-in">
+          <span>{t("signIn")}</span>
+          <Icon name="chevron" size={19} />
+        </Link>
       </div>
 
-      <StatusBanner>{t("previewInfo")}</StatusBanner>
-      <Button variant="ghost" onClick={preview}>{t("explorePreview")}</Button>
-
-      <p className="nr-rider-driver-link">
-        <Link href="/driver">{t("driverSignIn")}</Link>
-      </p>
+      <div className="nr-rider-welcome-footer">
+        <details className="nr-rider-preview-disclosure">
+          <summary>{t("explorePreview")}</summary>
+          <StatusBanner compact>{t("previewInfo")}</StatusBanner>
+          <Button variant="ghost" onClick={preview}>{t("explorePreview")}</Button>
+        </details>
+        <p className="nr-rider-driver-link">
+          <Link href="/driver">{t("driverSignIn")}</Link>
+        </p>
+      </div>
     </div>
   );
 }
