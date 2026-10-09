@@ -33,6 +33,18 @@ export async function POST(request: Request) {
   const fullName = cleanName(body.fullName);
   const phone = cleanPhone(body.phone);
 
+  // This RPC runs in the verified caller's Supabase session. The private
+  // database determines readiness, never client metadata or an input role.
+  const completeRiderOnboarding = async () => {
+    const { data: completion, error: completionError } =
+      await authorized.client.rpc("account_complete_rider_onboarding");
+    if (completionError) return reply({ error: "onboarding_service_unavailable" }, 503);
+    if (completion !== "ready")
+      return reply({ error: completion === "profile_incomplete"
+        ? "rider_profile_incomplete" : String(completion || "onboarding_incomplete") }, 409);
+    return reply({ status: "ready", role: "rider", reusedIdentity: true });
+  };
+
   try {
     const admin = serverAdminSupabase();
     const { data: existing, error: lookupError } = await admin
@@ -63,11 +75,20 @@ export async function POST(request: Request) {
         if (membershipError) return reply({ error: "role_lookup_failed" }, 503);
         if (!canReuseRiderAccount(existing.role, membership?.role === "rider"))
           return reply({ error: "role_conflict" }, 409);
-        return reply({ status: "ready", role: "rider", reusedIdentity: true });
+        const patch: Record<string, string> = {};
+        if (!existing.full_name && fullName.length >= 2) patch.full_name = fullName;
+        if (!existing.phone && phone) patch.phone = phone;
+        if (Object.keys(patch).length) {
+          const { error: updateError } = await admin.from("profiles")
+            .update(patch).eq("id", authorized.user.id);
+          if (updateError) return reply({ error: "profile_update_failed" }, 503);
+        }
+        return completeRiderOnboarding();
       }
 
+      if (existing.role !== "rider")
+        return reply({ error: "role_conflict" }, 409);
       const patch: Record<string, unknown> = {};
-      if (existing.role !== "rider") patch.role = "rider";
       if (!existing.full_name && fullName) patch.full_name = fullName;
       if (!existing.phone && phone) patch.phone = phone;
 
@@ -79,7 +100,7 @@ export async function POST(request: Request) {
         if (updateError) return reply({ error: "profile_update_failed" }, 503);
       }
 
-      return reply({ status: "ready", role: "rider" });
+      return completeRiderOnboarding();
     }
 
     const { data: city } = await admin
@@ -107,7 +128,7 @@ export async function POST(request: Request) {
     const { error: insertError } = await admin.from("profiles").insert(profile);
     if (insertError) return reply({ error: "profile_create_failed" }, 503);
 
-    return reply({ status: "ready", role: "rider" }, 201);
+    return completeRiderOnboarding();
   } catch {
     return reply({ error: "profile_service_unavailable" }, 503);
   }
