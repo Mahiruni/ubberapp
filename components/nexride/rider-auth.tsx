@@ -313,7 +313,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
       }
 
       navigating = true;
-      router.replace("/rider/sign-in?created=1");
+      router.replace("/rider/verify-email");
     } catch {
       setError(t("createAccountFailure"));
     } finally {
@@ -341,6 +341,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
       }
 
       setNotice(t("recoverySent"));
+      router.push("/rider/verify-email");
     } catch {
       setError(t("recoveryFailure"));
     } finally {
@@ -533,7 +534,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
           </Button>
         </form>
         <p className="nr-auth-switch">
-          <Link href="/rider/sign-in">{t("signIn")}</Link>
+          <Link href="/rider/verify-email">Enter a recovery code</Link> · <Link href="/rider/sign-in">{t("signIn")}</Link>
         </p>
       </>
     );
