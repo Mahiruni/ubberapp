@@ -28,19 +28,31 @@ const request = (token?: string) =>
     body: JSON.stringify(ride),
   });
 
-const withProfile = (role: string, account_status = "active") => {
+const withProfile = (
+  role: string,
+  account_status = "active",
+  riderMembership = false,
+  driverOnline = false,
+  activeDriverTrip = false,
+) => {
   authorized.mockResolvedValue({ user: { id: "test-user" } });
+  const tableResult: Record<string, unknown> = {
+    profiles: { role, account_status },
+    account_roles: riderMembership ? { role: "rider" } : null,
+    drivers: { is_online: driverOnline },
+    ride_requests: activeDriverTrip ? { id: "active-trip" } : null,
+  };
   admin.mockReturnValue({
-    from: vi.fn(() => ({
-      select: () => ({
-        eq: () => ({
-          maybeSingle: async () => ({
-            data: { role, account_status },
-            error: null,
-          }),
-        }),
-      }),
-    })),
+    from: vi.fn((table: string) => {
+      const query = {
+        select: () => query,
+        eq: () => query,
+        in: () => query,
+        limit: () => query,
+        maybeSingle: async () => ({ data: tableResult[table] || null, error: null }),
+      };
+      return query;
+    }),
   });
 };
 
@@ -82,11 +94,25 @@ describe("production ride fare authorization", () => {
     },
   );
 
-  it("rejects Driver roles instead of silently returning preview fares", async () => {
+  it("rejects Drivers without a Rider membership", async () => {
     withProfile("driver");
     const response = await POST(request("valid"));
     expect(response.status).toBe(403);
     expect(await response.json()).toEqual({ status: "rider_account_required" });
+  });
+
+  it("recognizes authorized dual-role Drivers who are offline and free", async () => {
+    withProfile("driver", "active", true);
+    const response = await POST(request("valid"));
+    expect(response.status).toBe(200);
+    expect((await response.json()).source).toBe("service");
+  });
+
+  it("does not quote bookable rides to dual-role Drivers who are Online or on a trip", async () => {
+    withProfile("driver", "active", true, true);
+    expect((await POST(request("valid"))).status).toBe(403);
+    withProfile("driver", "active", true, false, true);
+    expect((await POST(request("valid"))).status).toBe(403);
   });
 
   it("rejects inactive accounts", async () => {
