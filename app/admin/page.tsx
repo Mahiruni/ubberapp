@@ -56,6 +56,21 @@ export default function AdminPage() {
   const rowRequestRef = useRef(0);
 
   useEffect(() => {
+    if (!navOpen) return;
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setNavOpen(false);
+    };
+    document.addEventListener("keydown", onEscape);
+    const mobile = window.matchMedia("(max-width: 650px)").matches;
+    const previousOverflow = document.body.style.overflow;
+    if (mobile) document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onEscape);
+      if (mobile) document.body.style.overflow = previousOverflow;
+    };
+  }, [navOpen]);
+
+  useEffect(() => {
     return () => {
       if (toastTimerRef.current !== null) window.clearTimeout(toastTimerRef.current);
     };
@@ -611,7 +626,7 @@ export default function AdminPage() {
         </button>
       </nav>
 
-      {notice && <div className="admin-toast">{notice}</div>}
+      {notice && <div className="admin-toast" role="status" aria-live="polite">{notice}</div>}
     </div>
   );
 }
