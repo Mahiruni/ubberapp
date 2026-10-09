@@ -94,6 +94,7 @@ export default function DriverNavigationPage() {
   const op = useOperationalTranslation();
   const [driverId, setDriverId] = useState("");
   const [trip, setTrip] = useState<NavigationData | null>(null);
+  const [riderPhone, setRiderPhone] = useState("");
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -129,7 +130,7 @@ export default function DriverNavigationPage() {
 
     const { data: ride, error: rideError } = await supabase
       .from("ride_requests")
-      .select("id,pickup_location,destination_location,pickup_lat,pickup_lng,destination_lat,destination_lng,ride_category,status,assigned_driver_id,estimated_trip_duration_minutes,estimated_trip_distance_km")
+      .select("id,rider_id,pickup_location,destination_location,pickup_lat,pickup_lng,destination_lat,destination_lng,ride_category,status,assigned_driver_id,estimated_trip_duration_minutes,estimated_trip_distance_km")
       .eq("id", offer.request_id).maybeSingle();
 
     if (rideError || !ride) throw new Error("The active trip could not be loaded.");
@@ -152,6 +153,19 @@ export default function DriverNavigationPage() {
       tripDurationMinutes: asNumber(ride.estimated_trip_duration_minutes),
     };
     setTrip(next);
+    // Resolve only the assigned rider's verified contact via the same
+    // profiles source used by trip chat. Never invent a dialable number.
+    setRiderPhone("");
+    if (typeof ride.rider_id === "string" && ride.rider_id) {
+      const { data: contact } = await supabase
+        .from("profiles")
+        .select("phone")
+        .eq("id", ride.rider_id)
+        .maybeSingle();
+      const rawPhone = typeof contact?.phone === "string" ? contact.phone : "";
+      const dialable = rawPhone.replace(/[^+\\d]/g, "");
+      setRiderPhone(/^\\+?\\d{7,15}$/.test(dialable) ? dialable : "");
+    }
     return next;
   }, []);
 
@@ -671,7 +685,11 @@ export default function DriverNavigationPage() {
         <div className="nr-nav-utility-row" aria-label="Trip quick actions">
           <button type="button" className={mapView === "overview" ? "active" : ""} onClick={() => setMapView("overview")}><Icon name="globe" size={17} /> {op("Overview")}</button>
           <button type="button" onClick={() => router.push(`/trip/chat?ride=${trip.requestId}&role=driver&offer=${trip.offerId}`)}><Icon name="chat" size={17} /> {op("Chat")}</button>
-          <button type="button" onClick={() => router.push(`/safety?role=driver&ride=${trip.requestId}`)}><Icon name="shield" size={17} /> {op("Safety")}</button>
+          {riderPhone ? (
+            <a href={`tel:${riderPhone}`} aria-label={op("Call rider")}><Icon name="phone" size={17} /> {op("Call")}</a>
+          ) : (
+            <button type="button" disabled aria-label={op("Rider phone number unavailable")} title={op("Rider phone number unavailable")}><Icon name="phone" size={17} /> {op("Call")}</button>
+          )}
         </div>
         <div className="nr-nav-trip-progress" aria-label={op("Trip progress")}>
           {[
