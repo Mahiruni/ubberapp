@@ -415,14 +415,33 @@
 }
 .nr-driver-home-control-online[data-online="true"]{color:#006f42;background:#d9fae9;border-color:#a4e4bf}
 .nr-driver-home-control-online>span{width:7px;height:7px;border-radius:50%;background:currentColor}
-.nr-driver-home-control-meta{
-  display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:10.5px;
-  color:var(--driver-text-secondary);
+/* Keep the notification action compact in the status heading. */
+.nr-driver-home-control-tools{
+  display:flex;align-items:center;justify-content:flex-end;gap:8px;
+  flex:0 0 auto;min-width:0;
 }
-.nr-driver-home-control-meta>span{
-  display:flex;align-items:center;gap:6px;padding:7px 10px;border:1px solid var(--driver-border);
-  border-radius:10px;background:var(--driver-surface-elevated)
+.nr-driver-home-alert-icon{
+  display:grid;place-items:center;
+  width:40px;height:40px;min-width:40px;min-height:40px;flex:0 0 40px;
+  padding:0;border:1px solid var(--driver-border);border-radius:50%;
+  background:var(--driver-bg);color:var(--driver-text-primary);
+  cursor:pointer;-webkit-tap-highlight-color:transparent;
+  transition:background-color .18s ease,transform .18s ease,color .18s ease;
 }
+.nr-driver-home-alert-icon[data-permission="granted"]{
+  color:var(--driver-success);
+}
+.nr-driver-home-alert-icon[data-permission="denied"]{
+  color:var(--driver-danger);
+}
+.nr-driver-home-alert-icon:is(:hover,:focus-visible):not(:disabled){
+  background:var(--driver-surface-elevated);
+}
+.nr-driver-home-alert-icon:active:not(:disabled){transform:scale(.95)}
+.nr-driver-home-alert-icon:focus-visible{
+  outline:3px solid var(--driver-accent);outline-offset:2px;
+}
+.nr-driver-home-alert-icon:disabled{opacity:1;cursor:default}
 .nr-driver-home-control-panel .nr-driver-availability-swipe{
   min-height:58px!important;height:58px!important;
   border-radius:15px!important;
@@ -461,7 +480,7 @@
   .nr-driver-home-control-state strong{font-size:18px}
 }
 @media(max-height:650px){
-  .nr-driver-home-control-state small,.nr-driver-home-control-meta{display:none}
+  .nr-driver-home-control-state small{display:none}
   .nr-driver-home-control-panel{gap:8px;padding:10px 12px}
   .nr-driver-home-quick-actions{padding-top:8px}
 }
@@ -469,11 +488,3 @@
   .nr-driver-home-quick-actions button{transition:none!important}
 }
 
-.nr-driver-home-control-meta>button {
-  display:flex;align-items:center;justify-content:center;gap:6px;
-  padding:7px 10px;min-height:32px;border:1px solid var(--driver-border);
-  border-radius:10px;background:var(--driver-surface-elevated);
-  color:var(--driver-text-primary);font-size:10.5px;font-weight:750;cursor:pointer;
-}
-.nr-driver-home-control-meta>button:disabled{opacity:.78;cursor:default}
-.nr-driver-home-control-meta>button:focus-visible{outline:3px solid var(--driver-accent);outline-offset:2px}
