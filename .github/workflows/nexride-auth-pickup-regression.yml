@@ -1,0 +1,47 @@
+name: NexRide Auth + Pickup Regression
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "components/nexride/rider-menu.tsx"
+      - "components/nexride/rider-home.tsx"
+      - "components/nexride/destination.tsx"
+      - "components/nexride/rider-auth.tsx"
+      - "lib/nexride-sign-out.ts"
+      - "lib/nexride-startup.ts"
+      - "app/rider/page.tsx"
+      - "tests/e2e/rider-auth.spec.ts"
+      - "tests/unit/nexride-sign-out.test.ts"
+      - "tests/unit/nexride-startup.test.ts"
+      - ".github/workflows/nexride-auth-pickup-regression.yml"
+  workflow_dispatch:
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEXT_PUBLIC_APP_NAME: NexRide
+      NEXT_PUBLIC_APP_ENV: test
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      NEXT_PUBLIC_SUPABASE_URL: https://eyyvvwecpyctttiueban.supabase.co
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_kXFOrtwKkKmrqCtYTTuzdg__CjjABBf
+      NEXT_PUBLIC_MAPBOX_TOKEN: replace_me
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Dependencies
+        run: npm install --no-audit --no-fund
+      - name: Auth & startup unit tests
+        run: npx vitest run tests/unit/nexride-sign-out.test.ts tests/unit/nexride-startup.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit --pretty false
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Logout + pickup browser regression
+        run: npx playwright test tests/e2e/rider-auth.spec.ts --project=chromium --project=mobile --grep "logout never|Rider planning opens" --workers=2 --timeout=20000
