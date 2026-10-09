@@ -44,7 +44,7 @@ const withProfile = (
   };
   admin.mockReturnValue({
     from: vi.fn((table: string) => {
-      const query = {
+      const query: any = {
         select: () => query,
         eq: () => query,
         in: () => query,
