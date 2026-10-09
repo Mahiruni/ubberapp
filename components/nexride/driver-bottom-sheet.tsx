@@ -39,6 +39,27 @@ export function DriverBottomSheet({
   } | null>(null);
   const suppressClick = useRef(false);
   const panelRef = useRef<HTMLElement | null>(null);
+  const paintFrame = useRef<number | null>(null);
+  const pendingHeight = useRef(0);
+
+  // Keep high-frequency pointer movement off React's render path. Only
+  // initial drag/settled snap changes need component state updates.
+  const paintDragHeight = (next: number) => {
+    pendingHeight.current = next;
+    if (paintFrame.current !== null) return;
+    paintFrame.current = requestAnimationFrame(() => {
+      paintFrame.current = null;
+      panelRef.current?.style.setProperty(
+        "--nr-driver-sheet-height",
+        `${Math.round(pendingHeight.current)}px`,
+      );
+    });
+  };
+  const cancelPaint = () => {
+    if (paintFrame.current !== null) cancelAnimationFrame(paintFrame.current);
+    paintFrame.current = null;
+  };
+  useEffect(() => () => cancelPaint(), []);
 
   // Let map overlays follow the measured sheet instead of a fixed viewport ratio.
   useEffect(() => {
@@ -95,7 +116,7 @@ export function DriverBottomSheet({
       Math.min(vh * 0.84, current.startHeight - delta),
     );
     current.currentHeight = next;
-    setDragHeight(next);
+    paintDragHeight(next);
   };
 
   const finish = (event: PointerEvent<HTMLButtonElement>) => {
@@ -116,6 +137,7 @@ export function DriverBottomSheet({
 
     suppressClick.current = current.moved;
     drag.current = null;
+    cancelPaint();
     setDragHeight(null);
     setSnap(next);
   };
@@ -132,6 +154,7 @@ export function DriverBottomSheet({
   const cancel = (event: PointerEvent<HTMLButtonElement>) => {
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
     drag.current = null;
+    cancelPaint();
     setDragHeight(null);
   };
 
