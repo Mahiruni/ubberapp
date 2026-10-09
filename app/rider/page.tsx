@@ -70,8 +70,14 @@ function RiderWelcome() {
         if (!active || explicitSignOutRole(window.localStorage)) return;
         enterRider(data.session);
         router.replace("/");
-      } catch {
-        if (active) setCheckingSession(false);
+      } catch (cause) {
+        if (!active) return;
+        if (cause instanceof RiderProfileBootstrapError &&
+          cause.code === "rider_profile_incomplete") {
+          router.replace("/rider/complete-profile");
+        } else {
+          setCheckingSession(false);
+        }
       }
     }).catch(() => {
       if (active) setCheckingSession(false);
