@@ -1170,14 +1170,22 @@ export function RiderMap({
     };
 
     void loadNearbyDrivers();
+    // New Online drivers should appear on the Rider home map promptly.
+    // Keep server-filtered eligibility, busy-trip checks and location freshness
+    // authoritative rather than retaining optimistic/fake vehicle markers.
     const timer = window.setInterval(() => {
-      if (document.visibilityState === "visible") void loadNearbyDrivers();
-    }, 6_000);
+      if (document.visibilityState === "visible" && navigator.onLine) {
+        void loadNearbyDrivers();
+      }
+    }, 3_000);
     const onVisible = () => {
-      if (document.visibilityState === "visible") void loadNearbyDrivers();
+      if (document.visibilityState === "visible" && navigator.onLine) {
+        void loadNearbyDrivers();
+      }
     };
     document.addEventListener("visibilitychange", onVisible);
     window.addEventListener("online", onVisible);
+    window.addEventListener("focus", onVisible);
 
     return () => {
       active = false;
@@ -1185,6 +1193,7 @@ export function RiderMap({
       window.clearInterval(timer);
       document.removeEventListener("visibilitychange", onVisible);
       window.removeEventListener("online", onVisible);
+      window.removeEventListener("focus", onVisible);
     };
   }, [
     showNearbyDrivers,
