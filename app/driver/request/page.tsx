@@ -29,6 +29,7 @@ type RideOffer = {
   pickup_distance_km: number | null;
   pickup_eta_minutes: number | null;
   expires_at: string | null;
+  created_at: string | null;
 };
 
 type RideRequest = {
@@ -47,6 +48,14 @@ type RideRequest = {
   status: string;
   assigned_driver_id: string | null;
 };
+
+const DECLINE_REASONS = [
+  { id: "distance", label: "Distance too far" },
+  { id: "fare", label: "Fare too low" },
+  { id: "pickup", label: "Pickup location inconvenient" },
+  { id: "direction", label: "Heading in the wrong direction" },
+  { id: "other", label: "Other reason" },
+] as const;
 
 function numberOrNull(value: unknown) {
   return typeof value === "number" && Number.isFinite(value) ? value : null;
@@ -71,6 +80,7 @@ function normalizedOffer(row: Record<string, unknown>): RideOffer {
     pickup_distance_km: numberOrNull(row.pickup_distance_km),
     pickup_eta_minutes: numberOrNull(row.pickup_eta_minutes),
     expires_at: typeof row.expires_at === "string" ? row.expires_at : null,
+    created_at: typeof row.created_at === "string" ? row.created_at : null,
   };
 }
 
@@ -82,7 +92,8 @@ export default function DriverRideRequestPage() {
   const [request, setRequest] = useState<RideRequest | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState<"accept" | "decline" | "pass" | null>(null);
-  const [confirmAction, setConfirmAction] = useState<"decline" | "pass" | null>(null);
+  const [confirmAction, setConfirmAction] = useState<"decline" | null>(null);
+  const [declineReason, setDeclineReason] = useState("");
   const [passOutcome, setPassOutcome] = useState<"forwarded" | "other_pending" | "no_drivers" | null>(null);
   const decisionLock = useRef(false);
   const [acceptFailure, setAcceptFailure] = useState("");
@@ -230,7 +241,7 @@ export default function DriverRideRequestPage() {
   const loadOffer = useCallback(async (userId: string, offerId?: string | null) => {
     let query = supabase
       .from("ride_request_offers")
-      .select("id,request_id,driver_id,status,pickup_distance_km,pickup_eta_minutes,expires_at")
+      .select("id,request_id,driver_id,status,pickup_distance_km,pickup_eta_minutes,expires_at,created_at")
       .eq("driver_id", userId);
 
     query = offerId
@@ -341,7 +352,13 @@ export default function DriverRideRequestPage() {
 
     tick();
     const timer = window.setInterval(tick, 500);
-    return () => window.clearInterval(timer);
+    window.addEventListener("focus", tick);
+    document.addEventListener("visibilitychange", tick);
+    return () => {
+      window.clearInterval(timer);
+      window.removeEventListener("focus", tick);
+      document.removeEventListener("visibilitychange", tick);
+    };
   }, [offer?.expires_at, offer?.status]);
 
   // Driver-side expiry advances dispatch even when the rider isn't actively
@@ -397,6 +414,16 @@ export default function DriverRideRequestPage() {
         ? "expired"
         : offer?.status || "pending";
 
+  const offerDurationSeconds = useMemo(() => {
+    const start = Date.parse(offer?.created_at || "");
+    const expiry = Date.parse(offer?.expires_at || "");
+    return Number.isFinite(start) && Number.isFinite(expiry) && expiry > start
+      ? Math.ceil((expiry - start) / 1000) : null;
+  }, [offer?.created_at, offer?.expires_at]);
+  const countdownProgress = offerDurationSeconds && secondsRemaining !== null
+    ? Math.max(0, Math.min(1, secondsRemaining / offerDurationSeconds))
+    : 1;
+
   const fare = useMemo(() => {
     if (!request) return null;
     if (request.estimated_driver_payout_etb !== null) {
@@ -451,7 +478,7 @@ export default function DriverRideRequestPage() {
   }
 
   async function declineRide() {
-    if (!offer || submitting || decisionLock.current || offer.status !== "pending" ||
+    if (!declineReason || !offer || submitting || decisionLock.current || offer.status !== "pending" ||
       (offer.expires_at && Date.parse(offer.expires_at) <= Date.now())) return;
     decisionLock.current = true;
     setSubmitting("decline");
@@ -474,6 +501,7 @@ export default function DriverRideRequestPage() {
 
     stopRideRequestAlert(offer.id);
     setConfirmAction(null);
+    setDeclineReason("");
     setPassOutcome(outcome?.forwarded ? "forwarded" : "no_drivers");
     setOffer((current) => current ? { ...current, status: "declined" } : current);
     setSubmitting(null);
@@ -520,23 +548,32 @@ export default function DriverRideRequestPage() {
 
   return (
     <main className="nr-app nr-driver-request-page" data-mode="driver">
-      {confirmAction && offer?.status === "pending" && (
+      {confirmAction === "decline" && offer?.status === "pending" && (
         <Dialog
-          title={op(confirmAction === "pass" ? "Pass this ride to another driver?" : "Decline this ride?")}
+          title={op("Why are you declining this ride?")}
           onClose={() => { if (!submitting) setConfirmAction(null); }}
         >
           <div className="nr-request-confirm-content">
-            <p>{op(confirmAction === "pass"
-              ? "Your offer will be released. NexRide will try another available driver and keep the rider searching."
-              : "Are you sure you want to decline this request? The rider's ride will not be cancelled.")}</p>
+            <p>{op("Choose a reason to decline this offer. The rider's booking stays active while NexRide searches for another driver.")}</p>
+            <div className="nr-request-reasons" role="radiogroup" aria-label={op("Decline reason")}>
+              {DECLINE_REASONS.map((reason) => (
+                <label className="nr-request-reason" key={reason.id} data-selected={declineReason === reason.id}>
+                  <input type="radio" name="driver-decline-reason" value={reason.id}
+                    checked={declineReason === reason.id} disabled={Boolean(submitting)}
+                    onChange={() => setDeclineReason(reason.id)} />
+                  <span>{op(reason.label)}</span>
+                  <Icon name="check" size={17} />
+                </label>
+              ))}
+            </div>
             <div className="nr-request-confirm-actions">
               <button type="button" className="nr-request-confirm-no"
                 disabled={Boolean(submitting)}
-                onClick={() => setConfirmAction(null)}>{op("No, Keep Request")}</button>
+                onClick={() => { setConfirmAction(null); setDeclineReason(""); }}>{op("Keep Request")}</button>
               <button type="button" className="nr-request-confirm-yes"
-                disabled={Boolean(submitting)}
-                onClick={() => void (confirmAction === "pass" ? passRide() : declineRide())}>
-                {submitting ? op("Processing…") : op(confirmAction === "pass" ? "Yes, Pass Ride" : "Yes, Decline")}
+                disabled={Boolean(submitting) || !declineReason || secondsRemaining === 0}
+                onClick={() => void declineRide()}>
+                {submitting ? op("Declining…") : op("Submit Decline")}
               </button>
             </div>
           </div>
@@ -588,18 +625,18 @@ export default function DriverRideRequestPage() {
             <div className="nr-request-actions" aria-label={op("Respond to ride request")}>
               <div className="nr-request-actions-primary">
                 <button type="button" className="nr-request-accept"
-                  disabled={Boolean(submitting)} onClick={() => void acceptRide()}>
+                  disabled={Boolean(submitting) || secondsRemaining === 0} onClick={() => void acceptRide()}>
                   <Icon name="check" size={18} />
                   {submitting === "accept" ? op("Accepting…") : op("Accept")}
                 </button>
                 <button type="button" className="nr-request-decline"
-                  disabled={Boolean(submitting)} onClick={() => setConfirmAction("decline")}>
+                  disabled={Boolean(submitting) || secondsRemaining === 0} onClick={() => { setDeclineReason(""); setConfirmAction("decline"); }}>
                   <Icon name="close" size={18} />
                   {op("Decline")}
                 </button>
               </div>
               <button type="button" className="nr-request-pass"
-                disabled={Boolean(submitting)} onClick={() => setConfirmAction("pass")}>
+                disabled={Boolean(submitting) || secondsRemaining === 0} onClick={() => void passRide()}>
                 <Icon name="arrow" size={18} />
                 {op("Pass to Another Driver")}
               </button>
@@ -631,7 +668,7 @@ export default function DriverRideRequestPage() {
           <RequestState
             icon="clock"
             title={op("Request expired")}
-            body={op("The acceptance window has ended. You won’t be assigned this ride.")}
+            body={op("Request expired. NexRide is checking for the next available driver.")}
             action={op("Back to Driver Home")}
             onAction={() => router.replace("/driver/home")}
           />
@@ -665,9 +702,22 @@ export default function DriverRideRequestPage() {
                 <h1>New ride request</h1>
               </div>
               {offer.expires_at && secondsRemaining !== null && (
-                <div className="nr-request-countdown" aria-label={`${secondsRemaining} seconds remaining`}>
-                  <Icon name="clock" size={15} />
-                  <strong>{secondsRemaining}s</strong>
+                <div className="nr-request-deadline">
+                  <div className="nr-request-countdown"
+                    role="timer"
+                    data-urgency={secondsRemaining <= 5 ? "critical" : secondsRemaining <= 12 ? "warning" : "normal"}
+                    aria-label={`${secondsRemaining} seconds remaining`}>
+                    <svg viewBox="0 0 64 64" className="nr-request-countdown-ring" aria-hidden="true">
+                      <circle className="track" cx="32" cy="32" r="26" />
+                      <circle className="progress" cx="32" cy="32" r="26"
+                        strokeDasharray={2 * Math.PI * 26}
+                        strokeDashoffset={2 * Math.PI * 26 * (1 - countdownProgress)} />
+                    </svg>
+                    <strong>{secondsRemaining}s</strong>
+                  </div>
+                  <button type="button" className="nr-request-skip"
+                    disabled={Boolean(submitting) || secondsRemaining === 0}
+                    onClick={() => void passRide()}>{op("Skip")}</button>
                 </div>
               )}
             </div>
