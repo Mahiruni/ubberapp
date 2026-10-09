@@ -743,3 +743,41 @@ html[lang="am"] .nr-driver-menu-footer :where(strong,small,span,button,p){
 .nr-driver-app-shell .nr-driver-shell-content .nr-driver-layer-menu>button:hover{
   background:#effaf5!important;
 }
+
+
+/* Incoming offers: the bottom request wrapper already names the journey.
+   Let the Mapbox map use the full viewport, with only safe-area floating
+   Back and Menu controls. Other Driver pages retain the normal header. */
+.nr-driver-app-shell[data-request-map="true"]{
+  --driver-header-total:0px;
+}
+.nr-driver-app-shell[data-request-map="true"] .nr-driver-global-header{
+  height:0;
+  padding:0;
+  border:0;
+  background:transparent;
+  box-shadow:none;
+  backdrop-filter:none;
+  -webkit-backdrop-filter:none;
+  pointer-events:none;
+}
+.nr-driver-app-shell[data-request-map="true"] .nr-driver-global-header-inner{
+  position:relative;
+  top:calc(env(safe-area-inset-top,0px) + 8px);
+  height:56px;
+  pointer-events:none;
+}
+.nr-driver-app-shell[data-request-map="true"] .nr-driver-global-header-title{
+  display:none;
+}
+.nr-driver-app-shell[data-request-map="true"] .nr-driver-global-header-side{
+  pointer-events:auto;
+}
+.nr-driver-app-shell[data-request-map="true"] .nr-driver-global-header-side .nr-driver-global-icon-button,
+.nr-driver-app-shell[data-request-map="true"] .nr-driver-global-header-side .nr-driver-menu-trigger{
+  color:#102334!important;
+  background:rgba(255,255,255,.97)!important;
+  border:1px solid #e4eaf0!important;
+  border-radius:14px!important;
+  box-shadow:0 3px 11px rgba(4,28,48,.11);
+}
