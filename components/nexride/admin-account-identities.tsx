@@ -7,6 +7,7 @@ import "./admin-account-identities.css";
 type Profile = { id:string; full_name:string|null; role:string; phone:string|null; account_status:string };
 type Membership = {user_id:string;role:"rider"|"driver"};
 type DriverState = {id:string;review_status:string;is_online:boolean};
+type RoleProgress = {user_id:string;role:"rider"|"driver";status:string};
 type Document = { id:string;user_id:string;document_type:string;issuing_country:string;status:string;created_at:string;storage_bucket:string;storage_path:string|null };
 type Review = {id:string;user_id:string;category:string;detail:string;status:string;created_at:string};
 type Deletion = {id:string;user_id:string;status:string;created_at:string};
@@ -20,6 +21,7 @@ export function AdminAccountIdentities() {
   const [profiles,setProfiles]=useState<Profile[]>([]);
   const [memberships,setMemberships]=useState<Membership[]>([]);
   const [driverStates,setDriverStates]=useState<DriverState[]>([]);
+  const [roleProgress,setRoleProgress]=useState<RoleProgress[]>([]);
   const [docs,setDocs]=useState<Document[]>([]);
   const [reviews,setReviews]=useState<Review[]>([]);
   const [deletions,setDeletions]=useState<Deletion[]>([]);
@@ -32,7 +34,7 @@ export function AdminAccountIdentities() {
   const [error,setError]=useState("");
 
   async function load(){
-    const [a,b,c,d,e,f,roles,drivers]=await Promise.all([
+    const [a,b,c,d,e,f,roles,drivers,progress]=await Promise.all([
       supabase.from("profiles").select("id,full_name,phone,role,account_status").order("created_at",{ascending:false}).limit(100),
       supabase.from("account_identity_documents").select("id,user_id,document_type,issuing_country,status,created_at,storage_bucket,storage_path").order("created_at",{ascending:false}).limit(100),
       supabase.from("account_identity_reviews").select("id,user_id,category,detail,status,created_at").order("created_at",{ascending:false}).limit(100),
@@ -41,12 +43,14 @@ export function AdminAccountIdentities() {
       supabase.from("account_identity_events").select("id,owner_id,event_type,created_at").order("created_at",{ascending:false}).limit(80),
       supabase.from("account_roles").select("user_id,role").limit(500),
       supabase.from("drivers").select("id,review_status,is_online").limit(500),
+      supabase.from("account_role_onboarding").select("user_id,role,status").limit(500),
     ]);
-    if(a.error||b.error||c.error||d.error||e.error||f.error||roles.error||drivers.error)
+    if(a.error||b.error||c.error||d.error||e.error||f.error||roles.error||drivers.error||progress.error)
       throw new Error("admin_account_read_failed");
     setProfiles((a.data||[]) as Profile[]);
     setMemberships((roles.data||[]) as Membership[]);
     setDriverStates((drivers.data||[]) as DriverState[]);
+    setRoleProgress((progress.data||[]) as RoleProgress[]);
     setDocs((b.data||[]) as Document[]);
     setReviews((c.data||[]) as Review[]);setDeletions((d.data||[]) as Deletion[]);
     setSummary((e.data||null) as Summary|null);
@@ -69,6 +73,7 @@ export function AdminAccountIdentities() {
     return result;
   },[profiles,memberships]);
   const driverById=useMemo(()=>new Map(driverStates.map(d=>[d.id,d])),[driverStates]);
+  const progressByKey=useMemo(()=>new Map(roleProgress.map(p=>[p.user_id+":"+p.role,p.status])),[roleProgress]);
   const matches=(id:string)=>(names.get(id)||id).toLowerCase().includes(query.toLowerCase())||id.includes(query);
   const visibleProfiles=profiles.filter(p=>matches(p.id));
   const visibleDocs=docs.filter(d=>matches(d.user_id));
@@ -133,10 +138,11 @@ export function AdminAccountIdentities() {
             <small>Roles: {[...(accountRoles.get(p.id)||new Set([p.role]))].join(" + ")}</small>
           </div>
           <div><span>{p.account_status}</span>
-            <small>{accountRoles.get(p.id)?.has("rider") ? "Rider access · active membership" : "Rider access · not enabled"}</small>
-            <small>{driverById.get(p.id)
-              ? "Driver review · "+driverById.get(p.id)?.review_status+(driverById.get(p.id)?.is_online?" · Online":" · Offline")
-              : "Driver profile · not started"}</small>
+            <small>Rider · {progressByKey.get(p.id+":rider") ||
+              (accountRoles.get(p.id)?.has("rider") ? "incomplete" : "not started")}</small>
+            <small>Driver · {progressByKey.get(p.id+":driver") ||
+              (accountRoles.get(p.id)?.has("driver") ? "incomplete" : "not started")}
+              {driverById.get(p.id)?.is_online ? " · Online" : ""}</small>
             <small>Phone {mask(p.phone)} · Unverified until OTP</small>
           </div>
         </div>)}
