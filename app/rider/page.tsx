@@ -13,7 +13,6 @@ import {
 } from "../../lib/nexride-startup";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../lib/supabase";
-import { driverResumeDestination } from "../../lib/nexride-driver-verification";
 import { resolveSessionRole } from "../../lib/nexride-account-role";
 import { ACTIVE_ACCOUNT_ROLE_KEY } from "../../lib/nexride-startup";
 import { ensureRiderProfile } from "../../lib/nexride-rider-profile-bootstrap";
@@ -32,6 +31,9 @@ function RiderWelcome() {
   const t = useTranslation();
   const router = useRouter();
   const [checkingSession, setCheckingSession] = useState(true);
+  const [returningDriver, setReturningDriver] = useState(false);
+  const [switchingRole, setSwitchingRole] = useState(false);
+  const [switchError, setSwitchError] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -54,8 +56,12 @@ function RiderWelcome() {
               .eq("user_id", data.session.user.id).eq("role", "rider").maybeSingle()
           : null;
         if (!prefersRider || membership?.error || membership?.data?.role !== "rider") {
-          const destination = await driverResumeDestination(data.session);
-          if (active) router.replace(destination);
+          // Show a deliberate role-activation choice for a signed-in Driver;
+          // do not require a new password or create a second account.
+          if (active) {
+            setReturningDriver(true);
+            setCheckingSession(false);
+          }
           return;
         }
       }
@@ -74,6 +80,33 @@ function RiderWelcome() {
       active = false;
     };
   }, [router]);
+
+  const continueAsRider = async () => {
+    if (switchingRole) return;
+    setSwitchingRole(true);
+    setSwitchError("");
+    try {
+      const { data } = await supabase.auth.getSession();
+      if (!data.session) {
+        router.push("/rider/sign-in");
+        return;
+      }
+      const { data: activated, error: activationError } = await supabase.rpc("account_activate_rider_role");
+      if (activationError || activated !== "ready") {
+        setSwitchError("Please go Offline and complete any active Driver trip before switching to Rider.");
+        return;
+      }
+      await ensureRiderProfile(data.session);
+      clearExplicitSignOut();
+      window.localStorage.setItem(ACTIVE_ACCOUNT_ROLE_KEY, "rider");
+      enterRider(data.session);
+      router.replace("/");
+    } catch {
+      setSwitchError("Unable to confirm Rider access right now. Please try again.");
+    } finally {
+      setSwitchingRole(false);
+    }
+  };
 
   const preview = () => {
     try {
@@ -106,13 +139,24 @@ function RiderWelcome() {
         <span><Icon name="shield" size={18} /> Safety first</span>
       </div>
 
+      {returningDriver && <div className="nr-auth-role-note" role="status">
+        <Icon name="check" size={20} />
+        <div><strong>Welcome to NexRide Rider</strong><small>Already driving with NexRide? Use your existing account to start riding.</small></div>
+      </div>}
+      {switchError && <p className="nr-auth-error" role="alert">{switchError}</p>}
       <div className="nr-rider-entry-actions">
-        <Link className="nr-rider-get-started" href="/rider/sign-up">
+        {returningDriver ? (
+          <button className="nr-rider-get-started" type="button" disabled={switchingRole}
+            onClick={() => void continueAsRider()}>
+            <span>{switchingRole ? "Preparing Rider access…" : "Continue with NexRide"}</span>
+            <Icon name="arrow" size={20} />
+          </button>
+        ) : <Link className="nr-rider-get-started" href="/rider/sign-up">
           <span>{t("createAccount")}</span>
           <Icon name="arrow" size={20} />
-        </Link>
-        <Link className="nr-rider-welcome-sign-in" href="/rider/sign-in">
-          <span>{t("signIn")}</span>
+        </Link>}
+        <Link className="nr-rider-welcome-sign-in" href={returningDriver ? "/driver/home" : "/rider/sign-in"}>
+          <span>{returningDriver ? "Return to Driver" : t("signIn")}</span>
           <Icon name="chevron" size={19} />
         </Link>
       </div>
