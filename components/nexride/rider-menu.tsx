@@ -10,9 +10,9 @@ import {
 import {
   PREVIEW_ENABLED_KEY,
   PREVIEW_STORAGE_KEY,
-  markExplicitSignOut,
   retryStartup,
 } from "../../lib/nexride-startup";
+import { signOutNexRide } from "../../lib/nexride-sign-out";
 import { resolveSessionRole } from "../../lib/nexride-account-role";
 import { supabase } from "../../lib/supabase";
 import {
@@ -199,15 +199,9 @@ export function RiderMenu({
     setSignOutError("");
 
     try {
-      const current = await supabase.auth.getSession();
-      if (current.data.session) {
-        const result = await supabase.auth.signOut({ scope: "local" });
-        if (result.error) throw result.error;
-        const verified = await supabase.auth.getSession();
-        if (verified.error || verified.data.session) throw new Error("session_still_active");
-      }
-
-      markExplicitSignOut("rider");
+      // The shared sign-out helper sets a persistent restoration barrier
+      // BEFORE Supabase fires SIGNED_OUT or any in-flight auth callback.
+      await signOutNexRide("rider");
       try {
         localStorage.removeItem(PREVIEW_ENABLED_KEY);
         localStorage.removeItem(PREVIEW_STORAGE_KEY);
