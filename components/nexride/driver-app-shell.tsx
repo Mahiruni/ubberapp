@@ -36,54 +36,17 @@ type DriverThemeContextValue = {
 
 const DriverThemeContext = createContext<DriverThemeContextValue | null>(null);
 
-function isThemePreference(value: unknown): value is DriverThemePreference {
-  return value === "system" || value === "light" || value === "dark";
-}
-
+/* NexRide's Rider and Driver application surfaces are light-only.
+   Normalize older saved/system dark preferences before rendering pages. */
 function useDriverThemeState(): DriverThemeContextValue {
-  const [preference, setPreferenceState] = useState<DriverThemePreference>("system");
-  const [systemDark, setSystemDark] = useState(true);
-
   useEffect(() => {
-    const media = window.matchMedia("(prefers-color-scheme: dark)");
-    const read = () => {
-      let stored: string | null = null;
-      try { stored = localStorage.getItem(DRIVER_THEME_STORAGE_KEY); } catch {}
-      setPreferenceState(isThemePreference(stored) ? stored : "system");
-      setSystemDark(media.matches);
-    };
-    const onMedia = () => setSystemDark(media.matches);
-    const onStorage = (event: StorageEvent) => {
-      if (event.key === DRIVER_THEME_STORAGE_KEY) {
-        setPreferenceState(isThemePreference(event.newValue) ? event.newValue : "system");
-      }
-    };
-    const onTheme = (event: Event) => {
-      const value = (event as CustomEvent<DriverThemePreference>).detail;
-      if (isThemePreference(value)) setPreferenceState(value);
-    };
-
-    read();
-    media.addEventListener?.("change", onMedia);
-    window.addEventListener("storage", onStorage);
-    window.addEventListener(DRIVER_THEME_EVENT, onTheme);
-    return () => {
-      media.removeEventListener?.("change", onMedia);
-      window.removeEventListener("storage", onStorage);
-      window.removeEventListener(DRIVER_THEME_EVENT, onTheme);
-    };
+    try { localStorage.setItem(DRIVER_THEME_STORAGE_KEY, "light"); } catch {}
   }, []);
-
-  const setPreference = useCallback((next: DriverThemePreference) => {
-    setPreferenceState(next);
-    try { localStorage.setItem(DRIVER_THEME_STORAGE_KEY, next); } catch {}
-    window.dispatchEvent(new CustomEvent<DriverThemePreference>(DRIVER_THEME_EVENT, { detail: next }));
+  const setPreference = useCallback((_next: DriverThemePreference) => {
+    try { localStorage.setItem(DRIVER_THEME_STORAGE_KEY, "light"); } catch {}
+    window.dispatchEvent(new CustomEvent<DriverThemePreference>(DRIVER_THEME_EVENT, { detail: "light" }));
   }, []);
-
-  const resolvedTheme: DriverResolvedTheme =
-    preference === "system" ? (systemDark ? "dark" : "light") : preference;
-
-  return { preference, resolvedTheme, setPreference };
+  return { preference: "light", resolvedTheme: "light", setPreference };
 }
 
 export function usePersistedDriverTheme() {
@@ -312,10 +275,9 @@ function DriverHamburgerMenu({ activeOverride }: { activeOverride?: DriverNavId 
             <div className="nr-driver-menu-section-label">{language === "am" ? "ምርጫዎች" : "PREFERENCES"}</div>
             <div className="nr-driver-menu-preferences">
               <div className="nr-driver-menu-pref-head">
-                <span>{language === "am" ? "ገጽታ" : "Appearance"}</span>
-                <small>{theme.preference === "system" ? (language === "am" ? "ስርዓት" : "System") : theme.preference === "light" ? (language === "am" ? "ብርሃን" : "Light") : (language === "am" ? "ጨለማ" : "Dark")}</small>
+                <span>{language === "am" ? "ቋንቋ" : "Language"}</span>
+                <small>{language === "am" ? "አማርኛ" : "English"}</small>
               </div>
-              <DriverThemeSelector />
               <div className="nr-driver-menu-language" role="group" aria-label={language === "am" ? "ቋንቋ" : "Language"}>
                 <button type="button" data-active={language === "en" ? "true" : "false"} aria-pressed={language === "en"} onClick={() => announceLanguage("en")}>English</button>
                 <button type="button" data-active={language === "am" ? "true" : "false"} aria-pressed={language === "am"} onClick={() => announceLanguage("am")}>አማርኛ</button>
@@ -399,28 +361,11 @@ function isTripFocusPath(pathname: string) {
 }
 
 export function DriverThemeSelector() {
-  const { preference, setPreference } = useDriverTheme();
   const language = useContext(LanguageContext);
-  const choices: Array<{ id: DriverThemePreference; en: string; am: string; icon: IconName }> = [
-    { id: "system", en: "System", am: "ስርዓት", icon: "globe" },
-    { id: "light", en: "Light", am: "ብርሃን", icon: "sun" },
-    { id: "dark", en: "Dark", am: "ጨለማ", icon: "moon" },
-  ];
-
   return (
-    <div className="nr-driver-theme-selector" role="group" aria-label={language === "am" ? "ገጽታ" : "Appearance"}>
-      {choices.map((choice) => (
-        <button
-          type="button"
-          key={choice.id}
-          data-active={preference === choice.id ? "true" : "false"}
-          aria-pressed={preference === choice.id}
-          onClick={() => setPreference(choice.id)}
-        >
-          <Icon name={choice.icon} size={17} />
-          <span>{language === "am" ? choice.am : choice.en}</span>
-        </button>
-      ))}
+    <div className="nr-driver-theme-static" role="status">
+      <Icon name="sun" size={18} />
+      <span>{language === "am" ? "ብርሃን ገጽታ" : "Light appearance"}</span>
     </div>
   );
 }
