@@ -301,3 +301,114 @@
   .nr-driver-navigation-page .nr-nav-stage-actions{gap:7px}
   .nr-driver-navigation-page .nr-nav-stage-actions :is(.nr-nav-stage-primary,.nr-nav-stage-secondary){font-size:12px!important;padding:10px 7px!important}
 }
+
+
+/* Native Driver navigation: permanent LIGHT-ONLY wrapper surfaces.
+   Route/map styling is independent; stage transitions and sheet snaps remain. */
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-bottom-card,
+.nr-driver-app-shell .nr-driver-navigation-page :is(
+  .nr-nav-guidance,
+  .nr-nav-home,
+  .nr-nav-status,
+  .nr-nav-unavailable,
+  .nr-live-map-status
+){
+  color:#102334!important;
+  background:#ffffff!important;
+  border-color:#e4eaf0!important;
+  color-scheme:light;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-bottom-card :is(
+  .nr-nav-current-destination h1,
+  .nr-nav-trip-progress>span.active
+){
+  color:#102334!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-bottom-card :is(
+  .nr-nav-current-destination small,
+  .nr-nav-current-destination p,
+  .nr-nav-trip-meta,
+  .nr-nav-handoff,
+  .nr-nav-trip-progress>span
+){
+  color:#667587!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-bottom-card .nr-nav-trip-progress>span.done{
+  color:#008f59!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-bottom-card .nr-nav-trip-progress>span.active{
+  color:#102334!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-bottom-card .nr-nav-trip-progress i{
+  background:#f5f7f9;
+  color:#667587;
+  border-color:#dce5eb;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-bottom-card .nr-nav-trip-progress>span.done i{
+  background:#e8f5ef;
+  color:#008f59;
+  border-color:#a4e4bf;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-bottom-card .nr-nav-trip-progress>span.active i{
+  background:#00c878;
+  color:#03251b;
+  border-color:#00c878;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-bottom-card .nr-nav-utility-row button{
+  color:#102334!important;
+  background:#f5f7f9!important;
+  border-color:#e4eaf0!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-bottom-card .nr-nav-utility-row button.active{
+  color:#007448!important;
+  background:#e8f5ef!important;
+  border-color:#a4e4bf!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-bottom-card .nr-nav-stage-secondary{
+  color:#102334!important;
+  background:#f5f7f9!important;
+  border-color:#dce5eb!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-bottom-card .nr-nav-stage-secondary.complete{
+  color:#007448!important;
+  background:#e8f5ef!important;
+  border-color:#a4e4bf!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-bottom-card .nr-nav-action-error{
+  color:#8b303e!important;
+  background:#fff1f2!important;
+  border-color:#f4c6ce!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-guidance :is(
+  strong,
+  .nr-nav-guidance-distance
+){
+  color:#102334!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-guidance :is(
+  em,
+  small
+){
+  color:#667587!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-guidance-icon{
+  color:#136aa0!important;
+  background:#eaf4fa!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-status.warning{
+  color:#83570a!important;
+  background:#fff7e7!important;
+  border-color:#efd7a3!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-status.danger{
+  color:#8b303e!important;
+  background:#fff1f2!important;
+  border-color:#f4c6ce!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-unavailable>span{
+  color:#136aa0!important;
+  background:#eaf4fa!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-unavailable p{
+  color:#667587!important;
+}
