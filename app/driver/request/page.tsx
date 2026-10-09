@@ -641,23 +641,23 @@ export default function DriverRideRequestPage() {
         defaultSnap="medium"
         footer={!loading && offer && request && (visibleStatus === "pending" || visibleStatus === "failed") ? (
             <div className="nr-request-actions" aria-label={op("Respond to ride request")}>
-              <div className="nr-request-actions-primary">
-                <button type="button" className="nr-request-accept"
-                  disabled={Boolean(submitting) || secondsRemaining === 0} onClick={() => void acceptRide()}>
-                  <Icon name="check" size={18} />
-                  {submitting === "accept" ? op("Accepting…") : op("Accept")}
-                </button>
+              <button type="button" className="nr-request-accept"
+                disabled={Boolean(submitting) || secondsRemaining === 0} onClick={() => void acceptRide()}>
+                <Icon name="check" size={22} />
+                {submitting === "accept" ? op("Accepting…") : op("Accept")}
+              </button>
+              <div className="nr-request-actions-secondary">
                 <button type="button" className="nr-request-decline"
                   disabled={Boolean(submitting) || secondsRemaining === 0} onClick={() => { setDeclineReason(""); setConfirmAction("decline"); }}>
                   <Icon name="close" size={18} />
                   {op("Decline")}
                 </button>
+                <button type="button" className="nr-request-pass"
+                  disabled={Boolean(submitting) || secondsRemaining === 0} onClick={() => void passRide()}>
+                  <Icon name="arrow" size={18} />
+                  {op("Pass/Skip")}
+                </button>
               </div>
-              <button type="button" className="nr-request-pass"
-                disabled={Boolean(submitting) || secondsRemaining === 0} onClick={() => void passRide()}>
-                <Icon name="arrow" size={18} />
-                {op("Pass/Skip")}
-              </button>
             </div>
         ) : undefined}
       >
