@@ -140,7 +140,8 @@ export default function DriverOnboarding() {
       return;
     }
 
-    setNotice("Your driver account was created. Confirm your email, then sign in to continue verification.");
+    setNotice("Your driver account was created. Enter the email confirmation code to continue.");
+    router.push("/rider/verify-email");
     setBusy(false);
   }
 
