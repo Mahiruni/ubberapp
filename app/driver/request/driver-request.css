@@ -590,3 +590,81 @@
 @media(min-width:760px){
   .nr-driver-request-page .nr-request-sheet .nr-driver-sheet-content{padding:0 20px 20px!important}
 }
+
+
+/* Incoming offers: LIGHT-ONLY interaction sheet.
+   The dark map remains untouched; every expandable request state uses
+   the same white Rider surface and readable neutral action controls. */
+.nr-driver-app-shell .nr-driver-request-page .nr-request-sheet{
+  color:#102334!important;
+  background:#ffffff!important;
+  border-color:#e4eaf0!important;
+  color-scheme:light;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-sheet :is(
+  .nr-request-heading h1,
+  .nr-request-state h1,
+  .nr-request-route-copy strong,
+  .nr-request-summary strong,
+  .nr-request-approach strong
+){
+  color:#102334!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-sheet :is(
+  .nr-request-route-copy small,
+  .nr-request-summary small,
+  .nr-request-state p,
+  .nr-request-approach
+){
+  color:#667587!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-sheet .nr-request-eyebrow{
+  color:#008f59!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-sheet :is(
+  .nr-request-countdown,
+  .nr-request-traffic,
+  .nr-request-summary
+){
+  background:#f5f7f9!important;
+  color:#415768!important;
+  border-color:#e4eaf0!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-sheet .nr-request-summary>div{
+  background:#ffffff!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-sheet .nr-request-route-line i{
+  background:linear-gradient(#9aabb7,#ccd7de)!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-sheet .nr-request-route-line i::after{
+  background:#f5f7f9!important;
+  border-color:#bccbd5!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-sheet .nr-request-error{
+  background:#fff1f2!important;
+  border-color:#f4c6ce!important;
+  color:#8b303e!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-sheet .nr-request-state>span{
+  background:#e8f5ef!important;
+  color:#008f59!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-sheet .nr-request-loading span{
+  background:#e5ecef!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-actions .nr-request-decline{
+  background:#f5f7f9!important;
+  color:#102334!important;
+  border-color:#dce5eb!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-actions .nr-request-pass{
+  background:#ffffff!important;
+  color:#415768!important;
+  border-color:#dce5eb!important;
+}
+/* Back is a floating control, but should also read clearly on the dark map. */
+.nr-driver-app-shell .nr-driver-request-page .nr-request-back{
+  color:#102334!important;
+  background:#ffffff!important;
+  border-color:#e4eaf0!important;
+}
