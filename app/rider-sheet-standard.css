@@ -2238,3 +2238,8 @@
   backdrop-filter:none!important;
   -webkit-backdrop-filter:none!important;
 }
+
+/* Rider flow footer actions remain visible as a vertical, accessible stack. */
+.nr-app[data-mode="rider"] .rider-map-flow :is(.nr-destination-panel footer,.nr-ride-selection footer,.nr-driver-matching footer){display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:8px!important;min-width:0}
+.nr-app[data-mode="rider"] .rider-map-flow :is(.nr-destination-panel footer,.nr-ride-selection footer,.nr-driver-matching footer) :is(button,a[role="button"]){width:100%;min-height:48px;flex-shrink:0;white-space:normal}
+.nr-app[data-mode="rider"] .rider-map-flow :is(.nr-destination-panel,.nr-ride-selection,.nr-driver-matching){min-height:0;overflow-y:auto;overscroll-behavior:contain}
