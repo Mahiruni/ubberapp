@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { Brand, Icon, type IconName } from "../../components/nexride/ui";
 import { supabase } from "../../lib/supabase";
@@ -52,6 +52,14 @@ export default function AdminPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark">("dark");
   const [navOpen, setNavOpen] = useState(false);
+  const toastTimerRef = useRef<number | null>(null);
+  const rowRequestRef = useRef(0);
+
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current !== null) window.clearTimeout(toastTimerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     try {
@@ -66,8 +74,12 @@ export default function AdminPage() {
   }, [theme]);
 
   const toast = (message: string) => {
+    if (toastTimerRef.current !== null) window.clearTimeout(toastTimerRef.current);
     setNotice(message);
-    window.setTimeout(() => setNotice(""), 2600);
+    toastTimerRef.current = window.setTimeout(() => {
+      setNotice("");
+      toastTimerRef.current = null;
+    }, 2600);
   };
 
   const checkAdmin = async (userId: string) => {
@@ -146,7 +158,8 @@ export default function AdminPage() {
 
   const loadRows = async () => {
     if (!admin || module === "overview") return;
-
+    // Ignore superseded responses when an operator changes modules quickly.
+    const requestId = ++rowRequestRef.current;
     setRefreshing(true);
     setError("");
     let data: Row[] = [];
@@ -254,12 +267,14 @@ export default function AdminPage() {
         data = result.data || [];
       }
 
-      setRows(data);
+      if (requestId === rowRequestRef.current) setRows(data);
     } catch {
-      setRows([]);
-      setError("This data is unavailable right now. Try refreshing.");
+      if (requestId === rowRequestRef.current) {
+        setRows([]);
+        setError("This data is unavailable right now. Try refreshing.");
+      }
     } finally {
-      setRefreshing(false);
+      if (requestId === rowRequestRef.current) setRefreshing(false);
     }
   };
 
@@ -272,9 +287,21 @@ export default function AdminPage() {
   useEffect(() => {
     if (!admin) return;
 
+    let refreshTimer: number | null = null;
+    let pendingVisibleRows = false;
+    // Batch bursts of realtime writes instead of rebuilding dashboard
+    // metrics and the active table for every single row update.
     const refreshFor = (target: Module) => {
-      void loadMetrics();
-      if (module === target) void loadRows();
+      if (document.visibilityState !== "visible") return;
+      if (module === target) pendingVisibleRows = true;
+      if (refreshTimer !== null) return;
+      refreshTimer = window.setTimeout(() => {
+        refreshTimer = null;
+        if (document.visibilityState !== "visible") return;
+        void loadMetrics();
+        if (pendingVisibleRows) void loadRows();
+        pendingVisibleRows = false;
+      }, 900);
     };
 
     const channel = supabase
@@ -312,11 +339,19 @@ export default function AdminPage() {
       .subscribe();
 
     const timer = window.setInterval(() => {
+      if (document.visibilityState === "visible") void loadMetrics();
+    }, 30000);
+    const onResume = () => {
+      if (document.visibilityState !== "visible") return;
       void loadMetrics();
-    }, 15000);
+      if (module !== "overview") void loadRows();
+    };
+    document.addEventListener("visibilitychange", onResume);
 
     return () => {
       window.clearInterval(timer);
+      if (refreshTimer !== null) window.clearTimeout(refreshTimer);
+      document.removeEventListener("visibilitychange", onResume);
       void supabase.removeChannel(channel);
     };
   }, [admin, module, range]);
@@ -381,6 +416,7 @@ export default function AdminPage() {
     .join("")
     .toUpperCase();
   const selectModule = (next: Module) => {
+    rowRequestRef.current += 1;
     setModule(next);
     setQuery("");
     setNavOpen(false);
@@ -459,6 +495,7 @@ export default function AdminPage() {
             <button
               key={id}
               className={module === id ? "active" : ""}
+              aria-current={module === id ? "page" : undefined}
               onClick={() => selectModule(id)}
             >
               <i><Icon name={icon} size={20} /></i>
