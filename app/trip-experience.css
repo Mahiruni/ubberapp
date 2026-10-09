@@ -63,6 +63,7 @@
 /* Live trip recovery: do not reserve a huge blank embedded rectangle while
    the trusted adapter loads or fails. Show verified trip data in native UI. */
 .nr-trip-frame-shell{
+  position:relative;
   display:flex;
   flex:1 1 auto;
   flex-direction:column;
