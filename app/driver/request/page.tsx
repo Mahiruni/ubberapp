@@ -484,28 +484,46 @@ export default function DriverRideRequestPage() {
     setSubmitting("decline");
     setAcceptFailure("");
 
-    const { data, error } = await supabase.rpc("driver_decide_ride_offer", {
-      p_offer_id: offer.id, p_action: "decline",
-    });
-    const outcome = data as { status?: string; requestId?: string; forwarded?: boolean } | null;
-    if (error || !confirmedDriverOfferDecision("decline",outcome,offer.request_id)) {
-      if (outcome?.status === "expired") {
-        setOffer(current => current ? { ...current, status: "expired" } : current);
+    try {
+      // New installations record the selected reason transactionally.
+      // Existing NexRide databases keep using the verified decline RPC
+      // until the additive decline-reasons migration has been applied.
+      let { data, error } = await supabase.rpc("driver_decline_ride_offer_with_reason", {
+        p_offer_id: offer.id, p_reason: declineReason,
+      });
+      if (error && (
+        error.code === "PGRST202" || error.code === "42883" ||
+        /Could not find the function/i.test(error.message || "")
+      )) {
+        const fallback = await supabase.rpc("driver_decide_ride_offer", {
+          p_offer_id: offer.id, p_action: "decline",
+        });
+        data = fallback.data;
+        error = fallback.error;
       }
-      setAcceptFailure(op("NexRide could not decline this request. Its status may already have changed."));
-      setSubmitting(null);
-      decisionLock.current = false;
-      setConfirmAction(null);
-      return;
-    }
 
-    stopRideRequestAlert(offer.id);
-    setConfirmAction(null);
-    setDeclineReason("");
-    setPassOutcome(outcome?.forwarded ? "forwarded" : "no_drivers");
-    setOffer((current) => current ? { ...current, status: "declined" } : current);
-    setSubmitting(null);
-    decisionLock.current = false;
+      const outcome = data as { status?: string; requestId?: string; forwarded?: boolean } | null;
+      if (error || !confirmedDriverOfferDecision("decline", outcome, offer.request_id)) {
+        if (outcome?.status === "expired") {
+          setOffer(current => current ? { ...current, status: "expired" } : current);
+        } else if (outcome?.status === "unavailable" || outcome?.status === "already_resolved") {
+          await loadOffer(driverId, offer.id).catch(() => {});
+        }
+        setAcceptFailure(op("NexRide could not decline this request. Its status may already have changed."));
+        return;
+      }
+
+      stopRideRequestAlert(offer.id);
+      setDeclineReason("");
+      setPassOutcome(outcome?.forwarded ? "forwarded" : "no_drivers");
+      setOffer((current) => current?.id === offer.id ? { ...current, status: "declined" } : current);
+    } catch {
+      setAcceptFailure(op("Could not decline this request. Check your connection and try again."));
+    } finally {
+      setSubmitting(null);
+      setConfirmAction(null);
+      decisionLock.current = false;
+    }
   }
 
   async function passRide() {
@@ -548,7 +566,7 @@ export default function DriverRideRequestPage() {
 
   return (
     <main className="nr-app nr-driver-request-page" data-mode="driver">
-      {confirmAction === "decline" && offer?.status === "pending" && (
+      {confirmAction === "decline" && offer?.status === "pending" && secondsRemaining !== 0 && (
         <Dialog
           title={op("Why are you declining this ride?")}
           onClose={() => { if (!submitting) setConfirmAction(null); }}
