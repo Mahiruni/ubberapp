@@ -5,6 +5,8 @@ import { identityActivityLabel } from "../../lib/nexride-identity-events";
 import "./admin-account-identities.css";
 
 type Profile = { id:string; full_name:string|null; role:string; phone:string|null; account_status:string };
+type Membership = {user_id:string;role:"rider"|"driver"};
+type DriverState = {id:string;review_status:string;is_online:boolean};
 type Document = { id:string;user_id:string;document_type:string;issuing_country:string;status:string;created_at:string;storage_bucket:string;storage_path:string|null };
 type Review = {id:string;user_id:string;category:string;detail:string;status:string;created_at:string};
 type Deletion = {id:string;user_id:string;status:string;created_at:string};
@@ -16,6 +18,8 @@ const actionDate = (s:string) => new Date(s).toLocaleDateString("en-ET",{year:"n
 
 export function AdminAccountIdentities() {
   const [profiles,setProfiles]=useState<Profile[]>([]);
+  const [memberships,setMemberships]=useState<Membership[]>([]);
+  const [driverStates,setDriverStates]=useState<DriverState[]>([]);
   const [docs,setDocs]=useState<Document[]>([]);
   const [reviews,setReviews]=useState<Review[]>([]);
   const [deletions,setDeletions]=useState<Deletion[]>([]);
@@ -28,16 +32,22 @@ export function AdminAccountIdentities() {
   const [error,setError]=useState("");
 
   async function load(){
-    const [a,b,c,d,e,f]=await Promise.all([
+    const [a,b,c,d,e,f,roles,drivers]=await Promise.all([
       supabase.from("profiles").select("id,full_name,phone,role,account_status").order("created_at",{ascending:false}).limit(100),
       supabase.from("account_identity_documents").select("id,user_id,document_type,issuing_country,status,created_at,storage_bucket,storage_path").order("created_at",{ascending:false}).limit(100),
       supabase.from("account_identity_reviews").select("id,user_id,category,detail,status,created_at").order("created_at",{ascending:false}).limit(100),
       supabase.from("account_deletion_requests").select("id,user_id,status,created_at").order("created_at",{ascending:false}).limit(100),
       supabase.rpc("admin_account_identity_audit"),
       supabase.from("account_identity_events").select("id,owner_id,event_type,created_at").order("created_at",{ascending:false}).limit(80),
+      supabase.from("account_roles").select("user_id,role").limit(500),
+      supabase.from("drivers").select("id,review_status,is_online").limit(500),
     ]);
-    if(a.error||b.error||c.error||d.error||e.error||f.error)throw new Error("admin_account_read_failed");
-    setProfiles((a.data||[]) as Profile[]);setDocs((b.data||[]) as Document[]);
+    if(a.error||b.error||c.error||d.error||e.error||f.error||roles.error||drivers.error)
+      throw new Error("admin_account_read_failed");
+    setProfiles((a.data||[]) as Profile[]);
+    setMemberships((roles.data||[]) as Membership[]);
+    setDriverStates((drivers.data||[]) as DriverState[]);
+    setDocs((b.data||[]) as Document[]);
     setReviews((c.data||[]) as Review[]);setDeletions((d.data||[]) as Deletion[]);
     setSummary((e.data||null) as Summary|null);
     setActivity((f.data||[]) as IdentityActivity[]);setLoading(false);
@@ -49,6 +59,16 @@ export function AdminAccountIdentities() {
   },[]);
 
   const names=useMemo(()=>new Map(profiles.map(p=>[p.id,p.full_name||"Member "+p.id.slice(0,8)])),[profiles]);
+  const accountRoles=useMemo(()=>{
+    const result=new Map<string,Set<string>>();
+    for(const profile of profiles) result.set(profile.id,new Set(profile.role==="admin"?["admin"]:[profile.role]));
+    for(const role of memberships){
+      if(!result.has(role.user_id))result.set(role.user_id,new Set());
+      result.get(role.user_id)?.add(role.role);
+    }
+    return result;
+  },[profiles,memberships]);
+  const driverById=useMemo(()=>new Map(driverStates.map(d=>[d.id,d])),[driverStates]);
   const matches=(id:string)=>(names.get(id)||id).toLowerCase().includes(query.toLowerCase())||id.includes(query);
   const visibleProfiles=profiles.filter(p=>matches(p.id));
   const visibleDocs=docs.filter(d=>matches(d.user_id));
@@ -108,8 +128,17 @@ export function AdminAccountIdentities() {
       <section className="nex-admin-pane">
         <h2>Account directory <small>{visibleProfiles.length}</small></h2>
         {visibleProfiles.length===0?<p>No accounts match.</p>:visibleProfiles.map(p=><div className="nex-admin-row" key={p.id}>
-          <div><strong>{p.full_name||"Unnamed account"}</strong><small>{p.id.slice(0,8)} · {p.role}</small></div>
-          <div><span>{p.account_status}</span><small>Phone {mask(p.phone)} · Unverified until OTP</small></div>
+          <div><strong>{p.full_name||"Unnamed account"}</strong>
+            <small>{p.id.slice(0,8)} · One NexRide identity</small>
+            <small>Roles: {[...(accountRoles.get(p.id)||new Set([p.role]))].join(" + ")}</small>
+          </div>
+          <div><span>{p.account_status}</span>
+            <small>{accountRoles.get(p.id)?.has("rider") ? "Rider access · active membership" : "Rider access · not enabled"}</small>
+            <small>{driverById.get(p.id)
+              ? "Driver review · "+driverById.get(p.id)?.review_status+(driverById.get(p.id)?.is_online?" · Online":" · Offline")
+              : "Driver profile · not started"}</small>
+            <small>Phone {mask(p.phone)} · Unverified until OTP</small>
+          </div>
         </div>)}
       </section>
       <section className="nex-admin-pane">
