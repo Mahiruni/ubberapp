@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, type CSSProperties, type PointerEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type PointerEvent, type ReactNode } from "react";
 
 type DriverSheetSnap = "collapsed" | "medium" | "expanded";
 
@@ -28,22 +28,44 @@ export function DriverBottomSheet({
   const drag = useRef<{
     startY: number;
     startHeight: number;
+    currentHeight: number;
     lastY: number;
     lastAt: number;
     velocity: number;
     moved: boolean;
   } | null>(null);
   const suppressClick = useRef(false);
+  const panelRef = useRef<HTMLElement | null>(null);
+
+  // Let map overlays follow the measured sheet instead of a fixed viewport ratio.
+  useEffect(() => {
+    const panel = panelRef.current;
+    const parent = panel?.parentElement;
+    if (!panel || !parent) return;
+    const syncHeight = () => {
+      parent.style.setProperty("--nr-driver-sheet-actual-height", Math.ceil(panel.getBoundingClientRect().height) + "px");
+    };
+    syncHeight();
+    const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(syncHeight);
+    observer?.observe(panel);
+    window.addEventListener("resize", syncHeight);
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener("resize", syncHeight);
+      parent.style.removeProperty("--nr-driver-sheet-actual-height");
+    };
+  }, []);
 
   const viewportHeight = () => Math.max(1, window.visualViewport?.height || window.innerHeight || 800);
   const heightFor = (value: DriverSheetSnap) => viewportHeight() * SNAP_RATIO[value];
 
   const begin = (event: PointerEvent<HTMLButtonElement>) => {
     if (event.pointerType === "mouse" && event.button !== 0) return;
-    const height = dragHeight ?? heightFor(snap);
+    const height = panelRef.current?.getBoundingClientRect().height || dragHeight || heightFor(snap);
     drag.current = {
       startY: event.clientY,
       startHeight: height,
+      currentHeight: height,
       lastY: event.clientY,
       lastAt: performance.now(),
       velocity: 0,
@@ -69,6 +91,7 @@ export function DriverBottomSheet({
       vh * 0.33,
       Math.min(vh * 0.84, current.startHeight - delta),
     );
+    current.currentHeight = next;
     setDragHeight(next);
   };
 
@@ -77,7 +100,7 @@ export function DriverBottomSheet({
     if (!current) return;
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
     const vh = viewportHeight();
-    const currentHeight = dragHeight ?? current.startHeight;
+    const currentHeight = current.currentHeight;
     const ratio = currentHeight / vh;
     let next = ORDER.reduce((best, item) =>
       Math.abs(SNAP_RATIO[item] - ratio) < Math.abs(SNAP_RATIO[best] - ratio) ? item : best,
@@ -103,12 +126,19 @@ export function DriverBottomSheet({
     setSnap(ORDER[(index + 1) % ORDER.length]);
   };
 
+  const cancel = (event: PointerEvent<HTMLButtonElement>) => {
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+    drag.current = null;
+    setDragHeight(null);
+  };
+
   const style = {
-    "--nr-driver-sheet-height": dragHeight ? `${Math.round(dragHeight)}px` : `${Math.round(SNAP_RATIO[snap] * 100)}dvh`,
+    "--nr-driver-sheet-height": dragHeight !== null ? `${Math.round(dragHeight)}px` : `${Math.round(SNAP_RATIO[snap] * 100)}dvh`,
   } as CSSProperties;
 
   return (
     <section
+      ref={panelRef}
       className={`nr-driver-sheet ${className}`.trim()}
       data-snap={snap}
       data-dragging={dragHeight !== null || undefined}
@@ -119,12 +149,13 @@ export function DriverBottomSheet({
       <button
         type="button"
         className="nr-driver-sheet-grab"
-        aria-label="Resize driver panel"
+        aria-label={snap === "expanded" ? "Collapse driver panel" : "Expand driver panel"}
+        aria-expanded={snap === "expanded"}
         onClick={cycle}
         onPointerDown={begin}
         onPointerMove={move}
         onPointerUp={finish}
-        onPointerCancel={finish}
+        onPointerCancel={cancel}
       >
         <span aria-hidden="true" />
       </button>
