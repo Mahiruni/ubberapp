@@ -356,9 +356,11 @@ export function DestinationPanel({
                           target === "pickup" ? "editPickup" : "destination",
                         )}
                         autoFocus={target === "pickup"}
-                        placeholder={t(
-                          target === "pickup" ? "selectPickup" : "whereTo",
-                        )}
+                        placeholder={
+                          target === "pickup"
+                            ? (language === "am" ? "ጉዞዎን ያቅዱ" : "Plan your ride")
+                            : t("whereTo")
+                        }
                         value={
                           query[target] ||
                           (point ? endpointName(point, language, t) : "")
