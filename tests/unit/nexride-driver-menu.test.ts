@@ -27,7 +27,7 @@ describe("NexRide Driver essential navigation", () => {
     expect(DRIVER_MENU_FOOTER_LINKS.map(item => item.en)).toEqual(["Dashboard", "Trip activity", "My documents"]);
     expect(new Set(DRIVER_MENU_FOOTER_LINKS.map(item => item.href)).size).toBe(DRIVER_MENU_FOOTER_LINKS.length);
     expect(DRIVER_MENU_FOOTER_LINKS.every(item => item.href.startsWith("/driver/") && item.am)).toBe(true);
-    expect(DRIVER_MENU_FOOTER_LINKS.some(item => DRIVER_CORE_MENU_ITEMS.some(core => core.href === item.href))).toBe(false);
+    expect(DRIVER_MENU_FOOTER_LINKS.some(item => DRIVER_CORE_MENU_ITEMS.some(core => String(core.href) === String(item.href)))).toBe(false);
   });
   it("highlights the appropriate category on existing nested routes", () => {
     expect(driverCoreMenuForPath("/driver/profile/payouts")).toBe("earnings");
