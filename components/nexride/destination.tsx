@@ -112,7 +112,8 @@ export function DestinationPanel({
 }) {
   const t = useTranslation(),
     language = useContext(LanguageContext);
-  const [field, setField] = useState<"pickup" | "destination">("destination");
+  // Begin at the Rider's starting point, not the drop-off field.
+  const [field, setField] = useState<"pickup" | "destination">("pickup");
   const [query, setQuery] = useState({ pickup: "", destination: "" });
   const [searchActive, setSearchActive] = useState(false);
   const [recentSearches, setRecentSearches] = useState<Endpoint[]>([]);
@@ -140,7 +141,8 @@ export function DestinationPanel({
       const raw = sessionStorage.getItem("nexride.rider.destination.draft");
       if (raw) {
         const saved = JSON.parse(raw);
-        if (saved?.field === "pickup" || saved?.field === "destination") setField(saved.field);
+        // Restore typed values, but never give a saved destination the initial
+        // keyboard focus when the Rider reopens Plan your ride.
         if (saved?.query && typeof saved.query.pickup === "string" && typeof saved.query.destination === "string") {
           setQuery({
             pickup: saved.query.pickup.slice(0, 120),
@@ -353,10 +355,12 @@ export function DestinationPanel({
                         aria-label={t(
                           target === "pickup" ? "editPickup" : "destination",
                         )}
-                        autoFocus={target === "destination" && !j.destination}
-                        placeholder={t(
-                          target === "pickup" ? "selectPickup" : "whereTo",
-                        )}
+                        autoFocus={target === "pickup"}
+                        placeholder={
+                          target === "pickup"
+                            ? (language === "am" ? "ጉዞዎን ያቅዱ" : "Plan your ride")
+                            : t("whereTo")
+                        }
                         value={
                           query[target] ||
                           (point ? endpointName(point, language, t) : "")

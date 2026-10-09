@@ -46,7 +46,10 @@ export function clearExplicitSignOut() {
   try { window.localStorage.removeItem(EXPLICIT_SIGNOUT_KEY); } catch {}
 }
 export function startupDestination({ session, returningPreview, previewEnabled, onboardingComplete, accountRole, signedOutRole }: { session: Session | null; returningPreview: boolean; previewEnabled: boolean; onboardingComplete: boolean; accountRole?: string | null; signedOutRole?: SignedOutRole | null }): StartupDestination {
-  if (signedOutRole) return signedOutRole === "driver" ? "/driver/auth" : "/rider/sign-in";
+  // An explicitly logged-out person may explore a guest preview, but
+  // their previous Supabase identity must never be restored implicitly.
+  if (signedOutRole) return previewEnabled ? "/" :
+    signedOutRole === "driver" ? "/driver/auth" : "/rider/sign-in";
   const role = accountRole || session?.user?.user_metadata?.role;
   if (role === "driver") return session?.user?.user_metadata?.driver_onboarding_complete === true ? "/driver/home" : "/driver/onboarding";
   if (session || returningPreview || previewEnabled) return "/";
