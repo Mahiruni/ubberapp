@@ -469,3 +469,43 @@ html[lang="am"] .nr-driver-menu-footer :where(strong,small,span,button,p){
 .nr-driver-profile-core-menu{grid-template-columns:minmax(0,1fr)!important}
 .nr-driver-profile-core-menu .nr-driver-profile-section{max-width:100%}
 @media(prefers-reduced-motion:reduce){.nr-driver-menu-nav-core .nr-driver-menu-row{transition:none!important}}
+
+
+/* NexRide Driver: shared circular glass control on home, inner pages and standalone menus. */
+.nr-driver-menu-trigger,
+.nr-driver-home-menu-host .nr-driver-menu-trigger,
+.nr-driver-standalone-menu .nr-driver-menu-trigger{
+  box-sizing:border-box;
+  width:44px;
+  min-width:44px;
+  height:44px;
+  min-height:44px;
+  border:1px solid rgba(255,255,255,.8)!important;
+  border-radius:50%!important;
+  background:rgba(255,255,255,.72)!important;
+  -webkit-backdrop-filter:blur(18px) saturate(155%);
+  backdrop-filter:blur(18px) saturate(155%);
+  box-shadow:0 9px 25px rgba(4,28,48,.17),inset 0 1px 0 rgba(255,255,255,.67)!important;
+  color:#102334;
+  transform-origin:center;
+  -webkit-tap-highlight-color:transparent;
+  transition:background-color 180ms ease,box-shadow 180ms ease,transform 180ms ease;
+}
+.nr-driver-menu-trigger:hover,
+.nr-driver-home-menu-host .nr-driver-menu-trigger:hover,
+.nr-driver-standalone-menu .nr-driver-menu-trigger:hover{
+  background:rgba(255,255,255,.88)!important;
+  box-shadow:0 11px 28px rgba(4,28,48,.2),inset 0 1px 0 rgba(255,255,255,.82)!important;
+}
+.nr-driver-menu-trigger:active{transform:scale(.96)}
+.nr-driver-app-shell[data-theme="dark"] .nr-driver-menu-trigger,
+.nr-driver-standalone-menu[data-theme="dark"] .nr-driver-menu-trigger{
+  border-color:rgba(204,238,248,.22)!important;
+  background:rgba(4,28,48,.73)!important;
+  box-shadow:0 10px 26px rgba(0,12,23,.32),inset 0 1px 0 rgba(255,255,255,.12)!important;
+  color:#f4fcff;
+}
+.nr-driver-app-shell[data-theme="dark"] .nr-driver-menu-trigger:hover,
+.nr-driver-standalone-menu[data-theme="dark"] .nr-driver-menu-trigger:hover{background:rgba(11,43,67,.86)!important}
+.nr-driver-menu-trigger:focus-visible{outline-offset:3px}
+@media(prefers-reduced-motion:reduce){.nr-driver-menu-trigger{transition:none!important}}
