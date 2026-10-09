@@ -1,6 +1,7 @@
 import { liveFareSet } from "../../../../lib/nexride-live-pricing";
 import { authorizedRequestSupabase } from "../../../../lib/nexride-server-supabase";
 import { serverAdminSupabase } from "../../../../lib/nexride-server-admin";
+import { resolveRiderEligibility } from "../../../../lib/nexride-rider-eligibility";
 import { fareTotal, rideCategories } from "../../../../lib/nexride-booking";
 import {
   insideAddisServiceRadius,
@@ -76,20 +77,12 @@ export async function POST(request: Request) {
     // 100 km Addis service area instead of the older database RPC boundary.
     const admin = serverAdminSupabase();
 
-    const { data: profile, error: profileError } = await admin
-      .from("profiles")
-      .select("id,role,account_status")
-      .eq("id", authorized.user.id)
-      .maybeSingle();
-
-    if (
-      profileError ||
-      !profile ||
-      (profile.role !== "rider" && profile.role !== "admin") ||
-      profile.account_status !== "active"
-    ) {
-      console.warn("nexride_booking_rejected", { reason: "rider_not_eligible" });
-      return reply({ status: "unavailable" }, 403);
+    const eligibility = await resolveRiderEligibility(admin, authorized.user.id);
+    if (eligibility !== "eligible") {
+      // Never try a privileged insert when role membership or current driver
+      // availability could not be confirmed.
+      console.warn("nexride_booking_rejected", { reason: eligibility });
+      return reply({ status: "unavailable" }, eligibility === "unavailable" ? 503 : 403);
     }
 
     const { data: existing, error: existingError } = await admin
