@@ -140,7 +140,9 @@ export default function DriverOnboarding() {
     });
 
     if (signUpError) {
-      setError(signUpError.message);
+      // Do not enumerate registered email addresses. A returning NexRide
+      // member can always use the ordinary sign-in and recovery flow.
+      setError("We couldn't complete registration. Try again, or continue with your existing NexRide account.");
       setBusy(false);
       return;
     }
