@@ -2333,3 +2333,100 @@ html[lang="am"] .nr-auth-experience[data-auth-mode] :is(.nr-input-field,.nr-auth
     padding-top:11px!important;
   }
 }
+
+
+/* Rider-only destructive actions: unmistakable red buttons, never ghost links.
+   Cancellation still routes through the existing confirmation + server checks. */
+.nr-app[data-mode="rider"] .nr-driver-matching footer .nr-button.nr-danger.nr-rider-cancel-button{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:9px!important;
+  min-height:50px!important;
+  width:100%;
+  border:1px solid #cb293e!important;
+  border-radius:14px!important;
+  background:#d32e43!important;
+  color:#ffffff!important;
+  font-size:14px!important;
+  font-weight:800!important;
+  line-height:1.2!important;
+  box-shadow:0 5px 14px rgba(153,22,43,.16)!important;
+  cursor:pointer;
+  touch-action:manipulation;
+  transition:background-color 180ms ease,box-shadow 180ms ease,transform 180ms ease;
+}
+.nr-app[data-mode="rider"] .nr-driver-matching footer .nr-button.nr-danger.nr-rider-cancel-button svg{
+  flex:none;
+  color:inherit;
+}
+.nr-app[data-mode="rider"] .nr-trip-toolbar button.nr-trip-cancel-trigger{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  flex:none;
+  gap:6px;
+  min-width:105px;
+  min-height:44px!important;
+  padding:0 13px!important;
+  border:1px solid #cb293e!important;
+  border-radius:12px!important;
+  background:#d32e43!important;
+  color:#fff!important;
+  font-size:13px!important;
+  line-height:1.15;
+  font-weight:800!important;
+  box-shadow:0 4px 12px rgba(153,22,43,.14);
+  cursor:pointer;
+  touch-action:manipulation;
+  transition:background-color 180ms ease,box-shadow 180ms ease,transform 180ms ease;
+}
+.nr-app[data-mode="rider"] .nr-trip-toolbar button.nr-trip-cancel-trigger>span{
+  font-size:21px;
+  font-weight:500;
+  line-height:1;
+}
+.nr-app[data-mode="rider"] .nr-cancel-dialog-actions .nr-button.nr-danger{
+  border:1px solid #cb293e!important;
+  border-radius:13px!important;
+  background:#d32e43!important;
+  color:#fff!important;
+  font-weight:800!important;
+  box-shadow:none!important;
+}
+@media(hover:hover){
+  .nr-app[data-mode="rider"] .nr-driver-matching footer .nr-button.nr-danger.nr-rider-cancel-button:hover:not(:disabled),
+  .nr-app[data-mode="rider"] .nr-trip-toolbar button.nr-trip-cancel-trigger:hover:not(:disabled),
+  .nr-app[data-mode="rider"] .nr-cancel-dialog-actions .nr-button.nr-danger:hover:not(:disabled){
+    background:#b91f36!important;
+    border-color:#b91f36!important;
+  }
+}
+.nr-app[data-mode="rider"] :is(
+  .nr-driver-matching footer .nr-rider-cancel-button,
+  .nr-trip-toolbar .nr-trip-cancel-trigger,
+  .nr-cancel-dialog-actions .nr-button.nr-danger
+):focus-visible{
+  outline:3px solid #f69ba6!important;
+  outline-offset:3px;
+}
+.nr-app[data-mode="rider"] :is(
+  .nr-driver-matching footer .nr-rider-cancel-button,
+  .nr-trip-toolbar .nr-trip-cancel-trigger,
+  .nr-cancel-dialog-actions .nr-button.nr-danger
+):disabled{
+  opacity:.52!important;
+  cursor:not-allowed;
+  box-shadow:none!important;
+}
+@media(max-width:420px){
+  .nr-app[data-mode="rider"] .nr-trip-toolbar button.nr-trip-cancel-trigger{
+    min-width:97px;
+    padding-inline:10px!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .nr-app[data-mode="rider"] :is(.nr-rider-cancel-button,.nr-trip-cancel-trigger){
+    transition:none!important;
+  }
+}
