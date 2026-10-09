@@ -753,13 +753,17 @@ export default function DriverRideRequestPage() {
                   <strong>{request.destination_location}</strong>
                 </div>
               </div>
-              <div className="nr-request-road" aria-hidden="true">
-                <span className="nr-request-road-endpoint pickup" />
+              <div className="nr-request-road">
+                <span className="nr-request-road-endpoint pickup" aria-hidden="true" />
                 <div className="nr-request-road-track">
-                  <span className="nr-request-road-centerline" />
-                  <span className="nr-request-road-car">🚗</span>
+                  <span className="nr-request-road-car" aria-hidden="true">🚗</span>
+                  <span className="nr-request-road-distance">
+                    {request.estimated_trip_distance_km !== null && Number.isFinite(request.estimated_trip_distance_km)
+                      ? `${request.estimated_trip_distance_km.toFixed(1)} km`
+                      : op("Distance unavailable")}
+                  </span>
                 </div>
-                <span className="nr-request-road-endpoint destination" />
+                <span className="nr-request-road-endpoint destination" aria-hidden="true" />
               </div>
             </section>
 
@@ -800,9 +804,6 @@ export default function DriverRideRequestPage() {
                 <small>{fare?.label || "Estimated fare"}</small>
                 <strong>{fare ? `${formatMoney(fare.value)} ETB` : "Not provided"}</strong>
               </div>
-              {request.estimated_trip_distance_km !== null && (
-                <div><small>Trip distance</small><strong>{request.estimated_trip_distance_km.toFixed(1)} km</strong></div>
-              )}
               {request.estimated_trip_duration_minutes !== null && (
                 <div><small>Estimated trip time</small><strong>{Math.max(1, Math.round(request.estimated_trip_duration_minutes))} min</strong></div>
               )}
