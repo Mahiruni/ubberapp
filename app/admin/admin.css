@@ -221,3 +221,8 @@
     animation:none!important;
   }
 }
+
+/* Biloo-inspired Admin shell: preserve semantic alert/success colors. */
+.admin-app{--admin-brand:#5145e5;--admin-brand-dark:#28217f;--admin-brand-lime:#c5f000;background:#f7f7fb;color:#19172a}
+.admin-sidebar{background:#202133;color:#f8f8ff}
+.admin-app :is(button,a,input,select,textarea):focus-visible{outline:3px solid #5145e5;outline-offset:2px}
