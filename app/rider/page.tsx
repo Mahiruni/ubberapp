@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 import { EntryShell } from "../../components/nexride/entry";
 import { Button, Icon, StatusBanner, useTranslation } from "../../components/nexride/ui";
 import {
-  clearExplicitSignOut,
   enterRider,
   explicitSignOutRole,
   ONBOARDING_KEY,
@@ -80,7 +79,7 @@ function RiderWelcome() {
       localStorage.setItem(ONBOARDING_KEY, "true");
       localStorage.setItem(PREVIEW_ENABLED_KEY, "true");
     } catch {}
-    clearExplicitSignOut();
+    // Preview is not authentication: retain the explicit sign-out barrier.
     enterRider(null);
     router.replace("/");
   };
