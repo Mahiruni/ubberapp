@@ -35,6 +35,7 @@ export function DriverSessionBridge() {
     let activeOnline = false;
     let inflight = false;
     let lastGpsSent = 0;
+    let gpsUploadInFlight = false;
     let gpsWatch: number | null = null;
     let offerChannel: ReturnType<typeof supabase.channel> | null = null;
     let availabilityChannel: ReturnType<typeof supabase.channel> | null = null;
@@ -97,18 +98,29 @@ export function DriverSessionBridge() {
     };
 
     const sendGps = (position: GeolocationPosition) => {
-      if (!mounted || !activeOnline || !navigator.onLine) return;
-      const now = Date.now();
-      if (now - lastGpsSent < 12_000) return;
-      lastGpsSent = now;
+      if (!mounted || !activeOnline || !navigator.onLine || gpsUploadInFlight) return;
+      const { latitude, longitude, accuracy } = position.coords;
+      if (!Number.isFinite(latitude) || Math.abs(latitude) > 90 ||
+          !Number.isFinite(longitude) || Math.abs(longitude) > 180) return;
+      // Only advertise recent real GPS fixes. Never use a cached, outdated
+      // device position to make a driver look available to nearby riders.
+      if (Date.now() - position.timestamp > 30_000) return;
+      if (Date.now() - lastGpsSent < 10_000) return;
+      gpsUploadInFlight = true;
       void nexrideApiFetch("/api/driver/availability", {
         method: "PATCH",
         body: JSON.stringify({ location: {
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-          accuracy: Number.isFinite(position.coords.accuracy) ? position.coords.accuracy : null,
+          latitude,
+          longitude,
+          accuracy: Number.isFinite(accuracy) ? accuracy : null,
         } }),
-      }).catch(() => {});
+      }).then((response) => {
+        if (response.ok) lastGpsSent = Date.now();
+      }).catch(() => {
+        // Keep retrying later; do not mark an unsuccessful GPS upload fresh.
+      }).finally(() => {
+        gpsUploadInFlight = false;
+      });
     };
 
     const stopGps = () => {
@@ -155,7 +167,14 @@ export function DriverSessionBridge() {
       driverId = id;
       await reconcileAvailability();
       if (!mounted) return;
-      if (activeOnline) startGps();
+      if (activeOnline) {
+        startGps();
+        // An already-Online driver must publish immediately on app re-entry,
+        // not wait for the next GPS watchPosition movement event.
+        navigator.geolocation?.getCurrentPosition(sendGps, () => {}, {
+          enableHighAccuracy: true, maximumAge: 5_000, timeout: 12_000,
+        });
+      }
 
       offerChannel = supabase.channel("driver-shell-offers:" + id)
         .on("postgres_changes", {
@@ -179,6 +198,9 @@ export function DriverSessionBridge() {
           activeOnline = data.is_online === true && data.review_status === "approved";
           if (activeOnline) {
             startGps();
+            navigator.geolocation?.getCurrentPosition(sendGps, () => {}, {
+              enableHighAccuracy: true, maximumAge: 5_000, timeout: 12_000,
+            });
             void readPending();
           } else {
             stopGps();
