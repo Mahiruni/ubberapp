@@ -556,3 +556,102 @@ html[lang="am"] .nr-driver-menu-footer :where(strong,small,span,button,p){
   color:#102334!important;
   background:#ffffff!important;
 }
+
+
+/* NEXRIDE 2026 LIGHT UI: one predictable appearance across Driver pages.
+   Do not recolor the map canvas, routing line, traffic or request state badges. */
+.nr-driver-app-shell{
+  --driver-bg:#f5f7f9;
+  --driver-surface:#ffffff;
+  --driver-surface-elevated:#f7f9fa;
+  --driver-border:#dfe7eb;
+  --driver-text-primary:#102334;
+  --driver-text-secondary:#667587;
+  --driver-header-bg:rgba(255,255,255,.97);
+  --driver-nav-bg:rgba(255,255,255,.98);
+  --driver-overlay:#ffffff;
+  --driver-shadow:0 8px 25px rgba(16,35,52,.07);
+  color-scheme:light;
+  background:#f5f7f9;
+  color:#102334;
+}
+.nr-driver-app-shell .nr-driver-shell-content,
+.nr-driver-app-shell .nr-app[data-mode="driver"],
+.nr-driver-app-shell :is(.nr-driver-page,.nr-driver-profile-subpage,.nr-earnings-report-page,.nr-driver-activity-page){
+  --bg:#f5f7f9;
+  --surface:#ffffff;
+  --surface-alt:#f5f7f9;
+  --text:#102334;
+  --muted:#667587;
+  --line:#dfe7eb;
+  --green-text:#007448;
+  --green-wash:#eafff3;
+  --nr-text:#102334;
+  --nr-border:#dfe7eb;
+  color-scheme:light;
+  color:#102334!important;
+  background:#f5f7f9!important;
+}
+.nr-driver-app-shell :is(.nr-driver-page,.nr-driver-profile-subpage,.nr-earnings-report-page,.nr-driver-activity-page) :is(h1,h2,h3){
+  color:#102334;
+  letter-spacing:-.035em;
+  text-wrap:balance;
+}
+.nr-driver-app-shell .nr-driver-shell-content :is(button,a,input,select,textarea):focus-visible{
+  outline:3px solid rgba(0,137,87,.55);
+  outline-offset:2px;
+}
+.nr-driver-app-shell .nr-driver-global-header{
+  background:rgba(255,255,255,.97);
+  border-bottom:1px solid #dfe7eb;
+  color:#102334;
+  backdrop-filter:blur(14px);
+}
+.nr-driver-app-shell :is(.nr-driver-card,.nr-driver-metric-grid .nr-metric,.nr-driver-action-row,.nr-driver-operational-card){
+  background:#ffffff!important;
+  border-color:#dfe7eb!important;
+  color:#102334!important;
+  box-shadow:0 4px 18px rgba(16,35,52,.04)!important;
+}
+.nr-driver-app-shell .nr-driver-bottom-nav{
+  background:rgba(255,255,255,.98)!important;
+  border-color:#dfe7eb!important;
+  box-shadow:0 -4px 18px rgba(16,35,52,.06)!important;
+}
+.nr-driver-app-shell .nr-driver-bottom-nav button{
+  color:#667587!important;
+}
+.nr-driver-app-shell .nr-driver-bottom-nav button.active{
+  color:#007448!important;
+}
+.nr-driver-app-shell .nr-driver-bottom-nav button.active .nr-driver-nav-icon{
+  color:#007448!important;
+  background:#eafff3!important;
+  border-color:#c2e8d5!important;
+}
+/* Standalone account menu may render in a portal outside app shell. */
+.nr-driver-standalone-menu,
+.nr-driver-standalone-menu[data-theme="dark"],
+.nr-driver-menu-panel{
+  --driver-bg:#f5f7f9;
+  --driver-surface:#ffffff;
+  --driver-surface-elevated:#f7f9fa;
+  --driver-border:#dfe7eb;
+  --driver-text-primary:#102334;
+  --driver-text-secondary:#667587;
+  color-scheme:light;
+  color:#102334;
+}
+.nr-driver-menu-panel{background:#ffffff!important}
+.nr-driver-theme-static{
+  min-height:42px;
+  display:flex;align-items:center;gap:9px;
+  border:1px solid #dfe7eb;border-radius:12px;
+  padding:0 12px;
+  background:#f7f9fa;
+  color:#007448;
+  font-size:12px;font-weight:750;
+}
+@media(max-width:560px){
+  .nr-driver-app-shell .nr-driver-page{padding-left:14px!important;padding-right:14px!important}
+}
