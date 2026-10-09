@@ -222,3 +222,48 @@
   .driver-get-started,
   .driver-sign-in { transition: none; }
 }
+
+
+/* Light-only Driver welcome: retain real Addis imagery with daylight overlay. */
+.nr-driver-app-shell .driver-welcome,
+.driver-welcome.driver-welcome-loading{
+  --driver-navy:#f5f7f9;
+  --driver-navy-2:#ffffff;
+  --driver-white:#102334;
+  color-scheme:light;
+  background:#f5f7f9!important;
+  color:#102334!important;
+}
+.nr-driver-app-shell .driver-city{
+  opacity:.27;
+  filter:saturate(.78) brightness(1.12);
+}
+.nr-driver-app-shell .driver-welcome-gradient{
+  background:linear-gradient(180deg,rgba(255,255,255,.95),rgba(255,255,255,.78) 40%,rgba(248,251,250,.84) 72%,rgba(255,255,255,.98));
+}
+.nr-driver-app-shell .driver-welcome .nr-brand,
+.nr-driver-app-shell .driver-welcome .nr-brand strong,
+.nr-driver-app-shell .driver-welcome h1{
+  color:#102334!important;
+}
+.nr-driver-app-shell .driver-welcome .nr-brand small,
+.nr-driver-app-shell .driver-subtitle,
+.nr-driver-app-shell .driver-role-note{
+  color:#667587!important;
+}
+.nr-driver-app-shell .driver-role-badge{
+  background:#ffffff!important;
+  color:#007448!important;
+  border:1px solid #c9e5d5!important;
+}
+.nr-driver-app-shell .driver-eyebrow{color:#007448!important}
+.nr-driver-app-shell .driver-sign-in{
+  background:#ffffff!important;
+  color:#102334!important;
+  border:1px solid #dfe7eb!important;
+  backdrop-filter:none;
+}
+.nr-driver-app-shell .driver-mark{
+  background:#eafff3;
+  color:#007448;
+}
