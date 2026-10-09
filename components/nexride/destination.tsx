@@ -112,7 +112,8 @@ export function DestinationPanel({
 }) {
   const t = useTranslation(),
     language = useContext(LanguageContext);
-  const [field, setField] = useState<"pickup" | "destination">("destination");
+  // Begin at the Rider's starting point, not the drop-off field.
+  const [field, setField] = useState<"pickup" | "destination">("pickup");
   const [query, setQuery] = useState({ pickup: "", destination: "" });
   const [searchActive, setSearchActive] = useState(false);
   const [recentSearches, setRecentSearches] = useState<Endpoint[]>([]);
@@ -353,7 +354,7 @@ export function DestinationPanel({
                         aria-label={t(
                           target === "pickup" ? "editPickup" : "destination",
                         )}
-                        autoFocus={target === "destination" && !j.destination}
+                        autoFocus={target === "pickup"}
                         placeholder={t(
                           target === "pickup" ? "selectPickup" : "whereTo",
                         )}
