@@ -93,10 +93,26 @@ const NAV_DETAILS: Record<DriverNavId, { en: string; am: string }> = {
   account: { en: "Profile, vehicle and documents", am: "መለያ፣ ተሽከርካሪ እና ሰነዶች" },
 };
 
-function DriverHamburgerMenu({ activeOverride }: { activeOverride?: DriverNavId }) {
+function DriverHamburgerMenu({
+  activeOverride,
+  controlledOpen,
+  onOpenChange,
+}: {
+  activeOverride?: DriverNavId;
+  controlledOpen?: boolean;
+  onOpenChange?: (nextOpen: boolean) => void;
+}) {
   const pathname = usePathname();
   const language = useContext(LanguageContext);
-  const [open, setOpen] = useState(false);
+  const [standaloneOpen, setStandaloneOpen] = useState(false);
+  const open = controlledOpen ?? standaloneOpen;
+  // In the Driver app shell, menu visibility also controls the map wrappers.
+  // Standalone menus continue to manage their own state.
+  const setOpen = useCallback((value: boolean | ((previous: boolean) => boolean)) => {
+    const next = typeof value === "function" ? value(open) : value;
+    if (onOpenChange) onOpenChange(next);
+    else setStandaloneOpen(next);
+  }, [onOpenChange, open]);
   const [identity, setIdentity] = useState({ name: "Driver", avatarUrl: "" });
   const [signingOut, setSigningOut] = useState(false);
   const [signOutError, setSignOutError] = useState("");
@@ -369,7 +385,15 @@ export function DriverThemeSelector() {
   );
 }
 
-function DriverHeader({ pathname }: { pathname: string }) {
+function DriverHeader({
+  pathname,
+  menuOpen,
+  onMenuOpenChange,
+}: {
+  pathname: string;
+  menuOpen: boolean;
+  onMenuOpenChange: (nextOpen: boolean) => void;
+}) {
   const router = useRouter();
   const language = useContext(LanguageContext);
   const [online, setOnline] = useState(true);
@@ -392,7 +416,7 @@ function DriverHeader({ pathname }: { pathname: string }) {
   if (home) {
     return (
       <div className="nr-driver-home-menu-host">
-        <DriverHamburgerMenu />
+        <DriverHamburgerMenu controlledOpen={menuOpen} onOpenChange={onMenuOpenChange} />
       </div>
     );
   }
@@ -424,7 +448,7 @@ function DriverHeader({ pathname }: { pathname: string }) {
         </div>
 
         <div className="nr-driver-global-header-side nr-driver-global-header-right">
-          <DriverHamburgerMenu />
+          <DriverHamburgerMenu controlledOpen={menuOpen} onOpenChange={onMenuOpenChange} />
         </div>
       </div>
     </header>
@@ -435,8 +459,12 @@ function DriverShellChrome({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { preference, resolvedTheme } = useDriverTheme();
+  const [menuOpen, setMenuOpen] = useState(false);
   const [blockedByLogout, setBlockedByLogout] = useState(false);
   const isPublic = isPublicDriverPath(pathname);
+
+  // Route changes should never leave a new Driver page with hidden wrappers.
+  useEffect(() => { setMenuOpen(false); }, [pathname]);
 
   useEffect(() => {
     const signedOut = Boolean(explicitSignOutRole(window.localStorage));
@@ -451,8 +479,8 @@ function DriverShellChrome({ children }: { children: ReactNode }) {
   const home = pathname === "/driver/home";
 
   return (
-    <div className="nr-driver-app-shell" data-theme={resolvedTheme} data-theme-preference={preference} data-trip-focus={tripFocus ? "true" : "false"} data-home={home ? "true" : "false"}>
-      <DriverHeader pathname={pathname} />
+    <div className="nr-driver-app-shell" data-theme={resolvedTheme} data-theme-preference={preference} data-trip-focus={tripFocus ? "true" : "false"} data-home={home ? "true" : "false"} data-driver-menu-open={menuOpen ? "true" : "false"}>
+      <DriverHeader pathname={pathname} menuOpen={menuOpen} onMenuOpenChange={setMenuOpen} />
       <DriverSessionBridge />
       <DriverCancellationNotice pathname={pathname} />
       <div className="nr-driver-shell-content" data-trip-focus={tripFocus ? "true" : "false"}>{children}</div>
