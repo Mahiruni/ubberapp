@@ -141,7 +141,8 @@ export function DestinationPanel({
       const raw = sessionStorage.getItem("nexride.rider.destination.draft");
       if (raw) {
         const saved = JSON.parse(raw);
-        if (saved?.field === "pickup" || saved?.field === "destination") setField(saved.field);
+        // Restore typed values, but never give a saved destination the initial
+        // keyboard focus when the Rider reopens Plan your ride.
         if (saved?.query && typeof saved.query.pickup === "string" && typeof saved.query.destination === "string") {
           setQuery({
             pickup: saved.query.pickup.slice(0, 120),
