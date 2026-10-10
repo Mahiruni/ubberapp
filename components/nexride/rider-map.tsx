@@ -1262,6 +1262,12 @@ export function RiderMap({
       for (const driver of nearbyDrivers) {
         const target: [number, number] = [driver.lng, driver.lat];
         const existing = nearbyDriverMarkers.current.get(driver.key);
+        // Emphasize real, fresh drivers within 1 km without fabricating vehicles.
+        const approaching = driver.distanceMeters <= 1_000;
+        if (existing) {
+          existing.marker.getElement().classList.toggle("nr-nearby-car-approaching", approaching);
+          existing.marker.getElement().setAttribute("aria-label", approaching ? "NexRide driver within 1 km" : "NexRide driver nearby");
+        }
 
         if (!existing) {
           const marker = new mapboxgl.default.Marker({
@@ -1274,6 +1280,8 @@ export function RiderMap({
           })
             .setLngLat(target)
             .addTo(currentMap);
+          marker.getElement().classList.toggle("nr-nearby-car-approaching", approaching);
+          marker.getElement().setAttribute("aria-label", approaching ? "NexRide driver within 1 km" : "NexRide driver nearby");
           nearbyDriverMarkers.current.set(driver.key, {
             marker,
             lngLat: target,
