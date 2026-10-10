@@ -52,6 +52,7 @@ import "./rider-flow.css";
 import "./rider-profile.css";
 import "./detail-system.css";
 import "./rider-sheet-standard.css";
+import "./wrapper-polish.css";
 const STORAGE_KEY = PREVIEW_STORAGE_KEY;
 type Mode = "rider" | "driver";
 type Panel =
