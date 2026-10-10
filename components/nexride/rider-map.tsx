@@ -13,6 +13,7 @@ import type { Journey } from "../../lib/nexride-journey";
 import type { LocationStatus, RiderLocation } from "../../lib/nexride-location";
 import { nexrideApiFetch } from "../../lib/nexride-api-auth";
 import { withinNearbyDriverRadius } from "../../lib/nexride-nearby-vehicles";
+import { driverRadarCollection, driverGpsQuality } from "../../lib/nexride-driver-radar";
 import {
   formatDistance,
   formatDuration,
@@ -418,6 +419,35 @@ function syncAccuracy(
   });
 }
 
+function syncDriverRadar(map: MapboxMap, position: RiderLocation | null, enabled: boolean) {
+  if (!map.isStyleLoaded()) return;
+  const data = driverRadarCollection(position, enabled);
+  const source = map.getSource("nexride-driver-radar") as GeoJSONSource | undefined;
+  if (source) {
+    source.setData(data);
+    return;
+  }
+  if (!data.features.length) return;
+  map.addSource("nexride-driver-radar", { type: "geojson", data });
+  map.addLayer({
+    id: "nexride-driver-radar-fill",
+    type: "fill",
+    source: "nexride-driver-radar",
+    paint: { "fill-color": "#00C878", "fill-opacity": 0.035 },
+  });
+  map.addLayer({
+    id: "nexride-driver-radar-rings",
+    type: "line",
+    source: "nexride-driver-radar",
+    paint: {
+      "line-color": "#00C878",
+      "line-width": ["case", ["==", ["get", "meters"], 500], 1.7, 2.2],
+      "line-opacity": 0.68,
+      "line-dasharray": [3, 3],
+    },
+  });
+}
+
 function fitJourney(
   map: MapboxMap,
   journey: Journey | undefined,
@@ -502,6 +532,7 @@ export function RiderMap({
   showSearch = true,
   showNativeControls = true,
   showNearbyDrivers = false,
+  showDriverRadar = false,
   onStartRoute,
 }: {
   position: RiderLocation | null;
@@ -522,6 +553,8 @@ export function RiderMap({
   showSearch?: boolean;
   showNativeControls?: boolean;
   showNearbyDrivers?: boolean;
+  /** Real GPS-centered 500 m and 1 km rings, never simulated Rider positions. */
+  showDriverRadar?: boolean;
   onStartRoute?: () => void;
 }) {
   const t = useTranslation();
@@ -551,6 +584,7 @@ export function RiderMap({
   const rideLabelRef = useRef(rideLabel);
   const readOnlyRef = useRef(readOnly);
   const trafficVisibleRef = useRef(false);
+  const driverRadarRef = useRef(showDriverRadar);
   const lastTrafficRefresh = useRef(0);
   const lastFastestDuration = useRef<number | null>(null);
   journeyRef.current = journey;
@@ -579,6 +613,7 @@ export function RiderMap({
   const [gpsStale, setGpsStale] = useState(false);
   const [nearbyDrivers, setNearbyDrivers] = useState<NearbyDriver[]>([]);
   trafficVisibleRef.current = trafficVisible;
+  driverRadarRef.current = showDriverRadar;
 
   const route =
     journey?.routeState.status === "ready"
@@ -714,6 +749,8 @@ export function RiderMap({
         if (!map.isStyleLoaded()) return;
         syncRoutes(map, journeyRef.current);
         syncAccuracy(map, positionRef.current, statusRef.current);
+        syncDriverRadar(map, positionRef.current,
+          driverRadarRef.current && driverGpsQuality(positionRef.current, statusRef.current, Date.now()) === "live");
         if (trafficVisibleRef.current) addTraffic(map);
       };
 
@@ -1008,6 +1045,7 @@ export function RiderMap({
     const map = mapRef.current;
     if (!mounted || !map || !map.isStyleLoaded()) return;
     syncAccuracy(map, position, status);
+    syncDriverRadar(map, position, showDriverRadar && !gpsStale && driverGpsQuality(position, status, Date.now()) === "live");
 
     if (!position || status !== "ready") {
       if (liveMarkerAnimation.current !== null) {
@@ -1114,6 +1152,7 @@ export function RiderMap({
     mounted,
     language,
     gpsStale,
+    showDriverRadar,
   ]);
 
   useEffect(() => {
