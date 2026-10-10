@@ -229,9 +229,22 @@ export function DriverSessionBridge() {
     const interval = window.setInterval(() => {
       if (document.visibilityState === "visible") void readPending();
     }, 8_000);
+    // A stationary Driver may receive no watchPosition movement callbacks.
+    // Refresh a real device fix periodically while the app is foregrounded,
+    // so server-side proximity matching never relies on a stale coordinate.
+    // Browsers/Android can pause this timer in the background; resume already
+    // obtains a fresh fix, and the server remains authoritative.
+    const gpsHeartbeat = window.setInterval(() => {
+      if (!mounted || !activeOnline || !navigator.onLine ||
+          document.visibilityState !== "visible" || gpsUploadInFlight) return;
+      navigator.geolocation?.getCurrentPosition(sendGps, () => {}, {
+        enableHighAccuracy: true, maximumAge: 5_000, timeout: 12_000,
+      });
+    }, 25_000);
     return () => {
       mounted = false;
       window.clearInterval(interval);
+      window.clearInterval(gpsHeartbeat);
       window.removeEventListener("focus", onResume);
       window.removeEventListener("online", onResume);
       window.removeEventListener(DRIVER_AVAILABILITY_CHANGED, onResume);
