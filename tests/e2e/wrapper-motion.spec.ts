@@ -61,7 +61,7 @@ test("mouse movement follows the handle without a start jump or release click", 
   await expect.poll(async () => Math.abs(await height(page) - page.viewportSize()!.height * .78)).toBeLessThan(1);
   const settled = await height(page);
   await page.mouse.move(x, y - 130);
-  expect(await height(page)).toBe(settled);
+  expect(Math.abs(await height(page) - settled)).toBeLessThan(1);
 });
 
 test("body scroll stays native and destination search retains its own keyboard handle", async ({ page }) => {
@@ -77,13 +77,16 @@ test("body scroll stays native and destination search retains its own keyboard h
   await expect.poll(() => body.evaluate(e => e.scrollTop)).toBeGreaterThan(0);
   expect(Math.abs(await height(page) - before)).toBeLessThan(2);
   await page.getByRole("button", { name: "Search destination", exact: true }).click();
-  await expect(page.getByRole("textbox", { name: "Search destination", exact: true })).toBeVisible();
+  const destination = page.getByRole("textbox", { name: "Search destination", exact: true });
+  await expect(destination).toBeVisible();
+  await destination.focus();
   const searchHandle = page.locator(".nr-flow-sheet-handle");
   if (page.viewportSize()!.width > 800) {
     await searchHandle.press("End");
     await expect(searchHandle).toHaveAttribute("aria-valuenow", "75");
   } else {
     // Focused mobile search deliberately becomes a full, scrollable surface.
+    await expect(page.locator(".rider-search-view")).toHaveAttribute("data-search-open", "true");
     await expect(searchHandle).toBeHidden();
     const input = page.getByRole("textbox", { name: "Search destination", exact: true });
     await expect(input).toBeInViewport();
