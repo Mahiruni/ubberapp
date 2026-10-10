@@ -12,6 +12,7 @@ import {
 } from "./ui";
 import { TripExperience } from "./trip-experience";
 import { useRiderTrips } from "../../lib/nexride-use-trips";
+import { useRiderTripLocationPublisher } from "../../lib/nexride-rider-live-location";
 import { tripStatus } from "../../lib/nexride-trip-data";
 import { RiderHomePanel } from "./rider-home";
 import {
@@ -90,6 +91,13 @@ export function RiderWorkspace({
     } catch {}
   };
   const realTrips = useRiderTrips();
+  // GPS sharing is limited to the authenticated Rider’s accepted or active trip.
+  useRiderTripLocationPublisher(
+    realTrips.userId,
+    realTrips.active ? String(realTrips.active.id) : null,
+    realTrips.active?.state,
+    position,
+  );
   const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
   const openRealTrip = (id: string, state: unknown) => {
     setSelectedTripId(id);

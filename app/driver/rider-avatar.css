@@ -1,0 +1,110 @@
+/* Original NexRide human rider marker; rendered only on an assigned driver's map. */
+.nr-rider-human-marker {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 108px;
+  height: 77px;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  color: #f4fbff;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  pointer-events: auto;
+  font-family: inherit;
+  filter: drop-shadow(0 4px 8px rgba(0, 17, 30, .36));
+}
+.nr-rider-human-figure {
+  display: grid;
+  place-items: center;
+  width: 50px;
+  height: 53px;
+  position: relative;
+}
+.nr-rider-human-figure::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: 50%;
+  top: 47%;
+  width: 39px;
+  height: 39px;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 200, 120, .14);
+  border: 1px solid rgba(0, 200, 120, .48);
+  border-radius: 50%;
+}
+.nr-rider-human-marker[data-mode="live"] .nr-rider-human-figure::after {
+  animation: nr-rider-presence 3.2s ease-in-out infinite;
+}
+.nr-rider-human-marker[data-mode="stale"] { opacity: .74; }
+.nr-rider-human-marker[data-mode="stale"] .nr-rider-human-figure::after {
+  background: rgba(235, 171, 70, .14);
+  border-color: rgba(235, 171, 70, .7);
+  border-style: dashed;
+}
+.nr-rider-human-marker[data-mode="pickup-only"] .nr-rider-human-figure {
+  filter: grayscale(.55);
+  opacity: .85;
+}
+.nr-rider-human-marker[data-mode="pickup-only"] .nr-rider-human-figure::after {
+  border-style: dashed;
+  border-color: rgba(196, 215, 226, .6);
+  background: rgba(4, 28, 48, .16);
+}
+.nr-rider-human-label {
+  max-width: 108px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 10px;
+  line-height: 17px;
+  font-weight: 800;
+  letter-spacing: .015em;
+  padding: 2px 8px;
+  border: 1px solid rgba(231, 247, 248, .72);
+  border-radius: 999px;
+  background: #08334a;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, .2);
+}
+.nr-rider-human-marker[data-mode="pickup-only"] .nr-rider-human-label { background: #425363; }
+.nr-rider-human-marker[data-mode="stale"] .nr-rider-human-label { background: #66502d; }
+.nr-rider-human-marker:focus-visible { outline: 3px solid #00c878; outline-offset: 2px; border-radius: 14px; }
+@keyframes nr-rider-presence {
+  0%, 100% { opacity: .65; transform: translate(-50%,-50%) scale(.88); }
+  50% { opacity: 1; transform: translate(-50%,-50%) scale(1.08); }
+}
+.nr-driver-rider-details {
+  position: absolute;
+  z-index: 15;
+  bottom: calc(190px + env(safe-area-inset-bottom));
+  left: 14px;
+  width: min(350px, calc(100% - 28px));
+  padding: 14px;
+  border-radius: 19px;
+  border: 1px solid rgba(111, 166, 188, .44);
+  background: #082a40;
+  color: #f4fafc;
+  box-shadow: 0 16px 42px rgba(0, 11, 22, .34);
+  display: grid;
+  gap: 8px;
+}
+.nr-driver-rider-details-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.nr-driver-rider-details-head strong { font-weight: 850; font-size: 15px; }
+.nr-driver-rider-details-head button { border: 0; background: #173b53; color: #e1eff8; width: 34px; height: 34px; border-radius: 11px; cursor: pointer; }
+.nr-driver-rider-details p { font-size: 12px; line-height: 1.45; color: #b9d0de; margin: 0; }
+.nr-driver-rider-details-status { font-weight: 800; color: #5aebae; font-size: 11px; }
+.nr-driver-rider-details-status[data-mode="stale"] { color: #f5cc7b; }
+.nr-driver-rider-details-status[data-mode="pickup-only"] { color: #b9d0de; }
+.nr-driver-rider-details-actions { display: flex; gap: 8px; }
+.nr-driver-rider-details-actions button { padding: 10px 14px; color: #092a28; border: 0; background: #00c878; font-weight: 850; border-radius: 12px; min-height: 44px; cursor: pointer; }
+@media (min-width: 760px) {
+  .nr-driver-rider-details { left: 28px; bottom: 110px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nr-rider-human-marker .nr-rider-human-figure::after { animation: none !important; }
+}

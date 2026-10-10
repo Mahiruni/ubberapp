@@ -7,6 +7,8 @@ import { DriverBottomSheet } from "../../../components/nexride/driver-bottom-she
 import { Button, Dialog, Icon } from "../../../components/nexride/ui";
 import { useOperationalTranslation } from "../../../components/nexride/operational-i18n";
 import { supabase } from "../../../lib/supabase";
+import { useAssignedRiderLocation } from "../../../lib/nexride-rider-live-location";
+import type { RiderAvatarMode } from "../../../components/nexride/rider-avatar-marker";
 import { nexrideApiFetch } from "../../../lib/nexride-api-auth";
 import { resolveSessionRole } from "../../../lib/nexride-account-role";
 import { emitNexRideFeedback, speakNexRideNavigation, stopNexRideNavigationVoice } from "../../../lib/nexride-feedback";
@@ -94,6 +96,7 @@ export default function DriverNavigationPage() {
   const op = useOperationalTranslation();
   const [driverId, setDriverId] = useState("");
   const [trip, setTrip] = useState<NavigationData | null>(null);
+  const [riderDetailsOpen, setRiderDetailsOpen] = useState(false);
   const [riderPhone, setRiderPhone] = useState("");
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -118,6 +121,7 @@ export default function DriverNavigationPage() {
   const [nativeRoute, setNativeRoute] = useState<NativeRoute | null>(null);
   const [nativeRouteNotice, setNativeRouteNotice] = useState("");
   const [confirmAction, setConfirmAction] = useState<"in_trip" | "completed" | null>(null);
+  const riderLocation = useAssignedRiderLocation(trip?.requestId ?? null, driverId, trip?.status);
 
   const loadTrip = useCallback(async (userId: string, offerId: string) => {
     const { data: offer, error: offerError } = await supabase
@@ -523,6 +527,20 @@ export default function DriverNavigationPage() {
     return { target: "destination" as const, title: trip.status === "completed" ? "Trip completed" : "Trip unavailable", destination: trip.destination, coordinate: trip.destinationCoordinate, distance: null, eta: null, badge: trip.status === "completed" ? "COMPLETED" : "ENDED" };
   }, [trip]);
 
+  const riderAssigned = !!trip && ["accepted", "arrived_pickup", "in_trip"].includes(trip.status);
+  const riderFix = riderAssigned ? riderLocation.fix : null;
+  const riderMode: RiderAvatarMode = riderFix
+    ? riderLocation.status === "live" ? "live" : "stale"
+    : "pickup-only";
+  const riderPoint = riderAssigned
+    ? riderFix ? { lat: riderFix.lat, lng: riderFix.lng } : trip?.pickupCoordinate ?? null
+    : null;
+  const riderPositionLabel = riderMode === "live"
+    ? "Live rider location"
+    : riderMode === "stale"
+      ? "Last known rider location — updates delayed"
+      : "Pickup point only — rider GPS not available";
+
   const canNavigate = trip?.status === "accepted" || trip?.status === "in_trip";
   const invalidTrip = trip?.status === "withdrawn" || trip?.status === "cancelled";
   const activeRoute =
@@ -652,9 +670,22 @@ export default function DriverNavigationPage() {
 
   return (
     <main className="nr-app nr-driver-navigation-page" data-mode="driver">
-      <DriverNavigationMap vehicle={position} pickup={trip.pickupCoordinate} destination={trip.destinationCoordinate} route={nativeRoute?.target === stage.target ? nativeRoute.geometry : []} segments={nativeRoute?.target === stage.target ? nativeRoute.segments : []} target={stage.target} view={mapView} gpsState={gpsState} heading={position?.heading ?? null} />
+      <DriverNavigationMap vehicle={position} pickup={trip.pickupCoordinate} destination={trip.destinationCoordinate} route={nativeRoute?.target === stage.target ? nativeRoute.geometry : []} segments={nativeRoute?.target === stage.target ? nativeRoute.segments : []} target={stage.target} view={mapView} gpsState={gpsState} heading={position?.heading ?? null} rider={riderPoint} riderMode={riderAssigned ? riderMode : undefined} onRiderPress={() => setRiderDetailsOpen(true)} />
 
       <button className="nr-nav-home" onClick={() => router.replace("/driver/home")} aria-label={op("Driver home")}><Icon name="home" size={19} /></button>
+
+      {riderAssigned && riderDetailsOpen && (
+        <aside className="nr-driver-rider-details" aria-label="Assigned rider location information">
+          <div className="nr-driver-rider-details-head">
+            <strong>{op("Your rider")}</strong>
+            <button type="button" onClick={() => setRiderDetailsOpen(false)} aria-label="Close rider details"><Icon name="close" size={19} /></button>
+          </div>
+          <span className="nr-driver-rider-details-status" data-mode={riderMode} role="status">{op(riderPositionLabel)}</span>
+          {riderFix && <p>{op("Location last received")} {new Date(riderFix.recordedAt).toLocaleTimeString()} {riderFix.accuracy != null ? `· GPS ±${Math.round(riderFix.accuracy)} m` : ""}</p>}
+          <p>{op("Pickup")}: {trip.pickup}</p>
+          <div className="nr-driver-rider-details-actions"><button type="button" onClick={() => router.push(`/trip/chat?ride=${trip.requestId}&role=driver&offer=${trip.offerId}`)}><Icon name="chat" size={16} /> {op("Chat")}</button></div>
+        </aside>
+      )}
 
       <section className="nr-nav-guidance" aria-live="polite">
         <span className="nr-nav-guidance-icon"><Icon name="navigation" size={30} /></span>

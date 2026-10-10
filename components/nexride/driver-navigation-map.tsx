@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import type { GeoJSONSource, Map as MapboxMap, Marker as MapboxMarker } from "mapbox-gl";
 import { Icon, Spinner } from "./ui";
 import { useDriverTheme } from "./driver-app-shell";
+import { createRiderAvatarMarker, updateRiderAvatarMarker, type RiderAvatarMode } from "./rider-avatar-marker";
+import "../../app/driver/rider-avatar.css";
 import "mapbox-gl/dist/mapbox-gl.css";
 
 export type NavigationCoordinate = { lat: number; lng: number };
@@ -45,6 +47,9 @@ export function DriverNavigationMap({
   view,
   gpsState,
   heading,
+  rider,
+  riderMode,
+  onRiderPress,
 }: {
   vehicle: NavigationCoordinate | null;
   pickup: NavigationCoordinate | null;
@@ -55,11 +60,18 @@ export function DriverNavigationMap({
   view: MapView;
   gpsState: GpsState;
   heading: number | null;
+  rider?: NavigationCoordinate | null;
+  riderMode?: RiderAvatarMode;
+  onRiderPress?: () => void;
 }) {
   const { resolvedTheme } = useDriverTheme();
   const container = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapboxMap | null>(null);
   const markers = useRef<MapboxMarker[]>([]);
+  const riderMarker = useRef<MapboxMarker | null>(null);
+  const riderAnimation = useRef<number | null>(null);
+  const onRiderPressRef = useRef(onRiderPress);
+  onRiderPressRef.current = onRiderPress;
   const manualView = useRef(false);
   const lastCameraView = useRef<MapView>(view);
   const lastCameraTarget = useRef<"pickup" | "destination">(target);
@@ -128,6 +140,9 @@ export function DriverNavigationMap({
       cancelled = true;
       markers.current.forEach((marker) => marker.remove());
       markers.current = [];
+      riderMarker.current?.remove();
+      riderMarker.current = null;
+      if (riderAnimation.current !== null) cancelAnimationFrame(riderAnimation.current);
       mapRef.current?.remove();
       mapRef.current = null;
     };
@@ -281,6 +296,54 @@ export function DriverNavigationMap({
     return () => { cancelled = true; };
   }, [vehicle?.lat, vehicle?.lng, pickup?.lat, pickup?.lng, destination?.lat, destination?.lng, target, gpsState, heading, mountedRevision]);
 
+  // The assigned Rider marker lives independently of vehicle and route markers.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !loaded.current) return;
+    if (riderAnimation.current !== null) cancelAnimationFrame(riderAnimation.current);
+    riderAnimation.current = null;
+    if (!valid(rider) || !riderMode) {
+      riderMarker.current?.remove();
+      riderMarker.current = null;
+      return;
+    }
+    let cancelled = false;
+    void import("mapbox-gl").then((mapboxgl) => {
+      if (cancelled || !mapRef.current) return;
+      const next = lngLat(rider);
+      if (!riderMarker.current) {
+        const element = createRiderAvatarMarker(riderMode);
+        element.addEventListener("click", () => onRiderPressRef.current?.());
+        riderMarker.current = new mapboxgl.default.Marker({ element, anchor: "bottom" })
+          .setLngLat(next).addTo(mapRef.current);
+        return;
+      }
+      const marker = riderMarker.current;
+      updateRiderAvatarMarker(marker.getElement() as HTMLButtonElement, riderMode);
+      const start = marker.getLngLat();
+      const distance = Math.hypot((start.lat - rider.lat) * 111000, (start.lng - rider.lng) * 110000);
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (reduceMotion || distance > 200 || distance < 0.5) {
+        marker.setLngLat(next);
+        return;
+      }
+      const begin = performance.now();
+      const tick = (now: number) => {
+        if (cancelled || !riderMarker.current) return;
+        const t = Math.min(1, (now - begin) / 460);
+        const ease = 1 - Math.pow(1 - t, 3);
+        marker.setLngLat([start.lng + (next[0] - start.lng) * ease, start.lat + (next[1] - start.lat) * ease]);
+        if (t < 1) riderAnimation.current = requestAnimationFrame(tick);
+        else riderAnimation.current = null;
+      };
+      riderAnimation.current = requestAnimationFrame(tick);
+    });
+    return () => {
+      cancelled = true;
+      if (riderAnimation.current !== null) cancelAnimationFrame(riderAnimation.current);
+    };
+  }, [rider?.lat, rider?.lng, riderMode, mountedRevision]);
+
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !map.isStyleLoaded()) return;
@@ -296,6 +359,7 @@ export function DriverNavigationMap({
     if (valid(vehicle)) points.push(vehicle);
     const targetPoint = target === "pickup" ? pickup : destination;
     if (valid(targetPoint)) points.push(targetPoint);
+    if (target === "pickup" && valid(rider) && riderMode !== "pickup-only") points.push(rider);
 
     if (view === "vehicle" && valid(vehicle)) {
       map.easeTo({
@@ -323,7 +387,7 @@ export function DriverNavigationMap({
         duration: matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 320,
       });
     }
-  }, [view, target, route, vehicle?.lat, vehicle?.lng, pickup?.lat, pickup?.lng, destination?.lat, destination?.lng, heading, mountedRevision]);
+  }, [view, target, route, vehicle?.lat, vehicle?.lng, pickup?.lat, pickup?.lng, destination?.lat, destination?.lng, rider?.lat, rider?.lng, riderMode, heading, mountedRevision]);
 
   const recenter = () => {
     const map = mapRef.current;
