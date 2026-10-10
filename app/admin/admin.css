@@ -233,3 +233,56 @@
 .admin-app .module-tools .admin-photo-review-link:focus-visible{outline:3px solid #00c878;outline-offset:2px}
 .admin-app[data-theme="dark"] .module-tools .admin-photo-review-link{background:#123c32;color:#93f2c7;border-color:#267d62}
 @media(max-width:650px){.admin-app .module-tools{flex-wrap:wrap}.admin-app .module-tools .admin-photo-review-link{order:3;flex:1 0 100%}}
+
+
+/* NexRide Command Center — 2026 design-system enhancement.
+   Visual-only overrides; existing admin workflows remain intact. */
+.admin-app{
+  --nr-navy:#041C30;--nr-elevated:#0B2B43;--nr-emerald:#00C878;
+  --nr-surface:#FFFFFF;--nr-canvas:#F5F7F9;--nr-text:#102334;--nr-muted:#667587;
+  background:var(--nr-canvas);color:var(--nr-text);
+  font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans Ethiopic",sans-serif;
+  font-size:15px;
+}
+.admin-app .admin-sidebar{background:var(--nr-navy);border-right:1px solid rgba(255,255,255,.09)}
+.admin-app .admin-sidebar nav button{font-size:13px;font-weight:650;min-height:46px;border-radius:12px}
+.admin-app .admin-sidebar nav button.active{background:var(--nr-elevated);box-shadow:inset 3px 0 var(--nr-emerald);color:#fff}
+.admin-app .admin-sidebar nav button.active i{color:var(--nr-emerald)}
+.admin-app .admin-header{background:color-mix(in srgb,var(--nr-canvas) 91%,transparent);border-bottom:1px solid #DFE7EB;backdrop-filter:blur(20px)}
+.admin-app .admin-header h2{font-size:21px;font-weight:800;letter-spacing:-.045em}
+.admin-app .admin-kicker{font-size:11px;font-weight:750;letter-spacing:.11em;color:var(--nr-muted)}
+.admin-app .admin-content{max-width:1580px;padding:clamp(20px,3.2vw,52px)}
+.admin-app .hero-row h1,.admin-app .module-head h1{font-size:clamp(36px,4.2vw,58px);font-weight:850;letter-spacing:-.065em;line-height:1.06;color:var(--nr-text)}
+.admin-app .hero-row>div>p:last-child,.admin-app .module-head>div>p:last-child{font-size:15px;line-height:1.6;color:var(--nr-muted)}
+.admin-app .metric-grid{gap:14px;margin-top:30px}
+.admin-app .metric,.admin-app .admin-card{background:var(--nr-surface);border:1px solid #E1E8EC;border-radius:20px;box-shadow:0 10px 35px rgba(4,28,48,.045)}
+.admin-app .metric{padding:clamp(18px,2vw,28px)}
+.admin-app .metric small,.admin-app .metric span{font-size:12px;color:var(--nr-muted);font-weight:600}
+.admin-app .metric strong{font-size:clamp(32px,3.1vw,49px);font-variant-numeric:tabular-nums;font-weight:850;letter-spacing:-.065em;line-height:1.1}
+.admin-app .metric.accent{border-top:3px solid var(--nr-emerald)}
+.admin-app .card-head h3,.admin-app .module-strip h3{font-size:clamp(19px,2vw,25px);font-weight:800;letter-spacing:-.035em}
+.admin-app .signal strong{font-size:clamp(24px,2.5vw,36px);font-variant-numeric:tabular-nums}
+.admin-app .signal small,.admin-app .queue-row small,.admin-app .table-meta{font-size:12px}
+.admin-app .queue-row b{font-size:14px}
+.admin-app .module-tools input,.admin-app .hero-row select{font-size:14px;min-height:44px}
+.admin-app th{font-size:11px;letter-spacing:.075em;padding:16px 18px}
+.admin-app td{font-size:13px;padding:16px 18px}
+.admin-app .tag{font-size:11px;padding:6px 10px}
+.admin-app .actions button,.admin-app .quick-actions button{font-size:12px;min-height:36px}
+.admin-app button:focus-visible,.admin-app input:focus-visible,.admin-app select:focus-visible{outline:3px solid var(--nr-emerald);outline-offset:3px}
+.admin-app button{transition:background-color .18s ease,border-color .18s ease,box-shadow .18s ease}
+.admin-app .admin-toast{background:var(--nr-navy);font-size:13px;border-radius:14px}
+.admin-app .admin-primary{background:var(--nr-emerald);color:var(--nr-navy)}
+.admin-app[data-theme="dark"]{--nr-canvas:#061B2A;--nr-surface:#0B2B43;--nr-text:#F5FAFC;--nr-muted:#A8BCC7}
+.admin-app[data-theme="dark"] .metric,.admin-app[data-theme="dark"] .admin-card{border-color:#234357}
+.admin-app[data-theme="dark"] .admin-header{border-bottom-color:#234357}
+@media(max-width:650px){
+ .admin-app .admin-content{padding:24px 16px}
+ .admin-app .hero-row h1,.admin-app .module-head h1{font-size:clamp(33px,9vw,42px)}
+ .admin-app .metric-grid{gap:10px}
+ .admin-app .metric{padding:18px}
+ .admin-app .metric strong{font-size:clamp(27px,7vw,36px)}
+ .admin-app .admin-header h2{font-size:18px}
+ .admin-app .admin-sidebar{background:var(--nr-navy)}
+}
+@media(prefers-reduced-motion:reduce){.admin-app button{transition:none}}
