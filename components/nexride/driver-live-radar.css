@@ -1,0 +1,33 @@
+.nr-driver-radar-panel {
+  position:absolute; z-index:46; top:calc(env(safe-area-inset-top, 0px) + 70px);
+  left:max(12px,env(safe-area-inset-left,0px)); width:min(290px,calc(100vw - 91px));
+  display:grid; gap:8px; padding:11px 12px; border-radius:17px;
+  border:1px solid rgba(0,200,120,.25); background:rgba(4,28,48,.92);
+  color:#f4fbf7; box-shadow:0 8px 26px rgba(4,28,48,.20);
+  -webkit-backdrop-filter:blur(13px); backdrop-filter:blur(13px);
+  font:inherit; pointer-events:auto;
+}
+.nr-driver-radar-head {display:flex;align-items:center; gap:9px;min-width:0}
+.nr-driver-radar-labels {min-width:0;display:grid;gap:3px;flex:1}
+.nr-driver-radar-labels strong {font-size:13px;font-weight:750;letter-spacing:.01em}
+.nr-driver-radar-labels span {font-size:11px;color:#c3d6d0;line-height:1.3}
+.nr-driver-radar-visual {width:33px;height:33px;flex:0 0 33px;position:relative;overflow:hidden;border-radius:50%;background:radial-gradient(circle,#00c87828 0 8%,transparent 9% 39%,#00c87820 40% 42%,transparent 43% 75%,#00c87830 76% 79%,transparent 80%);border:1px solid #00c87888}
+.nr-driver-radar-visual i:first-child {position:absolute;inset:2px;border-radius:50%;border:1px solid rgba(0,200,120,.24)}
+.nr-driver-radar-visual i:nth-child(2) {position:absolute;left:50%;top:50%;width:4px;height:4px;background:#00c878;border-radius:50%;transform:translate(-50%,-50%)}
+.nr-driver-radar-visual i:nth-child(3) {position:absolute;inset:0;background:conic-gradient(from 0deg,transparent 0deg,transparent 305deg,rgba(0,200,120,.36) 354deg,transparent 360deg);border-radius:50%;animation:nr-driver-radar-sweep 5s linear infinite}
+.nr-driver-radar-panel[data-active="false"] .nr-driver-radar-visual i:nth-child(3) {animation:none;opacity:.18}
+@keyframes nr-driver-radar-sweep {to{transform:rotate(360deg)}}
+.nr-driver-radar-toggle {padding:6px 8px;min-width:39px;min-height:32px;border:1px solid rgba(0,200,120,.3);border-radius:11px;background:#00c87825;color:#a9f2cd;font-size:11px;font-weight:800;cursor:pointer}
+.nr-driver-radar-toggle[aria-pressed="false"] {background:rgba(255,255,255,.08);color:#cedbd7;border-color:rgba(255,255,255,.2)}
+.nr-driver-radar-metrics {display:flex;flex-wrap:wrap;gap:6px}
+.nr-driver-radar-metrics span {display:inline-flex;align-items:center;gap:4px;padding:5px 7px;border-radius:9px;background:rgba(255,255,255,.07);font-size:10px;color:#edf7f3;font-variant-numeric:tabular-nums}
+.nr-driver-radar-metrics span[data-synced="true"] {color:#a8f4d0}
+.nr-driver-radar-foot {display:flex;align-items:center;gap:9px;justify-content:space-between}
+.nr-driver-radar-foot small {font-size:10px;line-height:1.4;color:#bdd6ce;max-width:190px}
+.nr-driver-radar-foot button {display:inline-flex;align-items:center;gap:5px;border:0;border-radius:9px;padding:7px;background:rgba(255,255,255,.1);color:#fff;font-size:10px;font-weight:700;cursor:pointer}
+.nr-driver-radar-panel button:focus-visible {outline:2px solid #00c878;outline-offset:2px}
+@media (max-width:390px) {
+  .nr-driver-radar-panel {width:min(248px,calc(100vw - 85px));padding:9px 10px}
+  .nr-driver-radar-metrics span {font-size:9px;padding:4px 5px}
+}
+@media (prefers-reduced-motion:reduce) {.nr-driver-radar-visual i:nth-child(3){animation:none!important}}
