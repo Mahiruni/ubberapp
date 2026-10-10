@@ -115,8 +115,15 @@ export function DriverSessionBridge() {
           accuracy: Number.isFinite(accuracy) ? accuracy : null,
         } }),
       }).then((response) => {
+        if (!mounted) return;
         if (response.ok) lastGpsSent = Date.now();
+        window.dispatchEvent(new CustomEvent("nexride:driver-gps-sync", {
+          detail: { status: response.ok ? "synced" : "error", at: Date.now() },
+        }));
       }).catch(() => {
+        if (mounted) window.dispatchEvent(new CustomEvent("nexride:driver-gps-sync", {
+          detail: { status: "error", at: Date.now() },
+        }));
         // Keep retrying later; do not mark an unsuccessful GPS upload fresh.
       }).finally(() => {
         gpsUploadInFlight = false;
