@@ -78,8 +78,15 @@ test("body scroll stays native and destination search retains its own keyboard h
   await page.getByRole("button", { name: "Search destination", exact: true }).click();
   await expect(page.getByRole("textbox", { name: "Search destination", exact: true })).toBeVisible();
   const searchHandle = page.locator(".nr-flow-sheet-handle");
-  await searchHandle.press("End");
-  await expect(searchHandle).toHaveAttribute("aria-valuenow", "75");
+  if (page.viewportSize()!.width > 800) {
+    await searchHandle.press("End");
+    await expect(searchHandle).toHaveAttribute("aria-valuenow", "75");
+  } else {
+    // Focused mobile search deliberately becomes a full, scrollable surface.
+    await expect(searchHandle).toBeHidden();
+    const input = page.getByRole("textbox", { name: "Search destination", exact: true });
+    await expect(input).toBeInViewport();
+  }
   await expect(page.locator(".nr-destination-body")).toHaveCSS("overflow-y", "auto");
   await page.getByRole("button", { name: "Back", exact: true }).click();
   await expect(handle(page)).toBeVisible();
