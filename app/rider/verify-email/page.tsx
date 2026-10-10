@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
+import { nexrideAuthRedirectUrl } from "../../../lib/nexride-auth-url";
 import "../../../app/nexride.css";
 
 type Purpose = "signup" | "recovery";
@@ -31,6 +32,9 @@ export default function EmailVerification() {
       if (target.role === "driver") setReturnRole("driver");
       if (target.purpose === "recovery") setPurpose("recovery");
     } catch { /* The verification screen remains usable without saved form context. */ }
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("role") === "driver") setReturnRole("driver");
+    if (params.get("purpose") === "recovery") setPurpose("recovery");
   }, []);
   useEffect(() => {
     if (!lastSent) return;
@@ -46,7 +50,14 @@ export default function EmailVerification() {
       if (result.error) { setError("The code is invalid or expired. Request a new code if necessary."); return; }
       try { window.sessionStorage.removeItem("nexride:verification-target"); } catch { /* Storage is optional. */ }
       if (purpose === "recovery") { setVerified(true); setMessage("Email confirmed. Choose a new password."); }
-      else { setMessage("Email verified successfully."); router.replace(returnRole === "driver" ? "/driver/auth?confirmed=1" : "/rider/sign-in?confirmed=1"); }
+      else {
+        // verifyOtp establishes a session. End only this device's temporary
+        // confirmation session so verification does not silently sign users in.
+        const { error: signOutError } = await supabase.auth.signOut({ scope: "local" });
+        if (signOutError) { setError("Email verified. For your security, please sign out before signing in again."); return; }
+        setMessage("Email verified successfully. Sign in to continue.");
+        router.replace(returnRole === "driver" ? "/driver/auth?confirmed=1" : "/rider/sign-in?confirmed=1");
+      }
     } catch { setError("Verification could not be completed. Check your connection."); }
     finally { setBusy(false); }
   }
@@ -55,8 +66,8 @@ export default function EmailVerification() {
     setBusy(true); setError(""); setMessage("");
     try {
       const result = purpose === "signup"
-        ? await supabase.auth.resend({type:"signup",email:email.trim().toLowerCase(),options:{emailRedirectTo:window.location.origin+(returnRole === "driver" ? "/driver/auth?confirmed=1" : "/rider/sign-in?confirmed=1")}})
-        : await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(),{redirectTo:window.location.origin+"/rider/reset-password"});
+        ? await supabase.auth.resend({type:"signup",email:email.trim().toLowerCase(),options:{emailRedirectTo:nexrideAuthRedirectUrl(returnRole === "driver" ? "/driver/auth?confirmed=1" : "/rider/sign-in?confirmed=1")}})
+        : await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(),{redirectTo:nexrideAuthRedirectUrl("/rider/reset-password")});
       if (result.error) { setError("Unable to send an email right now. Please wait before trying again."); return; }
       setLastSent(Date.now());
       setMessage("If eligible, a verification email has been sent. Check your inbox and spam folder.");
@@ -71,7 +82,8 @@ export default function EmailVerification() {
     try {
       const result = await supabase.auth.updateUser({password});
       if (result.error) { setError("Password update failed. Please try again."); return; }
-      await supabase.auth.signOut();
+      const { error: signOutError } = await supabase.auth.signOut({ scope: "local" });
+      if (signOutError) { setMessage("Password updated. Sign out from your account, then sign in with your new password."); return; }
       router.replace(returnRole === "driver" ? "/driver/auth?passwordUpdated=1" : "/rider/sign-in?passwordUpdated=1");
     } catch { setError("Password update failed. Please try again."); }
     finally { setBusy(false); }
@@ -80,14 +92,14 @@ export default function EmailVerification() {
     <section style={{width:"100%",maxWidth:420,background:"#FFFFFF",borderRadius:24,padding:"clamp(24px,6vw,40px)",boxShadow:"0 18px 70px #28217F14"}}>
       <Link href="/rider/sign-in" style={{color:"#5145E5",fontWeight:800,textDecoration:"none"}}>◆ NexRide</Link>
       <h1 style={{fontSize:28,letterSpacing:"-.04em",marginBottom:8}}>{verified?"Create a new password":"Verify your email"}</h1>
-      <p style={{color:"#55546B",lineHeight:1.5}}>{verified?"Secure your account with a new password.":"Enter the unique six-digit code sent to your inbox."}</p>
+      <p style={{color:"#55546B",lineHeight:1.5}}>{verified?"Secure your account with a new password.":"Enter your six-digit email code. If your email contains a confirmation link instead, open that link to continue."}</p>
       {!verified ? <form onSubmit={verify} style={{display:"grid",gap:14}}>
         <label>Account type<select value={returnRole} onChange={e=>setReturnRole(e.target.value as "rider" | "driver")} style={field}><option value="rider">Rider</option><option value="driver">Driver</option></select></label>
         <label>Verification purpose<select value={purpose} onChange={e=>{setPurpose(e.target.value as Purpose);setCode("");setError("");}} style={field}><option value="signup">Confirm new account</option><option value="recovery">Reset forgotten password</option></select></label>
         <label>Email address<input required type="email" autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)} style={field} placeholder="you@example.com"/></label>
         <label>Six-digit code<input required type="text" inputMode="numeric" autoComplete="one-time-code" maxLength={6} pattern="[0-9]{6}" value={code} onChange={e=>setCode(e.target.value.replace(/\D/g,"").slice(0,6))} style={{...field,letterSpacing:".35em",fontSize:23,textAlign:"center"}} placeholder="000000"/></label>
         <button disabled={busy} type="submit" style={action}>{busy?"Verifying…":"Verify email"}</button>
-        <button disabled={busy || !validEmail(email) || (lastSent > 0 && clock - lastSent < 60000)} type="button" onClick={resend} style={{...action,background:"#F0EEFF",color:"#28217F"}}>Resend code</button>
+        <button disabled={busy || !validEmail(email) || (lastSent > 0 && clock - lastSent < 60000)} type="button" onClick={resend} style={{...action,background:"#F0EEFF",color:"#28217F"}}>Send or resend email</button>
       </form> : <form onSubmit={changePassword} style={{display:"grid",gap:14}}>
         <label>New password<input required type="password" minLength={12} autoComplete="new-password" value={password} onChange={e=>setPassword(e.target.value)} style={field}/></label>
         <label>Confirm password<input required type="password" minLength={12} autoComplete="new-password" value={confirm} onChange={e=>setConfirm(e.target.value)} style={field}/></label>
@@ -95,7 +107,8 @@ export default function EmailVerification() {
       </form>}
       {error&&<p role="alert" style={{color:"#B42318"}}>{error}</p>}
       {message&&<p role="status" style={{color:"#28217F"}}>{message}</p>}
-      <p style={{fontSize:12,color:"#55546B",marginTop:20}}>Never share your verification code. NexRide will never ask for it by phone.</p>
+      <p style={{fontSize:12,color:"#55546B",marginTop:20}}>If your email contains a verification or password-reset link instead of a six-digit code, use the link. Both email formats remain supported.</p>
+      <p style={{fontSize:12,color:"#55546B"}}>Never share your verification code. NexRide will never ask for it by phone.</p>
     </section>
   </main>;
 }
