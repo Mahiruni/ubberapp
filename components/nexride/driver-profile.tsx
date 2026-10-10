@@ -159,14 +159,14 @@ export function DriverProfileScreen({
 
       <section className="nr-driver-profile-hero nr-driver-profile-hero-v2">
         <DriverPhotoManager driverId={driverId} fullName={profile.fullName}>
-        <div className="nr-driver-profile-photo">
+        <span className="nr-driver-profile-photo">
           {profile.avatarUrl ? (
             <Image src={profile.avatarUrl} alt={profile.fullName + " profile"} width={88} height={88} unoptimized />
           ) : (
             <span aria-label="Profile initials">{initials}</span>
           )}
           {verified && <i className="nr-driver-photo-badge"><Icon name="check" size={13}/></i>}
-        </div>
+        </span>
         </DriverPhotoManager>
 
         <div className="nr-driver-profile-identity">
