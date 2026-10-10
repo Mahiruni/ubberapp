@@ -1,0 +1,52 @@
+/* NexRide map marker design tokens — rider and driver. */
+.nr-nearby-car-marker {
+  --nr-nearby-car-label-bg: #041c30;
+  --nr-nearby-car-label-text: #ffffff;
+}
+.nr-nearby-car-brand { border: 1px solid rgba(0,200,120,.55); }
+.nr-nearby-car-shell { fill: #041c30; }
+.nr-nearby-car-glass { fill: #dcecf3; }
+.nr-nearby-car-accent { fill: #00c878; }
+.nr-nearby-car-grille { fill: #0b2b43; }
+.nr-app[data-theme="dark"] .nr-nearby-car-marker {
+  --nr-nearby-car-label-bg: #041c30;
+  --nr-nearby-car-label-text: #ffffff;
+}
+.nr-app[data-theme="dark"] .nr-nearby-car-shell { fill: #041c30; }
+.nr-app[data-theme="dark"] .nr-nearby-car-glass { fill: #dcecf3; }
+.nr-app[data-theme="dark"] .nr-nearby-car-grille { fill: #0b2b43; }
+
+/* A single compact car glyph is reused for approach and vehicle navigation. */
+.nr-driver-map-marker.vehicle {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  background: #041c30;
+  color: #00c878;
+  box-shadow: 0 4px 13px rgba(4,28,48,.28);
+}
+.nr-driver-map-marker.vehicle .nr-branded-car-glyph {
+  display: block;
+  width: 25px;
+  height: 25px;
+  transform: rotate(var(--nr-heading,0deg));
+}
+.nr-driver-map-marker.vehicle.approaching {
+  border-color: #00c878;
+  box-shadow: 0 0 0 4px rgba(0,200,120,.16), 0 4px 13px rgba(4,28,48,.28);
+}
+.nr-driver-map-marker.vehicle.stale { opacity: .65; }
+.nr-driver-map-marker.pickup {
+  background: #00c878;
+  border: 2px solid #fff;
+  box-shadow: 0 3px 10px rgba(4,28,48,.25);
+}
+.nr-driver-map-marker.pickup.active { outline: 3px solid rgba(0,200,120,.25); }
+.nr-map-endpoint-marker .nr-pin-core.pickup { background: #00c878; border-color: #fff; }
+.nr-map-endpoint-marker .nr-pin-core.destination { background: #041c30; border-color: #fff; }
+@media (prefers-reduced-motion: reduce) {
+  .nr-driver-map-marker, .nr-nearby-car-marker { animation: none !important; transition: none !important; }
+}
