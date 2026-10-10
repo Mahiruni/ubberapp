@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import type { Session } from "@supabase/supabase-js";
 import { Brand, Icon, type IconName } from "../../components/nexride/ui";
 import { supabase } from "../../lib/supabase";
@@ -958,6 +959,7 @@ function DataModule({
           </p>
         </div>
         <div className="module-tools">
+          {(module === "verification" || module === "drivers") && <Link className="admin-photo-review-link" href="/admin/driver-photos" aria-label="Open Driver photo approval queue">Photo reviews ↗</Link>}
           <input
             id="admin-module-search"
             value={query}
