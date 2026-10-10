@@ -76,6 +76,20 @@ export function TripExperience({ screen, tripId, userId, preview, navigate, setP
   };
   const file = screen === 'summary' ? 'completion.html' : screen === 'live' ? 'trip.html' : 'index.html';
   const live = !!tripId && !!userId;
+  const [approvedDriverPhoto, setApprovedDriverPhoto] = useState('');
+  const approvedDriverId = tripSnapshot?.driver?.id;
+  useEffect(() => {
+    let active = true;
+    setApprovedDriverPhoto('');
+    if (!live || !approvedDriverId) return;
+    void (async () => {
+      const { data: photo } = await supabase.from('driver_profile_photos').select('storage_path').eq('driver_id', approvedDriverId).eq('status', 'approved').maybeSingle();
+      if (!active || !photo?.storage_path) return;
+      const { data } = await supabase.storage.from('nexride-driver-photos').createSignedUrl(photo.storage_path, 300);
+      if (active) setApprovedDriverPhoto(data?.signedUrl || '');
+    })();
+    return () => { active = false; };
+  }, [approvedDriverId, live]);
 
   const openSafety = () => {
     try {
@@ -321,6 +335,7 @@ export function TripExperience({ screen, tripId, userId, preview, navigate, setP
       storageKey={`nexride.rider.sheet.${screen}`}
     />
     <div className="nr-trip-toolbar">
+      {approvedDriverPhoto && tripSnapshot?.driver && <img src={approvedDriverPhoto} alt={`${tripSnapshot.driver.name || "Driver"} approved profile photo`} width={38} height={38} style={{borderRadius:"50%",objectFit:"cover",border:"2px solid #00c878",flexShrink:0}}/>}
       {screen === 'summary' && <button onClick={() => window.location.assign('/rider/trips')}>Activity</button>}
       <span role="status" aria-live="polite">{live ? connection : 'Preview ride'}</span>
       {screen !== 'summary' && <button onClick={openSafety}>Safety</button>}
