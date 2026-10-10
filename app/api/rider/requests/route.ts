@@ -1,6 +1,7 @@
 import { liveFareSet } from "../../../../lib/nexride-live-pricing";
 import { authorizedRequestSupabase } from "../../../../lib/nexride-server-supabase";
 import { serverAdminSupabase } from "../../../../lib/nexride-server-admin";
+import { resolveRiderEligibility, riderEligibilityHttpStatus } from "../../../../lib/nexride-rider-eligibility";
 import { fareTotal, rideCategories } from "../../../../lib/nexride-booking";
 import {
   insideAddisServiceRadius,
@@ -76,20 +77,10 @@ export async function POST(request: Request) {
     // 100 km Addis service area instead of the older database RPC boundary.
     const admin = serverAdminSupabase();
 
-    const { data: profile, error: profileError } = await admin
-      .from("profiles")
-      .select("id,role,account_status")
-      .eq("id", authorized.user.id)
-      .maybeSingle();
-
-    if (
-      profileError ||
-      !profile ||
-      (profile.role !== "rider" && profile.role !== "admin") ||
-      profile.account_status !== "active"
-    ) {
-      console.warn("nexride_booking_rejected", { reason: "rider_not_eligible" });
-      return reply({ status: "unavailable" }, 403);
+    const eligibility = await resolveRiderEligibility(admin, authorized.user.id);
+    if (eligibility !== "eligible") {
+      console.warn("nexride_booking_rejected", { reason: eligibility });
+      return reply({ status: eligibility }, riderEligibilityHttpStatus(eligibility));
     }
 
     const { data: existing, error: existingError } = await admin
@@ -203,18 +194,19 @@ export async function POST(request: Request) {
       return reply({ status: "failed" }, 500);
     }
 
-    // The trusted database dispatcher selects exactly one approved Online
-    // Driver and keeps this request eligible if no one is Online yet.
-    // Reusing the existing request/offer IDs prevents duplicate calls when a
-    // Driver comes Online while the Rider is already searching.
+    // The production database enforces one pending offer per request and
+    // Driver. Do not fan out a bulk INSERT: the transaction will conflict
+    // with the unique index and may leave all Drivers unnotified.
+    // A single trusted server-side dispatcher owns selection, expiration
+    // and retry when new Drivers go Online during the Rider's search.
     const { error: dispatchError } = await admin.rpc("rider_dispatch_pending_server", {
       p_actor: authorized.user.id,
       p_request_id: created.id,
     });
     if (dispatchError) {
-      // The request was committed. Never ask the Rider to place another one:
-      // existing Rider polling and pg_cron will retry it automatically.
-      console.warn("nexride_initial_dispatch_deferred", {
+      // Booking is already committed; leave its ID intact and let the
+      // scheduled dispatch worker retry, rather than double-book the Rider.
+      console.error("nexride_initial_dispatch_deferred", {
         code: dispatchError.code || "unknown",
       });
     }

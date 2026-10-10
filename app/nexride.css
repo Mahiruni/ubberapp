@@ -2210,3 +2210,36 @@
 .nr-driver-sheet-content :where(h1,h2,h3) {
   letter-spacing:-.025em;
 }
+
+/* Biloo-inspired NexRide palette — visual tokens only; no map or trip logic changes. */
+.nr-app {
+  --nr-brand-primary:#5145e5;
+  --nr-brand-primary-strong:#3f33c5;
+  --nr-brand-indigo:#28217f;
+  --nr-brand-lime:#c5f000;
+  --nr-brand-ink:#19172a;
+  --bg:#f7f7fb;
+  --surface:#ffffff;
+  --surface-alt:#f0eff8;
+  --text:#19172a;
+  --muted:#646576;
+  --line:#e4e2ee;
+  --navy:#28217f;
+  --green:#5145e5;
+  --green-text:#4337c9;
+  --green-wash:#efedff;
+  accent-color:var(--nr-brand-primary);
+}
+.nr-app[data-mode="driver"],.nr-app[data-theme="dark"] {
+  --bg:#1e2030;
+  --surface:#262839;
+  --surface-alt:#303146;
+  --text:#f8f8ff;
+  --muted:#b9b9cb;
+  --line:#444459;
+  --navy:#28217f;
+  --green:#a89fff;
+  --green-text:#c5f000;
+  --green-wash:#363451;
+}
+.nr-app :is(button,a,input,select,textarea):focus-visible{outline-color:#5145e5}

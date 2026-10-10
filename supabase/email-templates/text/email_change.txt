@@ -1,0 +1,18 @@
+NEXRIDE
+New email. Same NexRide.
+
+A change to the email address on your NexRide account was requested. Confirm the change to continue.
+
+New email address: {{ .NewEmail }}
+
+Confirm email change:
+{{ .ConfirmationURL }}
+
+FOR YOUR SECURITY
+Did not request this change? Do not confirm it. Open NexRide directly and review your account security.
+
+This link is for one-time use. If it has expired, request a new one in NexRide.
+
+Move with confidence.
+NexRide | https://ubberapp.vercel.app
+This is an account email from NexRide.

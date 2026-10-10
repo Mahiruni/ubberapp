@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     template: "%s | NexRide",
   },
   description,
-  applicationName: "NexRide",
+  applicationName: "NexRide Rider",
   category: "transportation",
   keywords: [
     "NexRide",
@@ -45,7 +45,7 @@ export const metadata: Metadata = {
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
-    title: "NexRide",
+    title: "NexRide Rider",
     statusBarStyle: "black-translucent",
   },
   formatDetection: { telephone: false },

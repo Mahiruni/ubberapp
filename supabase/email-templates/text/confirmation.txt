@@ -1,0 +1,16 @@
+NEXRIDE
+Your next journey starts here.
+
+A smarter way to move is one step away. Confirm your email address to finish creating your NexRide account.
+
+Confirm my email:
+{{ .ConfirmationURL }}
+
+FOR YOUR SECURITY
+If you did not create a NexRide account, you can safely ignore this email.
+
+This link is for one-time use. If it has expired, request a new one in NexRide.
+
+Move with confidence.
+NexRide | https://ubberapp.vercel.app
+This is an account email from NexRide.

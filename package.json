@@ -25,7 +25,8 @@
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "mapbox-gl": "^3.32.0",
-    "@mapbox/mapbox-gl-geocoder": "^5.1.2"
+    "@mapbox/mapbox-gl-geocoder": "^5.1.2",
+    "sharp": "0.35.5"
   },
   "devDependencies": {
     "@playwright/test": "^1.55.0",

@@ -450,18 +450,26 @@ function fitJourney(
     north = Math.max(north, lat);
   }
 
+  const container = map.getContainer();
+  const canvas = container.getBoundingClientRect();
+  const panel = container.closest(".rider-map-flow.nr-polished-wrapper")
+    ?.querySelector<HTMLElement>(".nr-rider-flow-panel")?.getBoundingClientRect();
+  const padding = { top: rideLabel ? 88 : 68, right: 72, bottom: 54, left: 28 };
+  // Keep route endpoints in the exposed map beside or above the ride panel.
+  if (panel && panel.top < canvas.bottom && panel.right > canvas.left) {
+    if (window.innerWidth > 800) {
+      padding.left = Math.min(Math.max(28, panel.right - canvas.left + 24), Math.max(28, canvas.width - padding.right - 48));
+    } else {
+      padding.bottom = Math.min(Math.max(54, canvas.bottom - panel.top + 24), Math.max(54, canvas.height - padding.top - 48));
+    }
+  }
   map.fitBounds(
     [
       [west, south],
       [east, north],
     ],
     {
-      padding: {
-        top: rideLabel ? 88 : 68,
-        right: 72,
-        bottom: 54,
-        left: 28,
-      },
+      padding,
       maxZoom: 16,
       duration: matchMedia("(prefers-reduced-motion: reduce)").matches
         ? 0

@@ -578,3 +578,7 @@
   width:20px;
   height:20px;
 }
+
+/* Biloo-inspired Driver home accent, scoped to non-semantic surfaces. */
+.nr-driver-app-shell{--driver-accent:#5145e5;--driver-success:#00b77a}
+.nr-driver-home-quick-actions button:focus-visible{outline-color:#5145e5}
