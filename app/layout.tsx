@@ -1,12 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { ServiceWorkerRegistration } from "../components/nexride/service-worker";
-import { NexRideMobileUpdateGate } from "../components/nexride/mobile-update-gate";
 import { NexRideFeedbackBootstrap } from "../components/nexride/feedback-bootstrap";
 import { NexRideLanguageProvider } from "../components/nexride/language-provider";
 import { NexRideResilienceProvider } from "../components/nexride/resilience-provider";
 import { NEXRIDE_SITE_URL } from "../lib/nexride-site";
 import "./globals.css";
-import "./mobile-update.css";
 import "./polish.css";
 import "./premium-overrides.css";
 import "./trip-experience.css";
@@ -22,7 +20,6 @@ import "./resilience.css";
 import "./live-location.css";
 import "./driver/driver-shell.css";
 import "./audio-system.css";
-import "./driver/driver-dock-premium.css";
 
 const description =
   "Book reliable rides across Addis Ababa with NexRide, a rider and driver mobility platform built for Ethiopia.";
@@ -34,7 +31,7 @@ export const metadata: Metadata = {
     template: "%s | NexRide",
   },
   description,
-  applicationName: "NexRide",
+  applicationName: "NexRide Rider",
   category: "transportation",
   keywords: [
     "NexRide",
@@ -48,7 +45,7 @@ export const metadata: Metadata = {
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
-    title: "NexRide",
+    title: "NexRide Rider",
     statusBarStyle: "black-translucent",
   },
   formatDetection: { telephone: false },
@@ -163,7 +160,7 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <NexRideLanguageProvider><NexRideResilienceProvider>{children}<NexRideMobileUpdateGate /></NexRideResilienceProvider></NexRideLanguageProvider>
+        <NexRideLanguageProvider><NexRideResilienceProvider>{children}</NexRideResilienceProvider></NexRideLanguageProvider>
         <ServiceWorkerRegistration />
         <NexRideFeedbackBootstrap />
         <script

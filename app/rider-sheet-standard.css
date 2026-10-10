@@ -2112,3 +2112,129 @@
     display: none!important;
   }
 }
+
+
+/* RIDER LIGHT-ONLY WRAPPERS
+   A sheet is always a light surface, even while the surrounding rider app,
+   device or map uses dark mode. Scope tokens to the sheet, not to the map.
+   The map input shield/host stays transparent and interactive. */
+.nr-app[data-mode="rider"] .rider-map-flow :is(
+  .nr-rider-flow-panel,
+  .nr-rider-persistent-wrapper,
+  .nr-rider-home-sheet,
+  .nr-rider-home-panel,
+  .nr-destination-panel,
+  .nr-ride-selection,
+  .nr-driver-matching,
+  .nr-assigned-driver-panel,
+  .nr-trip-experience-panel,
+  .nr-trip-experience,
+  .nr-live-route-panel
+) {
+  --bg:#f5f7f9;
+  --surface:#ffffff;
+  --surface-alt:#f5f7f9;
+  --text:#102334;
+  --muted:#667587;
+  --line:#e4eaf0;
+  --green-text:#007448;
+  --green-wash:#eafff3;
+  --nr-text:#102334;
+  --nr-border:#e4eaf0;
+  --nr-surface:#ffffff;
+  --nr-surface-raised:#f5f7f9;
+  color-scheme:light;
+}
+.nr-app[data-mode="rider"] .rider-map-flow :is(
+  .nr-rider-persistent-wrapper,
+  .nr-rider-home-sheet,
+  .nr-rider-home-panel,
+  .nr-destination-panel,
+  .nr-ride-selection,
+  .nr-driver-matching,
+  .nr-assigned-driver-panel,
+  .nr-trip-experience-panel,
+  .nr-trip-experience
+) {
+  color:#102334!important;
+  border-color:#e4eaf0!important;
+  background:#ffffff!important;
+}
+/* Only the visible content of the permanent wrapper stays transparent;
+   its single white backing avoids a separate rectangular layer. */
+.nr-app[data-mode="rider"] .rider-map-flow
+  .nr-rider-persistent-wrapper > :is(
+    .nr-rider-home-sheet,
+    .nr-destination-panel,
+    .nr-ride-selection,
+    .nr-driver-matching,
+    .nr-assigned-driver-panel,
+    .nr-trip-experience-panel,
+    .nr-trip-experience
+  ) {
+  background:transparent!important;
+}
+.nr-app[data-mode="rider"] .rider-map-flow
+  .nr-rider-flow-panel > .nr-rider-persistent-wrapper {
+  background:#ffffff!important;
+  border-color:#e4eaf0!important;
+  box-shadow:0 -6px 20px rgba(4,28,48,.10)!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+.nr-app[data-mode="rider"] .rider-map-flow :is(
+  .nr-home-sheet-grab-area,
+  .nr-flow-sheet-handle,
+  .nr-home-sheet-scroll,
+  .nr-destination-panel > header,
+  .nr-destination-panel footer,
+  .nr-search-discovery,
+  .nr-endpoint-fields
+) {
+  color:#102334;
+  background:#ffffff!important;
+}
+.nr-app[data-mode="rider"] .rider-map-flow :is(
+  .nr-rider-home-sheet,
+  .nr-destination-panel,
+  .nr-ride-selection,
+  .nr-driver-matching,
+  .nr-assigned-driver-panel,
+  .nr-trip-experience-panel,
+  .nr-trip-experience
+) :is(h1,h2,h3,strong) {
+  color:var(--text);
+}
+.nr-app[data-mode="rider"] .rider-map-flow :is(
+  .nr-rider-home-sheet,
+  .nr-destination-panel,
+  .nr-ride-selection,
+  .nr-driver-matching,
+  .nr-assigned-driver-panel,
+  .nr-trip-experience-panel,
+  .nr-trip-experience
+) :is(p,small) {
+  color:var(--muted);
+}
+/* These selectors also win over older [data-theme="dark"] sheet declarations,
+   including the open keyboard search state. */
+.nr-app[data-mode="rider"][data-theme="dark"] .rider-map-flow
+  .nr-rider-flow-panel > .nr-rider-persistent-wrapper,
+.nr-app[data-mode="rider"][data-theme="dark"] .rider-map-flow
+  .nr-main > .nr-rider-flow-panel > .nr-rider-persistent-wrapper,
+.nr-app[data-mode="rider"][data-theme="dark"] .rider-map-flow
+  .nr-rider-flow-panel > :is(
+    .nr-rider-home-sheet,
+    .nr-destination-panel,
+    .nr-ride-selection,
+    .nr-driver-matching,
+    .nr-assigned-driver-panel,
+    .nr-trip-experience-panel,
+    .nr-trip-experience
+  ) {
+  background:#ffffff!important;
+  border-color:#e4eaf0!important;
+  color:#102334!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}

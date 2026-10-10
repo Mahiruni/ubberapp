@@ -52,7 +52,7 @@
   filter: saturate(0.35) brightness(1.04);
 }
 .nr-geographic-map:focus-visible {
-  outline: 3px solid #00c878;
+  outline: 3px solid #5145e5;
   outline-offset: -3px;
 }
 .nr-rider-map-top {
@@ -76,9 +76,9 @@
   display: grid;
   place-items: center;
   border: 1px solid #e0e7ec;
-  color: #102334;
+  color: #19172a;
   background: #fff;
-  box-shadow: 0 3px 14px #041c3012;
+  box-shadow: 0 3px 14px #28217f12;
 }
 .nr-map-profile {
   border-radius: 50%;
@@ -95,7 +95,7 @@
 }
 .nr-map-preview-chip {
   font-size: 12px;
-  color: #102334;
+  color: #19172a;
   background: #fffffff5;
   border: 1px solid #e0e7ec;
   border-radius: 30px;
@@ -175,7 +175,7 @@
   border-radius: 10px;
   background: white;
   padding: 8px 16px;
-  color: #102334;
+  color: #19172a;
   font-size: 13px;
 }
 .nr-map-spinner {
@@ -197,7 +197,7 @@
   border-radius: 22px;
   padding: 20px;
   color: var(--text);
-  box-shadow: 0 8px 30px #041c300a;
+  box-shadow: 0 8px 30px #28217f0a;
 }
 .nr-sr-only {
   position: absolute;
@@ -405,7 +405,7 @@
     border-bottom: 0;
     border-left: 0;
     border-right: 0;
-    box-shadow: 0 -3px 16px #041c3008;
+    box-shadow: 0 -3px 16px #28217f08;
   }
   .rider-home-view:not(.rider-map-flow) .nr-home-handle {
     display: block;
@@ -484,7 +484,7 @@
 /* Live nearby NexRide supply: real eligible drivers only. */
 .nr-nearby-car-marker {
   --nr-nearby-car-label-bg: rgba(255, 255, 255, 0.96);
-  --nr-nearby-car-label-text: #041c30;
+  --nr-nearby-car-label-text: #28217f;
   position: relative;
   width: 58px;
   height: 55px;
@@ -530,9 +530,9 @@
   height: 32px;
   overflow: visible;
 }
-.nr-nearby-car-shell { fill: #041c30; }
+.nr-nearby-car-shell { fill: #28217f; }
 .nr-nearby-car-glass { fill: #dcecf3; }
-.nr-nearby-car-accent { fill: #00c878; }
+.nr-nearby-car-accent { fill: #5145e5; }
 .nr-nearby-car-grille { fill: #17364b; }
 .nr-nearby-car-shadow { fill: rgba(4, 28, 48, 0.2); }
 .nr-app[data-theme="dark"] .nr-nearby-car-marker {

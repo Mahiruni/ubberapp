@@ -1,5 +1,6 @@
 "use client";
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
 import { Brand, Button, LanguageContext } from "./ui";
 import type { Language } from "../../lib/nexride-i18n";
@@ -34,6 +35,16 @@ export function EntryShell({
         <div className="nr-auth-page">
           <section className="nr-auth-shell nr-auth-shell-rider">
             <div className="nr-auth-hero" aria-hidden="true">
+              {!authMode && (
+                <Image
+                  src="/images/addis-nexride-auth.webp"
+                  alt=""
+                  fill
+                  priority
+                  sizes="(max-width: 899px) 100vw, 52vw"
+                  className="nr-rider-hero-photo"
+                />
+              )}
               <div className="nr-auth-hero-wash" />
               <div className="nr-auth-hero-top">
                 <Brand />
@@ -51,7 +62,13 @@ export function EntryShell({
                 </div>
 
             <div className="nr-auth-content">
-              <div className="nr-entry-language">
+              <div className="nr-entry-tools">
+                {authMode && (
+                  <Link href="/rider" className="nr-rider-entry-back">
+                    <span aria-hidden="true">←</span> Back
+                  </Link>
+                )}
+                <div className="nr-entry-language">
                 <Button
                   variant="ghost"
                   onClick={() => {
@@ -65,6 +82,7 @@ export function EntryShell({
                 >
                   {language === "en" ? "አማርኛ" : "English"}
                 </Button>
+                </div>
               </div>
               {children}
             </div>

@@ -3,9 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import type { GeoJSONSource, Map as MapboxMap, Marker as MapboxMarker } from "mapbox-gl";
 import { Icon, Spinner } from "./ui";
+import { useDriverTheme } from "./driver-app-shell";
 import { createRiderAvatarMarker, updateRiderAvatarMarker, type RiderAvatarMode } from "./rider-avatar-marker";
 import "../../app/driver/rider-avatar.css";
-import { useDriverTheme } from "./driver-app-shell";
 import "mapbox-gl/dist/mapbox-gl.css";
 
 export type NavigationCoordinate = { lat: number; lng: number };
@@ -51,9 +51,6 @@ export function DriverNavigationMap({
   riderMode,
   onRiderPress,
 }: {
-  rider?: NavigationCoordinate | null;
-  riderMode?: RiderAvatarMode;
-  onRiderPress?: () => void;
   vehicle: NavigationCoordinate | null;
   pickup: NavigationCoordinate | null;
   destination: NavigationCoordinate | null;
@@ -63,6 +60,9 @@ export function DriverNavigationMap({
   view: MapView;
   gpsState: GpsState;
   heading: number | null;
+  rider?: NavigationCoordinate | null;
+  riderMode?: RiderAvatarMode;
+  onRiderPress?: () => void;
 }) {
   const { resolvedTheme } = useDriverTheme();
   const container = useRef<HTMLDivElement>(null);
@@ -296,8 +296,7 @@ export function DriverNavigationMap({
     return () => { cancelled = true; };
   }, [vehicle?.lat, vehicle?.lng, pickup?.lat, pickup?.lng, destination?.lat, destination?.lng, target, gpsState, heading, mountedRevision]);
 
-  // Keep the rider marker separate from driver/route markers so GPS and style
-  // updates never destroy or flash the person's avatar.
+  // The assigned Rider marker lives independently of vehicle and route markers.
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !loaded.current) return;
@@ -339,7 +338,10 @@ export function DriverNavigationMap({
       };
       riderAnimation.current = requestAnimationFrame(tick);
     });
-    return () => { cancelled = true; if (riderAnimation.current !== null) cancelAnimationFrame(riderAnimation.current); };
+    return () => {
+      cancelled = true;
+      if (riderAnimation.current !== null) cancelAnimationFrame(riderAnimation.current);
+    };
   }, [rider?.lat, rider?.lng, riderMode, mountedRevision]);
 
   useEffect(() => {

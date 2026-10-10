@@ -26,7 +26,7 @@ type Props = {
   isAdmin?: boolean;
 };
 
-export function RiderSettings({language,setLanguage,theme,setTheme}: Pick<Props,'language'|'setLanguage'|'theme'|'setTheme'>) {
+export function RiderSettings({language,setLanguage}: Pick<Props,'language'|'setLanguage'|'theme'|'setTheme'>) {
   const t=useTranslation();
   const [alerts,setAlerts]=useState(true);
   const [feedback,setFeedback]=useState('');
@@ -43,16 +43,6 @@ export function RiderSettings({language,setLanguage,theme,setTheme}: Pick<Props,
       <div className="nr-segmented" role="group" aria-label={t('language')}>
         <button aria-pressed={language==='en'} onClick={()=>setLanguage('en')}>English</button>
         <button aria-pressed={language==='am'} onClick={()=>setLanguage('am')}>አማርኛ</button>
-      </div>
-    </div>
-    <div className="nr-settings-block">
-      <div>
-        <strong>{t('appearance')}</strong>
-        <small>{say('Match the ride workspace to your preferred appearance.','የጉዞ ገጹን ከሚመርጡት መልክ ጋር ያስማሙ።')}</small>
-      </div>
-      <div className="nr-segmented" role="group" aria-label={t('appearance')}>
-        <button aria-pressed={theme==='light'} onClick={()=>setTheme('light')}>{t('light')}</button>
-        <button aria-pressed={theme==='dark'} onClick={()=>setTheme('dark')}>{t('dark')}</button>
       </div>
     </div>
     <label className="nr-account-toggle">

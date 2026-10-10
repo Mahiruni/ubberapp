@@ -1,0 +1,16 @@
+NEXRIDE
+A fresh start. A secure account.
+
+We received a request to reset your NexRide password. Choose a new password using the secure link below.
+
+Reset my password:
+{{ .ConfirmationURL }}
+
+FOR YOUR SECURITY
+Did not request a reset? Ignore this email. Your current password will stay the same.
+
+This link is for one-time use. If it has expired, request a new one in NexRide.
+
+Move with confidence.
+NexRide | https://ubberapp.vercel.app
+This is an account email from NexRide.

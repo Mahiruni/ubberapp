@@ -450,18 +450,26 @@ function fitJourney(
     north = Math.max(north, lat);
   }
 
+  const container = map.getContainer();
+  const canvas = container.getBoundingClientRect();
+  const panel = container.closest(".rider-map-flow.nr-polished-wrapper")
+    ?.querySelector<HTMLElement>(".nr-rider-flow-panel")?.getBoundingClientRect();
+  const padding = { top: rideLabel ? 88 : 68, right: 72, bottom: 54, left: 28 };
+  // Keep route endpoints in the exposed map beside or above the ride panel.
+  if (panel && panel.top < canvas.bottom && panel.right > canvas.left) {
+    if (window.innerWidth > 800) {
+      padding.left = Math.min(Math.max(28, panel.right - canvas.left + 24), Math.max(28, canvas.width - padding.right - 48));
+    } else {
+      padding.bottom = Math.min(Math.max(54, canvas.bottom - panel.top + 24), Math.max(54, canvas.height - padding.top - 48));
+    }
+  }
   map.fitBounds(
     [
       [west, south],
       [east, north],
     ],
     {
-      padding: {
-        top: rideLabel ? 88 : 68,
-        right: 72,
-        bottom: 54,
-        left: 28,
-      },
+      padding,
       maxZoom: 16,
       duration: matchMedia("(prefers-reduced-motion: reduce)").matches
         ? 0
@@ -1118,8 +1126,11 @@ export function RiderMap({
     let controller: AbortController | null = null;
 
     const loadNearbyDrivers = async () => {
-      controller?.abort();
-      controller = new AbortController();
+      // A slow mobile connection must not cause the next 3-second poll to
+      // abort an in-progress result. The request is cancelled on unmount.
+      if (controller) return;
+      const pending = new AbortController();
+      controller = pending;
       try {
         const params = new URLSearchParams({
           lat: String(position.lat),
@@ -1127,11 +1138,14 @@ export function RiderMap({
         });
         const response = await nexrideApiFetch(
           "/api/rider/nearby-drivers?" + params.toString(),
-          { cache: "no-store", signal: controller.signal },
+          { cache: "no-store", signal: pending.signal },
         );
         if (!active) return;
         if (!response.ok) {
-          setNearbyDrivers([]);
+          // Keep only still-fresh markers during transient server failures.
+          setNearbyDrivers((current) => current.filter(
+            (item) => Date.now() - Date.parse(item.updatedAt) <= 60_000,
+          ));
           return;
         }
         const payload = await response.json();
@@ -1158,26 +1172,46 @@ export function RiderMap({
               Date.now() - Date.parse(item.updatedAt) <= 60_000,
           )
           .slice(0, 10);
-        setNearbyDrivers(next);
+        setNearbyDrivers((current) => {
+          if (current.length === next.length && current.every((item, index) =>
+            item.key === next[index].key &&
+            item.lat === next[index].lat &&
+            item.lng === next[index].lng &&
+            item.updatedAt === next[index].updatedAt
+          )) return current;
+          return next;
+        });
       } catch (error) {
         if (
           active &&
           !(error instanceof DOMException && error.name === "AbortError")
         ) {
-          setNearbyDrivers([]);
+          setNearbyDrivers((current) => current.filter(
+            (item) => Date.now() - Date.parse(item.updatedAt) <= 60_000,
+          ));
         }
+      } finally {
+        if (controller === pending) controller = null;
       }
     };
 
     void loadNearbyDrivers();
+    // New Online drivers should appear on the Rider home map promptly.
+    // Keep server-filtered eligibility, busy-trip checks and location freshness
+    // authoritative rather than retaining optimistic/fake vehicle markers.
     const timer = window.setInterval(() => {
-      if (document.visibilityState === "visible") void loadNearbyDrivers();
-    }, 6_000);
+      if (document.visibilityState === "visible" && navigator.onLine) {
+        void loadNearbyDrivers();
+      }
+    }, 3_000);
     const onVisible = () => {
-      if (document.visibilityState === "visible") void loadNearbyDrivers();
+      if (document.visibilityState === "visible" && navigator.onLine) {
+        void loadNearbyDrivers();
+      }
     };
     document.addEventListener("visibilitychange", onVisible);
     window.addEventListener("online", onVisible);
+    window.addEventListener("focus", onVisible);
 
     return () => {
       active = false;
@@ -1185,6 +1219,7 @@ export function RiderMap({
       window.clearInterval(timer);
       document.removeEventListener("visibilitychange", onVisible);
       window.removeEventListener("online", onVisible);
+      window.removeEventListener("focus", onVisible);
     };
   }, [
     showNearbyDrivers,

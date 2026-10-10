@@ -2,6 +2,7 @@ import { previewFares } from "../../../../lib/nexride-booking";
 import { liveFareSet } from "../../../../lib/nexride-live-pricing";
 import { authorizedRequestSupabase } from "../../../../lib/nexride-server-supabase";
 import { serverAdminSupabase } from "../../../../lib/nexride-server-admin";
+import { resolveRiderEligibility, riderEligibilityHttpStatus } from "../../../../lib/nexride-rider-eligibility";
 import {
   validPoint,
   serviceBounds,
@@ -49,27 +50,11 @@ export async function POST(request: Request) {
   if (!authorized) return reply({ status: "session_expired" }, 401);
 
   try {
-    // Validate the Rider using the server's authoritative profile lookup.
-    // Client-side RLS failures must not masquerade as missing fare prices.
-    const { data: profile, error } = await serverAdminSupabase()
-      .from("profiles")
-      .select("role,account_status")
-      .eq("id", authorized.user.id)
-      .maybeSingle();
-
-    if (error) {
-      console.error("nexride_fares_profile_lookup_failed", {
-        code: error.code || "unknown",
-      });
-      return reply({ status: "temporarily_unavailable" }, 503);
-    }
-    if (!profile || profile.account_status !== "active") {
-      return reply({ status: "profile_unavailable" }, 403);
-    }
-    // Administrators may use the Rider experience without losing their
-    // administrative role; Drivers must sign in with a Rider account.
-    if (profile.role !== "rider" && profile.role !== "admin")
-      return reply({ status: "rider_account_required" }, 403);
+    const eligibility = await resolveRiderEligibility(
+      serverAdminSupabase(), authorized.user.id,
+    );
+    if (eligibility !== "eligible")
+      return reply({ status: eligibility }, riderEligibilityHttpStatus(eligibility));
 
     return reply(liveFareSet({ pickup, destination }));
   } catch {

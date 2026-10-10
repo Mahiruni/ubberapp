@@ -1,27 +1,9 @@
 "use client";
 
-import { useContext, useLayoutEffect, useRef, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent } from "react";
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { Icon, LanguageContext } from "./ui";
-import {
-  clampSwipeOffset,
-  isSwipeReleaseReady,
-  isSwipeThumbHit,
-  swipeTrackTravel,
-} from "../../lib/nexride-driver-swipe";
+import { useContext } from "react";
 
-type SwipeGesture = {
-  pointerId: number;
-  startX: number;
-  startOffset: number;
-  offset: number;
-  moved: boolean;
-};
-
-/**
- * NexRide Driver availability is always server-confirmed by the caller.
- * Only a deliberate thumb drag or keyboard/assistive activation can initiate
- * the existing authenticated availability action.
- */
 export function DriverAvailabilitySwipe({
   online,
   updating,
@@ -36,195 +18,100 @@ export function DriverAvailabilitySwipe({
   onToggle: () => void | Promise<void>;
 }) {
   const language = useContext(LanguageContext);
-  const say = (en: string, am: string) => language === "am" ? am : en;
-  const trackRef = useRef<HTMLButtonElement>(null);
-  const thumbRef = useRef<HTMLSpanElement>(null);
-  const gestureRef = useRef<SwipeGesture | null>(null);
-  const pendingRef = useRef(false);
-  const maxRef = useRef(0);
-  const frameRef = useRef<number | null>(null);
-  const queuedRef = useRef(0);
-  const latestRef = useRef({ online, updating, disabled });
-  latestRef.current = { online, updating, disabled };
+  const say = (en: string, am: string) => (language === "am" ? am : en);
+  const trackRef = useRef<HTMLButtonElement | null>(null);
+  const draggingRef = useRef(false);
+  const draggedRef = useRef(false);
+  const suppressClickRef = useRef(false);
+  const maxOffsetRef = useRef(0);
+  const [dragOffset, setDragOffset] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!updating) setDragOffset(null);
+  }, [online, updating]);
 
   const measure = () => {
     const track = trackRef.current;
-    const thumb = thumbRef.current;
-    if (!track || !thumb) return 0;
-    const travel = swipeTrackTravel(
-      track.getBoundingClientRect().width,
-      thumb.getBoundingClientRect().width,
+    if (!track) return 0;
+    const rect = track.getBoundingClientRect();
+    const thumb = Math.min(58, Math.max(52, rect.height - 8));
+    return Math.max(0, rect.width - thumb - 8);
+  };
+
+  const pointerOffset = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    const track = trackRef.current;
+    if (!track) return online ? maxOffsetRef.current : 0;
+    const rect = track.getBoundingClientRect();
+    const thumb = Math.min(58, Math.max(52, rect.height - 8));
+    return Math.max(
+      0,
+      Math.min(
+        maxOffsetRef.current,
+        event.clientX - rect.left - thumb / 2 - 4,
+      ),
     );
-    maxRef.current = travel;
-    return travel;
   };
 
-  const paint = (offset: number) => {
-    trackRef.current?.style.setProperty("--nr-swipe-x", `${clampSwipeOffset(offset, maxRef.current)}px`);
-  };
-
-  const cancelFrame = () => {
-    if (frameRef.current !== null) {
-      cancelAnimationFrame(frameRef.current);
-      frameRef.current = null;
-    }
-  };
-
-  const queuePaint = (offset: number) => {
-    queuedRef.current = offset;
-    if (frameRef.current !== null) return;
-    frameRef.current = requestAnimationFrame(() => {
-      frameRef.current = null;
-      paint(queuedRef.current);
-    });
-  };
-
-  useLayoutEffect(() => {
-    const track = trackRef.current;
-    if (!track) return;
-    const resize = () => {
-      const max = measure();
-      const gesture = gestureRef.current;
-      if (gesture) {
-        gesture.offset = clampSwipeOffset(gesture.offset, max);
-        paint(gesture.offset);
-      } else if (!pendingRef.current) {
-        paint(latestRef.current.online ? max : 0);
-      }
-    };
-    resize();
-    const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(resize);
-    observer?.observe(track);
-    if (thumbRef.current) observer?.observe(thumbRef.current);
-    window.addEventListener("resize", resize);
-    return () => {
-      observer?.disconnect();
-      window.removeEventListener("resize", resize);
-      cancelFrame();
-    };
-  }, []);
-
-  // Hold the thumb at the user's release point while the server confirms.
-  // Only backend-confirmed online changes move it into the opposite resting position.
-  useLayoutEffect(() => {
-    if (updating || gestureRef.current) return;
-    pendingRef.current = false;
-    const track = trackRef.current;
-    if (track) {
-      track.dataset.pending = "false";
-      track.dataset.ready = "false";
-      track.dataset.dragging = "false";
-    }
-    cancelFrame();
-    paint(online ? measure() : 0);
-  }, [online, updating]);
-
-  const down = (event: ReactPointerEvent<HTMLButtonElement>) => {
-    if (!event.isPrimary || (event.pointerType === "mouse" && event.button !== 0)) return;
-    if (disabled || updating || pendingRef.current || gestureRef.current) return;
-    const thumb = thumbRef.current?.getBoundingClientRect();
-    if (!thumb || !isSwipeThumbHit(event.clientX, thumb.left, thumb.width)) return;
-    const max = measure();
-    const startOffset = online ? max : 0;
-    gestureRef.current = {
-      pointerId: event.pointerId,
-      startX: event.clientX,
-      startOffset,
-      offset: startOffset,
-      moved: false,
-    };
-    event.currentTarget.dataset.dragging = "true";
-    event.currentTarget.dataset.ready = "false";
+  const startDrag = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    if (disabled || updating) return;
+    maxOffsetRef.current = measure();
+    draggingRef.current = true;
+    draggedRef.current = false;
+    setDragOffset(online ? maxOffsetRef.current : 0);
     event.currentTarget.setPointerCapture(event.pointerId);
   };
 
-  const updateGesture = (event: ReactPointerEvent<HTMLButtonElement>) => {
-    const gesture = gestureRef.current;
-    if (!gesture || gesture.pointerId !== event.pointerId) return null;
-    const deltaX = event.clientX - gesture.startX;
-    gesture.moved ||= Math.abs(deltaX) > 10;
-    gesture.offset = clampSwipeOffset(gesture.startOffset + deltaX, maxRef.current);
-    const ready = isSwipeReleaseReady(online, gesture.offset, maxRef.current, gesture.moved);
-    event.currentTarget.dataset.ready = ready ? "true" : "false";
-    queuePaint(gesture.offset);
-    return ready;
+  const moveDrag = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    if (!draggingRef.current) return;
+    const offset = pointerOffset(event);
+    const start = online ? maxOffsetRef.current : 0;
+    if (Math.abs(offset - start) > 5) draggedRef.current = true;
+    setDragOffset(offset);
   };
 
-  const move = (event: ReactPointerEvent<HTMLButtonElement>) => {
-    updateGesture(event);
-  };
+  const finishDrag = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    if (!draggingRef.current) return;
+    draggingRef.current = false;
+    const offset = pointerOffset(event);
+    const max = Math.max(1, maxOffsetRef.current);
+    const progress = offset / max;
+    const completed = online ? progress <= 0.28 : progress >= 0.72;
+    setDragOffset(null);
 
-  const resetGesture = () => {
-    gestureRef.current = null;
-    const track = trackRef.current;
-    if (track) {
-      track.dataset.dragging = "false";
-      track.dataset.ready = "false";
+    if (completed) {
+      suppressClickRef.current = true;
+      if ("vibrate" in navigator) {
+        try { navigator.vibrate(10); } catch {}
+      }
+      void onToggle();
     }
-    cancelFrame();
-    paint(latestRef.current.online ? measure() : 0);
   };
 
-  const up = (event: ReactPointerEvent<HTMLButtonElement>) => {
-    const gesture = gestureRef.current;
-    if (!gesture || gesture.pointerId !== event.pointerId) return;
-    const ready = updateGesture(event);
-    const offset = gesture.offset;
-    gestureRef.current = null;
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    }
-    event.currentTarget.dataset.dragging = "false";
-    event.currentTarget.dataset.ready = "false";
-    cancelFrame();
+  const cancelDrag = () => {
+    draggingRef.current = false;
+    setDragOffset(null);
+  };
 
-    if (!ready) {
-      paint(online ? measure() : 0);
+  const activate = () => {
+    if (suppressClickRef.current) {
+      suppressClickRef.current = false;
       return;
     }
-    pendingRef.current = true;
-    event.currentTarget.dataset.pending = "true";
-    paint(offset);
-    if ("vibrate" in navigator) {
-      try { navigator.vibrate(10); } catch { /* Haptics are optional. */ }
+    if (disabled || updating || draggedRef.current) {
+      draggedRef.current = false;
+      return;
     }
-    try {
-      void Promise.resolve(onToggle()).catch(() => {
-        pendingRef.current = false;
-        if (trackRef.current) trackRef.current.dataset.pending = "false";
-        paint(latestRef.current.online ? measure() : 0);
-      });
-    } catch {
-      pendingRef.current = false;
-      if (trackRef.current) trackRef.current.dataset.pending = "false";
-      paint(latestRef.current.online ? measure() : 0);
-    }
-  };
-
-  const cancel = (event: ReactPointerEvent<HTMLButtonElement>) => {
-    if (gestureRef.current?.pointerId !== event.pointerId) return;
-    resetGesture();
-  };
-
-  const activate = (event: ReactMouseEvent<HTMLButtonElement>) => {
-    // Physical pointer clicks cannot toggle availability. Native keyboard
-    // and assistive technology activation dispatch click with detail === 0.
-    if (event.detail !== 0 || disabled || updating || pendingRef.current) return;
     void onToggle();
   };
 
-  const label = updating
+  const defaultLabel = updating
     ? online
       ? say("Going offline…", "ከመስመር ውጭ በመውጣት ላይ…")
       : say("Going online…", "ወደ መስመር በመግባት ላይ…")
-    : labelOverride || (online ? say("Go offline", "ከመስመር ውጭ") : say("Go online", "መስመር ላይ"));
-  const hint = updating
-    ? say("Confirming availability", "ሁኔታው በመረጋገጥ ላይ")
-    : labelOverride
-      ? say("Review your driver status", "የአሽከርካሪ ሁኔታን ይመልከቱ")
-      : online
-        ? say("Swipe left to confirm", "ለማረጋገጥ ወደ ግራ ያንሸራትቱ")
-        : say("Swipe right to confirm", "ለማረጋገጥ ወደ ቀኝ ያንሸራትቱ");
+    : online
+      ? say("Swipe left to go offline", "ከመስመር ውጭ ለመውጣት ወደ ግራ ያንሸራትቱ")
+      : say("Swipe right to go online", "ወደ መስመር ለመግባት ወደ ቀኝ ያንሸራትቱ");
+  const label = labelOverride || defaultLabel;
 
   return (
     <button
@@ -232,44 +119,37 @@ export function DriverAvailabilitySwipe({
       type="button"
       role="switch"
       aria-checked={online}
-      aria-busy={updating}
-      aria-description={say(
-        "Drag the circular thumb to confirm. Press Enter or Space to activate with a keyboard.",
-        "ለማረጋገጥ ክብ መቆጣጠሪያውን ያንሸራትቱ። በቁልፍ ሰሌዳ Enter ወይም Space ይጫኑ።",
-      )}
-      aria-label={online
-        ? say("Driver online. Swipe left to go offline.", "አሽከርካሪው መስመር ላይ ነው። ከመስመር ውጭ ለመውጣት ወደ ግራ ያንሸራትቱ።")
-        : say("Driver offline. Swipe right to go online.", "አሽከርካሪው ከመስመር ውጭ ነው። ወደ መስመር ለመግባት ወደ ቀኝ ያንሸራትቱ።")
+      aria-label={
+        online
+          ? say("Driver online. Swipe or activate to go offline.", "አሽከርካሪው መስመር ላይ ነው። ከመስመር ውጭ ለመውጣት ያንሸራትቱ ወይም ያግብሩ።")
+          : say("Driver offline. Swipe or activate to go online.", "አሽከርካሪው ከመስመር ውጭ ነው። ወደ መስመር ለመግባት ያንሸራትቱ ወይም ያግብሩ።")
       }
       className="nr-driver-availability-swipe"
       data-online={online ? "true" : "false"}
       data-updating={updating ? "true" : "false"}
-      data-dragging="false"
-      data-ready="false"
-      data-pending="false"
+      data-dragging={dragOffset !== null ? "true" : "false"}
       disabled={disabled || updating}
-      onPointerDown={down}
-      onPointerMove={move}
-      onPointerUp={up}
-      onPointerCancel={cancel}
-      onLostPointerCapture={(event) => {
-        if (gestureRef.current?.pointerId === event.pointerId) resetGesture();
-      }}
+      onPointerDown={startDrag}
+      onPointerMove={moveDrag}
+      onPointerUp={finishDrag}
+      onPointerCancel={cancelDrag}
       onClick={activate}
     >
-      <span className="nr-driver-swipe-label" aria-hidden="true">
-        <span className="nr-driver-swipe-instruction">
-          <strong className="nr-driver-swipe-primary">{label}</strong>
-          <small className="nr-driver-swipe-hint">{hint}</small>
-        </span>
-        <span className="nr-driver-swipe-release">
-          <strong>{online
-            ? say("Release to go offline", "ከመስመር ውጭ ለመውጣት ይልቀቁ")
-            : say("Release to go online", "መስመር ላይ ለመግባት ይልቀቁ")}</strong>
-        </span>
-      </span>
-      <span ref={thumbRef} className="nr-driver-swipe-thumb" aria-hidden="true">
-        {updating ? <span className="nr-driver-swipe-spinner" /> : <Icon name={online ? "back" : "arrow"} size={21} />}
+      <span className="nr-driver-swipe-label" aria-hidden="true">{label}</span>
+      <span
+        className="nr-driver-swipe-thumb"
+        aria-hidden="true"
+        style={
+          dragOffset === null
+            ? undefined
+            : { left: "4px", transform: `translate3d(${dragOffset}px,0,0)` }
+        }
+      >
+        {updating ? (
+          <span className="nr-driver-swipe-spinner" />
+        ) : (
+          <Icon name={online ? "back" : "arrow"} size={20} />
+        )}
       </span>
     </button>
   );

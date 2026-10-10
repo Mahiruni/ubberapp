@@ -2,15 +2,13 @@
 
 import { useContext, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { LanguageContext } from "./ui";
+import { Icon, LanguageContext } from "./ui";
 import { useDriverTheme } from "./driver-app-shell";
 import { RiderMap } from "./rider-map";
 import { useRiderLocation } from "../../lib/nexride-location";
 import { DriverEarningsScreen } from "./driver-earnings";
 import { DriverProfileScreen } from "./driver-profile";
 import { DriverAvailabilitySwipe } from "./driver-availability-swipe";
-import { DriverDockHandle } from "./driver-dock-handle";
-import { type DriverDockSnap } from "../../lib/nexride-driver-dock";
 import { supabase } from "../../lib/supabase";
 import { resolveSessionRole } from "../../lib/nexride-account-role";
 import { nexrideApiFetch } from "../../lib/nexride-api-auth";
@@ -25,6 +23,7 @@ type LocationPermission = "checking" | "granted" | "prompt" | "denied" | "unsupp
 
 type DriverState = {
   name: string;
+  avatarUrl: string;
   online: boolean;
   reviewStatus: ReviewStatus;
   rejectionReason: string;
@@ -34,6 +33,7 @@ type DriverState = {
 
 const emptyState: DriverState = {
   name: "Driver",
+  avatarUrl: "",
   online: false,
   reviewStatus: "draft",
   rejectionReason: "",
@@ -124,7 +124,24 @@ export function DriverWorkspace({
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState("");
   const [locationPermission, setLocationPermission] = useState<LocationPermission>("checking");
-  const [dockSnap, setDockSnap] = useState<DriverDockSnap>("compact");
+  const [alertPermission, setAlertPermission] = useState<NotificationPermission | "unsupported">("unsupported");
+  useEffect(() => {
+    if (typeof Notification === "undefined") return;
+    const sync = () => setAlertPermission(Notification.permission);
+    sync();
+    window.addEventListener("focus", sync);
+    return () => window.removeEventListener("focus", sync);
+  }, []);
+
+  const enableDriverAlerts = async () => {
+    if (typeof Notification === "undefined") return;
+    try {
+      const permission = await Notification.requestPermission();
+      setAlertPermission(permission);
+    } catch {
+      setAlertPermission(Notification.permission);
+    }
+  };
   const mapLocation = useRiderLocation();
 
   const refreshDriverStatus = async (id = driverId) => {
@@ -166,6 +183,7 @@ export function DriverWorkspace({
       const base: DriverState = {
         ...emptyState,
         name: str(metadata.full_name) || str(metadata.name) || "Driver",
+        avatarUrl: str(metadata.avatar_url) || str(metadata.avatarUrl),
       };
 
       const id = data.session.user.id;
@@ -629,10 +647,18 @@ export function DriverWorkspace({
           showNativeControls={false}
         />
 
+        <button
+          type="button"
+          className="nr-driver-home-profile"
+          onClick={() => navigate("profile")}
+          aria-label={say("Open Driver profile", "የአሽከርካሪ መለያን ክፈት")}
+        >
+          {state.avatarUrl ? <img src={state.avatarUrl} alt="" /> : <Icon name="user" size={22} />}
+        </button>
+
         <div
           className="nr-driver-home-swipe"
           data-map-input-boundary="true"
-          data-snap={dockSnap}
           onPointerDown={(event) => event.stopPropagation()}
           onPointerMove={(event) => event.stopPropagation()}
           onPointerUp={(event) => event.stopPropagation()}
@@ -645,18 +671,36 @@ export function DriverWorkspace({
           onDoubleClick={(event) => event.stopPropagation()}
         >
           <div className="nr-driver-home-control-panel">
-            <DriverDockHandle snap={dockSnap} onChange={setDockSnap} language={language} />
-            <div className="nr-driver-home-control-heading" id="nr-driver-dock-extra">
-              <div className="nr-driver-home-control-state" aria-live="polite" aria-atomic="true">
+            <div className="nr-driver-home-control-heading">
+              <div className="nr-driver-home-control-state">
                 <span className="nr-driver-home-control-brand">NEXRIDE · DRIVER</span>
-                <strong>{state.online ? say("Ready for rides", "ለጉዞ ዝግጁ") : say("Ready when you are", "ሲዘጋጁ ይጀምሩ")}</strong>
+                <strong>{state.online ? say("Ready for rides", "ለጉዞ ዝግጁ") : say("You're offline", "ከመስመር ውጭ ነዎት")}</strong>
                 <small>{state.online
                   ? say("Online stays active when minimized. Android may pause GPS and delay alerts until you reopen NexRide.", "መተግበሪያው ሲቀነስ የመስመር ላይ ሁኔታዎ ይቀጥላል። Android GPSን እና ማሳወቂያዎችን ሊያዘገይ ይችላል።")
                   : say("Swipe to start receiving ride requests", "ጉዞ ለመቀበል ያንሸራትቱ")}</small>
               </div>
-              <span className="nr-driver-home-control-online" data-online={state.online ? "true" : "false"}>
-                <span aria-hidden="true" />{state.online ? say("Online", "መስመር ላይ") : say("Offline", "ከመስመር ውጭ")}
-              </span>
+              <div className="nr-driver-home-control-tools">
+                <span className="nr-driver-home-control-online" data-online={state.online ? "true" : "false"}>
+                  <span aria-hidden="true" />{state.online ? say("Online", "መስመር ላይ") : say("Offline", "ከመስመር ውጭ")}
+                </span>
+                <button
+                  type="button"
+                  className="nr-driver-home-alert-icon"
+                  data-permission={alertPermission}
+                  disabled={alertPermission !== "default"}
+                  onClick={() => void enableDriverAlerts()}
+                  aria-label={alertPermission === "granted" ? say("Ride notifications enabled", "የጉዞ ማሳወቂያዎች በርተዋል")
+                    : alertPermission === "denied" ? say("Ride notifications blocked in device settings", "የጉዞ ማሳወቂያዎች በመሣሪያ ቅንብሮች ታግደዋል")
+                    : alertPermission === "unsupported" ? say("In-app alerts only", "የውስጥ መተግበሪያ ማሳወቂያዎች ብቻ")
+                    : say("Enable ride notifications", "የጉዞ ማሳወቂያዎችን አንቃ")}
+                  title={alertPermission === "granted" ? say("Alerts enabled", "ማሳወቂያ በርቷል")
+                    : alertPermission === "denied" ? say("Alerts blocked in device settings", "ማሳወቂያ በመሣሪያ ቅንብሮች ታግዷል")
+                    : alertPermission === "unsupported" ? say("In-app alerts", "የውስጥ ማሳወቂያ")
+                    : say("Enable alerts", "ማሳወቂያን አንቃ")}
+                >
+                  <Icon name="bell" size={20} />
+                </button>
+              </div>
             </div>
             <DriverAvailabilitySwipe
               online={state.online}
@@ -665,6 +709,11 @@ export function DriverWorkspace({
               labelOverride={swipeFeedback}
               onToggle={toggleAvailability}
             />
+            <nav className="nr-driver-home-quick-actions" aria-label={say("Driver quick actions", "የአሽከርካሪ ፈጣን አማራጮች")}>
+              <button type="button" onClick={() => router.push("/driver/activity")}><Icon name="clock" size={16} />{say("Activity", "እንቅስቃሴ")}</button>
+              <button type="button" onClick={() => router.push("/driver/earnings")}><Icon name="wallet" size={16} />{say("Earnings", "ገቢ")}</button>
+              <button type="button" onClick={() => router.push("/driver/profile/settings")}><Icon name="settings" size={16} />{say("Settings", "ቅንብሮች")}</button>
+            </nav>
           </div>
         </div>
       </section>

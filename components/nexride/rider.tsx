@@ -91,7 +91,7 @@ export function RiderWorkspace({
     } catch {}
   };
   const realTrips = useRiderTrips();
-  // Sharing begins only for the rider\'s confirmed active trip and permitted GPS fixes.
+  // GPS sharing is limited to the authenticated Rider’s accepted or active trip.
   useRiderTripLocationPublisher(
     realTrips.userId,
     realTrips.active ? String(realTrips.active.id) : null,

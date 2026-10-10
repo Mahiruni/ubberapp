@@ -38,7 +38,9 @@ export function useRideOffers(
     next: number | null;
   } | null>(null);
   const [refresh, setRefresh] = useState(0);
-  const [loadError, setLoadError] = useState<"auth" | "journey" | null>(null);
+  const [loadError, setLoadError] = useState<
+    "auth" | "journey" | "profile" | "offline" | "suspended" | "role" | null
+  >(null);
   const lock = useRef(false),
     mounted = useRef(true),
     prior = useRef<FareSet | null>(null);
@@ -112,7 +114,27 @@ export function useRideOffers(
         const code = error instanceof Error ? error.message : "";
         // Authentication and invalid journeys are actionable errors, not
         // service outages; never mislabel them as demo pricing.
-        if (/^fares_http_(401|403)$/.test(code)) {
+        if (/^fares_http_403_rider_profile_incomplete$/.test(code)) {
+          setLoadError("profile");
+          setLoadState("error");
+          return;
+        }
+        if (/^fares_http_403_driver_offline_required$/.test(code)) {
+          setLoadError("offline");
+          setLoadState("error");
+          return;
+        }
+        if (/^fares_http_403_account_inactive$/.test(code)) {
+          setLoadError("suspended");
+          setLoadState("error");
+          return;
+        }
+        if (/^fares_http_403_rider_account_required$/.test(code)) {
+          setLoadError("role");
+          setLoadState("error");
+          return;
+        }
+        if (/^fares_http_(401|403)(?:_.*)?$/.test(code)) {
           setLoadError("auth");
           setLoadState("error");
           return;

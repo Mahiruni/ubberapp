@@ -52,6 +52,7 @@ import "./rider-flow.css";
 import "./rider-profile.css";
 import "./detail-system.css";
 import "./rider-sheet-standard.css";
+import "./wrapper-polish.css";
 const STORAGE_KEY = PREVIEW_STORAGE_KEY;
 type Mode = "rider" | "driver";
 type Panel =
@@ -71,9 +72,9 @@ export default function Home() {
     cached?.preferences.language || "en",
   );
   const [mode, setMode] = useState<Mode>(cached?.preferences.mode || "rider");
-  const [theme, setTheme] = useState<"light" | "dark">(
-    cached?.preferences.theme || "light",
-  );
+  // Rider UI uses one permanent light design; legacy dark preferences are ignored.
+  const theme: "light" | "dark" = "light";
+  const setTheme = (_next: "light" | "dark") => {};
   const [profile, setProfile] = useState<PreviewProfile>(
     cached?.preferences.profile || emptyProfile,
   );
@@ -103,7 +104,6 @@ export default function Home() {
         setIsAdmin(accountRole === "admin");
         setLanguage(p.language);
         setMode(p.mode);
-        setTheme(p.theme);
         setProfile(p.profile);
         setTrip(p.trip);
         if (result.destination !== "/") {
@@ -371,7 +371,7 @@ function AppWorkspace({
             } as React.CSSProperties)
           : undefined
       }
-      className={`nr-workspace ${profileView && mode === "rider" ? "rider-profile-view" : ""} ${riderTripView ? "rider-trip-view" : ""} ${riderHome ? "rider-home-view" : ""} ${riderMapView ? "rider-map-flow" : ""} ${riderSearch ? "rider-search-view" : ""} ${mode === "rider" && screen === "rides" ? "rider-ride-view" : ""} ${mode === "rider" && screen === "finding" ? "rider-matching-view" : ""} ${riderAssigned ? "rider-assigned-view" : ""} ${riderLive ? "rider-live-view" : ""} ${riderSummary ? "rider-summary-view" : ""}`}
+      className={`nr-workspace ${profileView && mode === "rider" ? "rider-profile-view" : ""} ${riderTripView ? "rider-trip-view" : ""} ${riderHome ? "rider-home-view" : ""} ${riderMapView ? "rider-map-flow nr-polished-wrapper" : ""} ${riderSearch ? "rider-search-view" : ""} ${mode === "rider" && screen === "rides" ? "rider-ride-view" : ""} ${mode === "rider" && screen === "finding" ? "rider-matching-view" : ""} ${riderAssigned ? "rider-assigned-view" : ""} ${riderLive ? "rider-live-view" : ""} ${riderSummary ? "rider-summary-view" : ""}`}
     >
       <aside className="nr-sidebar" inert={requestPending || matching.active}>
         <Brand driver={mode === "driver"} />
@@ -459,16 +459,6 @@ function AppWorkspace({
               <Icon name="globe" size={17} />
               <span>{language === "en" ? "አማርኛ" : "EN"}</span>
             </button>
-            {mode === "rider" && (
-              <button
-                className="nr-theme-button"
-                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                aria-label={theme === "dark" ? "Use light theme" : "Use dark theme"}
-                aria-pressed={theme === "dark"}
-              >
-                <Icon name={theme === "dark" ? "sun" : "moon"} size={19} />
-              </button>
-            )}
             {mode === "rider" && (
               <button
                 className="nr-avatar-button nr-rider-profile-top"
@@ -840,25 +830,6 @@ function AppWorkspace({
                   </button>
                 </div>
               </div>
-              {mode === "rider" && (
-                <div className="nr-settings-row">
-                  <strong>{t("appearance")}</strong>
-                  <div className="nr-segmented">
-                    <button
-                      aria-pressed={theme === "light"}
-                      onClick={() => setTheme("light")}
-                    >
-                      {t("light")}
-                    </button>
-                    <button
-                      aria-pressed={theme === "dark"}
-                      onClick={() => setTheme("dark")}
-                    >
-                      {t("dark")}
-                    </button>
-                  </div>
-                </div>
-              )}
               <NexRideFeedbackSettings role="driver" language={language} />
               <StatusBanner>{t("localAccount")}</StatusBanner>
               <Button variant="secondary" onClick={() => setPanel("reset")}>

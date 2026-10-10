@@ -2,7 +2,7 @@
   min-height:100dvh;
   background:
     radial-gradient(circle at 50% -12%,rgba(26,78,108,.42),transparent 33%),
-    #03192b;
+    #202133;
   color:#f4f8fb;
   padding:24px 22px 104px;
   max-width:720px;
@@ -50,9 +50,9 @@
   width:10px;height:10px;border-radius:50%;background:#71899a;
   box-shadow:0 0 0 5px rgba(113,137,154,.14);flex:none
 }
-.nr-status-dot.online{background:#00d081;box-shadow:0 0 0 5px rgba(0,208,129,.14)}
+.nr-status-dot.online{background:#5145e5;box-shadow:0 0 0 5px rgba(0,208,129,.14)}
 .nr-driver-primary{
-  border:0;border-radius:13px;background:#00c878;color:#031c15;font-weight:850;
+  border:0;border-radius:13px;background:#5145e5;color:#031c15;font-weight:850;
   padding:0 18px;min-height:46px;white-space:nowrap;
   transition:transform .16s ease,opacity .16s ease,background .16s ease
 }
@@ -85,7 +85,7 @@
 .nr-active-trip strong{font-size:16px}
 .nr-trip-route{display:flex;align-items:center;justify-content:space-between;gap:9px;color:#b9cad5;font-size:12px}
 .nr-trip-route span{padding:9px 10px;border-radius:10px;background:#092b43;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.nr-active-trip button{border:0;background:#00c878;color:#031c15;border-radius:11px;min-height:43px;font-weight:800}
+.nr-active-trip button{border:0;background:#5145e5;color:#031c15;border-radius:11px;min-height:43px;font-weight:800}
 .nr-empty-trip{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:13px}
 .nr-empty-trip-icon{
   width:42px;height:42px;border-radius:13px;display:grid;place-items:center;
@@ -111,7 +111,7 @@
   min-height:50px;font-size:10px;font-weight:700;transition:color .16s ease,transform .16s ease
 }
 .nr-driver-bottom-nav button:active{transform:scale(.96)}
-.nr-driver-bottom-nav button.active{color:#00d081}
+.nr-driver-bottom-nav button.active{color:#5145e5}
 .nr-driver-loading{padding:18px;display:grid;gap:12px}
 .nr-driver-skeleton{
   height:11px;width:38%;display:block;border-radius:8px;
@@ -171,7 +171,7 @@
   background:
     radial-gradient(circle at 84% -8%,rgba(0,200,120,.10),transparent 28%),
     radial-gradient(circle at 15% 0%,rgba(35,95,128,.34),transparent 30%),
-    #041c30;
+    #28217f;
 }
 .nr-driver-header{
   position:relative;
@@ -264,7 +264,7 @@
   border-radius:22px;
   overflow:hidden;
   background:linear-gradient(145deg,#f7fbfa,#eaf2f2);
-  color:#102334;
+  color:#19172a;
   border:1px solid rgba(255,255,255,.24);
   box-shadow:0 14px 34px rgba(0,9,19,.17);
 }
@@ -568,7 +568,7 @@
 }
 .nr-driver-bottom-nav button.active .nr-driver-nav-icon{
   color:#03271d;
-  background:#00c878;
+  background:#5145e5;
   border-color:#37d99b;
   box-shadow:
     0 7px 18px rgba(0,200,120,.20),
@@ -632,13 +632,13 @@
 
 /* NexRide Driver Flagship System v4 */
 .nr-driver-page{
-  --driver-bg:#041c30;
+  --driver-bg:#28217f;
   --driver-surface:#08283f;
   --driver-surface-2:#0b3049;
   --driver-line:rgba(128,169,191,.18);
   --driver-text:#f5fafc;
   --driver-muted:#8da6b6;
-  --driver-accent:#00c878;
+  --driver-accent:#5145e5;
   width:min(100%,920px);
   max-width:920px;
   min-height:100dvh;
@@ -716,7 +716,7 @@
 .nr-driver-header-status .nr-status-dot{
   width:7px;height:7px;box-shadow:none
 }
-.nr-driver-header-status.is-online .nr-status-dot{background:#00d081}
+.nr-driver-header-status.is-online .nr-status-dot{background:#5145e5}
 .nr-driver-operational-map{
   position:relative;
   height:clamp(420px,61dvh,610px);
@@ -939,3 +939,92 @@
 @media(prefers-reduced-motion:reduce){
   .nr-driver-page *, .nr-driver-bottom-nav *{transition:none!important;animation:none!important}
 }
+
+
+/* Light-only Driver dashboard, activity and shared navigation.
+   No structural change to live maps, availability swipe, realtime requests. */
+.nr-driver-app-shell .nr-driver-page{
+  --driver-line:#dfe7eb;
+  color:#19172a!important;
+  background:#f7f7fb!important;
+}
+.nr-driver-app-shell .nr-driver-page :is(h1,h2,h3,strong){
+  color:#19172a;
+}
+.nr-driver-app-shell .nr-driver-page p,
+.nr-driver-app-shell .nr-driver-page :is(.nr-driver-kicker,.nr-driver-metric-grid .nr-metric em){
+  color:#667587!important;
+}
+.nr-driver-app-shell :is(
+  .nr-driver-card,.nr-availability-card,.nr-driver-earnings-card,
+  .nr-driver-profile-card,.nr-driver-list-card,
+  .nr-driver-metric-grid .nr-metric,.nr-driver-action-row,
+  .nr-driver-notice,.nr-driver-loading,.nr-driver-operational-card
+){
+  color:#19172a!important;
+  background:#ffffff!important;
+  border:1px solid #dfe7eb!important;
+  box-shadow:0 4px 18px rgba(16,35,52,.045)!important;
+}
+.nr-driver-app-shell :is(.nr-trip-route span,.nr-driver-status-pill,.nr-driver-skeleton){
+  background:#edf2f4!important;
+  color:#415768!important;
+}
+.nr-driver-app-shell :is(.nr-driver-icon-btn,.nr-driver-avatar-button){
+  background:#ffffff!important;
+  color:#19172a!important;
+  border:1px solid #dfe7eb!important;
+}
+.nr-driver-app-shell .nr-driver-primary.secondary-state{
+  background:#f7f7fb!important;
+  color:#19172a!important;
+  border:1px solid #dfe7eb!important;
+}
+.nr-driver-app-shell .nr-driver-notice.pending{
+  background:#fff8e9!important;
+  color:#83570a!important;
+  border-color:#efdbaf!important;
+}
+.nr-driver-app-shell .nr-driver-notice.blocked{
+  background:#fff1f2!important;
+  color:#8b303e!important;
+  border-color:#f1cbd0!important;
+}
+.nr-driver-app-shell .nr-driver-bottom-nav{
+  background:rgba(255,255,255,.98)!important;
+  border-color:#dfe7eb!important;
+  box-shadow:0 -7px 24px rgba(16,35,52,.06)!important;
+}
+.nr-driver-app-shell .nr-driver-bottom-nav button{
+  color:#667587!important;
+}
+.nr-driver-app-shell .nr-driver-bottom-nav button.active{
+  color:#007448!important;
+  background:#eafff3!important;
+}
+.nr-driver-app-shell .nr-driver-bottom-nav button.active .nr-driver-nav-icon{
+  color:#007448!important;
+  background:#eafff3!important;
+}
+.nr-driver-app-shell .nr-driver-activity-page :is(
+  article,.nr-driver-activity-summary,.nr-activity-row
+){
+  background:#ffffff!important;
+  color:#19172a!important;
+  border:1px solid #dfe7eb!important;
+  border-radius:16px;
+}
+.nr-driver-app-shell .nr-driver-activity-page :is(p,small,time){
+  color:#667587!important;
+}
+.nr-driver-app-shell .nr-driver-activity-page strong{color:#19172a!important}
+@media(max-width:560px){
+  .nr-driver-app-shell .nr-driver-page{
+    padding-inline:14px!important;
+  }
+  .nr-driver-app-shell .nr-driver-bottom-nav button{min-height:56px}
+}
+
+/* Biloo-inspired Driver shell tokens. Safety and live status semantics stay distinct. */
+.nr-driver-page{--driver-accent:#5145e5;--driver-bg:#202133;--driver-surface:#292a3e;--driver-surface-elevated:#34344d;--driver-border:#48475d;--driver-text-primary:#f8f8ff}
+.nr-driver-page :is(button,a,input,select):focus-visible{outline-color:#a89fff}

@@ -51,12 +51,12 @@
      const next=[fix.lat,fix.lng],fresh=current(booking,context),newer=!lastFix||fix.updatedAt>lastFix.updatedAt,same=lastFix?.driverId===fix.driverId;
      if(!fresh||context.connected===false)stop();
      if(!car){car=marker(null,fix,'vehicle');lastFix={...fix};}
-     car?.getElement().classList.toggle('is-stale',!fresh||context.connected===false);
      else if(newer||!same){
       const animate=newer&&same&&fresh&&Date.now()-lastFix.updatedAt<45000&&!reduced.matches&&context.connected!==false;
       stop();if(animate){const from=car.getLatLng(),start=performance.now();target=next;const step=t=>{const progress=Math.min(1,(t-start)/650),ease=progress*progress*(3-2*progress);car.setLatLng([from.lat+(next[0]-from.lat)*ease,from.lng+(next[1]-from.lng)*ease]);if(progress<1)frame=requestAnimationFrame(step);else{frame=0;target=null;}};frame=requestAnimationFrame(step);}else car.setLatLng(next);
       lastFix={...fix};
      }
+     car?.getElement()?.classList.toggle('is-stale',!fresh||context.connected===false);
      accuracy?.remove();accuracy=null;if(Number.isFinite(fix.accuracyMeters)&&fix.accuracyMeters>0)accuracy=L.circle(next,{radius:fix.accuracyMeters,color:'#517684',weight:1,fillOpacity:.08}).addTo(map);
     }
     const points=[booking.pickup,booking.destination,fix,...(route||[])].filter(point).map(p=>[p.lat,p.lng]);if(!fitted&&points.length){map.fitBounds(points,fitOptions());fitted=true;}
@@ -74,13 +74,24 @@
   if(message.type!=='nexride:initialize'||initialized||!!message.live!==liveRequested)return;
   initialized=true;
   const api=window.NexRideCompletion||window.NexRideTrip||window.NexRide;
-  if(message.live){
-   if(typeof message.tripId!=='string'||!message.tripId)return;
-   const service={bookingId:message.tripId,tripId:message.tripId,subscribe(next,lost,connected){subscription=next;onDisconnect=lost;onConnect=connected;post({type:'nexride:subscribed'});return()=>{subscription=null;};},submitRating:input=>request('submitRating',input),sendMessage:input=>request('sendMessage',input),getCancellationQuote:input=>request('getCancellationQuote',input)};
-   if(!window.NexRideCompletion&&window.L)Object.assign(service,geographicMap());
-   await api.connect(service);
-  }else{api.setPreviewTrip?.(message.preview);post({type:'nexride:subscribed'});}
-  document.documentElement.classList.remove('nexride-awaiting');
+  try {
+   if(!api)throw Error('Trip screen is unavailable');
+   if(message.live){
+    if(typeof message.tripId!=='string'||!message.tripId)throw Error('Trip reference unavailable');
+    const service={bookingId:message.tripId,tripId:message.tripId,subscribe(next,lost,connected){subscription=next;onDisconnect=lost;onConnect=connected;return()=>{subscription=null;};},submitRating:input=>request('submitRating',input),sendMessage:input=>request('sendMessage',input),getCancellationQuote:input=>request('getCancellationQuote',input)};
+    if(!window.NexRideCompletion&&window.L)Object.assign(service,geographicMap());
+    if(typeof api.connect!=='function')throw Error('Trip screen did not initialize');
+    await api.connect(service);
+    if(!subscription)throw Error('Live trip subscription unavailable');
+   }else{api.setPreviewTrip?.(message.preview);}
+   document.documentElement.classList.remove('nexride-awaiting');
+   // Notify the parent only after this screen has actually become visible.
+   post({type:'nexride:subscribed'});
+  } catch {
+   // Do not display sample rider/vehicle data on an uninitialized live screen.
+   // The React parent shows the last confirmed trip snapshot instead.
+   post({type:'nexride:screen-error'});
+  }
  });
  post({type:'nexride:ready'});
 })();

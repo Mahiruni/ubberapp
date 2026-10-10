@@ -4,7 +4,6 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Dialog, Icon, type IconName } from "./ui";
-import { DRIVER_CORE_MENU_ITEMS } from "../../lib/nexride-driver-menu";
 import { supabase } from "../../lib/supabase";
 import { signOutNexRide } from "../../lib/nexride-sign-out";
 import { nexrideApiFetch } from "../../lib/nexride-api-auth";
@@ -150,7 +149,7 @@ export function DriverProfileScreen({
         <div>
           <span className="nr-driver-kicker">NEXRIDE · DRIVER ACCOUNT</span>
           <h1>Your driver account</h1>
-          <p>Your profile, rating and six essential Driver tools.</p>
+          <p>Profile, verification, vehicle, earnings, and safety in one place.</p>
         </div>
         <button className="nr-driver-icon-btn" onClick={onBack} aria-label="Back to driver home">
           <Icon name="back" />
@@ -229,18 +228,40 @@ export function DriverProfileScreen({
         </button>
       </section>
 
-      <div className="nr-driver-profile-columns nr-driver-profile-core-menu">
-        <DriverSection title="Driver essentials" subtitle="Only the six essentials, without duplicate menus">
-          {DRIVER_CORE_MENU_ITEMS.map((item) => (
-            <DriverRow
-              key={item.id}
-              icon={item.icon}
-              title={item.en}
-              detail={item.detailEn}
-              onClick={() => item.id === "safety" ? onSafety() : router.push(item.href)}
-            />
-          ))}
-        </DriverSection>
+      <section className="nr-driver-profile-quick-grid" aria-label="Driver profile quick actions">
+        <DriverQuick icon="shield" title="Documents" detail={verification.title} onClick={() => router.push("/driver/profile/documents")}/>
+        <DriverQuick icon="pin" title="Vehicle" detail={profile.vehiclePlate || "Vehicle details"} onClick={() => router.push("/driver/profile/vehicle")}/>
+        <DriverQuick icon="money" title="Earnings" detail="Reports and trip earnings" onClick={() => router.push("/driver/earnings")}/>
+        <DriverQuick icon="wallet" title="Payouts" detail="Payout account and withdrawals" onClick={() => router.push("/driver/profile/payouts")}/>
+      </section>
+
+      <div className="nr-driver-profile-columns">
+        <div>
+          <DriverSection title="Driver account" subtitle="Identity, trips, documents and vehicle">
+            <DriverRow icon="user" title="Personal details" detail={profile.phone || profile.email || "Driver contact information"} onClick={() => router.push("/driver/profile/settings")}/>
+            <DriverRow icon="clock" title="Trip activity" detail="Accepted, completed, and cancelled trips" onClick={() => router.push("/driver/activity")}/>
+            <DriverRow icon="shield" title="Driver documents" detail={verification.title} onClick={() => router.push("/driver/profile/documents")}/>
+            <DriverRow icon="pin" title="Vehicle information" detail={profile.vehicle || "Vehicle details"} onClick={() => router.push("/driver/profile/vehicle")}/>
+          </DriverSection>
+
+          <DriverSection title="Earnings & payouts" subtitle="Earnings and payout history">
+            <DriverRow icon="money" title="Earnings report" detail="Completed trips and recorded earnings" onClick={() => router.push("/driver/earnings")}/>
+            <DriverRow icon="wallet" title="Payouts" detail="Payout account and history" onClick={() => router.push("/driver/profile/payouts")}/>
+          </DriverSection>
+        </div>
+
+        <div>
+          <DriverSection title="Safety & support" subtitle="Protection and help tools">
+            <DriverRow icon="shield" title="Safety Center" detail="Emergency help, trip sharing, and reports" onClick={onSafety}/>
+            <DriverRow icon="chat" title="Driver support" detail="Help with trips and your driver account" onClick={() => router.push("/support?role=driver")}/>
+          </DriverSection>
+
+          <DriverSection title="Preferences & account" subtitle="Your NexRide Driver settings">
+            <DriverRow icon="settings" title="App settings" detail="Profile, language, theme, and account details" onClick={() => router.push("/driver/profile/settings")}/>
+            <DriverRow icon="shield" title="Manage Account & Verification" detail="Unique identity, verified contacts, role access and security" onClick={() => router.push("/account/manage")}/>
+            <DriverRow icon="info" title="Privacy & account data" detail="Your authenticated driver information stays private" onClick={() => router.push("/driver/profile/documents")}/>
+          </DriverSection>
+        </div>
       </div>
 
       {!profile.avatarUrl && (
@@ -310,6 +331,14 @@ function ProfileMetric({ label, value, suffix = "", compact = false }: { label: 
   );
 }
 
+function DriverQuick({icon,title,detail,onClick}:{icon:IconName;title:string;detail:string;onClick:()=>void}) {
+  return <button className="nr-driver-profile-quick" onClick={onClick}>
+    <span><Icon name={icon} size={20}/></span>
+    <div><strong>{title}</strong><small>{detail}</small></div>
+    <Icon name="chevron" size={16}/>
+  </button>;
+}
+
 function DriverSection({title,subtitle,children}:{title:string;subtitle:string;children:React.ReactNode}) {
   return <section className="nr-driver-profile-section">
     <header><h3>{title}</h3><p>{subtitle}</p></header>
@@ -317,7 +346,7 @@ function DriverSection({title,subtitle,children}:{title:string;subtitle:string;c
   </section>;
 }
 
-function DriverRow({icon,title,detail,onClick}:{icon:IconName;title:string;detail:string;onClick:()=>void;key?:string}) {
+function DriverRow({icon,title,detail,onClick}:{icon:IconName;title:string;detail:string;onClick:()=>void}) {
   return <button className="nr-driver-profile-row" onClick={onClick}>
     <span className="nr-driver-profile-row-icon"><Icon name={icon} size={19}/></span>
     <span className="nr-driver-profile-row-copy"><strong>{title}</strong><small>{detail}</small></span>

@@ -1,8 +1,8 @@
 {
   "id": "/",
-  "name": "NexRide",
-  "short_name": "NexRide",
-  "description": "Book reliable rides across Addis Ababa with NexRide.",
+  "name": "NexRide Rider",
+  "short_name": "NexRide Rider",
+  "description": "Request safe, comfortable rides in Addis Ababa with NexRide Rider.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

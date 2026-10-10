@@ -2088,45 +2088,345 @@ html[lang="am"] .nr-auth-experience[data-auth-mode] :is(.nr-input-field,.nr-auth
 }
 
 
-/* NexRide Rider: circular frosted-glass hamburger, with the existing menu intact. */
-.nr-rider-hamburger{
-  box-sizing:border-box!important;
-  border:1px solid rgba(255,255,255,.78)!important;
-  border-radius:50%!important;
-  background:rgba(255,255,255,.72)!important;
-  -webkit-backdrop-filter:blur(18px) saturate(155%);
-  backdrop-filter:blur(18px) saturate(155%);
-  box-shadow:0 9px 25px rgba(4,28,48,.17),inset 0 1px 0 rgba(255,255,255,.68)!important;
+/* NEXRIDE RIDER AUTH — refined companion to Driver onboarding.
+   Scope to Rider sign-in/sign-up; preserve original Supabase forms, role
+   routing, recovery and all other Rider/Driver pages. */
+.nr-auth-experience[data-mode="rider"]:is([data-auth-mode="signin"],[data-auth-mode="signup"]){
+  height:100dvh!important;
+  min-height:100dvh!important;
+  overflow:hidden!important;
+  background:#f3f7f6!important;
+  color-scheme:light;
+}
+.nr-auth-experience[data-mode="rider"]:is([data-auth-mode="signin"],[data-auth-mode="signup"]) .nr-auth-page{
+  height:100%!important;
+  min-height:0!important;
+  overflow:hidden!important;
+  padding:clamp(12px,2.2vh,24px)!important;
+}
+.nr-auth-experience[data-mode="rider"]:is([data-auth-mode="signin"],[data-auth-mode="signup"]) .nr-auth-shell{
+  width:min(100%,1050px)!important;
+  height:min(760px,calc(100dvh - 30px))!important;
+  min-height:0!important;
+  max-height:calc(100dvh - 24px)!important;
+  overflow:hidden!important;
+  border:1px solid #dfe8e5!important;
+  border-radius:28px!important;
+  background:#fff!important;
+  box-shadow:0 18px 64px rgba(4,28,48,.10)!important;
+}
+.nr-auth-experience[data-mode="rider"]:is([data-auth-mode="signin"],[data-auth-mode="signup"]) .nr-auth-hero{
+  background:
+    radial-gradient(circle at 26% 28%,rgba(0,200,120,.22),transparent 32%),
+    radial-gradient(circle at 86% 72%,rgba(92,166,213,.20),transparent 32%),
+    linear-gradient(145deg,#eaf7f0,#dcece7 59%,#e0ebf2)!important;
+}
+.nr-auth-experience[data-mode="rider"]:is([data-auth-mode="signin"],[data-auth-mode="signup"]) .nr-auth-hero-wash{
+  background:linear-gradient(160deg,rgba(255,255,255,.20),transparent 50%,rgba(4,28,48,.055))!important;
+}
+.nr-auth-experience[data-mode="rider"]:is([data-auth-mode="signin"],[data-auth-mode="signup"]) .nr-auth-hero-copy>strong{
+  font-size:clamp(36px,4.1vw,54px)!important;
+  line-height:1.02!important;
+  letter-spacing:-.05em!important;
+}
+.nr-auth-experience[data-mode="rider"]:is([data-auth-mode="signin"],[data-auth-mode="signup"]) .nr-auth-hero-points>span{
+  background:rgba(255,255,255,.40);
+  border:1px solid rgba(0,108,73,.18);
+  color:#214a47;
+  opacity:1;
+}
+.nr-auth-experience[data-mode="rider"]:is([data-auth-mode="signin"],[data-auth-mode="signup"]) .nr-auth-content{
+  min-height:0!important;
+  max-height:100%;
+  overflow-y:auto!important;
+  overscroll-behavior:contain;
+  scrollbar-width:thin;
+  scroll-padding-bottom:84px;
+  padding:clamp(28px,4vw,48px)!important;
+  background:#fff!important;
+  justify-content:center!important;
+}
+.nr-auth-experience[data-mode="rider"]:is([data-auth-mode="signin"],[data-auth-mode="signup"]) .nr-entry-tools{
+  display:flex;
+  flex:0 0 auto;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  margin-bottom:22px;
+}
+.nr-auth-experience[data-mode="rider"]:is([data-auth-mode="signin"],[data-auth-mode="signup"]) .nr-rider-entry-back{
+  display:inline-flex;
+  min-height:40px;
+  align-items:center;
+  gap:7px;
+  color:#627786;
+  text-decoration:none;
+  font-size:12px;
+  font-weight:800;
+}
+.nr-auth-experience[data-mode="rider"]:is([data-auth-mode="signin"],[data-auth-mode="signup"]) .nr-rider-entry-back span{
+  font-size:20px;
+  line-height:1;
+}
+.nr-auth-experience[data-mode="rider"]:is([data-auth-mode="signin"],[data-auth-mode="signup"]) .nr-entry-language .nr-button{
+  width:auto!important;
+  min-height:34px!important;
+  margin:0!important;
+  padding:6px 13px!important;
+  border:1px solid #e1e9e6!important;
+  border-radius:999px!important;
+  background:#f6f9f8!important;
+  color:#345567!important;
+  box-shadow:none!important;
+  font-size:11px!important;
+}
+.nr-auth-experience[data-mode="rider"]:is([data-auth-mode="signin"],[data-auth-mode="signup"]) .nr-auth-content>h1{
+  font-size:clamp(32px,3.4vw,43px)!important;
+  letter-spacing:-.05em!important;
   color:#102334!important;
+}
+.nr-auth-experience[data-mode="rider"]:is([data-auth-mode="signin"],[data-auth-mode="signup"]) .nr-auth-content>p{
+  margin:8px 0 22px!important;
+  color:#607686!important;
+  line-height:1.5!important;
+}
+.nr-auth-experience[data-mode="rider"]:is([data-auth-mode="signin"],[data-auth-mode="signup"]) .nr-input-field{
+  color:#425e6d!important;
+  font-weight:750!important;
+}
+.nr-auth-experience[data-mode="rider"]:is([data-auth-mode="signin"],[data-auth-mode="signup"]) :is(.nr-input-field>input,.nr-auth-password-row){
+  border:1px solid #d9e4e2!important;
+  border-radius:14px!important;
+  background:#fcfefd!important;
+  box-shadow:0 1px 1px rgba(4,28,48,.016)!important;
+}
+.nr-auth-experience[data-mode="rider"]:is([data-auth-mode="signin"],[data-auth-mode="signup"]) :is(.nr-input-field>input,.nr-auth-password-row):focus-within,
+.nr-auth-experience[data-mode="rider"]:is([data-auth-mode="signin"],[data-auth-mode="signup"]) .nr-input-field>input:focus{
+  border-color:#009c61!important;
+  box-shadow:0 0 0 4px rgba(0,200,120,.10)!important;
+}
+.nr-auth-experience[data-mode="rider"]:is([data-auth-mode="signin"],[data-auth-mode="signup"]) .nr-profile-form>.nr-button,
+.nr-auth-experience[data-mode="rider"]:is([data-auth-mode="signin"],[data-auth-mode="signup"]) .nr-auth-cta-dock .nr-button{
+  min-height:54px!important;
+  border-radius:15px!important;
+  background:#00c878!important;
+  color:#03291b!important;
+  box-shadow:0 8px 22px rgba(0,200,120,.13)!important;
+}
+.nr-auth-experience[data-mode="rider"]:is([data-auth-mode="signin"],[data-auth-mode="signup"]) .nr-auth-create-link{
+  border:1px solid #dae7e1!important;
+  background:#f8fbf9!important;
+  color:#007448!important;
+}
+.nr-auth-experience[data-mode="rider"]:is([data-auth-mode="signin"],[data-auth-mode="signup"]) .nr-auth-create-link:hover{
+  background:#eaf8f1!important;
+}
+.nr-auth-experience[data-mode="rider"]:is([data-auth-mode="signin"],[data-auth-mode="signup"]) :is(a,button,input,summary):focus-visible{
+  outline:3px solid rgba(0,168,104,.45)!important;
+  outline-offset:3px;
+}
+
+@media(min-width:900px){
+  .nr-auth-experience[data-mode="rider"]:is([data-auth-mode="signin"],[data-auth-mode="signup"]) .nr-auth-shell{
+    display:grid!important;
+    grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr)!important;
+  }
+  .nr-auth-experience[data-mode="rider"]:is([data-auth-mode="signin"],[data-auth-mode="signup"]) .nr-auth-hero{
+    min-height:0!important;
+    height:100%!important;
+  }
+  .nr-auth-experience[data-mode="rider"][data-auth-mode="signup"] .nr-auth-content{
+    justify-content:flex-start!important;
+  }
+}
+@media(max-width:899px){
+  .nr-auth-experience[data-mode="rider"]:is([data-auth-mode="signin"],[data-auth-mode="signup"]) .nr-auth-page{
+    padding:0!important;
+    background:#fff!important;
+  }
+  .nr-auth-experience[data-mode="rider"]:is([data-auth-mode="signin"],[data-auth-mode="signup"]) .nr-auth-shell{
+    width:100%!important;
+    height:100%!important;
+    min-height:0!important;
+    max-height:100%!important;
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    grid-template-rows:76px minmax(0,1fr)!important;
+    border:0!important;
+    border-radius:0!important;
+    box-shadow:none!important;
+  }
+  .nr-auth-experience[data-mode="rider"]:is([data-auth-mode="signin"],[data-auth-mode="signup"]) .nr-auth-hero{
+    height:76px!important;
+    min-height:0!important;
+    overflow:hidden;
+  }
+  .nr-auth-experience[data-mode="rider"]:is([data-auth-mode="signin"],[data-auth-mode="signup"]) .nr-auth-hero-top{
+    left:20px!important;
+    right:20px!important;
+    top:max(16px,env(safe-area-inset-top))!important;
+  }
+  .nr-auth-experience[data-mode="rider"]:is([data-auth-mode="signin"],[data-auth-mode="signup"]) .nr-auth-role-tab{
+    min-height:30px!important;
+    min-width:62px!important;
+    border:1px solid rgba(0,134,81,.22)!important;
+    border-radius:999px;
+    color:#00774b!important;
+    background:rgba(255,255,255,.52);
+  }
+  .nr-auth-experience[data-mode="rider"]:is([data-auth-mode="signin"],[data-auth-mode="signup"]) .nr-auth-hero-copy{
+    display:none!important;
+  }
+  .nr-auth-experience[data-mode="rider"]:is([data-auth-mode="signin"],[data-auth-mode="signup"]) .nr-auth-content{
+    width:100%!important;
+    height:100%;
+    max-height:100%!important;
+    min-height:0!important;
+    margin:0!important;
+    padding:18px 21px calc(28px + env(safe-area-inset-bottom))!important;
+    overflow-y:auto!important;
+    border-radius:22px 22px 0 0!important;
+    justify-content:flex-start!important;
+  }
+  .nr-auth-experience[data-mode="rider"]:is([data-auth-mode="signin"],[data-auth-mode="signup"]) .nr-entry-tools{
+    min-height:32px;
+    margin-bottom:14px;
+  }
+  .nr-auth-experience[data-mode="rider"]:is([data-auth-mode="signin"],[data-auth-mode="signup"]) .nr-auth-content>h1{
+    font-size:clamp(28px,8vw,35px)!important;
+  }
+  .nr-auth-experience[data-mode="rider"]:is([data-auth-mode="signin"],[data-auth-mode="signup"]) .nr-auth-content>p{
+    margin:7px 0 18px!important;
+    font-size:13px!important;
+  }
+  .nr-auth-experience[data-mode="rider"]:is([data-auth-mode="signin"],[data-auth-mode="signup"]) :is(.nr-profile-form,.nr-auth-form){
+    gap:13px!important;
+  }
+  .nr-auth-experience[data-mode="rider"]:is([data-auth-mode="signin"],[data-auth-mode="signup"]) .nr-auth-cta-dock{
+    position:static!important;
+    margin:4px 0 0!important;
+    padding:0!important;
+    background:transparent!important;
+  }
+  .nr-auth-experience[data-mode="rider"][data-auth-mode="signup"] .nr-auth-content{
+    padding-top:13px!important;
+    padding-bottom:calc(38px + env(safe-area-inset-bottom))!important;
+  }
+  .nr-auth-experience[data-mode="rider"][data-auth-mode="signup"] .nr-entry-tools{
+    margin-bottom:8px;
+  }
+  .nr-auth-experience[data-mode="rider"][data-auth-mode="signup"] .nr-auth-content>p{
+    margin-bottom:14px!important;
+  }
+  .nr-auth-experience[data-mode="rider"][data-auth-mode="signup"] .nr-auth-divider{
+    margin:13px 0!important;
+  }
+}
+@media(max-width:899px) and (max-height:650px){
+  .nr-auth-experience[data-mode="rider"]:is([data-auth-mode="signin"],[data-auth-mode="signup"]) .nr-auth-shell{
+    grid-template-rows:62px minmax(0,1fr)!important;
+  }
+  .nr-auth-experience[data-mode="rider"]:is([data-auth-mode="signin"],[data-auth-mode="signup"]) .nr-auth-hero{
+    height:62px!important;
+  }
+  .nr-auth-experience[data-mode="rider"]:is([data-auth-mode="signin"],[data-auth-mode="signup"]) .nr-auth-content{
+    padding-top:11px!important;
+  }
+}
+
+
+/* Rider-only destructive actions: unmistakable red buttons, never ghost links.
+   Cancellation still routes through the existing confirmation + server checks. */
+.nr-app[data-mode="rider"] .nr-driver-matching footer .nr-button.nr-danger.nr-rider-cancel-button{
+  display:inline-flex!important;
   align-items:center!important;
   justify-content:center!important;
-  transform-origin:center!important;
-  gap:4px;
+  gap:9px!important;
+  min-height:50px!important;
+  width:100%;
+  border:1px solid #cb293e!important;
+  border-radius:14px!important;
+  background:#d32e43!important;
+  color:#ffffff!important;
+  font-size:14px!important;
+  font-weight:800!important;
+  line-height:1.2!important;
+  box-shadow:0 5px 14px rgba(153,22,43,.16)!important;
   cursor:pointer;
-  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
   transition:background-color 180ms ease,box-shadow 180ms ease,transform 180ms ease;
 }
-.nr-rider-hamburger:hover{
-  background:rgba(255,255,255,.88)!important;
-  box-shadow:0 11px 28px rgba(4,28,48,.2),inset 0 1px 0 rgba(255,255,255,.8)!important;
+.nr-app[data-mode="rider"] .nr-driver-matching footer .nr-button.nr-danger.nr-rider-cancel-button svg{
+  flex:none;
+  color:inherit;
 }
-.nr-rider-hamburger:active{opacity:1!important;transform:scale(.96)!important}
-.nr-rider-hamburger:focus-visible{
-  border-radius:50%!important;
-  outline:3px solid #00c878!important;
-  outline-offset:3px!important;
+.nr-app[data-mode="rider"] .nr-trip-toolbar button.nr-trip-cancel-trigger{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  flex:none;
+  gap:6px;
+  min-width:105px;
+  min-height:44px!important;
+  padding:0 13px!important;
+  border:1px solid #cb293e!important;
+  border-radius:12px!important;
+  background:#d32e43!important;
+  color:#fff!important;
+  font-size:13px!important;
+  line-height:1.15;
+  font-weight:800!important;
+  box-shadow:0 4px 12px rgba(153,22,43,.14);
+  cursor:pointer;
+  touch-action:manipulation;
+  transition:background-color 180ms ease,box-shadow 180ms ease,transform 180ms ease;
 }
-.nr-rider-hamburger-line.long{width:20px}
-.nr-rider-hamburger-line.short{width:14px}
-.nr-app.dark .nr-rider-hamburger,
-.nr-app[data-theme="dark"] .nr-rider-hamburger,
-.dark .nr-rider-hamburger{
-  border-color:rgba(204,238,248,.22)!important;
-  background:rgba(4,28,48,.73)!important;
-  box-shadow:0 10px 26px rgba(0,12,23,.32),inset 0 1px 0 rgba(255,255,255,.12)!important;
-  color:#f4fcff!important;
+.nr-app[data-mode="rider"] .nr-trip-toolbar button.nr-trip-cancel-trigger>span{
+  font-size:21px;
+  font-weight:500;
+  line-height:1;
 }
-.nr-app.dark .nr-rider-hamburger:hover,
-.nr-app[data-theme="dark"] .nr-rider-hamburger:hover,
-.dark .nr-rider-hamburger:hover{background:rgba(11,43,67,.86)!important}
-@media(prefers-reduced-motion:reduce){.nr-rider-hamburger{transition:none!important}}
+.nr-app[data-mode="rider"] .nr-cancel-dialog-actions .nr-button.nr-danger{
+  border:1px solid #cb293e!important;
+  border-radius:13px!important;
+  background:#d32e43!important;
+  color:#fff!important;
+  font-weight:800!important;
+  box-shadow:none!important;
+}
+@media(hover:hover){
+  .nr-app[data-mode="rider"] .nr-driver-matching footer .nr-button.nr-danger.nr-rider-cancel-button:hover:not(:disabled),
+  .nr-app[data-mode="rider"] .nr-trip-toolbar button.nr-trip-cancel-trigger:hover:not(:disabled),
+  .nr-app[data-mode="rider"] .nr-cancel-dialog-actions .nr-button.nr-danger:hover:not(:disabled){
+    background:#b91f36!important;
+    border-color:#b91f36!important;
+  }
+}
+.nr-app[data-mode="rider"] :is(
+  .nr-driver-matching footer .nr-rider-cancel-button,
+  .nr-trip-toolbar .nr-trip-cancel-trigger,
+  .nr-cancel-dialog-actions .nr-button.nr-danger
+):focus-visible{
+  outline:3px solid #f69ba6!important;
+  outline-offset:3px;
+}
+.nr-app[data-mode="rider"] :is(
+  .nr-driver-matching footer .nr-rider-cancel-button,
+  .nr-trip-toolbar .nr-trip-cancel-trigger,
+  .nr-cancel-dialog-actions .nr-button.nr-danger
+):disabled{
+  opacity:.52!important;
+  cursor:not-allowed;
+  box-shadow:none!important;
+}
+@media(max-width:420px){
+  .nr-app[data-mode="rider"] .nr-trip-toolbar button.nr-trip-cancel-trigger{
+    min-width:97px;
+    padding-inline:10px!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .nr-app[data-mode="rider"] :is(.nr-rider-cancel-button,.nr-trip-cancel-trigger){
+    transition:none!important;
+  }
+}

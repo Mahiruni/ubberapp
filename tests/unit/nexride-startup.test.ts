@@ -78,6 +78,28 @@ describe("rider initialization", () => {
     expect(startupDestination({ ...state, session, signedOutRole: "driver" })).toBe("/driver/auth");
   });
 
+  it("keeps a logged-out Rider unauthenticated even when a guest preview is enabled", async () => {
+    values.set(EXPLICIT_SIGNOUT_KEY, "rider");
+    values.set("nexride:preview-enabled", "true");
+    getSession.mockResolvedValue({ data: { session }, error: null });
+
+    const result = await initializeRider();
+    expect(result.destination).toBe("/");
+    expect(result.session).toBeNull();
+    expect(getSession).not.toHaveBeenCalled();
+    expect(values.get(EXPLICIT_SIGNOUT_KEY)).toBe("rider");
+  });
+
+  it("keeps a logged-out Driver unauthenticated when guest preview is enabled", async () => {
+    values.set(EXPLICIT_SIGNOUT_KEY, "driver");
+    values.set("nexride:preview-enabled", "true");
+    getSession.mockResolvedValue({ data: { session }, error: null });
+    const result = await initializeRider();
+    expect(result.destination).toBe("/");
+    expect(result.session).toBeNull();
+    expect(getSession).not.toHaveBeenCalled();
+  });
+
   it("does not resurrect a rider session whose restoration was pending during logout", async () => {
     let resume!: (value: unknown) => void;
     getSession.mockImplementationOnce(() => new Promise(resolve => { resume = resolve; }));

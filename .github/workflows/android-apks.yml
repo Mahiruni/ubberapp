@@ -1,150 +1,146 @@
-name: Build NexRide Rider and Driver APKs
+name: Build NexRide Android APKs
 
-on:
+'on':
   workflow_dispatch:
   push:
-    branches:
-      - main
-      - feature/rider-human-avatar-tracking
+    branches: [main]
     paths:
-      - .github/workflows/android-apks.yml
-      - native/android/**
-      - scripts/configure-mobile-release.py
-      - components/nexride/mobile-update-gate.tsx
-      - app/api/mobile/release/route.ts
+      - ".github/workflows/android-apks.yml"
+      - "public/icons/nexride-rider.webp"
+      - "public/icons/nexride-driver.webp"
+      - "scripts/generate-brand-assets.mjs"
+      - "scripts/sync-android-icons.mjs"
+      - "package.json"
 
 permissions:
   contents: read
 
-concurrency:
-  group: nexride-apk-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
-  android:
-    name: Android APK (${{ matrix.role }})
+  apk:
+    name: Build ${{ matrix.role }} APK
     runs-on: ubuntu-latest
-    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
-        role:
-          - rider
-          - driver
+        role: [rider, driver]
 
     steps:
-      - name: Checkout NexRide
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: Set up Node 24
         uses: actions/setup-node@v4
         with:
-          node-version: '24'
+          node-version: 24
           cache: npm
 
-      - name: Set up JDK
+      - name: Set up Java 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: "21"
 
-      - name: Verify hosted Android SDK
-        run: |
-          test -d "${ANDROID_HOME:?ANDROID_HOME is required}"
-          test -x "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" || test -d "${ANDROID_HOME}/platforms"
-          echo "Android SDK is available"
+      - name: Install web dependencies
+        # Some legacy package-lock entries predate Mapbox additions. Let npm
+        # resolve the tracked package.json rather than abort on npm ci drift.
+        run: npm install --no-audit --no-fund
 
-      - name: Install web and Capacitor dependencies
-        run: |
-          npm install --no-audit --no-fund
-          npm install --no-save --package-lock=false --no-audit --no-fund @capacitor/core@8 @capacitor/cli@8 @capacitor/android@8 @capacitor/app@8
+      - name: Install Capacitor build tooling
+        run: npm install --no-save @capacitor/core@latest @capacitor/cli@latest @capacitor/android@latest
 
-      - name: Configure separate Android application
-        env:
-          NEXRIDE_ROLE: ${{ matrix.role }}
+      - name: Configure native shell
+        shell: bash
         run: |
-          node <<'NODE'
-          const fs = require('node:fs');
-          const role = process.env.NEXRIDE_ROLE;
-          if (!['rider', 'driver'].includes(role)) throw new Error('Invalid role');
-          const appId = `com.nexride.${role}`;
-          const appName = role === 'rider' ? 'NexRide Rider' : 'NexRide Driver';
-          const startPath = `/${role}`;
-          const webDir = '.capacitor-shell';
-          fs.mkdirSync(webDir, { recursive: true });
-          fs.writeFileSync(`${webDir}/index.html`, '<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"></head><body><p>NexRide needs an internet connection to load.</p></body></html>');
-          fs.writeFileSync('capacitor.config.json', JSON.stringify({
-            appId, appName, webDir,
-            server: {
-              url: `https://ubberapp.vercel.app${startPath}`,
-              cleartext: false,
-              androidScheme: 'https'
+          if [ "${{ matrix.role }}" = "rider" ]; then
+            APP_ID="com.nexride.rider"
+            APP_NAME="NexRide Rider"
+            START_PATH="/rider"
+          else
+            APP_ID="com.nexride.driver"
+            APP_NAME="NexRide Driver"
+            START_PATH="/driver"
+          fi
+
+          cat > capacitor.config.json <<EOF
+          {
+            "appId": "$APP_ID",
+            "appName": "$APP_NAME",
+            "webDir": "public",
+            "server": {
+              "url": "https://ubberapp.vercel.app$START_PATH",
+              "cleartext": false,
+              "androidScheme": "https"
             },
-            android: { allowMixedContent: false }
-          }, null, 2));
-          NODE
+            "android": {
+              "allowMixedContent": false
+            }
+          }
+          EOF
 
-      - name: Generate native Android shell
+      - name: Create Android project
+        run: npx cap add android
+
+      - name: Harden Android manifest
+        shell: bash
         run: |
-          npx cap add android
-          npx cap sync android
-
-      - name: Configure native Google Play updates
-        env:
-          NEXRIDE_ROLE: ${{ matrix.role }}
-          NEXRIDE_RIDER_ANDROID_VERSION_CODE: ${{ vars.NEXRIDE_RIDER_ANDROID_VERSION_CODE || '1' }}
-          NEXRIDE_DRIVER_ANDROID_VERSION_CODE: ${{ vars.NEXRIDE_DRIVER_ANDROID_VERSION_CODE || '1' }}
-        run: python3 scripts/configure-mobile-release.py
-
-      - name: Apply minimum Android permissions
-        run: |
+          MANIFEST="android/app/src/main/AndroidManifest.xml"
           python3 - <<'PY'
           from pathlib import Path
-          f = Path('android/app/src/main/AndroidManifest.xml')
-          s = f.read_text()
-          permissions = [
-              'android.permission.ACCESS_FINE_LOCATION',
-              'android.permission.ACCESS_COARSE_LOCATION',
-              'android.permission.POST_NOTIFICATIONS',
-              'android.permission.CAMERA'
-          ]
-          tags = ''.join(f'    <uses-permission android:name="{permission}" />\n' for permission in permissions if permission not in s)
-          if '<application' not in s:
-              raise SystemExit('Android manifest lacks application element')
-          s = s.replace('<application', tags + '    <application', 1)
-          s = s.replace('android:usesCleartextTraffic="true"', 'android:usesCleartextTraffic="false"')
-          f.write_text(s)
+          p=Path("android/app/src/main/AndroidManifest.xml")
+          s=p.read_text()
+          permissions = """    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+"""
+          if "ACCESS_FINE_LOCATION" not in s:
+              s=s.replace("<application", permissions+"\n    <application", 1)
+          s=s.replace('android:usesCleartextTraffic="true"', 'android:usesCleartextTraffic="false"')
+          p.write_text(s)
           PY
 
-      - name: Verify Android role, URL and permissions
-        env:
-          NEXRIDE_ROLE: ${{ matrix.role }}
+      - name: Install role-specific Android launcher assets
+        shell: bash
         run: |
-          node <<'NODE'
-          const fs = require('node:fs');
-          const config = JSON.parse(fs.readFileSync('capacitor.config.json','utf8'));
-          const role = process.env.NEXRIDE_ROLE;
-          if (config.appId !== `com.nexride.${role}`) throw new Error('Incorrect package id');
-          if (config.server.url !== `https://ubberapp.vercel.app/${role}`) throw new Error('Incorrect app target');
-          if (config.server.cleartext !== false || config.android.allowMixedContent !== false) throw new Error('Insecure shell');
-          NODE
-          grep -q 'android.permission.ACCESS_FINE_LOCATION' android/app/src/main/AndroidManifest.xml
+          node scripts/sync-android-icons.mjs "${{ matrix.role }}"
+          test -s android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+          test -s android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png
 
-      - name: Build installable debug APK
+      - name: Verify role isolation and security
+        shell: bash
+        run: |
+          grep -q '"cleartext": false' capacitor.config.json
+          if [ "${{ matrix.role }}" = "rider" ]; then
+            grep -q 'com.nexride.rider' capacitor.config.json
+            grep -q '/rider' capacitor.config.json
+          else
+            grep -q 'com.nexride.driver' capacitor.config.json
+            grep -q '/driver' capacitor.config.json
+          fi
+          grep -q 'ACCESS_FINE_LOCATION' android/app/src/main/AndroidManifest.xml
+          grep -q 'CAMERA' android/app/src/main/AndroidManifest.xml
+
+      - name: Build debug APK
         working-directory: android
-        run: ./gradlew --no-daemon assembleDebug
+        run: ./gradlew assembleDebug
 
-      - name: Stage role-specific APK
-        env:
-          NEXRIDE_ROLE: ${{ matrix.role }}
+      - name: Stage APK
+        shell: bash
         run: |
           mkdir -p dist
-          cp android/app/build/outputs/apk/debug/app-debug.apk "dist/NexRide-${NEXRIDE_ROLE}-debug.apk"
+          cp android/app/build/outputs/apk/debug/app-debug.apk "dist/NexRide-${{ matrix.role }}-debug.apk"
 
-      - name: Upload installable APK
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: NexRide-${{ matrix.role }}-debug-APK
-          path: dist/*.apk
+          name: NexRide-${{ matrix.role }}-APK
+          path: dist/NexRide-${{ matrix.role }}-debug.apk
           if-no-files-found: error
           retention-days: 14
+
+      - name: Upload Android project for release hardening
+        uses: actions/upload-artifact@v4
+        with:
+          name: NexRide-${{ matrix.role }}-Android-project
+          path: android/
+          retention-days: 7

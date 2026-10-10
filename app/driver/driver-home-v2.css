@@ -382,7 +382,17 @@
 /* NexRide Driver 2026: purposeful, compact map-first command wrapper.
    Entire opaque control island intercepts pointer events; no touches leak
    through to the Mapbox map. Keep swipe mechanics and safe areas intact. */
+/* Rider-matched white command surface regardless of the Driver app's
+   surrounding theme. Scope tokens here so map/navigation and the rest of
+   the Driver experience keep their own light/dark palettes. */
 .nr-driver-app-shell[data-home="true"] .nr-driver-home-swipe[data-map-input-boundary="true"]{
+  --driver-surface:#ffffff;
+  --driver-surface-elevated:#f5f7f9;
+  --driver-bg:#f5f7f9;
+  --driver-border:#e4eaf0;
+  --driver-text-primary:#102334;
+  --driver-text-secondary:#667587;
+  color-scheme:light;
   width:min(460px,calc(100% - 24px))!important;
   bottom:max(12px,env(safe-area-inset-bottom,0px))!important;
   z-index:1000!important;
@@ -415,14 +425,33 @@
 }
 .nr-driver-home-control-online[data-online="true"]{color:#006f42;background:#d9fae9;border-color:#a4e4bf}
 .nr-driver-home-control-online>span{width:7px;height:7px;border-radius:50%;background:currentColor}
-.nr-driver-home-control-meta{
-  display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:10.5px;
-  color:var(--driver-text-secondary);
+/* Keep the notification action compact in the status heading. */
+.nr-driver-home-control-tools{
+  display:flex;align-items:center;justify-content:flex-end;gap:8px;
+  flex:0 0 auto;min-width:0;
 }
-.nr-driver-home-control-meta>span{
-  display:flex;align-items:center;gap:6px;padding:7px 10px;border:1px solid var(--driver-border);
-  border-radius:10px;background:var(--driver-surface-elevated)
+.nr-driver-home-alert-icon{
+  display:grid;place-items:center;
+  width:40px;height:40px;min-width:40px;min-height:40px;flex:0 0 40px;
+  padding:0;border:1px solid var(--driver-border);border-radius:50%;
+  background:var(--driver-bg);color:var(--driver-text-primary);
+  cursor:pointer;-webkit-tap-highlight-color:transparent;
+  transition:background-color .18s ease,transform .18s ease,color .18s ease;
 }
+.nr-driver-home-alert-icon[data-permission="granted"]{
+  color:var(--driver-success);
+}
+.nr-driver-home-alert-icon[data-permission="denied"]{
+  color:var(--driver-danger);
+}
+.nr-driver-home-alert-icon:is(:hover,:focus-visible):not(:disabled){
+  background:var(--driver-surface-elevated);
+}
+.nr-driver-home-alert-icon:active:not(:disabled){transform:scale(.95)}
+.nr-driver-home-alert-icon:focus-visible{
+  outline:3px solid var(--driver-accent);outline-offset:2px;
+}
+.nr-driver-home-alert-icon:disabled{opacity:1;cursor:default}
 .nr-driver-home-control-panel .nr-driver-availability-swipe{
   min-height:58px!important;height:58px!important;
   border-radius:15px!important;
@@ -443,8 +472,10 @@
 .nr-driver-home-quick-actions button:hover{background:color-mix(in srgb,var(--driver-accent) 12%,var(--driver-bg))}
 .nr-driver-home-quick-actions button:active{transform:scale(.98)}
 .nr-driver-home-quick-actions button:focus-visible{outline:3px solid var(--driver-accent);outline-offset:2px}
+/* The white Driver command wrapper uses Rider-light status chip contrast,
+   even when the rest of the Driver app is using its dark theme. */
 .nr-driver-app-shell[data-theme="dark"] .nr-driver-home-control-online[data-online="true"]{
-  color:#84edb9;background:#0b4b39;border-color:#176b51;
+  color:#006f42;background:#d9fae9;border-color:#a4e4bf;
 }
 .nr-driver-home-map-canvas .nr-map-control-stack{
   top:calc(env(safe-area-inset-top,0px) + 74px)!important;
@@ -461,7 +492,7 @@
   .nr-driver-home-control-state strong{font-size:18px}
 }
 @media(max-height:650px){
-  .nr-driver-home-control-state small,.nr-driver-home-control-meta{display:none}
+  .nr-driver-home-control-state small{display:none}
   .nr-driver-home-control-panel{gap:8px;padding:10px 12px}
   .nr-driver-home-quick-actions{padding-top:8px}
 }
@@ -469,11 +500,85 @@
   .nr-driver-home-quick-actions button{transition:none!important}
 }
 
-.nr-driver-home-control-meta>button {
-  display:flex;align-items:center;justify-content:center;gap:6px;
-  padding:7px 10px;min-height:32px;border:1px solid var(--driver-border);
-  border-radius:10px;background:var(--driver-surface-elevated);
-  color:var(--driver-text-primary);font-size:10.5px;font-weight:750;cursor:pointer;
+
+
+/* Rider-aligned Driver map controls: compact, square-rounded, no bulky pills. */
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-map-canvas .nr-map-control-stack{
+  top:calc(env(safe-area-inset-top,0px) + 72px)!important;
+  right:max(12px,env(safe-area-inset-right,0px))!important;
+  gap:8px!important;
 }
-.nr-driver-home-control-meta>button:disabled{opacity:.78;cursor:default}
-.nr-driver-home-control-meta>button:focus-visible{outline:3px solid var(--driver-accent);outline-offset:2px}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-map-canvas .nr-map-touch-control{
+  display:grid!important;
+  place-items:center!important;
+  width:44px!important;
+  height:44px!important;
+  min-width:44px!important;
+  min-height:44px!important;
+  padding:0!important;
+  border-radius:13px!important;
+  border:1px solid #e2e8ec!important;
+  background:#ffffff!important;
+  color:#102334!important;
+  box-shadow:0 3px 11px rgba(4,28,48,.11)!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  touch-action:manipulation!important;
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-map-canvas .nr-map-touch-control svg{
+  width:19px!important;
+  height:19px!important;
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-map-canvas .nr-map-touch-control .nr-traffic-control-icon{
+  transform:scale(.88);
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-map-canvas .nr-map-layer-menu{
+  top:calc(env(safe-area-inset-top,0px) + 72px)!important;
+  right:max(64px,calc(env(safe-area-inset-right,0px) + 64px))!important;
+  width:min(170px,calc(100vw - 88px))!important;
+  padding:5px!important;
+  border:1px solid #e4eaf0!important;
+  border-radius:14px!important;
+  background:#ffffff!important;
+  color:#102334!important;
+  box-shadow:0 8px 22px rgba(4,28,48,.12)!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-map-canvas .nr-map-layer-menu button{
+  min-height:42px!important;
+  font-size:12px!important;
+  border-radius:10px!important;
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-menu-host .nr-driver-menu-trigger{
+  width:44px!important;
+  height:44px!important;
+  min-width:44px!important;
+  min-height:44px!important;
+  border-radius:13px!important;
+  border:1px solid #e2e8ec!important;
+  background:#ffffff!important;
+  color:#102334!important;
+  box-shadow:0 3px 11px rgba(4,28,48,.11)!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-profile{
+  width:44px!important;
+  height:44px!important;
+  min-width:44px!important;
+  min-height:44px!important;
+  border-radius:13px!important;
+  border:1px solid #e2e8ec!important;
+  background:#ffffff!important;
+  color:#102334!important;
+  box-shadow:0 3px 11px rgba(4,28,48,.11)!important;
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-profile svg{
+  width:20px;
+  height:20px;
+}
+
+/* Biloo-inspired Driver home accent, scoped to non-semantic surfaces. */
+.nr-driver-app-shell{--driver-accent:#5145e5;--driver-success:#00b77a}
+.nr-driver-home-quick-actions button:focus-visible{outline-color:#5145e5}

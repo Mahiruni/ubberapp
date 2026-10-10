@@ -24,3 +24,51 @@
 .driver-auth-submit:disabled { opacity: .6; cursor: wait; }
 .driver-auth-footer { text-align: center; font-size: 13px !important; margin-top: 22px !important; }
 .driver-auth-footer a { color: #8fe9bf; font-weight: 800; }
+
+
+/* Driver sign-in and verification auth forms: light-only, premium contrast. */
+.nr-driver-app-shell .driver-auth-page{
+  color-scheme:light;
+  background:#f5f7f9!important;
+  color:#102334!important;
+}
+.nr-driver-app-shell .driver-auth-card{
+  background:#ffffff;
+  border:1px solid #dfe7eb;
+  border-radius:24px;
+  padding:clamp(20px,4vw,32px);
+  box-shadow:0 10px 32px rgba(16,35,52,.065);
+}
+.nr-driver-app-shell .driver-auth-card :is(h1,h2,h3),
+.nr-driver-app-shell .driver-auth-card .nr-brand strong{
+  color:#102334!important;
+}
+.nr-driver-app-shell .driver-auth-card :is(p,.nr-brand small,.driver-auth-back){
+  color:#667587!important;
+}
+.nr-driver-app-shell .driver-auth-card label{
+  color:#415768!important;
+}
+.nr-driver-app-shell .driver-auth-role,
+.nr-driver-app-shell .driver-auth-footer a{
+  color:#007448!important;
+}
+.nr-driver-app-shell .driver-auth-card input{
+  color:#102334!important;
+  background:#ffffff!important;
+  border:1px solid #ccd9df!important;
+}
+.nr-driver-app-shell .driver-auth-card input::placeholder{color:#8295a1}
+.nr-driver-app-shell .driver-auth-card input:focus{
+  outline:3px solid rgba(0,200,120,.14);
+  border-color:#00a86b!important;
+}
+.nr-driver-app-shell .driver-auth-error{
+  background:#fff1f2!important;
+  border-color:#f4c6ce!important;
+  color:#8b303e!important;
+}
+.nr-driver-app-shell .driver-auth-submit{
+  background:#00c878!important;
+  color:#03251b!important;
+}
