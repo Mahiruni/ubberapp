@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
@@ -21,6 +21,22 @@ export default function EmailVerification() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [lastSent, setLastSent] = useState(0);
+  const [clock, setClock] = useState(0);
+  useEffect(() => {
+    try {
+      const raw = window.sessionStorage.getItem("nexride:verification-target");
+      if (!raw) return;
+      const target = JSON.parse(raw) as { email?: string; role?: string; purpose?: string };
+      if (target.email && validEmail(target.email)) setEmail(target.email);
+      if (target.role === "driver") setReturnRole("driver");
+      if (target.purpose === "recovery") setPurpose("recovery");
+    } catch { /* The verification screen remains usable without saved form context. */ }
+  }, []);
+  useEffect(() => {
+    if (!lastSent) return;
+    const timer = window.setInterval(() => setClock(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, [lastSent]);
   async function verify(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (busy || !validEmail(email) || !/^\d{6}$/.test(code)) { setError("Enter your email and the six-digit code."); return; }
@@ -65,11 +81,12 @@ export default function EmailVerification() {
       <h1 style={{fontSize:28,letterSpacing:"-.04em",marginBottom:8}}>{verified?"Create a new password":"Verify your email"}</h1>
       <p style={{color:"#55546B",lineHeight:1.5}}>{verified?"Secure your account with a new password.":"Enter the unique six-digit code sent to your inbox."}</p>
       {!verified ? <form onSubmit={verify} style={{display:"grid",gap:14}}>
-        <label>Account type<select value={returnRole} onChange={e=>setReturnRole(e.target.value as "rider" | "driver")} style={field}><option value="rider">Rider</option><option value="driver">Driver</option></select></label>\n        <label>Verification purpose<select value={purpose} onChange={e=>{setPurpose(e.target.value as Purpose);setCode("");setError("");}} style={field}><option value="signup">Confirm new account</option><option value="recovery">Reset forgotten password</option></select></label>
+        <label>Account type<select value={returnRole} onChange={e=>setReturnRole(e.target.value as "rider" | "driver")} style={field}><option value="rider">Rider</option><option value="driver">Driver</option></select></label>
+        <label>Verification purpose<select value={purpose} onChange={e=>{setPurpose(e.target.value as Purpose);setCode("");setError("");}} style={field}><option value="signup">Confirm new account</option><option value="recovery">Reset forgotten password</option></select></label>
         <label>Email address<input required type="email" autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)} style={field} placeholder="you@example.com"/></label>
         <label>Six-digit code<input required type="text" inputMode="numeric" autoComplete="one-time-code" maxLength={6} pattern="[0-9]{6}" value={code} onChange={e=>setCode(e.target.value.replace(/\D/g,"").slice(0,6))} style={{...field,letterSpacing:".35em",fontSize:23,textAlign:"center"}} placeholder="000000"/></label>
         <button disabled={busy} type="submit" style={action}>{busy?"Verifying…":"Verify email"}</button>
-        <button disabled={busy || !validEmail(email) || Date.now()-lastSent<60000} type="button" onClick={resend} style={{...action,background:"#F0EEFF",color:"#28217F"}}>Resend code</button>
+        <button disabled={busy || !validEmail(email) || (lastSent > 0 && clock - lastSent < 60000)} type="button" onClick={resend} style={{...action,background:"#F0EEFF",color:"#28217F"}}>Resend code</button>
       </form> : <form onSubmit={changePassword} style={{display:"grid",gap:14}}>
         <label>New password<input required type="password" minLength={12} autoComplete="new-password" value={password} onChange={e=>setPassword(e.target.value)} style={field}/></label>
         <label>Confirm password<input required type="password" minLength={12} autoComplete="new-password" value={confirm} onChange={e=>setConfirm(e.target.value)} style={field}/></label>
