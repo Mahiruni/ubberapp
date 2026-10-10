@@ -56,7 +56,7 @@ export default function PrelaunchCampaignPage() {
           <p><strong>Recipients</strong></p><p>Not calculated — eligibility integration pending</p>
           <p><strong>Delivery</strong></p><p>{campaign.testEnabled ? "SMTP configured · Test available" : "SMTP not configured"}</p>
           <button type="button" disabled={!campaign.testEnabled||sending} onClick={sendTest} style={{background:"#00C878",color:"#041C30",border:0,padding:"13px 18px",borderRadius:12,marginRight:10,fontWeight:700,opacity:campaign.testEnabled&&!sending?1:.5}}>{sending?"Sending test…":"Send Test Email"}</button>
-          {feedback&&<p role="status">{feedback}</p>
+          {feedback&&<p role="status">{feedback}</p>}
           <button type="button" disabled style={{background:"#041C30",color:"white",border:0,padding:"13px 18px",borderRadius:12,opacity:.5,cursor:"not-allowed"}}>Send campaign · Unavailable</button>
           <p style={{fontSize:13,color:"#667587",lineHeight:1.6}}>{campaign.message}</p>
         </div>
