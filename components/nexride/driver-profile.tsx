@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { DriverPhotoManager } from "./driver-photo-manager";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Dialog, Icon, type IconName } from "./ui";
@@ -166,6 +167,7 @@ export function DriverProfileScreen({
           {verified && <i className="nr-driver-photo-badge"><Icon name="check" size={13}/></i>}
         </div>
 
+        <DriverPhotoManager driverId={driverId} fullName={profile.fullName} />
         <div className="nr-driver-profile-identity">
           <div className="nr-driver-role-line">
             <span className="nr-driver-profile-role">DRIVER</span>
