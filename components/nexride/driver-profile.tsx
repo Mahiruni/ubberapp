@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { DriverPhotoManager } from "./driver-photo-manager";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Dialog, Icon, type IconName } from "./ui";
@@ -157,6 +158,7 @@ export function DriverProfileScreen({
       </header>
 
       <section className="nr-driver-profile-hero nr-driver-profile-hero-v2">
+        <DriverPhotoManager driverId={driverId} fullName={profile.fullName}>
         <div className="nr-driver-profile-photo">
           {profile.avatarUrl ? (
             <Image src={profile.avatarUrl} alt={profile.fullName + " profile"} width={88} height={88} unoptimized />
@@ -165,6 +167,7 @@ export function DriverProfileScreen({
           )}
           {verified && <i className="nr-driver-photo-badge"><Icon name="check" size={13}/></i>}
         </div>
+        </DriverPhotoManager>
 
         <div className="nr-driver-profile-identity">
           <div className="nr-driver-role-line">
@@ -266,7 +269,7 @@ export function DriverProfileScreen({
 
       {!profile.avatarUrl && (
         <p className="nr-profile-photo-note">
-          Your initials are shown because no driver photo is currently connected to this account.
+          Tap your profile avatar to upload a verified photo. Riders see it only after approval.
         </p>
       )}
 
