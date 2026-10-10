@@ -214,3 +214,8 @@
   flex-shrink:0!important;
   white-space:normal!important;
 }
+
+/* Keep newly-Online Driver matching feedback inside the scrollable Rider panel. */
+.nr-driver-matching .nr-match-online-wait-note{display:flex;align-items:flex-start;gap:10px;margin:12px 0 14px;padding:12px 14px;border-radius:14px;background:rgba(0,200,120,.09);border:1px solid rgba(0,200,120,.23);color:inherit;font-size:12px;line-height:1.55}
+.nr-driver-matching .nr-match-online-wait-note>svg{flex:0 0 auto;margin-top:1px;color:#00a964}
+@media(max-width:360px){.nr-driver-matching .nr-match-online-wait-note{font-size:11px;padding:10px}}
