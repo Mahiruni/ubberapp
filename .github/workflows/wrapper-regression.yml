@@ -1,0 +1,39 @@
+name: NexRide Wrapper Regression
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "app/page.tsx"
+      - "app/wrapper-polish.css"
+      - "components/nexride/*sheet*"
+      - "components/nexride/rider-home.tsx"
+      - "lib/nexride-sheet-geometry.ts"
+      - "tests/e2e/wrapper-motion.spec.ts"
+      - ".github/workflows/wrapper-regression.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: wrapper-regression-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  wrapper:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEXT_PUBLIC_APP_ENV: test
+      NEXT_PUBLIC_MAPBOX_TOKEN: replace_me
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm install --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium webkit
+      - run: npx playwright test tests/e2e/wrapper-motion.spec.ts --project=chromium --project=mobile --project=webkit --workers=2 --timeout=45000
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: nexride-wrapper-report
+          path: playwright-report/
