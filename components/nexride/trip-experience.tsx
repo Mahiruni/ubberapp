@@ -42,6 +42,7 @@ export function TripExperience({ screen, tripId, userId, preview, navigate, setP
   const [cancelled, setCancelled] = useState(false);
   const [confirmedStatus, setConfirmedStatus] = useState<TripSnapshot['status'] | null>(null);
   const [tripSnapshot, setTripSnapshot] = useState<TripSnapshot | null>(null);
+  const live = !!tripId && !!userId;
   const [approvedDriverPhoto, setApprovedDriverPhoto] = useState('');
   const approvedDriverId = tripSnapshot?.driver?.id;
   useEffect(() => {
@@ -89,7 +90,6 @@ export function TripExperience({ screen, tripId, userId, preview, navigate, setP
     }
   };
   const file = screen === 'summary' ? 'completion.html' : screen === 'live' ? 'trip.html' : 'index.html';
-  const live = !!tripId && !!userId;
 
   const openSafety = () => {
     try {
