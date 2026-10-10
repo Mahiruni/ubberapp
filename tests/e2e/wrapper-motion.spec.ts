@@ -16,7 +16,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test("brand contrast and essential actions survive narrow screens and orientation changes", async ({ page }) => {
-  for (const viewport of [{ width: 1280, height: 900 }, { width: 390, height: 844 }, { width: 320, height: 568 }, { width: 740, height: 390 }]) {
+  for (const viewport of [{ width: 1280, height: 900 }, { width: 1280, height: 720 }, { width: 390, height: 844 }, { width: 320, height: 568 }, { width: 740, height: 390 }, { width: 844, height: 390 }]) {
     await page.setViewportSize(viewport);
     await handle(page).press("End");
     await expect.poll(async () => Math.abs(await height(page) - Math.min(viewport.height * .78, viewport.height - 72))).toBeLessThan(2);

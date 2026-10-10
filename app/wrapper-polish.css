@@ -107,8 +107,8 @@
 
 /* Desktop: a complete map canvas and one anchored, resizable ride panel. */
 @media (min-width:801px) {
-  .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper { grid-template-columns:220px minmax(0,1fr)!important; min-height:0!important; height:100dvh!important; overflow:hidden; }
-  .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-sidebar { background:#211b66!important; color:#fff!important; padding:28px 18px!important; border:0!important; gap:24px!important; }
+  .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper { grid-template-columns:220px minmax(0,1fr)!important; grid-template-rows:minmax(0,1fr)!important; min-height:0!important; height:100dvh!important; overflow:hidden; }
+  .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-sidebar { background:#211b66!important; color:#fff!important; padding:28px 18px!important; border:0!important; gap:24px!important; min-height:0!important; overflow-y:auto!important; }
   .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-sidebar .nr-brand strong { color:#fff!important; font-size:23px; }
   .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-sidebar .nr-navigation { display:flex!important; flex-direction:column!important; gap:6px!important; width:100%!important; background:transparent!important; border:0!important; box-shadow:none!important; }
   .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-sidebar-city,.nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-sidebar-bottom p { color:#b9b2e0!important; }
@@ -120,7 +120,7 @@
   .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-sidebar .nr-navigation button.active { background:#ffffff15!important; color:#c5f000!important; box-shadow:inset 3px 0 #c5f000!important; }
   .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-sidebar .nr-navigation button:hover { background:#ffffff10!important; }
   .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-sidebar-bottom button { color:#d0caff!important; }
-  .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-main { position:relative!important; height:100%!important; overflow:hidden!important; }
+  .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-main { position:relative!important; height:100%!important; min-height:0!important; overflow:hidden!important; }
   .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-main > .nr-topbar { display:none!important; }
   .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-main > .nr-stage.with-map { position:absolute!important; inset:0!important; display:block!important; width:100%!important; height:100%!important; min-height:0!important; padding:0!important; margin:0!important; }
   .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-rider-map-surface { position:absolute!important; inset:0!important; width:100%!important; height:100%!important; min-height:0!important; border:0!important; border-radius:0!important; }
