@@ -44,6 +44,7 @@ export default function EmailVerification() {
     try {
       const result = await supabase.auth.verifyOtp({email: email.trim().toLowerCase(), token: code, type: purpose === "signup" ? "signup" : "recovery"});
       if (result.error) { setError("The code is invalid or expired. Request a new code if necessary."); return; }
+      try { window.sessionStorage.removeItem("nexride:verification-target"); } catch { /* Storage is optional. */ }
       if (purpose === "recovery") { setVerified(true); setMessage("Email confirmed. Choose a new password."); }
       else { setMessage("Email verified successfully."); router.replace(returnRole === "driver" ? "/driver/auth?confirmed=1" : "/rider/sign-in?confirmed=1"); }
     } catch { setError("Verification could not be completed. Check your connection."); }
