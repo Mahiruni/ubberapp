@@ -9,6 +9,9 @@ type Document = { id:string;user_id:string;document_type:string;issuing_country:
 type Review = {id:string;user_id:string;category:string;detail:string;status:string;created_at:string};
 type Deletion = {id:string;user_id:string;status:string;created_at:string};
 type IdentityActivity = {id:string;owner_id:string;event_type:string;created_at:string};
+type AccountMembership = {user_id:string;role:string};
+type AccountRoleProgress = {user_id:string;role:string;status:string};
+type DriverActivity = {id:string;review_status:string;is_online:boolean};
 type Summary = {accounts:number;legacyPhoneConflictGroups:number;identityDocuments:number;openIdentityReviews:number};
 
 const mask = (s:string|null) => !s ? "—" : s.length > 5 ? "•••" + s.slice(-3) : "••••";
@@ -20,6 +23,9 @@ export function AdminAccountIdentities() {
   const [reviews,setReviews]=useState<Review[]>([]);
   const [deletions,setDeletions]=useState<Deletion[]>([]);
   const [activity,setActivity]=useState<IdentityActivity[]>([]);
+  const [memberships,setMemberships]=useState<AccountMembership[]>([]);
+  const [roleProgress,setRoleProgress]=useState<AccountRoleProgress[]>([]);
+  const [driverStates,setDriverStates]=useState<DriverActivity[]>([]);
   const [summary,setSummary]=useState<Summary|null>(null);
   const [query,setQuery]=useState("");
   const [loading,setLoading]=useState(true);
@@ -28,19 +34,26 @@ export function AdminAccountIdentities() {
   const [error,setError]=useState("");
 
   async function load(){
-    const [a,b,c,d,e,f]=await Promise.all([
+    const [a,b,c,d,e,f,roles,progress,driverInfo]=await Promise.all([
       supabase.from("profiles").select("id,full_name,phone,role,account_status").order("created_at",{ascending:false}).limit(100),
       supabase.from("account_identity_documents").select("id,user_id,document_type,issuing_country,status,created_at,storage_bucket,storage_path").order("created_at",{ascending:false}).limit(100),
       supabase.from("account_identity_reviews").select("id,user_id,category,detail,status,created_at").order("created_at",{ascending:false}).limit(100),
       supabase.from("account_deletion_requests").select("id,user_id,status,created_at").order("created_at",{ascending:false}).limit(100),
       supabase.rpc("admin_account_identity_audit"),
       supabase.from("account_identity_events").select("id,owner_id,event_type,created_at").order("created_at",{ascending:false}).limit(80),
+      supabase.from("account_roles").select("user_id,role").limit(500),
+      supabase.from("account_role_onboarding").select("user_id,role,status").limit(500),
+      supabase.from("drivers").select("id,review_status,is_online").limit(500),
     ]);
-    if(a.error||b.error||c.error||d.error||e.error||f.error)throw new Error("admin_account_read_failed");
+    if(a.error||b.error||c.error||d.error||e.error||f.error||roles.error||progress.error||driverInfo.error)throw new Error("admin_account_read_failed");
     setProfiles((a.data||[]) as Profile[]);setDocs((b.data||[]) as Document[]);
     setReviews((c.data||[]) as Review[]);setDeletions((d.data||[]) as Deletion[]);
     setSummary((e.data||null) as Summary|null);
-    setActivity((f.data||[]) as IdentityActivity[]);setLoading(false);
+    setActivity((f.data||[]) as IdentityActivity[]);
+    setMemberships((roles.data||[]) as AccountMembership[]);
+    setRoleProgress((progress.data||[]) as AccountRoleProgress[]);
+    setDriverStates((driverInfo.data||[]) as DriverActivity[]);
+    setLoading(false);
   }
   useEffect(()=>{
     let active=true;
@@ -51,6 +64,11 @@ export function AdminAccountIdentities() {
   const names=useMemo(()=>new Map(profiles.map(p=>[p.id,p.full_name||"Member "+p.id.slice(0,8)])),[profiles]);
   const matches=(id:string)=>(names.get(id)||id).toLowerCase().includes(query.toLowerCase())||id.includes(query);
   const visibleProfiles=profiles.filter(p=>matches(p.id));
+  const roleDetail=(userId:string)=>({
+    granted:memberships.filter(m=>m.user_id===userId).map(m=>m.role),
+    progress:roleProgress.filter(p=>p.user_id===userId),
+    driver:driverStates.find(d=>d.id===userId),
+  });
   const visibleDocs=docs.filter(d=>matches(d.user_id));
   const visibleReviews=reviews.filter(r=>matches(r.user_id));
   const visibleDeletions=deletions.filter(d=>matches(d.user_id));
@@ -108,7 +126,11 @@ export function AdminAccountIdentities() {
       <section className="nex-admin-pane">
         <h2>Account directory <small>{visibleProfiles.length}</small></h2>
         {visibleProfiles.length===0?<p>No accounts match.</p>:visibleProfiles.map(p=><div className="nex-admin-row" key={p.id}>
-          <div><strong>{p.full_name||"Unnamed account"}</strong><small>{p.id.slice(0,8)} · {p.role}</small></div>
+          <div><strong>{p.full_name||"Unnamed account"}</strong><small>{p.id.slice(0,8)} · Primary: {p.role}</small>
+            <small>Roles: {roleDetail(p.id).granted.join(" + ")||"No role membership listed"}</small>
+            {roleDetail(p.id).progress.map(x=><small key={x.role}>{x.role} onboarding: {x.status}</small>)}
+            {roleDetail(p.id).driver&&<small>Driver verification: {roleDetail(p.id).driver?.review_status} · {roleDetail(p.id).driver?.is_online?"Online":"Offline"}</small>}
+          </div>
           <div><span>{p.account_status}</span><small>Phone {mask(p.phone)} · Unverified until OTP</small></div>
         </div>)}
       </section>
