@@ -6,7 +6,7 @@ import Link from "next/link";
 import { EntryShell } from "../../../components/nexride/entry";
 import { Button, Icon } from "../../../components/nexride/ui";
 import { supabase } from "../../../lib/supabase";
-import { enterRider, ACTIVE_ACCOUNT_ROLE_KEY, clearExplicitSignOut } from "../../../lib/nexride-startup";
+import { enterRider, ACTIVE_ACCOUNT_ROLE_KEY, explicitSignOutRole } from "../../../lib/nexride-startup";
 import { ensureRiderProfile, RiderProfileBootstrapError } from "../../../lib/nexride-rider-profile-bootstrap";
 import { normalizeEthiopianPhone } from "../../../lib/nexride-identity";
 import "../../../app/nexride.css";
@@ -27,6 +27,10 @@ export default function CompleteRiderProfile() {
     let active = true;
     supabase.auth.getSession().then(async ({ data }) => {
       if (!active) return;
+      if (explicitSignOutRole(window.localStorage)) {
+        router.replace("/rider/sign-in");
+        return;
+      }
       if (!data.session) {
         router.replace("/rider/sign-in");
         return;
@@ -64,8 +68,11 @@ export default function CompleteRiderProfile() {
         return;
       }
       await ensureRiderProfile(data.session, { fullName, phone: normalizedPhone });
+      if (explicitSignOutRole(window.localStorage)) {
+        router.replace("/rider/sign-in");
+        return;
+      }
       window.localStorage.setItem(ACTIVE_ACCOUNT_ROLE_KEY, "rider");
-      clearExplicitSignOut();
       enterRider(data.session);
       router.replace("/");
     } catch (cause) {

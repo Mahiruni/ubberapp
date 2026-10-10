@@ -12,24 +12,11 @@ import {
   updateStartupPreferences,
 } from "../../lib/nexride-startup";
 
-const { getSession, resolveSessionRole, getOnboarding } = vi.hoisted(() => ({
+const { getSession, resolveSessionRole } = vi.hoisted(() => ({
   getSession: vi.fn(),
   resolveSessionRole: vi.fn(),
-  getOnboarding: vi.fn(),
 }));
-vi.mock("../../lib/supabase", () => ({
-  supabase: {
-    auth: { getSession },
-    from: () => {
-      const query: any = {
-        select: () => query,
-        eq: () => query,
-        maybeSingle: getOnboarding,
-      };
-      return query;
-    },
-  },
-}));
+vi.mock("../../lib/supabase", () => ({ supabase: { auth: { getSession } } }));
 vi.mock("../../lib/nexride-account-role", () => ({ resolveSessionRole }));
 const session = {
   access_token: "test-session",
@@ -61,9 +48,6 @@ beforeEach(() => {
   getSession
     .mockReset()
     .mockResolvedValue({ data: { session: null }, error: null });
-  getOnboarding.mockReset().mockResolvedValue({
-    data: { status: "completed" }, error: null,
-  });
   resolveSessionRole
     .mockReset()
     .mockImplementation(async (current: Session) =>
@@ -92,6 +76,28 @@ describe("rider initialization", () => {
     expect(startupDestination({ ...state, returningPreview: true })).toBe("/");
     expect(startupDestination({ ...state, session, signedOutRole: "rider" })).toBe("/rider/sign-in");
     expect(startupDestination({ ...state, session, signedOutRole: "driver" })).toBe("/driver/auth");
+  });
+
+  it("keeps a logged-out Rider unauthenticated even when a guest preview is enabled", async () => {
+    values.set(EXPLICIT_SIGNOUT_KEY, "rider");
+    values.set("nexride:preview-enabled", "true");
+    getSession.mockResolvedValue({ data: { session }, error: null });
+
+    const result = await initializeRider();
+    expect(result.destination).toBe("/");
+    expect(result.session).toBeNull();
+    expect(getSession).not.toHaveBeenCalled();
+    expect(values.get(EXPLICIT_SIGNOUT_KEY)).toBe("rider");
+  });
+
+  it("keeps a logged-out Driver unauthenticated when guest preview is enabled", async () => {
+    values.set(EXPLICIT_SIGNOUT_KEY, "driver");
+    values.set("nexride:preview-enabled", "true");
+    getSession.mockResolvedValue({ data: { session }, error: null });
+    const result = await initializeRider();
+    expect(result.destination).toBe("/");
+    expect(result.session).toBeNull();
+    expect(getSession).not.toHaveBeenCalled();
   });
 
   it("does not resurrect a rider session whose restoration was pending during logout", async () => {
@@ -151,14 +157,6 @@ describe("rider initialization", () => {
     expect(result.preferences.theme).toBe("dark");
     expect(values.has("nexride-preview-v2")).toBe(false);
     expect(values.has("nexride:preview-enabled")).toBe(false);
-  });
-
-  it("resumes only the incomplete role rather than resetting the account", async () => {
-    getSession.mockResolvedValue({ data: { session }, error: null });
-    getOnboarding.mockResolvedValue({ data: { status: "incomplete" }, error: null });
-    const result = await initializeRider();
-    expect(result.destination).toBe("/rider/complete-profile");
-    expect(result.session).toBe(session);
   });
 
   it("deduplicates session restoration and completes without a minimum display delay", async () => {

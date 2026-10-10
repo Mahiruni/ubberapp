@@ -1,0 +1,16 @@
+NEXRIDE
+Good journeys start together.
+
+You have been invited to create a NexRide account. Accept your invitation to continue with your account setup.
+
+Accept my invitation:
+{{ .ConfirmationURL }}
+
+FOR YOUR SECURITY
+Not expecting this invitation? You can ignore this email. An account will not be activated by this email alone.
+
+This link is for one-time use. If it has expired, request a new one in NexRide.
+
+Move with confidence.
+NexRide | https://ubberapp.vercel.app
+This is an account email from NexRide.

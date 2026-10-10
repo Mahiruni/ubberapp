@@ -124,7 +124,7 @@ function RiderWelcome() {
       localStorage.setItem(ONBOARDING_KEY, "true");
       localStorage.setItem(PREVIEW_ENABLED_KEY, "true");
     } catch {}
-    clearExplicitSignOut();
+    // Preview is not authentication; keep the post-logout restoration barrier.
     enterRider(null);
     router.replace("/");
   };

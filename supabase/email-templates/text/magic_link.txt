@@ -1,0 +1,16 @@
+NEXRIDE
+One tap. You’re on your way.
+
+Use your personal sign-in link to open NexRide. No password to remember, just a secure way back to your account.
+
+Sign in to NexRide:
+{{ .ConfirmationURL }}
+
+FOR YOUR SECURITY
+If you did not request this sign-in link, you can safely ignore this email.
+
+This link is for one-time use. If it has expired, request a new one in NexRide.
+
+Move with confidence.
+NexRide | https://ubberapp.vercel.app
+This is an account email from NexRide.

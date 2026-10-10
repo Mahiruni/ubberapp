@@ -2,7 +2,7 @@ import { previewFares } from "../../../../lib/nexride-booking";
 import { liveFareSet } from "../../../../lib/nexride-live-pricing";
 import { authorizedRequestSupabase } from "../../../../lib/nexride-server-supabase";
 import { serverAdminSupabase } from "../../../../lib/nexride-server-admin";
-import { resolveRiderEligibility } from "../../../../lib/nexride-rider-eligibility";
+import { resolveRiderEligibility, riderEligibilityHttpStatus } from "../../../../lib/nexride-rider-eligibility";
 import {
   validPoint,
   serviceBounds,
@@ -50,13 +50,11 @@ export async function POST(request: Request) {
   if (!authorized) return reply({ status: "session_expired" }, 401);
 
   try {
-    // Validate the Rider using the server's authoritative profile lookup.
-    // Client-side RLS failures must not masquerade as missing fare prices.
-    const eligibility = await resolveRiderEligibility(serverAdminSupabase(), authorized.user.id);
-    if (eligibility === "unavailable")
-      return reply({ status: "temporarily_unavailable" }, 503);
+    const eligibility = await resolveRiderEligibility(
+      serverAdminSupabase(), authorized.user.id,
+    );
     if (eligibility !== "eligible")
-      return reply({ status: "rider_account_required" }, 403);
+      return reply({ status: eligibility }, riderEligibilityHttpStatus(eligibility));
 
     return reply(liveFareSet({ pickup, destination }));
   } catch {

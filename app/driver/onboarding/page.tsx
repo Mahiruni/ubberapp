@@ -7,7 +7,6 @@ import { Brand, Icon, LanguageContext, useTranslation } from "../../../component
 import { supabase } from "../../../lib/supabase";
 import { nexrideAuthRedirectUrl } from "../../../lib/nexride-auth-url";
 import { resolveSessionRole } from "../../../lib/nexride-account-role";
-import { driverResumeDestination } from "../../../lib/nexride-driver-verification";
 import { announceLanguage } from "../../../components/nexride/language-provider";
 import { VEHICLE_COLOR_OPTIONS } from "../../../lib/nexride-vehicle";
 import { normalizeEthiopianPhone } from "../../../lib/nexride-identity";
@@ -48,12 +47,6 @@ export default function DriverOnboarding() {
         setExistingAccount(true);
         setName(String(data.session.user.user_metadata?.full_name || ""));
         setEmail(data.session.user.email || "");
-        // Resume non-secret vehicle fields from the existing account rather
-        // than restarting onboarding or requesting another password.
-        const metadata = data.session.user.user_metadata || {};
-        setVehicle(String(metadata.vehicle || ""));
-        setVehicleColor(String(metadata.vehicle_color || ""));
-        setPlate(String(metadata.vehicle_plate || ""));
         const owner = await supabase.from("profiles").select("full_name,phone")
           .eq("id",data.session.user.id).maybeSingle();
         if (!active) return;
@@ -61,11 +54,9 @@ export default function DriverOnboarding() {
         if(owner.data?.phone)setPhone(owner.data.phone);
       }
       if (role !== "driver") return;
-      // Resume from the authoritative Driver state rather than a mutable
-      // completion flag. A previously approved Driver need not reapply.
-      const destination = await driverResumeDestination(data.session);
-      if (active && destination !== "/driver/onboarding" && destination !== "/driver/auth")
-        router.replace(destination);
+      if (data.session.user.user_metadata?.driver_onboarding_complete === true) {
+        router.replace("/driver/verification");
+      }
     });
     return () => { active = false; };
   }, [router]);
@@ -90,9 +81,9 @@ export default function DriverOnboarding() {
       }
       const { error: updateError } = await supabase.auth.updateUser({
         data: {
-          // Preserve previously shared name, phone and identity details.
-          // Auth metadata is a UI hint, not the Driver approval authority.
           role: "driver",
+          full_name: name.trim(),
+          phone: normalizeEthiopianPhone(phone) || phone.trim(),
           vehicle: vehicle.trim(),
           vehicle_color: vehicleColor,
           vehicle_plate: plate.trim(),
@@ -121,12 +112,8 @@ export default function DriverOnboarding() {
 
     const normalizedPhone = normalizeEthiopianPhone(phone);
     if (!normalizedPhone) {setError(say("Enter a valid Ethiopian mobile number.","ትክክለኛ የኢትዮጵያ ስልክ ያስገቡ።"));setBusy(false);return;}
-    if (password.length < 8) {
-      setError("Use a password with at least 8 characters.");
-      setBusy(false); return;
-    }
     const { data, error: signUpError } = await supabase.auth.signUp({
-      email: email.trim().toLowerCase(),
+      email: email.trim(),
       password,
       options: {
         emailRedirectTo: nexrideAuthRedirectUrl("/driver/auth?confirmed=1"),
@@ -143,9 +130,7 @@ export default function DriverOnboarding() {
     });
 
     if (signUpError) {
-      // Do not enumerate registered email addresses. A returning NexRide
-      // member can always use the ordinary sign-in and recovery flow.
-      setError("We couldn't complete registration. Try again, or continue with your existing NexRide account.");
+      setError(signUpError.message);
       setBusy(false);
       return;
     }
@@ -189,10 +174,7 @@ export default function DriverOnboarding() {
             </div>
             <span className="driver-auth-role">{t("driverAccount").toUpperCase()}</span>
             <h1>{existingAccount ? say("Apply to Drive","አሽከርካሪ ለመሆን ያመልክቱ") : t("driverCreateAccount")}</h1>
-            <p>{existingAccount ? say("We reuse your existing account and verified identity. Only Driver and vehicle details are needed.","ነባሩ መለያዎ ይጠቀማል። የአሽከርካሪ መረጃ ብቻ ያስፈልጋል።") : say("Already have NexRide Rider? Sign in first to reuse your account. New Drivers can register below.", "ቀድሞ የNexRide መለያ አለዎት? መጀመሪያ ይግቡ።")}</p>
-            <div className="nr-auth-hero-steps" aria-label="Driver application progress">
-              <span>Account</span><span>Personal details</span><span>Vehicle</span><span>Documents</span><span>Verification</span>
-            </div>
+            <p>{existingAccount ? say("We reuse your existing account and verified identity. Only Driver and vehicle details are needed.","ነባሩ መለያዎ ይጠቀማል። የአሽከርካሪ መረጃ ብቻ ያስፈልጋል።") : say("Create your account now. Vehicle and document verification continues after signup.", "መለያዎን አሁን ይፍጠሩ። የተሽከርካሪ እና የሰነድ ማረጋገጫ ከምዝገባ በኋላ ይቀጥላል።")}</p>
 
             <form onSubmit={submit} className="nr-auth-form nr-auth-signup-form">
               <div className="driver-form-grid">
@@ -200,8 +182,8 @@ export default function DriverOnboarding() {
                 <label><span>{t("phoneNumber")}</span><div className="nr-auth-input"><Icon name="phone" size={19}/><input value={phone} onChange={(e) => setPhone(e.target.value)} autoComplete="tel" inputMode="tel" placeholder="+251…" required={!existingAccount} readOnly={existingAccount && Boolean(phone)} /></div></label>
               </div>
               <label><span>{t("authEmail")}</span><div className="nr-auth-input"><Icon name="user" size={19}/><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" inputMode="email" placeholder={t("authEmail")} required={!existingAccount} readOnly={existingAccount} /></div></label>
-              <label><span>{t("password")}</span><div className="nr-auth-input nr-auth-password-row"><Icon name="shield" size={19}/><input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" minLength={8} placeholder={existingAccount ? "Existing account — no new password" : t("password")} aria-describedby="driver-password-help" required={!existingAccount} disabled={existingAccount} /><button type="button" className="nr-auth-password-toggle" onClick={() => setShowPassword((value) => !value)} aria-pressed={showPassword}>{showPassword ? "Hide" : "Show"}</button></div></label>
-              <p id="driver-password-help" className="nr-auth-helper">{say("Use at least 8 characters.", "ቢያንስ 6 ቁምፊዎችን ይጠቀሙ።")}</p>
+              <label><span>{t("password")}</span><div className="nr-auth-input nr-auth-password-row"><Icon name="shield" size={19}/><input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" minLength={6} placeholder={existingAccount ? "Existing account — no new password" : t("password")} aria-describedby="driver-password-help" required={!existingAccount} disabled={existingAccount} /><button type="button" className="nr-auth-password-toggle" onClick={() => setShowPassword((value) => !value)} aria-pressed={showPassword}>{showPassword ? "Hide" : "Show"}</button></div></label>
+              <p id="driver-password-help" className="nr-auth-helper">{say("Use at least 6 characters.", "ቢያንስ 6 ቁምፊዎችን ይጠቀሙ።")}</p>
 
               <div className="nr-auth-subsection">
                 <div><span>{say("VEHICLE DETAILS", "የተሽከርካሪ መረጃ")}</span><small>{say("Used to prepare your driver verification.", "የአሽከርካሪ ማረጋገጫዎን ለማዘጋጀት ይጠቅማል።")}</small></div>
@@ -231,7 +213,7 @@ export default function DriverOnboarding() {
             </form>
 
             <div className="nr-auth-divider"><span>or</span></div>
-            <Link className="nr-auth-create-link" href="/driver/auth">{t("alreadyHaveAccount")} <strong>Continue with NexRide →</strong></Link>
+            <Link className="nr-auth-create-link" href="/driver/auth">{t("alreadyHaveAccount")} <strong>{t("signIn")}</strong></Link>
             <div className="nr-auth-role-note">
               <span><Icon name="briefcase" size={20}/></span>
               <div><strong>Driver account</strong><small>Complete verification, manage trips, and track earnings.</small></div>

@@ -1,0 +1,50 @@
+[
+  {
+    "key": "confirmation",
+    "slug": "confirm-sign-up",
+    "label": "Email confirmation",
+    "subject": "Welcome to NexRide. Confirm your email.",
+    "preheader": "One quick confirmation. Your next journey starts here.",
+    "instruction": "Confirm your email"
+  },
+  {
+    "key": "recovery",
+    "slug": "reset-password",
+    "label": "Password reset",
+    "subject": "Reset your NexRide password securely",
+    "preheader": "Choose a new password and get back to what moves you.",
+    "instruction": "Choose a new password"
+  },
+  {
+    "key": "magic_link",
+    "slug": "magic-link-or-otp",
+    "label": "Magic-link sign-in",
+    "subject": "Your secure sign-in link for NexRide",
+    "preheader": "Your account is one tap away. No password needed.",
+    "instruction": "Open your account"
+  },
+  {
+    "key": "invite",
+    "slug": "invite-user",
+    "label": "Account invitation",
+    "subject": "You’re invited to join NexRide",
+    "preheader": "Your invitation is here. Take the next step with NexRide.",
+    "instruction": "Accept your invitation"
+  },
+  {
+    "key": "email_change",
+    "slug": "change-email-address",
+    "label": "Email-address change",
+    "subject": "Confirm your NexRide email change",
+    "preheader": "Review and confirm the email change for your NexRide account.",
+    "instruction": "Confirm the email change"
+  },
+  {
+    "key": "reauthentication",
+    "slug": "reauthentication",
+    "label": "Reauthentication",
+    "subject": "Your NexRide verification code",
+    "preheader": "Use this one-time code to confirm it is you.",
+    "instruction": "Enter your verification code"
+  }
+]

@@ -43,7 +43,9 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
-  const [checkingSession, setCheckingSession] = useState(mode === "signin");
+  // Keep the sign-in form available immediately after explicit logout;
+  // an optional session-restore check must never hide the password field.
+  const [checkingSession, setCheckingSession] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -78,11 +80,20 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
             const membership = await supabase.from("account_roles").select("role")
               .eq("user_id",session.user.id).eq("role","rider").maybeSingle();
             if (!membership.error && membership.data) {
-              if (active) router.replace("/");
+              try {
+                await ensureRiderProfile(session);
+                if (active) router.replace("/");
+              } catch (cause) {
+                if (active && cause instanceof RiderProfileBootstrapError &&
+                    cause.code === "rider_profile_incomplete")
+                  router.replace("/rider/complete-profile");
+                else if (active) router.replace("/rider");
+              }
               return;
             }
           }
-          if (active) router.replace("/rider");
+          const destination = await driverResumeDestination(session);
+          if (active) router.replace(destination);
           return;
         }
         if (role === "admin") {
@@ -99,11 +110,10 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
         if (!active) return;
 
         if (cause instanceof RiderProfileBootstrapError &&
-          cause.code === "rider_profile_incomplete") {
-          if (active) router.replace("/rider/complete-profile");
+            cause.code === "rider_profile_incomplete") {
+          router.replace("/rider/complete-profile");
           return;
         }
-
         if (cause instanceof RiderProfileBootstrapError && cause.code === "role_conflict") {
           await supabase.auth.signOut({ scope: "local" });
           if (active) {
@@ -192,16 +202,16 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
       clearExplicitSignOut();
       const role = await resolveSessionRole(data.session);
       if (role === "driver") {
-        const { data: activated, error: riderAccessError } = await supabase.rpc("account_activate_rider_role");
+        const { data: activated, error: riderAccessError } =
+          await supabase.rpc("account_activate_rider_role");
         if (riderAccessError || activated !== "ready") {
-          setError("Go Offline and finish active Driver trips before enabling Rider access.");
+          setError("Go Offline and finish any active Driver trip before enabling Rider access.");
           return;
         }
         await ensureRiderProfile(data.session);
-        window.localStorage.setItem("nexride:active-account-role","rider");
+        window.localStorage.setItem("nexride:active-account-role", "rider");
         markAuthenticated();
         enterRider(data.session);
-        retryStartup(false);
         navigating = true;
         router.replace("/");
         return;
@@ -220,7 +230,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
       router.replace("/");
     } catch (cause) {
       if (cause instanceof RiderProfileBootstrapError &&
-        cause.code === "rider_profile_incomplete") {
+          cause.code === "rider_profile_incomplete") {
         navigating = true;
         router.replace("/rider/complete-profile");
       } else if (cause instanceof RiderProfileBootstrapError && cause.code === "role_conflict") {
@@ -304,14 +314,8 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
 
       navigating = true;
       router.replace("/rider/sign-in?created=1");
-    } catch (cause) {
-      if (cause instanceof RiderProfileBootstrapError &&
-        cause.code === "rider_profile_incomplete") {
-        navigating = true;
-        router.replace("/rider/complete-profile");
-      } else {
-        setError(t("createAccountFailure"));
-      }
+    } catch {
+      setError(t("createAccountFailure"));
     } finally {
       if (!navigating) setBusy(false);
     }
@@ -417,7 +421,8 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
       localStorage.setItem(PREVIEW_ENABLED_KEY, "true");
     } catch {}
 
-    clearExplicitSignOut();
+    // Exploring a preview must never remove an explicit logout barrier:
+    // only a successful credential-based sign-in may restore auth access.
     enterRider(null);
     router.replace("/");
   };
@@ -461,6 +466,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
             <div className="nr-auth-password-row">
               <input
                 type={showPassword ? "text" : "password"}
+                aria-label={t("password")}
                 autoComplete="new-password"
                 required
                 minLength={8}
@@ -483,6 +489,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
                 required
                 minLength={8}
                 value={confirmPassword}
+                aria-label={t("confirmPassword")}
                 onChange={(event) => setConfirmPassword(event.target.value)}
               />
               <button type="button" className="nr-auth-password-toggle" onClick={() => setShowPassword((value) => !value)} aria-pressed={showPassword}>
@@ -563,7 +570,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
         <label className="nr-input-field nr-auth-password-field">
           <span>{t("password")}</span>
           <div className="nr-auth-password-row">
-            <input type={showPassword ? "text" : "password"} autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} />
+            <input type={showPassword ? "text" : "password"} aria-label={t("password")} autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} />
             <button type="button" className="nr-auth-password-toggle" onClick={() => setShowPassword((value) => !value)} aria-pressed={showPassword}>{showPassword ? "Hide" : "Show"}</button>
           </div>
         </label>

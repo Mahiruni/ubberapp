@@ -279,9 +279,6 @@ function DriverHamburgerMenu({
               {menuRows(accountItems)}
             </nav>
             <div className="nr-driver-menu-utilities">
-              <Link href="/rider" className="nr-driver-menu-utility" onClick={() => setOpen(false)}>
-                <Icon name="navigation" size={19} /><span>{language === "am" ? "ወደ ተሳፋሪ ቀይር" : "Switch to Rider"}</span><Icon name="chevron" size={15} />
-              </Link>
               <Link href="/safety?role=driver" className="nr-driver-menu-utility" onClick={() => setOpen(false)}>
                 <Icon name="shield" size={19} /><span>{language === "am" ? "የደህንነት ማዕከል" : "Safety Center"}</span><Icon name="chevron" size={15} />
               </Link>

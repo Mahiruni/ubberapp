@@ -8,14 +8,12 @@ import { Brand } from "../../components/nexride/ui";
 import { supabase } from "../../lib/supabase";
 import { enterDriver, explicitSignOutRole } from "../../lib/nexride-startup";
 import { driverResumeDestination } from "../../lib/nexride-driver-verification";
-import { resolveSessionRole } from "../../lib/nexride-account-role";
 import "./driver-welcome.css";
 import "../detail-system.css";
 
 export default function DriverWelcome() {
   const router = useRouter();
   const [checking, setChecking] = useState(true);
-  const [existingRider, setExistingRider] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -26,13 +24,7 @@ export default function DriverWelcome() {
     supabase.auth.getSession().then(async ({ data }) => {
       if (!active || explicitSignOutRole(window.localStorage)) return;
       const session = data.session;
-      const role = session ? await resolveSessionRole(session).catch(() => "") : "";
-      if (!active) return;
-      if (session && role === "rider") setExistingRider(true);
-      if (session && role === "admin") {
-        router.replace("/admin");
-        return;
-      }
+      const role = session?.user?.user_metadata?.role;
       if (session && role === "driver") {
         enterDriver(session);
         const destination = await driverResumeDestination(session);
@@ -51,8 +43,8 @@ export default function DriverWelcome() {
       <div className="driver-welcome-media" aria-hidden="true"><Image src="/images/addis-skyline.webp" alt="" fill priority sizes="100vw" className="driver-city" /><div className="driver-welcome-gradient" /></div>
       <section className="driver-welcome-content">
         <div className="driver-welcome-top"><Brand driver /><span className="driver-role-badge">DRIVER</span></div>
-        <div className="driver-welcome-copy"><div className="driver-mark" aria-hidden="true">N</div><p className="driver-eyebrow">NEXRIDE · DRIVER</p><h1>Drive. Earn. Grow.</h1><p className="driver-subtitle">{existingRider ? "Your existing NexRide account works here too. Complete the Driver-specific steps to start driving." : "Work on your schedule and keep every trip clearly organized."}</p></div>
-        <div className="driver-welcome-actions"><Link className="driver-get-started" href="/driver/onboarding">{existingRider ? "Continue with NexRide" : "Get started"}</Link><Link className="driver-sign-in" href="/driver/auth">I already have an account</Link><p className="driver-role-note">Looking for a ride? · <Link href="/rider/sign-in">Rider sign in</Link></p></div>
+        <div className="driver-welcome-copy"><div className="driver-mark" aria-hidden="true">N</div><p className="driver-eyebrow">NEXRIDE · DRIVER</p><h1>Drive. Earn. Grow.</h1><p className="driver-subtitle">Work on your schedule and keep every trip clearly organized.</p></div>
+        <div className="driver-welcome-actions"><Link className="driver-get-started" href="/driver/onboarding">Get started</Link><Link className="driver-sign-in" href="/driver/auth">I already have an account</Link><p className="driver-role-note">Looking for a ride? · <Link href="/rider/sign-in">Rider sign in</Link></p></div>
       </section>
     </main>
   );

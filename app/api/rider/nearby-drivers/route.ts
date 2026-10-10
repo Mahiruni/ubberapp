@@ -3,7 +3,6 @@ import { haversineMeters } from "../../../../lib/location";
 import { NEARBY_DRIVER_RADIUS_METERS, withinNearbyDriverRadius } from "../../../../lib/nexride-nearby-vehicles";
 import { authorizedRequestSupabase } from "../../../../lib/nexride-server-supabase";
 import { serverAdminSupabase } from "../../../../lib/nexride-server-admin";
-import { resolveRiderEligibility } from "../../../../lib/nexride-rider-eligibility";
 import {
   insideBounds,
   serviceBounds,
@@ -77,12 +76,18 @@ export async function GET(request: Request) {
   try {
     const admin = serverAdminSupabase();
 
-    const eligibility = await resolveRiderEligibility(admin, authorized.user.id);
-    if (eligibility !== "eligible")
-      return reply(
-        { status: eligibility === "unavailable" ? "unavailable" : "rider_required", vehicles: [] },
-        eligibility === "unavailable" ? 503 : 403,
-      );
+    const { data: riderProfile, error: riderError } = await admin
+      .from("profiles")
+      .select("role,account_status")
+      .eq("id", authorized.user.id)
+      .maybeSingle();
+
+    if (
+      riderError ||
+      riderProfile?.role !== "rider" ||
+      riderProfile.account_status !== "active"
+    )
+      return reply({ status: "rider_required", vehicles: [] }, 403);
 
     const { data: drivers, error: driversError } = await admin
       .from("drivers")

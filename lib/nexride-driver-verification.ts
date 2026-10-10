@@ -23,26 +23,12 @@ export async function getDriverReviewStatus(userId: string): Promise<DriverRevie
 
 export async function driverResumeDestination(session: Session): Promise<DriverDestination> {
   if ((await resolveSessionRole(session)) !== "driver") return "/driver/auth";
+  if (session.user.user_metadata?.driver_onboarding_complete !== true) return "/driver/onboarding";
+
   try {
-    // Only the database decides whether a Driver is approved or has begun
-    // verification. user_metadata is editable and must not grant eligibility.
-    const [driver, progress] = await Promise.all([
-      supabase.from("drivers").select("review_status")
-        .eq("id", session.user.id).maybeSingle(),
-      supabase.from("account_role_onboarding").select("status")
-        .eq("user_id", session.user.id).eq("role", "driver").maybeSingle(),
-    ]);
-    if (driver.error || progress.error) return "/driver/auth";
-    if (!driver.data || !progress.data) return "/driver/onboarding";
-    if (driver.data.review_status === "approved" &&
-      progress.data.status === "approved") return "/driver/home";
-    if (["submitted", "under_review", "rejected", "suspended"].includes(progress.data.status))
-      return "/driver/verification";
-    return session.user.user_metadata?.driver_onboarding_complete === true
-      ? "/driver/verification"
-      : "/driver/onboarding";
+    const status = await getDriverReviewStatus(session.user.id);
+    return status === "draft" || status === "rejected" ? "/driver/verification" : "/driver/home";
   } catch {
-    // A lost verification service must never be interpreted as approval.
-    return "/driver/auth";
+    return "/driver/home";
   }
 }

@@ -14,10 +14,7 @@ const textOf = (error: unknown) => {
 export function authErrorKey(error: unknown, action: AuthAction = "signin"): MessageKey {
   const value = textOf(error);
   if (/invalid login|invalid.*credential|email.*password|wrong password/.test(value)) return "authInvalidCredentials";
-  // Registration must not disclose whether a particular email has an account.
-  // Offer a general sign-in/recovery path on the registration screen instead.
-  if (/already registered|already exists|user.*exists/.test(value))
-    return action === "signup" ? "createAccountFailure" : "authAccountExists";
+  if (/already registered|already exists|user.*exists/.test(value)) return "authAccountExists";
   if (/rate limit|too many|over.*limit/.test(value)) return "authTooManyAttempts";
   if (/network|fetch|connection|timeout/.test(value)) return "authNetworkFailure";
   if (/expired|invalid.*token|otp.*expired|link.*expired/.test(value)) return "authExpiredLink";

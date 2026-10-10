@@ -41,12 +41,10 @@ export default function DriverAuth() {
         router.replace("/admin");
         return;
       }
-      if (role === "rider") {
-        // Same verified Supabase identity, new Driver onboarding. No signup.
-        router.replace("/driver/onboarding");
+      if (role !== "driver") {
+        router.replace("/");
         return;
       }
-      if (role !== "driver") return;
       enterDriver(data.session);
       const destination = await driverResumeDestination(data.session);
       if (active && !explicitSignOutRole(window.localStorage)) router.replace(destination);
@@ -78,15 +76,8 @@ export default function DriverAuth() {
       router.replace("/admin");
       return;
     }
-    if (role === "rider") {
-      // Auth was successful; do not create a second Auth identity.
-      // Membership is provisioned only once onboarding is submitted.
-      router.replace("/driver/onboarding");
-      return;
-    }
     if (role !== "driver") {
-      setError("Driver access could not be verified. Please try again.");
-      setBusy(false);
+      router.replace("/");
       return;
     }
 
@@ -125,17 +116,16 @@ export default function DriverAuth() {
             </div>
             <span className="driver-auth-role">{t("driverAccount").toUpperCase()}</span>
             <h1>{t("driverSignInTitle")}</h1>
-            <p>Your NexRide account works here too. Continue with your existing account to become a Driver.</p>
+            <p>{t("driverSignInIntro")}</p>
 
             <form onSubmit={submit} className="nr-auth-form">
               <label><span>Email address</span><div className="nr-auth-input"><Icon name="user" size={19}/><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username" placeholder="Email address" required /></div></label>
               <label><span>{t("password")}</span><div className="nr-auth-input nr-auth-password-row"><Icon name="shield" size={19}/><input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" placeholder={t("password")} required /><button type="button" className="nr-auth-password-toggle" onClick={() => setShowPassword((value) => !value)} aria-pressed={showPassword}>{showPassword ? "Hide" : "Show"}</button></div></label>
               {error && <div className="driver-auth-error" role="alert">{error}</div>}
               {notice && <div className="driver-auth-notice" role="status">{notice}</div>}
-              <button className="driver-auth-submit" type="submit" disabled={busy}>{busy ? t("signingIn") : "Continue with NexRide"}</button>
+              <button className="driver-auth-submit" type="submit" disabled={busy}>{busy ? t("signingIn") : t("signIn")}</button>
             </form>
 
-            <p className="nr-auth-helper"><Link href="/rider/forgot-password">Forgot password?</Link> · One secure NexRide login for Rider and Driver.</p>
             <div className="nr-auth-divider"><span>or</span></div>
             <Link className="nr-auth-create-link" href="/driver/onboarding"><Icon name="plus" size={18}/>{t("driverCreateAccount")}</Link>
             <div className="nr-auth-role-note">
