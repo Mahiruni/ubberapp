@@ -312,6 +312,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
         return;
       }
 
+      try { window.sessionStorage.setItem("nexride:verification-target", JSON.stringify({ email: email.trim().toLowerCase(), role: "rider", purpose: "signup" })); } catch { /* Verification still works with manual entry. */ }
       navigating = true;
       router.replace("/rider/verify-email");
     } catch {
@@ -341,6 +342,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
       }
 
       setNotice(t("recoverySent"));
+      try { window.sessionStorage.setItem("nexride:verification-target", JSON.stringify({ email: email.trim().toLowerCase(), role: "rider", purpose: "recovery" })); } catch { /* Verification still works with manual entry. */ }
       router.push("/rider/verify-email");
     } catch {
       setError(t("recoveryFailure"));
