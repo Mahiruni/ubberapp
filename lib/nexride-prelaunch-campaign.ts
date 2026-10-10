@@ -12,7 +12,7 @@ NexRide በቅርቡ ሥራ እንደሚጀምር በደስታ እናሳውቃ�
 
 ለዘመናዊ፣ ምቹ እና አስተማማኝ የጉዞ አገልግሎት ይዘጋጁ። ከእኛ ጋር ስለሆኑ እናመሰግናለን!
 
-The NexRide Team | የNexRide ቡድን
+Mahir Aman\nCEO & Founder, NexRide
 
 Better Rides. A Brighter Tomorrow.`;
 export function prelaunchHtml() {
