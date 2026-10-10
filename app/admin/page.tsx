@@ -523,6 +523,9 @@ export default function AdminPage() {
               ) : null}
             </button>
           ))}
+          <Link href="/admin/prelaunch-campaign" className="admin-campaign-link" style={{display:"flex",alignItems:"center",gap:12,padding:"12px 16px",color:"inherit",textDecoration:"none",borderRadius:12}}>
+            <i><Icon name="chat" size={20} /></i><span>Email Campaigns</span>
+          </Link>
         </nav>
 
         <div className="admin-side-foot">
