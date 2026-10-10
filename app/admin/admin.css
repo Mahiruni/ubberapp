@@ -226,3 +226,10 @@
 .admin-app{--admin-brand:#5145e5;--admin-brand-dark:#28217f;--admin-brand-lime:#c5f000;background:#f7f7fb;color:#19172a}
 .admin-sidebar{background:#202133;color:#f8f8ff}
 .admin-app :is(button,a,input,select,textarea):focus-visible{outline:3px solid #5145e5;outline-offset:2px}
+
+/* Discoverable private photo verification alongside existing Driver and Verification modules. */
+.admin-app .module-tools .admin-photo-review-link{display:inline-flex;align-items:center;justify-content:center;min-height:44px;border-radius:10px;padding:0 15px;text-decoration:none;white-space:nowrap;font-weight:700;font-size:12px;background:#dff8ed;color:#095738;border:1px solid #a5e6c8}
+.admin-app .module-tools .admin-photo-review-link:hover{background:#c7f1df}
+.admin-app .module-tools .admin-photo-review-link:focus-visible{outline:3px solid #00c878;outline-offset:2px}
+.admin-app[data-theme="dark"] .module-tools .admin-photo-review-link{background:#123c32;color:#93f2c7;border-color:#267d62}
+@media(max-width:650px){.admin-app .module-tools{flex-wrap:wrap}.admin-app .module-tools .admin-photo-review-link{order:3;flex:1 0 100%}}
