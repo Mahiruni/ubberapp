@@ -4,25 +4,55 @@ import tls from "node:tls";
 type Conn = net.Socket | tls.TLSSocket;
 function responseReader(socket: Conn) {
   let buffer = "";
+  let currentCode = "";
   const queue: string[] = [];
-  let waiter: ((line: string) => void) | undefined;
+  let waiter: { resolve: (line: string) => void; reject: (error: Error) => void; timer: ReturnType<typeof setTimeout> } | null = null;
+  let terminalError: Error | null = null;
+  const deliver = (line: string) => {
+    if (waiter) {
+      const pending = waiter;
+      waiter = null;
+      clearTimeout(pending.timer);
+      pending.resolve(line);
+    } else queue.push(line);
+  };
+  const fail = (error: Error) => {
+    terminalError = error;
+    if (waiter) {
+      const pending = waiter;
+      waiter = null;
+      clearTimeout(pending.timer);
+      pending.reject(error);
+    }
+  };
   socket.on("data", (data: Buffer) => {
     buffer += data.toString("utf8");
     let at: number;
     while ((at = buffer.indexOf("\r\n")) !== -1) {
       const line = buffer.slice(0, at);
       buffer = buffer.slice(at + 2);
-      if (/^\d{3} /.test(line)) {
-        if (waiter) { const callback = waiter; waiter = undefined; callback(line); }
-        else queue.push(line);
+      const match = /^(\d{3})([ -])/.exec(line);
+      if (!match) continue;
+      if (match[2] === "-") {
+        currentCode = match[1];
+        continue;
+      }
+      if (!currentCode || currentCode === match[1]) {
+        currentCode = "";
+        deliver(line);
       }
     }
   });
+  socket.once("error", fail);
+  socket.once("close", () => fail(new Error("SMTP connection closed")));
   return async (codes: number[]) => {
+    if (terminalError) throw terminalError;
     const line = queue.shift() ?? await new Promise<string>((resolve, reject) => {
-      waiter = resolve;
-      socket.once("error", reject);
-      socket.once("close", () => reject(new Error("SMTP connection closed")));
+      const timer = setTimeout(() => {
+        waiter = null;
+        reject(new Error("SMTP server response timeout"));
+      }, 12000);
+      waiter = { resolve, reject, timer };
     });
     if (!codes.includes(Number(line.slice(0, 3)))) throw new Error("SMTP rejected request: " + line.slice(0, 3));
   };
@@ -52,7 +82,7 @@ export async function sendSmtpTest(to: string, subject: string, body: string) {
     send("EHLO nexride.app"); await read([250]);
     if (port === 587) {
       send("STARTTLS"); await read([220]);
-      socket.removeAllListeners("data");
+      socket.removeAllListeners("data");\n      socket.removeAllListeners("close");\n      socket.removeAllListeners("error");
       socket = await new Promise<tls.TLSSocket>((resolve, reject) => {
         const upgraded = tls.connect({ socket, servername: host, rejectUnauthorized: true }, () => resolve(upgraded));
         upgraded.once("error", reject);
