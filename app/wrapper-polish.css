@@ -4,6 +4,7 @@
   --line:#e6e3f0; --green:#5145e5; --green-text:#4337c9; --green-wash:#efedff;
   color:var(--text)!important;
   background:#fff!important;
+  scrollbar-gutter:auto!important;
   border:1px solid #e6e3f0!important;
   border-radius:28px 28px 0 0!important;
   box-shadow:0 -6px 36px #28217f14,0 1px 0 #fff inset!important;
@@ -38,6 +39,7 @@
 }
 .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper :is(.nr-home-sheet-drag-zone,.nr-flow-sheet-handle) > span,
 .nr-driver-app-shell .nr-driver-sheet .nr-driver-sheet-grab > span {
+  display:block!important;
   width:44px!important; height:4px!important; border-radius:99px!important;
   background:#c1badf!important; transition:width 160ms ease,background 160ms ease;
 }
@@ -157,6 +159,7 @@
 .nr-driver-app-shell .nr-driver-sheet-content { overflow-y:auto; overscroll-behavior:contain; min-height:0; touch-action:pan-y; scrollbar-width:thin; }
 .nr-driver-app-shell .nr-driver-sheet-footer { padding-bottom:max(16px,env(safe-area-inset-bottom))!important; }
 @media (prefers-reduced-motion:reduce) {
+  .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-main > .nr-rider-flow-panel,
   .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper :is(.nr-rider-flow-panel,button,button > span),
   .nr-driver-app-shell .nr-driver-sheet,.nr-driver-app-shell .nr-driver-sheet :is(button,button > span) { transition:none!important; animation:none!important; scroll-behavior:auto!important; }
 }

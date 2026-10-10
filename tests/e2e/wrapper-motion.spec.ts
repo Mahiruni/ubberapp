@@ -47,7 +47,7 @@ test("keyboard positioning and reduced motion work without a pointer", async ({ 
 });
 
 test("mouse movement follows the handle without a start jump or release click", async ({ page }) => {
-  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect.poll(async () => Math.abs(await height(page) - page.viewportSize()!.height * .5)).toBeLessThan(1);
   const before = await height(page), box = (await handle(page).boundingBox())!;
   const x = box.x + box.width / 2, y = box.y + box.height / 2;
   await page.mouse.move(x, y);
@@ -58,6 +58,7 @@ test("mouse movement follows the handle without a start jump or release click", 
   await page.mouse.up();
   await expect(page.locator(".rider-map-flow")).not.toHaveAttribute("data-sheet-dragging", "true");
   await expect(page.locator(".nr-rider-home-sheet")).toHaveAttribute("data-snap", "expanded");
+  await expect.poll(async () => Math.abs(await height(page) - page.viewportSize()!.height * .78)).toBeLessThan(1);
   const settled = await height(page);
   await page.mouse.move(x, y - 130);
   expect(await height(page)).toBe(settled);
@@ -65,7 +66,7 @@ test("mouse movement follows the handle without a start jump or release click", 
 
 test("body scroll stays native and destination search retains its own keyboard handle", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await handle(page).press("Home");
+  await expect(panel(page)).toHaveCSS("transition-duration", "0s");
   const body = page.locator(".nr-home-sheet-scroll");
   await expect(body).toHaveCSS("overflow-y", "auto");
   await expect(body).toHaveCSS("touch-action", "pan-y");
