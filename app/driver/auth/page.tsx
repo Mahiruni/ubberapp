@@ -127,6 +127,8 @@ export default function DriverAuth() {
             </form>
 
             <div className="nr-auth-divider"><span>or</span></div>
+            <Link className="nr-auth-create-link" href="/rider/verify-email?role=driver">Verify email or enter a recovery code</Link>
+            <Link className="nr-auth-create-link" href="/rider/verify-email?role=driver&purpose=recovery">Forgot password?</Link>
             <Link className="nr-auth-create-link" href="/driver/onboarding"><Icon name="plus" size={18}/>{t("driverCreateAccount")}</Link>
             <div className="nr-auth-role-note">
               <span><Icon name="briefcase" size={20}/></span>

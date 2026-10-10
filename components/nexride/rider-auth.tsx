@@ -312,8 +312,9 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
         return;
       }
 
+      try { window.sessionStorage.setItem("nexride:verification-target", JSON.stringify({ email: email.trim().toLowerCase(), role: "rider", purpose: "signup" })); } catch { /* Verification still works with manual entry. */ }
       navigating = true;
-      router.replace("/rider/sign-in?created=1");
+      router.replace("/rider/verify-email");
     } catch {
       setError(t("createAccountFailure"));
     } finally {
@@ -341,6 +342,8 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
       }
 
       setNotice(t("recoverySent"));
+      try { window.sessionStorage.setItem("nexride:verification-target", JSON.stringify({ email: email.trim().toLowerCase(), role: "rider", purpose: "recovery" })); } catch { /* Verification still works with manual entry. */ }
+      router.push("/rider/verify-email");
     } catch {
       setError(t("recoveryFailure"));
     } finally {
@@ -533,7 +536,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
           </Button>
         </form>
         <p className="nr-auth-switch">
-          <Link href="/rider/sign-in">{t("signIn")}</Link>
+          <Link href="/rider/verify-email">Enter a recovery code</Link> · <Link href="/rider/sign-in">{t("signIn")}</Link>
         </p>
       </>
     );

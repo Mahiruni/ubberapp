@@ -140,7 +140,9 @@ export default function DriverOnboarding() {
       return;
     }
 
-    setNotice("Your driver account was created. Confirm your email, then sign in to continue verification.");
+    setNotice("Your driver account was created. Enter the email confirmation code to continue.");
+    try { window.sessionStorage.setItem("nexride:verification-target", JSON.stringify({ email: email.trim().toLowerCase(), role: "driver", purpose: "signup" })); } catch { /* Session storage may be unavailable. */ }
+    router.push("/rider/verify-email");
     setBusy(false);
   }
 
