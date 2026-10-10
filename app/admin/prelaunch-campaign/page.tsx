@@ -3,11 +3,26 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "../../../lib/supabase";
 
-type Campaign = { subject:string; body:string; html:string; status:string; message:string; sendEnabled:boolean; recipients:number|null };
+type Campaign = { subject:string; body:string; html:string; status:string; message:string; sendEnabled:boolean; testEnabled:boolean; recipients:number|null };
 export default function PrelaunchCampaignPage() {
   const [campaign,setCampaign] = useState<Campaign|null>(null);
   const [error,setError] = useState("");
   const [loading,setLoading] = useState(true);
+  const [sending,setSending] = useState(false);
+  const [feedback,setFeedback] = useState("");
+  async function sendTest() {
+    if (!window.confirm("Send one test email to your administrator account?")) return;
+    setSending(true); setFeedback("");
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Please sign in again.");
+      const res = await fetch("/api/admin/prelaunch-campaign", { method:"POST", headers: { Authorization:"Bearer "+session.access_token, "Content-Type":"application/json" }, body:JSON.stringify({ action:"test", confirm:true }) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "SMTP test failed.");
+      setFeedback(data.message);
+    } catch(e) { setFeedback(e instanceof Error ? e.message : "SMTP test failed."); }
+    finally { setSending(false); }
+  }
   useEffect(() => {
     let mounted=true;
     (async () => {
@@ -39,7 +54,9 @@ export default function PrelaunchCampaignPage() {
           <h2>Campaign controls</h2>
           <p><strong>Subject</strong></p><p>{campaign.subject}</p>
           <p><strong>Recipients</strong></p><p>Not calculated — eligibility integration pending</p>
-          <p><strong>Delivery</strong></p><p>Not configured</p>
+          <p><strong>Delivery</strong></p><p>{campaign.testEnabled ? "SMTP configured · Test available" : "SMTP not configured"}</p>
+          <button type="button" disabled={!campaign.testEnabled||sending} onClick={sendTest} style={{background:"#00C878",color:"#041C30",border:0,padding:"13px 18px",borderRadius:12,marginRight:10,fontWeight:700,opacity:campaign.testEnabled&&!sending?1:.5}}>{sending?"Sending test…":"Send Test Email"}</button>
+          {feedback&&<p role="status">{feedback}</p>
           <button type="button" disabled style={{background:"#041C30",color:"white",border:0,padding:"13px 18px",borderRadius:12,opacity:.5,cursor:"not-allowed"}}>Send campaign · Unavailable</button>
           <p style={{fontSize:13,color:"#667587",lineHeight:1.6}}>{campaign.message}</p>
         </div>
