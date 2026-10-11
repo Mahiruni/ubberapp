@@ -1,36 +1,82 @@
 "use client";
 import { useEffect } from "react";
 import { supabase } from "../../lib/supabase";
-import { getNexRideNativeAppRole, reconcileNexRideNativePush, registerNexRidePushToken } from "../../lib/nexride-native-reliability";
+import {
+  getNexRideNativeAppRole,
+  reconcileNexRideNativePush,
+  registerNexRidePushToken,
+} from "../../lib/nexride-native-reliability";
 
-/** One Capacitor subscription for both account roles and all route changes. */
+/** One native push registration lifecycle across sign-in, resume and route changes.
+ * Never request Android notification permission without user interaction.
+ */
 export function NexRideNativePushBootstrap() {
   useEffect(() => {
     let removed = false;
-    let unsub: Array<{ remove: () => Promise<void> }> = [];
+    let subscriptions: Array<{ remove: () => Promise<void> }> = [];
+    let authSubscription: { unsubscribe: () => void } | null = null;
+    let registrationInFlight = false;
+
+    const syncIfPermitted = async () => {
+      if (removed || registrationInFlight) return;
+      registrationInFlight = true;
+      try {
+        const role = await getNexRideNativeAppRole();
+        if (!role || removed) return;
+        const { data } = await supabase.auth.getSession();
+        if (!data.session || removed) return;
+        await reconcileNexRideNativePush(role);
+      } catch {
+        // Settings offers a user-initiated retry; never log or expose FCM tokens.
+      } finally { registrationInFlight = false; }
+    };
+
     void (async () => {
       const { Capacitor } = await import("@capacitor/core");
-      if (!Capacitor.isNativePlatform()) return;
+      if (!Capacitor.isNativePlatform() || removed) return;
       const { PushNotifications } = await import("@capacitor/push-notifications");
-      const registered = await PushNotifications.addListener("registration", event => {
-        void registerNexRidePushToken(event.value).catch(() => {});
+      const registration = await PushNotifications.addListener("registration", event => {
+        void registerNexRidePushToken(event.value).catch(() => {
+          window.dispatchEvent(new CustomEvent("nexride:native-push-status", {
+            detail: { status: "registration_failed" },
+          }));
+        });
+      });
+      const registrationError = await PushNotifications.addListener("registrationError", () => {
+        window.dispatchEvent(new CustomEvent("nexride:native-push-status", {
+          detail: { status: "firebase_registration_failed" },
+        }));
       });
       const opened = await PushNotifications.addListener("pushNotificationActionPerformed", event => {
         const url = event.notification.data?.url;
         if (typeof url !== "string") return;
-        // Only known first-party routes are accepted from the untrusted payload.
         if (/^\/driver\/request\?offer=[0-9a-f-]{36}$/i.test(url) ||
           url === "/rider/trips" || url === "/driver/home") window.location.assign(url);
       });
-      unsub = [registered, opened];
-      if (removed) { await Promise.all(unsub.map(s => s.remove())); return; }
-      const { data } = await supabase.auth.getSession();
-      if (data.session) {
-        const role = await getNexRideNativeAppRole();
-        if (role) await reconcileNexRideNativePush(role).catch(() => {});
-      }
+      subscriptions = [registration, registrationError, opened];
+      if (removed) { await Promise.all(subscriptions.map(s => s.remove())); return; }
+      const { data } = supabase.auth.onAuthStateChange(event => {
+        if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "INITIAL_SESSION") {
+          // Supabase does not permit awaiting getSession() synchronously in its auth callback.
+          window.setTimeout(() => { void syncIfPermitted(); }, 0);
+        }
+      });
+      authSubscription = data.subscription;
+      window.addEventListener("focus", syncIfPermitted);
+      document.addEventListener("visibilitychange", onVisible);
+      await syncIfPermitted();
     })().catch(() => {});
-    return () => { removed = true; void Promise.all(unsub.map(s => s.remove())); };
+
+    function onVisible() {
+      if (document.visibilityState === "visible") void syncIfPermitted();
+    }
+    return () => {
+      removed = true;
+      window.removeEventListener("focus", syncIfPermitted);
+      document.removeEventListener("visibilitychange", onVisible);
+      authSubscription?.unsubscribe();
+      void Promise.all(subscriptions.map(s => s.remove()));
+    };
   }, []);
   return null;
 }
