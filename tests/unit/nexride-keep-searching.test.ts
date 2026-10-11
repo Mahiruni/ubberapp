@@ -26,6 +26,7 @@ describe("NexRide persistent same-booking search", () => {
     expect(sql).toContain("coalesce(r.dispatch_started_at,r.created_at)>now()-interval '4 minutes'");
     expect(sql).toContain("set dispatch_state='searching',");
     expect(sql).toContain("dispatch_started_at=now()");
+    expect(sql).toContain("order by coalesce(r.dispatch_started_at,r.created_at),r.id");
     expect(sql).not.toMatch(/delete from public\.ride_request_offers/);
   });
 
