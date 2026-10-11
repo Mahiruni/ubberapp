@@ -178,7 +178,6 @@ const segmentCollection = (route: RouteResult | undefined) => ({
 });
 
 function syncRoutes(map: MapboxMap, journey: Journey | undefined) {
-  if (!map.isStyleLoaded()) return;
   const state = journey?.routeState;
   const routes =
     state?.status === "ready"
@@ -193,6 +192,15 @@ function syncRoutes(map: MapboxMap, journey: Journey | undefined) {
   const selectedRoute = routes[selectedIndex];
   const routesData = routeCollection(routes, selectedIndex);
   const segmentsData = segmentCollection(selectedRoute);
+
+  // Style/source loading is not an obstacle to invalidating an existing route.
+  // Clear stale line pixels immediately when a Rider edits either endpoint.
+  if (!map.isStyleLoaded()) {
+    (map.getSource("nexride-routes") as GeoJSONSource | undefined)?.setData(routesData);
+    (map.getSource("nexride-route-segments") as GeoJSONSource | undefined)?.setData(segmentsData);
+    map.triggerRepaint();
+    return;
+  }
 
   const routeSource = map.getSource("nexride-routes") as
     | GeoJSONSource
@@ -1439,9 +1447,16 @@ export function RiderMap({
     };
     // Route changes can arrive while traffic/style sources are still loading.
     // Apply the latest route once they settle instead of dropping that update.
+    syncRoutes(map, journey); // Even while loading, invalidate stale existing routes.
     if (map.isStyleLoaded()) sync();
-    else map.once("idle", sync);
-    return () => { map.off("idle", sync); };
+    else {
+      map.on("idle", sync);
+      map.on("styledata", sync);
+    }
+    return () => {
+      map.off("idle", sync);
+      map.off("styledata", sync);
+    };
   }, [
     geometry,
     pickup?.lat,

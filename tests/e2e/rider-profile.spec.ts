@@ -8,6 +8,9 @@ async function accountBackend(page:Page){
  const user={id,aud:'authenticated',role:'authenticated',email:'rider@example.test',app_metadata:{},user_metadata:{role:'rider'},created_at:'2026-01-01T00:00:00Z'};
  let name='Connected Rider',failSave=true,failSignout=true;
  const session={access_token:token,refresh_token:'test',expires_at:4102444800,expires_in:3600,token_type:'bearer',user};
+ // Profile tests exercise persisted authenticated sessions. Sign-in UX has its
+ // own end-to-end coverage, so it must not be a flaky prerequisite here.
+ await page.addInitScript(saved=>{localStorage.setItem('sb-eyyvvwecpyctttiueban-auth-token',JSON.stringify(saved));localStorage.setItem('nexride:onboarding-complete','true');},session);
  await page.route('**/auth/v1/token?grant_type=password',r=>r.fulfill({json:session}));
  await page.route('**/api/rider/profile',r=>{expect(r.request().headers().authorization).toBe(`Bearer ${token}`);return r.fulfill({json:{status:'ready'}})});
  await page.route('**/auth/v1/user',r=>r.fulfill({json:user}));
@@ -30,11 +33,8 @@ async function accountBackend(page:Page){
  await page.routeWebSocket('**/realtime/v1/**',ws=>ws.close());
 }
 async function connectedProfile(page:Page){
- await page.goto('/auth');
- await page.getByLabel('Email address',{exact:true}).fill('rider@example.test');
- await page.getByLabel('Password',{exact:true}).fill('test-password');
- await page.getByRole('button',{name:'Sign in',exact:true}).click();
- await expect(page).toHaveURL(/\/$/);
+ await page.goto('/');
+ await expect(page.getByRole('button',{name:'Account',exact:true}).first()).toBeVisible();
  await page.getByRole('button',{name:'Account',exact:true}).first().click();
 }
 async function previewProfile(page:Page){await page.goto('/');await page.getByRole('button',{name:'Account',exact:true}).first().click();}
