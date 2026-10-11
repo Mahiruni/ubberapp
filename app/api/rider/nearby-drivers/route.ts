@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { haversineMeters } from "../../../../lib/location";
 import { NEARBY_DRIVER_RADIUS_METERS, withinNearbyDriverRadius } from "../../../../lib/nexride-nearby-vehicles";
+import { DRIVER_GPS_MAX_AGE_MS, DRIVER_GPS_MAX_ACCURACY_METERS } from "../../../../lib/nexride-driver-gps";
 import { authorizedRequestSupabase } from "../../../../lib/nexride-server-supabase";
 import { serverAdminSupabase } from "../../../../lib/nexride-server-admin";
 import {
@@ -12,7 +13,7 @@ import {
 const MAX_DRIVER_RESULTS = 10;
 // Do not arbitrarily discard nearby cars after the latest 80 city-wide pings.
 const MAX_DRIVER_QUERY = 500;
-const LOCATION_FRESHNESS_MS = 60_000;
+const LOCATION_FRESHNESS_MS = DRIVER_GPS_MAX_AGE_MS;
 
 const reply = (body: unknown, status = 200) =>
   Response.json(body, {
@@ -41,15 +42,11 @@ function normalizeDriverLocation(
   };
   if (!validPoint(point)) return null;
 
-  const rawUpdatedAt =
-    typeof record.updated_at === "string"
-      ? record.updated_at
-      : typeof fallbackUpdatedAt === "string"
-        ? fallbackUpdatedAt
-        : "";
+  // Never trust browser JSON or drivers.updated_at for location freshness.
+  const rawUpdatedAt = typeof fallbackUpdatedAt === "string" ? fallbackUpdatedAt : "";
   const updatedTime = Date.parse(rawUpdatedAt);
   if (!Number.isFinite(updatedTime)) return null;
-  if (Date.now() - updatedTime > LOCATION_FRESHNESS_MS) return null;
+  if (updatedTime > Date.now() + 10_000 || Date.now() - updatedTime > LOCATION_FRESHNESS_MS) return null;
 
   return {
     ...point,
@@ -89,12 +86,16 @@ export async function GET(request: Request) {
     )
       return reply({ status: "rider_required", vehicles: [] }, 403);
 
+    const newestGps = new Date(Date.now() - LOCATION_FRESHNESS_MS).toISOString();
     const { data: drivers, error: driversError } = await admin
       .from("drivers")
-      .select("id,location,updated_at")
+      .select("id,location,gps_recorded_at,last_presence_at,gps_accuracy_meters")
       .eq("review_status", "approved")
       .eq("is_online", true)
-      .order("updated_at", { ascending: false })
+      .gte("gps_recorded_at", newestGps)
+      .gte("last_presence_at", newestGps)
+      .lte("gps_accuracy_meters", DRIVER_GPS_MAX_ACCURACY_METERS)
+      .order("gps_recorded_at", { ascending: false })
       .limit(MAX_DRIVER_QUERY);
 
     if (driversError) return reply({ status: "unavailable", vehicles: [] }, 503);
@@ -104,7 +105,7 @@ export async function GET(request: Request) {
       .map((driver) => driver.id)
       .filter((id): id is string => typeof id === "string" && !!id);
 
-    const [{ data: profiles, error: profileError }, { data: trips, error: tripError }] =
+    const [{ data: profiles, error: profileError }, { data: trips, error: tripError }, { data: offers, error: offerError }] =
       await Promise.all([
         admin
           .from("profiles")
@@ -117,9 +118,14 @@ export async function GET(request: Request) {
           .select("assigned_driver_id")
           .in("assigned_driver_id", driverIds)
           .in("status", ["accepted", "arrived_pickup", "in_trip"]),
+        admin
+          .from("ride_request_offers")
+          .select("driver_id")
+          .in("driver_id", driverIds)
+          .eq("status", "pending"),
       ]);
 
-    if (profileError || tripError)
+    if (profileError || tripError || offerError)
       return reply({ status: "unavailable", vehicles: [] }, 503);
 
     const eligible = new Set(
@@ -133,20 +139,24 @@ export async function GET(request: Request) {
         .filter((id): id is string => typeof id === "string" && !!id),
     );
 
+    const pending = new Set((offers || []).map((offer) => offer.driver_id));
+
     const vehicles = drivers
       .flatMap((driver) => {
         if (
           typeof driver.id !== "string" ||
           !eligible.has(driver.id) ||
-          busy.has(driver.id)
+          busy.has(driver.id) || pending.has(driver.id)
         )
           return [];
 
         const location = normalizeDriverLocation(
           driver.location,
-          driver.updated_at,
+          driver.gps_recorded_at,
         );
-        if (!location || !insideBounds(location, area.bounds)) return [];
+        if (!location || !insideBounds(location, area.bounds) ||
+          typeof driver.gps_accuracy_meters !== "number" ||
+          driver.gps_accuracy_meters > DRIVER_GPS_MAX_ACCURACY_METERS) return [];
 
         const distanceMeters = haversineMeters(riderPoint, location);
         if (

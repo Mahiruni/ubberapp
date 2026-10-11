@@ -7,6 +7,7 @@ import { nexrideApiFetch } from "../../lib/nexride-api-auth";
 import { explicitSignOutRole } from "../../lib/nexride-startup";
 import { emitNexRideFeedback } from "../../lib/nexride-feedback";
 import { eligibleDriverOffer, shouldOpenDriverOffer } from "../../lib/nexride-driver-presence";
+import { gpsFixUsable, DRIVER_GPS_HEARTBEAT_MS, DRIVER_GPS_SYNC_MIN_INTERVAL_MS } from "../../lib/nexride-driver-gps";
 
 export const DRIVER_AVAILABILITY_CHANGED = "nexride:driver-availability-changed";
 
@@ -100,25 +101,26 @@ export function DriverSessionBridge() {
     const sendGps = (position: GeolocationPosition) => {
       if (!mounted || !activeOnline || !navigator.onLine || gpsUploadInFlight) return;
       const { latitude, longitude, accuracy } = position.coords;
-      if (!Number.isFinite(latitude) || Math.abs(latitude) > 90 ||
-          !Number.isFinite(longitude) || Math.abs(longitude) > 180) return;
+      if (!gpsFixUsable({ latitude, longitude, accuracy, timestamp: position.timestamp })) return;
       // Only advertise recent real GPS fixes. Never use a cached, outdated
       // device position to make a driver look available to nearby riders.
-      if (Date.now() - position.timestamp > 30_000) return;
-      if (Date.now() - lastGpsSent < 10_000) return;
+      if (Date.now() - lastGpsSent < DRIVER_GPS_SYNC_MIN_INTERVAL_MS) return;
       gpsUploadInFlight = true;
       void nexrideApiFetch("/api/driver/availability", {
         method: "PATCH",
         body: JSON.stringify({ location: {
           latitude,
           longitude,
-          accuracy: Number.isFinite(accuracy) ? accuracy : null,
+          accuracy,
+          fix_timestamp: position.timestamp,
         } }),
-      }).then((response) => {
+      }).then(async (response) => {
+        const payload = await response.json().catch(() => ({}));
         if (!mounted) return;
         if (response.ok) lastGpsSent = Date.now();
         window.dispatchEvent(new CustomEvent("nexride:driver-gps-sync", {
-          detail: { status: response.ok ? "synced" : "error", at: Date.now() },
+          detail: { status: response.ok ? "synced" : "error",
+            gpsStatus: payload?.gpsStatus ?? "waiting", at: Date.now() },
         }));
       }).catch(() => {
         if (mounted) window.dispatchEvent(new CustomEvent("nexride:driver-gps-sync", {
@@ -240,7 +242,7 @@ export function DriverSessionBridge() {
       navigator.geolocation?.getCurrentPosition(sendGps, () => {}, {
         enableHighAccuracy: true, maximumAge: 5_000, timeout: 12_000,
       });
-    }, 25_000);
+    }, DRIVER_GPS_HEARTBEAT_MS);
     return () => {
       mounted = false;
       window.clearInterval(interval);
