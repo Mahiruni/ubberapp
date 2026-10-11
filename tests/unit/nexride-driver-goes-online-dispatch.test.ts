@@ -30,8 +30,11 @@ const request = (online: boolean) => new Request("http://localhost/api/driver/av
   }),
 });
 
-function mockBackend({ wasOnline = false, dispatchFails = false } = {}) {
-  const existing = { ...driver, is_online: wasOnline };
+function mockBackend({ wasOnline = false, dispatchFails = false, regainedGps = false } = {}) {
+  const existing = { ...driver, is_online: wasOnline,
+    gps_recorded_at: regainedGps ? new Date(Date.now() - 120000).toISOString() : null,
+    gps_accuracy_meters: regainedGps ? 8 : null,
+  };
   const rpc = vi.fn().mockResolvedValue({
     data: dispatchFails ? null : 1,
     error: dispatchFails ? { code: "PGRST202" } : null,
@@ -60,7 +63,10 @@ function mockBackend({ wasOnline = false, dispatchFails = false } = {}) {
         select: () => q,
         eq: () => q,
         update: (payload: unknown) => { locationWrites(payload); return q; },
-        single: async () => ({ data: existing, error: null }),
+        single: async () => ({ data: regainedGps
+          ? { ...existing, gps_recorded_at: new Date().toISOString(),
+              gps_accuracy_meters: 8 }
+          : existing, error: null }),
         maybeSingle: async () => ({
           data: table === "profiles" ? { role: "driver", account_status: "active" } : existing,
           error: null,
@@ -100,6 +106,20 @@ describe("Driver becomes Online while Rider is searching", () => {
     expect(response.status).toBe(200);
     expect((await response.json()).status).toBe("ready");
     expect(backend.rpc).toHaveBeenCalledOnce();
+  });
+
+  it("immediately checks waiting Riders when an already Online Driver recovers GPS", async () => {
+    const backend = mockBackend({ wasOnline: true, regainedGps: true });
+    const response = await PATCH(new Request("http://localhost/api/driver/availability", {
+      method: "PATCH",
+      body: JSON.stringify({ location: { latitude: 9.008, longitude: 38.775, accuracy: 8 } }),
+    }));
+    expect(response.status).toBe(200);
+    expect((await response.json()).gpsStatus).toBe("ready");
+    expect(backend.rpc).toHaveBeenCalledExactlyOnceWith(
+      "nexride_dispatch_waiting_for_driver_server",
+      { p_driver_id: driverId },
+    );
   });
 
   it("does not dispatch Rider requests when the Driver goes Offline", async () => {

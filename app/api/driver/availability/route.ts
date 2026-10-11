@@ -207,24 +207,36 @@ export async function PATCH(request: Request) {
 
       updatedDriver = onlineData;
 
-      if (body.online === true && current.is_online !== true) {
-        const { error: dispatchError } = await admin.rpc(
-          "nexride_dispatch_waiting_for_driver_server",
-          { p_driver_id: authorized.user.id },
-        );
-        if (dispatchError) {
-          console.warn("nexride_waiting_dispatch_deferred", {
-            code: dispatchError.code || "unknown",
-          });
-        }
-      }
     }
 
+    // A Driver can have is_online=true before Android produces a usable fix.
+    // Re-dispatch immediately on the FIRST server-verified GPS recovery, not
+    // only on the initial Online toggle; do not hammer the matcher every ping.
+    const previousHealth = driverGpsHealth({
+      accuracy: current.gps_accuracy_meters,
+      timestamp: typeof current.gps_recorded_at === "string"
+        ? Date.parse(current.gps_recorded_at) : null,
+    });
     const gpsRow = updatedDriver as Record<string, unknown>;
     const gpsStatus = driverGpsHealth({
       accuracy: typeof gpsRow.gps_accuracy_meters === "number" ? gpsRow.gps_accuracy_meters : null,
       timestamp: typeof gpsRow.gps_recorded_at === "string" ? Date.parse(gpsRow.gps_recorded_at) : null,
     });
+    const startedOnline = hasOnline && body.online === true && current.is_online !== true;
+    const regainedGps = Boolean(location) && current.is_online === true &&
+      updatedDriver.is_online === true && previousHealth !== "ready" &&
+      gpsStatus === "ready";
+    if (startedOnline || regainedGps) {
+      const { error: dispatchError } = await admin.rpc(
+        "nexride_dispatch_waiting_for_driver_server",
+        { p_driver_id: authorized.user.id },
+      );
+      if (dispatchError) {
+        console.warn("nexride_waiting_dispatch_deferred", {
+          code: dispatchError.code || "unknown",
+        });
+      }
+    }
     return reply({
       status: "ready",
       driver: updatedDriver,

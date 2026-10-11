@@ -409,8 +409,7 @@ export function useMatching() {
     reconnect,
     active:
       !!request &&
-      (!snapshot ||
-        !["cancelled", "no_drivers"].includes(snapshot.status)),
+      (!snapshot || snapshot.status !== "cancelled"),
   };
 }
 
