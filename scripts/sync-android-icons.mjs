@@ -34,7 +34,10 @@ for (const [density, size, adaptive] of [
 }
 const values = join(res, "values");
 mkdirSync(values, { recursive: true });
-const colors = join(values, "colors.xml");
+// Capacitor generates this resource separately in recent Android templates.
+const colors = existsSync(join(values, "ic_launcher_background.xml"))
+  ? join(values, "ic_launcher_background.xml")
+  : join(values, "colors.xml");
 let xml = existsSync(colors) ? readFileSync(colors, "utf8") : "<resources></resources>";
 if (/<color name="ic_launcher_background">[^<]*<\/color>/.test(xml)) {
   xml = xml.replace(/<color name="ic_launcher_background">[^<]*<\/color>/,
