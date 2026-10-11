@@ -58,7 +58,7 @@ export function NexRideNativePushBootstrap() {
           // Verify current server state before opening an actionable offer.
           let destination = url;
           const match = role === "driver"
-            ? /^\\/driver\\/request\\?offer=([0-9a-f-]{36})$/i.exec(url)
+            ? /^\/driver\/request\?offer=([0-9a-f-]{36})$/i.exec(url)
             : null;
           if (match) {
             const { data, error } = await supabase.from("ride_request_offers")
