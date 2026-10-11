@@ -45,10 +45,16 @@ export async function enableNexRideNativeNotifications(role: Role) {
   const { PushNotifications } = await import("@capacitor/push-notifications");
   const permission = await PushNotifications.requestPermissions();
   if (permission.receive !== "granted") return "denied" as const;
-  await PushNotifications.createChannel({ id: role === "driver" ? "nexride_driver_requests" : "nexride_trip_updates",
-    name: role === "driver" ? "Ride requests" : "Trip updates",
-    description: "Important NexRide ride and trip events", importance: role === "driver" ? 4 : 3,
-    vibration: true, visibility: 1 });
+  await PushNotifications.createChannel({
+    // Android notification channel settings are immutable after creation.
+    // v2 is intentionally created natively at Driver launch with a custom
+    // NexRide chime and a distinct vibration pattern.
+    id: role === "driver" ? "nexride_driver_requests_v2" : "nexride_trip_updates",
+    name: role === "driver" ? "Incoming ride requests" : "Trip updates",
+    description: "Important NexRide ride and trip events",
+    importance: role === "driver" ? 5 : 3, vibration: true, visibility: 1,
+    ...(role === "driver" ? { sound: "nexride_ride_request.wav" } : {}),
+  });
   await PushNotifications.register();
   return "registration_started" as const;
 }
