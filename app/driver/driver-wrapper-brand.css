@@ -307,6 +307,21 @@
   background:var(--trip-surface)!important;
   border-top:1px solid var(--trip-border)!important;
 }
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-bottom-card>.nr-driver-sheet-footer .nr-nav-pinned-actions{
+  display:grid;
+  gap:8px;
+  width:100%;
+  min-width:0;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-bottom-card>.nr-driver-sheet-footer .nr-nav-pinned-actions :is(.nr-nav-stage-primary,.nr-nav-stage-secondary){
+  width:100%;
+  margin:0!important;
+  min-height:54px!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-bottom-card>.nr-driver-sheet-footer .nr-nav-pinned-actions .nr-nav-stage-actions{
+  display:grid;
+  gap:8px;
+}
 .nr-driver-app-shell .nr-driver-navigation-page :is(.nr-nav-stage-primary,.nr-nav-stage-secondary){
   min-height:52px!important;
   border-radius:14px!important;
