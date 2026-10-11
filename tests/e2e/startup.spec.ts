@@ -176,7 +176,7 @@ test("a stalled session restoration can be retried", async ({ page }) => {
     { timeout: 20000 },
   );
   await expect(page.getByRole("link", { name: "Sign in", exact: true })).toHaveAttribute("href", "/rider/sign-in");
-  await expect(page.getByRole("link", { name: "Get started", exact: true })).toHaveAttribute("href", "/rider");
+  await expect(page.getByRole("link", { name: "Open Rider welcome", exact: true })).toHaveAttribute("href", "/rider");
   release();
   await page.getByRole("button", { name: "Try again" }).click();
   await expect(
