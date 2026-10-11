@@ -5,7 +5,7 @@ import {
 } from "../../lib/nexride-rider-avatar";
 
 describe("NexRide Rider avatar upload validation", () => {
-  it("accepts common images within a private bucket's 5 MB limit", () => {
+  it("accepts common images within a private bucket's 25 MB source limit, before compression", () => {
     for (const type of ["image/jpeg", "image/png", "image/webp"]) {
       expect(riderAvatarValidation({ type, size: RIDER_AVATAR_MAX_BYTES })).toBeNull();
     }
