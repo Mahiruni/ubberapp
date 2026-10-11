@@ -1,14 +1,15 @@
 'use client';
 import Image from 'next/image';
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ChangeEvent, type ReactNode } from 'react';
 import { supabase } from '../../lib/supabase';
-import { ALERTS_KEY, readAccount, saveAccount, validateProfile, type RiderAccount } from '../../lib/nexride-account';
+import { ALERTS_KEY, readAccount, saveAccount, uploadRiderAvatar, validateProfile, type RiderAccount } from '../../lib/nexride-account';
 import { PREVIEW_ENABLED_KEY, PREVIEW_STORAGE_KEY, retryStartup } from '../../lib/nexride-startup';
 import { signOutNexRide } from '../../lib/nexride-sign-out';
 import type { Language } from '../../lib/nexride-i18n';
 import type { PreviewProfile } from '../../lib/nexride-preview';
 import { Button, Dialog, Icon, InputField, useTranslation, type IconName } from './ui';
 import { NexRideFeedbackSettings } from './feedback-settings';
+import './rider-avatar-upload.css';
 
 type Props = {
   language: Language;
@@ -81,6 +82,9 @@ export function RiderProfile(props:Props) {
   const [error,setError]=useState('');
   const [notice,setNotice]=useState('');
   const [photoFailed,setPhotoFailed]=useState(false);
+  const [photoBusy,setPhotoBusy]=useState(false);
+  const [photoError,setPhotoError]=useState('');
+  const photoInput=useRef<HTMLInputElement>(null);
   const [signedOutLocally,setSignedOutLocally]=useState(false);
   const lock=useRef(false);
 
@@ -155,6 +159,36 @@ export function RiderProfile(props:Props) {
     }
   };
 
+
+  const uploadPhoto=async(event:ChangeEvent<HTMLInputElement>)=>{
+    const file=event.currentTarget.files?.[0];
+    event.currentTarget.value='';
+    if(!file||!account||photoBusy)return;
+    setPhotoError('');
+    setNotice('');
+    setPhotoBusy(true);
+    try{
+      const {avatar,avatarPath}=await uploadRiderAvatar(account,file);
+      setAccount(current=>current&&current.id===account.id
+        ? {...current,avatar,avatarPath}:current);
+      setPhotoFailed(false);
+      setNotice(say('Profile photo saved. No admin approval is required.','የመገለጫ ፎቶዎ ተቀምጧል። የአስተዳዳሪ ፈቃድ አያስፈልግም።'));
+    }catch(cause){
+      const text=cause instanceof Error?cause.message:'';
+      setPhotoError(
+        text==='avatar_invalid_type'
+          ?say('Choose a JPG, PNG or WebP picture.','JPG፣ PNG ወይም WebP ፎቶ ይምረጡ።')
+          :text==='avatar_invalid_size'
+            ?say('Choose a picture smaller than 5 MB.','ከ5 MB ያነሰ ፎቶ ይምረጡ።')
+            :text==='avatar_auth_required'
+              ?say('Sign in again to change your profile picture.','ፎቶዎን ለመቀየር እንደገና ይግቡ።')
+              :say('The photo could not be saved. Try again.','ፎቶውን ማስቀመጥ አልተቻለም። እንደገና ይሞክሩ።')
+      );
+    }finally{
+      setPhotoBusy(false);
+    }
+  };
+
   const leaveAccount=()=>{
     try{
       localStorage.removeItem(PREVIEW_ENABLED_KEY);
@@ -203,7 +237,26 @@ export function RiderProfile(props:Props) {
             ?<Image src={account.avatar} alt={say('Your profile photo','የመገለጫዎ ፎቶ')} width={72} height={72} unoptimized onError={()=>setPhotoFailed(true)}/>
             :<span aria-label={say('Profile initials','የስም መጀመሪያ ፊደላት')}>{initials}</span>}
         </div>
-        {account&&<span className="nr-account-avatar-badge" aria-label={say('Signed in','ገብተዋል')}><Icon name="check" size={12}/></span>}
+        {account&&<>
+          <input
+            ref={photoInput}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className="nr-rider-avatar-input"
+            aria-label={say('Choose profile photo','የመገለጫ ፎቶ ይምረጡ')}
+            onChange={event=>void uploadPhoto(event)}
+            disabled={photoBusy}
+            tabIndex={-1}
+          />
+          <button
+            type="button"
+            className="nr-rider-avatar-change"
+            onClick={()=>photoInput.current?.click()}
+            disabled={photoBusy}
+            aria-label={say('Change profile photo','የመገለጫ ፎቶ ቀይር')}
+            title={say('Change photo','ፎቶ ቀይር')}
+          ><Icon name={photoBusy?'refresh':'plus'} size={16}/></button>
+        </>}
       </div>
       <div className="nr-account-identity">
         <h2>{loading?say('Loading profile…','መገለጫ በመጫን ላይ…'):loadError?say('Profile unavailable','መገለጫ አይገኝም'):shown.name||t('guest')}</h2>
@@ -215,6 +268,8 @@ export function RiderProfile(props:Props) {
       </button>
     </section>
 
+    {photoBusy&&<p className="nr-rider-avatar-feedback" role="status">{say('Uploading and saving your photo…','ፎቶዎ እየተጫነና እየተቀመጠ ነው…')}</p>}
+    {photoError&&<div className="nr-account-inline-error" role="alert"><Icon name="info" size={18}/><span>{photoError}</span><button type="button" onClick={()=>photoInput.current?.click()}>{say('Try again','እንደገና ይሞክሩ')}</button></div>}
     {loadError&&<div className="nr-account-inline-error" role="alert">
       <Icon name="info" size={18}/>
       <div><strong>{say('Account unavailable','መለያ አይገኝም')}</strong><span>{say('We could not load your account right now.','መለያዎን አሁን መጫን አልተቻለም።')}</span></div>
@@ -271,7 +326,7 @@ export function RiderProfile(props:Props) {
     } onClose={()=>{if(!busy)setPanel(null)}}>
       {panel==='edit'?<form className="nr-profile-form nr-profile-form-v2" onSubmit={e=>{e.preventDefault();void save()}} aria-busy={busy}>
         <div className="nr-edit-profile-intro">
-          <div className="nr-edit-avatar">{initials}</div>
+          <div className="nr-edit-avatar">{account?.avatar&&!photoFailed?<Image src={account.avatar} width={50} height={50} alt="" unoptimized onError={()=>setPhotoFailed(true)}/>:initials}</div>
           <div><strong>{say('Keep your account details current','የመለያ ዝርዝሮችዎን ወቅታዊ ያድርጉ')}</strong><small>{account?say('These details are used across your NexRide rides.','እነዚህ ዝርዝሮች በNexRide ጉዞዎችዎ ላይ ይጠቀማሉ።'):t('localAccount')}</small></div>
         </div>
         <fieldset disabled={busy}>
@@ -280,6 +335,10 @@ export function RiderProfile(props:Props) {
           <InputField label={t('email')} type="email" readOnly={!!account} autoComplete="email" maxLength={254} value={form.email} onChange={e=>setForm({...form,email:e.target.value})}/>
         </fieldset>
         {account&&<>
+          <button type="button" className="nr-rider-avatar-edit-action" disabled={photoBusy} onClick={()=>photoInput.current?.click()}>
+            <Icon name="plus" size={17}/>{photoBusy?say('Saving photo…','ፎቶ በማስቀመጥ ላይ…'):say('Change profile photo · saved immediately','የመገለጫ ፎቶ ቀይር · ወዲያውኑ ይቀመጣል')}
+          </button>
+          {photoError&&<p className="nr-account-error" role="alert">{photoError}</p>}
           <p className="nr-muted">{say('Verified email and phone changes require account ownership confirmation.','ኢሜይልን እና ስልክን ለመቀየር የባለቤትነት ማረጋገጫ ያስፈልጋል።')}</p>
           <button type="button" className="nr-account-edit" onClick={()=>window.location.assign("/account/manage")}>
             {say('Verify or change email and phone in Manage Account →','ኢሜይልና ስልክን በመለያ አስተዳደር ይቀይሩ →')}
