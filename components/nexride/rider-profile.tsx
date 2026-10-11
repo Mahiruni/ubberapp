@@ -22,6 +22,7 @@ type Props = {
   setTheme: (t:'light'|'dark')=>void;
   profile: PreviewProfile;
   setProfile:(p:PreviewProfile)=>void;
+  onAvatarSaved?: (avatar: string | null) => void;
   rides:()=>void;
   saved:()=>void;
   payments:()=>void;
@@ -217,6 +218,7 @@ export function RiderProfile(props:Props) {
           setAccount(current => current && current.id === account?.id
             ? { ...current, avatar, avatarPath } : current);
           setPhotoFailed(false);
+          props.onAvatarSaved?.(avatar);
           setNotice(say('Profile photo saved. No admin approval needed. · ', 'ፎቶዎ ተቀምጧል። የአስተዳዳሪ ፈቃድ አያስፈልግም። · ') + photoSizeLabel(bytes));
         }}
       />

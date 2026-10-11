@@ -45,6 +45,7 @@ import type { Language } from "../lib/nexride-i18n";
 import { LANGUAGE_EVENT } from "../components/nexride/language-provider";
 import type { PreviewProfile, PreviewTrip } from "../lib/nexride-preview";
 import { resolveSessionRole } from "../lib/nexride-account-role";
+import { readAccount } from "../lib/nexride-account";
 import "./nexride.css";
 import "./rider-home.css";
 import "./destination.css";
@@ -256,6 +257,37 @@ function AppWorkspace({
   }, [language]);
   const screen = mode === "rider" ? riderScreen : driverScreen;
   const profileView = screen === "profile";
+  const [riderAvatar, setRiderAvatar] = useState<string | null>(null);
+  const [riderAvatarFailed, setRiderAvatarFailed] = useState(false);
+  const [riderAccountName, setRiderAccountName] = useState("");
+  const avatarRefreshId = useRef(0);
+
+  useEffect(() => {
+    if (!authenticated || mode !== "rider") {
+      avatarRefreshId.current += 1;
+      setRiderAvatar(null);
+      setRiderAccountName("");
+      return;
+    }
+    let active = true;
+    const refreshAvatar = () => {
+      const requestId = ++avatarRefreshId.current;
+      void readAccount().then(account => {
+        if (!active || requestId !== avatarRefreshId.current) return;
+        setRiderAvatar(account?.avatar ?? null);
+        setRiderAccountName(account?.profile.name ?? "");
+        setRiderAvatarFailed(false);
+      }).catch(() => {
+        // Keep the last good portrait during a temporary session/network failure.
+      });
+    };
+    refreshAvatar();
+    window.addEventListener("focus", refreshAvatar);
+    return () => {
+      active = false;
+      window.removeEventListener("focus", refreshAvatar);
+    };
+  }, [authenticated, mode, profileView]);
   const riderHome = mode === "rider" && screen === "home";
   const [liveTripShown, setLiveTripShown] = useState(false);
   const riderTripView = mode === "rider" && ["trip", "live", "summary"].includes(screen);
@@ -352,6 +384,8 @@ function AppWorkspace({
         .join("")
         .toUpperCase()
     : "NR";
+  const headerInitials = (riderAccountName || profile.name).trim()
+    .split(/\s+/).slice(0, 2).map(part => part[0] || "").join("").toUpperCase() || "NR";
   return (
     <div
       data-keyboard={journey.viewport.keyboard}
@@ -468,7 +502,10 @@ function AppWorkspace({
                 aria-label={t("profile")}
                 onClick={() => navigate("profile")}
               >
-                {initials === "NR" ? <Icon name="user" size={20} /> : initials}
+                {riderAvatar && !riderAvatarFailed
+                  ? <Image src={riderAvatar} alt="" width={44} height={44} unoptimized
+                      onError={() => setRiderAvatarFailed(true)} />
+                  : headerInitials === "NR" ? <Icon name="user" size={20} /> : headerInitials}
               </button>
             )}
             {mode === "driver" && (
@@ -578,7 +615,11 @@ function AppWorkspace({
             onClick={(event) => event.stopPropagation()}
             onDoubleClick={(event) => event.stopPropagation()}
           >
-            {profileView && mode === "rider" ? <RiderProfile language={language} setLanguage={setLanguage} theme={theme} setTheme={setTheme} profile={profile} setProfile={setProfile} rides={() => setRiderScreen("trips")} saved={() => setRiderScreen("saved")} payments={() => setRiderScreen("wallet")} safety={() => openSafety(mode)} support={() => window.location.assign("/support")} switchDriver={() => switchMode("driver")} isAdmin={isAdmin} /> : profileView ? (
+            {profileView && mode === "rider" ? <RiderProfile onAvatarSaved={(avatar) => {
+              avatarRefreshId.current += 1;
+              setRiderAvatar(avatar);
+              setRiderAvatarFailed(false);
+            }} language={language} setLanguage={setLanguage} theme={theme} setTheme={setTheme} profile={profile} setProfile={setProfile} rides={() => setRiderScreen("trips")} saved={() => setRiderScreen("saved")} payments={() => setRiderScreen("wallet")} safety={() => openSafety(mode)} support={() => window.location.assign("/support")} switchDriver={() => switchMode("driver")} isAdmin={isAdmin} /> : profileView ? (
               <Sheet title={t("profile")}>
                 <div className="nr-profile-header">
                   <div className="nr-avatar">{initials}</div>
