@@ -97,12 +97,7 @@ jobs:
           FIREBASE_CONFIG_B64: ${{ matrix.role == 'driver' && secrets.NEXRIDE_DRIVER_GOOGLE_SERVICES_BASE64 || secrets.NEXRIDE_RIDER_GOOGLE_SERVICES_BASE64 }}
         run: |
           node scripts/setup-android-reliability.mjs "${{ matrix.role }}"
-          if [ -n "$FIREBASE_CONFIG_B64" ]; then
-            printf '%s' "$FIREBASE_CONFIG_B64" | base64 --decode > android/app/google-services.json
-            node -e 'const c=require("./android/app/google-services.json");if(!c.client?.some(v=>v.client_info?.android_client_info?.package_name==="com.nexride.${{ matrix.role }}"))process.exit(1)'
-          else
-            echo "::warning::Firebase Android config missing; FCM cannot register this APK."
-          fi
+          python3 scripts/validate-android-firebase-config.py "${{ matrix.role }}"
 
       - name: Harden Android manifest
         shell: bash
