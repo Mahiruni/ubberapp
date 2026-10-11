@@ -944,6 +944,8 @@ export default function DriverNavigationPage() {
         <div className="nr-nav-utility-row" aria-label="Trip quick actions">
           <button type="button" className={mapView === "overview" ? "active" : ""} onClick={() => setMapView("overview")}><Icon name="globe" size={17} /> {op("Overview")}</button>
           <button type="button" onClick={() => router.push(`/trip/chat?ride=${trip.requestId}&role=driver&offer=${trip.offerId}`)}><Icon name="chat" size={17} /> {op("Chat")}</button>
+          <button type="button" onClick={() => router.push("/safety?role=driver&ride="+encodeURIComponent(trip.requestId))}
+            aria-label="Share active trip with trusted contact"><Icon name="share" size={17} /> Share</button>
           {riderPhone ? (
             <a href={`tel:${riderPhone}`} aria-label={op("Call rider")}><Icon name="phone" size={17} /> {op("Call")}</a>
           ) : (
