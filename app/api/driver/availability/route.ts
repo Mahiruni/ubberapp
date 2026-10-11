@@ -1,5 +1,6 @@
 import { authorizedRequestSupabase } from "../../../../lib/nexride-server-supabase";
 import { serverAdminSupabase } from "../../../../lib/nexride-server-admin";
+import { driverGpsHealth, gpsFixUsable } from "../../../../lib/nexride-driver-gps";
 
 const reply = (body: unknown, status = 200) =>
   Response.json(body, {
@@ -49,6 +50,18 @@ export async function PATCH(request: Request) {
 
   const hasOnline = typeof body.online === "boolean";
   const location = cleanLocation(body.location);
+  // Reject stale, future-dated or malformed device fixes when supplied; the
+  // database, not the phone's clock, owns the authoritative freshness stamp.
+  if (body.location && typeof body.location === "object") {
+    const raw = body.location as Record<string, unknown>;
+    if (raw.fix_timestamp !== undefined) {
+      const timestamp = Number(raw.fix_timestamp);
+      if (!location || !gpsFixUsable({
+        latitude: location.latitude, longitude: location.longitude,
+        accuracy: location.accuracy ?? Number.NaN, timestamp,
+      })) return reply({ status: "invalid_gps_fix" }, 422);
+    }
+  }
 
   if (!hasOnline && !location) return reply({ status: "invalid_request" }, 400);
   if (hasOnline && body.online === true && !location)
@@ -64,7 +77,7 @@ export async function PATCH(request: Request) {
         .maybeSingle(),
       admin
         .from("drivers")
-        .select("review_status,rejection_reason,is_online,rating,vehicle,vehicle_plate")
+        .select("review_status,rejection_reason,is_online,rating,vehicle,vehicle_plate,gps_recorded_at,last_presence_at,gps_accuracy_meters")
         .eq("id", authorized.user.id)
         .maybeSingle(),
     ]);
@@ -136,7 +149,7 @@ export async function PATCH(request: Request) {
     if (!hasOnline && current.is_online !== true)
       return reply({ status: "driver_offline" }, 409);
 
-    const selectFields = "review_status,rejection_reason,is_online,rating,vehicle,vehicle_plate";
+    const selectFields = "review_status,rejection_reason,is_online,rating,vehicle,vehicle_plate,gps_recorded_at,last_presence_at,gps_accuracy_meters";
     let updatedDriver = current;
 
     // Keep location writes on the trusted server client because the location
@@ -207,9 +220,15 @@ export async function PATCH(request: Request) {
       }
     }
 
+    const gpsRow = updatedDriver as Record<string, unknown>;
+    const gpsStatus = driverGpsHealth({
+      accuracy: typeof gpsRow.gps_accuracy_meters === "number" ? gpsRow.gps_accuracy_meters : null,
+      timestamp: typeof gpsRow.gps_recorded_at === "string" ? Date.parse(gpsRow.gps_recorded_at) : null,
+    });
     return reply({
       status: "ready",
       driver: updatedDriver,
+      gpsStatus,
     });
   } catch {
     return reply({ status: "availability_service_unavailable" }, 503);
