@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { Button, Icon, useTranslation } from "./ui";
 import type { StartupError } from "../../lib/nexride-startup";
 import "./splash.css";
@@ -41,6 +42,12 @@ export function RiderSplash({
               <Button variant="ghost" onClick={onReset}>
                 {t("startupReset")}
               </Button>
+            )}
+            {error.kind === "session" && (
+              <nav className="nr-splash-recovery-links" aria-label="NexRide account access">
+                <Link href="/rider/sign-in">{t("signIn")}</Link>
+                <Link href="/rider">{t("continueAuth")}</Link>
+              </nav>
             )}
           </div>
         ) : (
