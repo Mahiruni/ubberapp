@@ -224,3 +224,25 @@
   background:#fff1f2!important;
   border-color:#f4c6ce!important;
 }
+
+
+/* Phase 2 secure native sharing — compact premium controls, all tap targets 44px+. */
+.nr-share-lifetime{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:16px;color:#425c6c;font-size:12px;font-weight:750}
+.nr-share-lifetime select{min-height:45px;min-width:142px;padding:9px 14px;border:1px solid #d3e1e5;border-radius:12px;background:#fff;color:#102334;font:inherit;font-size:12px}
+.nr-share-primary:disabled{opacity:.47;cursor:not-allowed}
+.nr-share-current{margin-top:17px;padding:15px;border:1px solid #d6e8df;border-radius:16px;background:#f0faf6;color:#102334}
+.nr-share-current>strong{font-size:14px}
+.nr-share-current p{margin:6px 0;color:#506877;font-size:11px}
+.nr-share-current input{box-sizing:border-box;width:100%;padding:12px 10px;min-height:44px;color:#102334;background:#fff;border:1px solid #cbdce2;border-radius:11px;font-size:11px}
+.nr-share-buttons{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+.nr-share-buttons button{min-height:44px;flex:1 1 auto;border:1px solid #0a6146;border-radius:11px;background:#041c30;color:#fff;padding:8px 12px;font-size:11px;font-weight:800}
+.nr-share-buttons button.danger,.nr-share-active-item button{background:#fff;border-color:#d3b1b3;color:#9a2638}
+.nr-share-buttons button:disabled,.nr-share-active-item button:disabled{opacity:.5;cursor:not-allowed}
+.nr-share-active-list{display:grid;gap:9px;margin-top:18px;padding:13px;border:1px solid #dfe7eb;border-radius:14px;background:#fff;color:#102334}
+.nr-share-active-list>strong{font-size:12px}
+.nr-share-active-item{display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid #edf1f3;padding-top:8px}
+.nr-share-active-item span{color:#667587;font-size:11px}
+.nr-share-active-item button{min-height:44px;padding:7px 13px;border-radius:9px;font-size:11px;font-weight:800}
+.nr-share-privacy{color:#667587!important;font-size:11px!important;line-height:1.5;margin-top:16px!important}
+.nr-share-current button:focus-visible,.nr-share-primary:focus-visible,.nr-share-lifetime select:focus-visible,.nr-share-active-item button:focus-visible{outline:3px solid #00c878;outline-offset:2px}
+@media(prefers-reduced-motion:reduce){.nr-share-current *{transition:none!important}}
