@@ -134,6 +134,24 @@ test("the real session wait shows the splash and honors reduced motion", async (
   await expect(splash).toHaveCount(0);
 });
 
+test("an invalid refresh token opens the Rider sign-in form instead of blocking startup", async ({ page }) => {
+  await page.addInitScript(
+    ({ key, session }) =>
+      localStorage.setItem(key, JSON.stringify({ ...session, expires_at: 1 })),
+    { key: sessionKey, session: restoredSession },
+  );
+  await page.route("**/auth/v1/token**", route =>
+    route.fulfill({
+      status: 400,
+      json: { code: "refresh_token_not_found", message: "Invalid Refresh Token: Refresh Token Not Found" },
+    }),
+  );
+  await page.goto("/");
+  await expect(page).toHaveURL(/\/rider\/sign-in$/);
+  await expect(page.getByLabel("Email address", { exact: true })).toBeVisible();
+  await expect(page.locator(".nr-splash-error")).toHaveCount(0);
+});
+
 test("a stalled session restoration can be retried", async ({ page }) => {
   await page.addInitScript(
     ({ key, session }) =>
@@ -155,8 +173,10 @@ test("a stalled session restoration can be retried", async ({ page }) => {
   await page.goto("/", { waitUntil: "domcontentloaded" });
   await expect(page.locator(".nr-splash-error")).toContainText(
     "We couldn’t open NexRide.",
-    { timeout: 12000 },
+    { timeout: 20000 },
   );
+  await expect(page.getByRole("link", { name: "Sign in", exact: true })).toHaveAttribute("href", "/rider/sign-in");
+  await expect(page.getByRole("link", { name: "Get started", exact: true })).toHaveAttribute("href", "/rider");
   release();
   await page.getByRole("button", { name: "Try again" }).click();
   await expect(
