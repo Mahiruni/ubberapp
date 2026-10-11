@@ -114,11 +114,13 @@ export function DriverSessionBridge() {
           accuracy,
           fix_timestamp: position.timestamp,
         } }),
-      }).then((response) => {
+      }).then(async (response) => {
+        const payload = await response.json().catch(() => ({}));
         if (!mounted) return;
         if (response.ok) lastGpsSent = Date.now();
         window.dispatchEvent(new CustomEvent("nexride:driver-gps-sync", {
-          detail: { status: response.ok ? "synced" : "error", at: Date.now() },
+          detail: { status: response.ok ? "synced" : "error",
+            gpsStatus: payload?.gpsStatus ?? "waiting", at: Date.now() },
         }));
       }).catch(() => {
         if (mounted) window.dispatchEvent(new CustomEvent("nexride:driver-gps-sync", {
