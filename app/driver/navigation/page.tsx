@@ -10,7 +10,14 @@ import { supabase } from "../../../lib/supabase";
 import { nexrideApiFetch } from "../../../lib/nexride-api-auth";
 import { storeDriverTrip, readDriverTrip, clearDriverTrip } from "../../../lib/nexride-offline-recovery";
 import { resolveSessionRole } from "../../../lib/nexride-account-role";
-import { emitNexRideFeedback, speakNexRideNavigation, stopNexRideNavigationVoice } from "../../../lib/nexride-feedback";
+import {
+  emitNexRideFeedback, speakNexRideNavigation, stopNexRideNavigationVoice,
+  readNexRideFeedbackPreferences, saveNexRideFeedbackPreferences,
+  NEXRIDE_FEEDBACK_CHANGED, type NexRideFeedbackPreferences,
+} from "../../../lib/nexride-feedback";
+import {
+  nextNexRideManeuver,nexrideVoiceBand,nexrideSpokenManeuver,validVoiceFix,
+} from "../../../lib/nexride-navigation-guidance";
 import "../../nexride.css";
 import "./navigation.css";
 import "../../detail-system.css";
@@ -123,6 +130,10 @@ export default function DriverNavigationPage() {
   const [locationShareError, setLocationShareError] = useState("");
   const [nativeRoute, setNativeRoute] = useState<NativeRoute | null>(null);
   const [nativeRouteNotice, setNativeRouteNotice] = useState("");
+  const [voicePrefs, setVoicePrefs] = useState<NexRideFeedbackPreferences>(() => readNexRideFeedbackPreferences());
+  const [voiceNotice, setVoiceNotice] = useState("");
+  const spokenBandsRef = useRef(new Set<string>());
+  const lastSpokenRef = useRef(0);
   const [confirmAction, setConfirmAction] = useState<"in_trip" | "completed" | null>(null);
 
   const loadTrip = useCallback(async (userId: string, offerId: string) => {
@@ -605,24 +616,98 @@ export default function DriverNavigationPage() {
   const invalidTrip = trip?.status === "withdrawn" || trip?.status === "cancelled";
   const activeRoute =
     nativeRoute && nativeRoute.target === stage?.target ? nativeRoute : null;
-  const nextGuidance = activeRoute?.steps[0];
-  const guidanceTitle = nextGuidance?.instruction || (stage?.title ? op(stage.title) : op("Navigation"));
+  const nextManeuver = useMemo(() =>
+    activeRoute && position
+      ? nextNexRideManeuver(activeRoute.geometry,activeRoute.steps,position,Math.max(60,position.accuracy ?? 0))
+      : null,
+    [activeRoute,position],
+  );
+  const voiceGpsReady = validVoiceFix(position,gpsState);
+  const guidanceTitle = nextManeuver?.step.instruction ||
+    (stage?.title ? op(stage.title) : op("Navigation"));
+  const guidanceDistance = nextManeuver
+    ? metersLabel(nextManeuver.distanceMeters)
+    : activeRoute ? metersLabel(activeRoute.distanceMeters)
+    : distanceLabel(stage?.distance ?? null);
 
   useEffect(() => {
-    if (!canNavigate || gpsState !== "fresh" || !guidanceTitle) {
+    const sync = () => setVoicePrefs(readNexRideFeedbackPreferences());
+    window.addEventListener(NEXRIDE_FEEDBACK_CHANGED,sync);
+    sync();
+    return () => window.removeEventListener(NEXRIDE_FEEDBACK_CHANGED,sync);
+  },[]);
+
+  const saveVoicePreference = <K extends keyof NexRideFeedbackPreferences>(
+    key: K, value: NexRideFeedbackPreferences[K],
+  ) => {
+    const next={...voicePrefs,[key]:value};
+    setVoicePrefs(next);
+    saveNexRideFeedbackPreferences(next);
+    setVoiceNotice("");
+    if(key==="navigationVoice" && value===false) stopNexRideNavigationVoice();
+  };
+
+  // Three GPS-triggered approach bands: advance (350 m), near (115 m),
+  // now (35 m). Announcements are keyed by physical maneuver, not by a
+  // refreshed API instruction, so a reroute does not cause constant speech.
+  useEffect(() => {
+    if (!canNavigate || !voicePrefs.navigationVoice || !nextManeuver ||
+        !voiceGpsReady || !safeToUpdate ||
+        !activeRoute || Date.now()-activeRoute.generatedAt>10*60_000) return;
+    const band=nexrideVoiceBand(nextManeuver.distanceMeters);
+    if(!band)return;
+    const token=[trip?.requestId,stage?.target,nextManeuver.key,band].join(":");
+    if(spokenBandsRef.current.has(token) || Date.now()-lastSpokenRef.current<9000)return;
+    const cue=nexrideSpokenManeuver(nextManeuver,band,voicePrefs.navigationLanguage);
+    const result=speakNexRideNavigation(cue,voicePrefs.navigationLanguage);
+    if(result==="spoken"){
+      spokenBandsRef.current.add(token);
+      lastSpokenRef.current=Date.now();
+      setVoiceNotice("");
+    } else if(result==="language_unavailable") {
+      setVoiceNotice("Amharic voice unavailable. Install an Amharic text-to-speech voice in Android settings.");
+    } else if(result==="unsupported") {
+      setVoiceNotice("Speech is unavailable on this device. Follow the on-screen route.");
+    }
+  },[activeRoute,canNavigate,nextManeuver,position,gpsState,voiceGpsReady,safeToUpdate,
+    voicePrefs.navigationVoice,voicePrefs.navigationLanguage,trip?.requestId,stage?.target]);
+
+  useEffect(() => {
+    if (!canNavigate || !voicePrefs.navigationVoice) stopNexRideNavigationVoice();
+  },[canNavigate,voicePrefs.navigationVoice]);
+
+  useEffect(() => {
+    // Backgrounded WebViews may suspend audio; do not speak stale directions
+    // on return. The next fresh GPS update will recalculate the live cue.
+    const onVisibility=() => {
+      if(document.visibilityState!=="visible")stopNexRideNavigationVoice();
+    };
+    document.addEventListener("visibilitychange",onVisibility);
+    return () => {
+      document.removeEventListener("visibilitychange",onVisibility);
       stopNexRideNavigationVoice();
+    };
+  },[]);
+
+  function repeatSpokenGuidance() {
+    if(!voicePrefs.navigationVoice){
+      setVoiceNotice("Enable voice guidance first.");
       return;
     }
-    speakNexRideNavigation(guidanceTitle);
-    return () => stopNexRideNavigationVoice();
-  }, [canNavigate, gpsState, guidanceTitle]);
+    if(!canNavigate || !nextManeuver || !voiceGpsReady || !activeRoute ||
+        Date.now()-activeRoute.generatedAt>10*60_000){
+      setVoiceNotice("Waiting for a fresh GPS position and current road route.");
+      return;
+    }
+    const band=nexrideVoiceBand(nextManeuver.distanceMeters)||"advance";
+    const cue=nexrideSpokenManeuver(nextManeuver,band,voicePrefs.navigationLanguage);
+    const result=speakNexRideNavigation(cue,voicePrefs.navigationLanguage,{force:true});
+    setVoiceNotice(result==="language_unavailable"
+      ? "Install an Amharic text-to-speech voice in Android settings."
+      : result==="unsupported" ? "Speech unavailable on this device."
+      : "");
+  }
 
-  const guidanceDistance =
-    nextGuidance && nextGuidance.distanceMeters > 0
-      ? metersLabel(nextGuidance.distanceMeters)
-      : activeRoute
-        ? metersLabel(activeRoute.distanceMeters)
-        : distanceLabel(stage?.distance ?? null);
   const routeEtaMinutes =
     activeRoute
       ? Math.max(1, Math.round(activeRoute.durationSeconds / 60))
@@ -805,6 +890,32 @@ export default function DriverNavigationPage() {
           </div>
         )}
         </div>}>
+        <div className="nr-nav-voice-controls" role="group" aria-label="Turn-by-turn voice guidance">
+          <button type="button" className={voicePrefs.navigationVoice ? "active" : ""}
+            aria-pressed={voicePrefs.navigationVoice}
+            onClick={() => saveVoicePreference("navigationVoice",!voicePrefs.navigationVoice)}>
+            <Icon name="volume" size={17} />
+            {voicePrefs.navigationVoice ? "Voice on" : "Voice off"}
+          </button>
+          <button type="button" aria-pressed={voicePrefs.navigationLanguage==="en"}
+            className={voicePrefs.navigationLanguage==="en"?"active":""}
+            onClick={() => saveVoicePreference("navigationLanguage","en")}>EN</button>
+          <button type="button" aria-pressed={voicePrefs.navigationLanguage==="am"}
+            className={voicePrefs.navigationLanguage==="am"?"active":""}
+            onClick={() => saveVoicePreference("navigationLanguage","am")}>አማ</button>
+          <button type="button" disabled={!voicePrefs.navigationVoice}
+            onClick={repeatSpokenGuidance}>Repeat</button>
+          {voicePrefs.navigationVoice && (
+            <label className="nr-nav-voice-volume">
+              <span>Volume</span>
+              <input type="range" min="20" max="100" step="10"
+                value={Math.round((voicePrefs.navigationVolume??.9)*100)}
+                aria-label="Navigation voice volume"
+                onChange={event=>saveVoicePreference("navigationVolume",Number(event.target.value)/100)}/>
+            </label>
+          )}
+        </div>
+        {voiceNotice && <p className="nr-nav-voice-note" role="status">{voiceNotice}</p>}
         <div className="nr-nav-utility-row" aria-label="Trip quick actions">
           <button type="button" className={mapView === "overview" ? "active" : ""} onClick={() => setMapView("overview")}><Icon name="globe" size={17} /> {op("Overview")}</button>
           <button type="button" onClick={() => router.push(`/trip/chat?ride=${trip.requestId}&role=driver&offer=${trip.offerId}`)}><Icon name="chat" size={17} /> {op("Chat")}</button>
