@@ -39,8 +39,8 @@ on public.drivers for each row execute function private.nexride_stamp_driver_gps
 revoke update(gps_recorded_at,last_presence_at,gps_accuracy_meters)
   on public.drivers from authenticated,anon;
 
--- Based on the existing live dispatcher; preserve the four-minute waiting
--- window, transactional locking and one-offer uniqueness protections.
+-- Live database definitions preserved: 4-minute Rider search, unique
+-- sequential Driver offers and server-only authority are unchanged.
 CREATE OR REPLACE FUNCTION private.dispatch_ride_request(p_request_id uuid)
  RETURNS integer
  LANGUAGE plpgsql
@@ -84,15 +84,6 @@ begin
     case when d.location is not null
      and (d.location->>'latitude') ~ '^-?[0-9]+([.][0-9]+)?$'
      and (d.location->>'longitude') ~ '^-?[0-9]+([.][0-9]+)?$'
-    -- Only dispatch within the operational pickup approach area.
-    and case
-      when (d.location->>'latitude') ~ '^-?[0-9]+([.][0-9]+)?$'
-       and (d.location->>'longitude') ~ '^-?[0-9]+([.][0-9]+)?$'
-      then private.nexride_distance_km(
-        ride.pickup_lat,ride.pickup_lng,
-        (d.location->>'latitude')::double precision,
-        (d.location->>'longitude')::double precision) <= 25
-      else false end
     then round(private.nexride_distance_km(
       ride.pickup_lat,ride.pickup_lng,
       (d.location->>'latitude')::double precision,
@@ -103,13 +94,19 @@ begin
   join public.profiles p on p.id=d.id
   where d.is_online=true and d.review_status='approved'
     and p.role='driver' and p.account_status='active'
-    -- A user-set Online flag is not proof of dispatch readiness.
-    -- These timestamps and accuracy are stamped by a trusted DB trigger.
+    -- Dispatch eligibility: authenticated availability, fresh server-stamped
+    -- GPS, sufficient accuracy, and a reasonable pickup approach distance.
     and d.gps_recorded_at >= now()-interval '60 seconds'
     and d.last_presence_at >= now()-interval '60 seconds'
     and d.gps_accuracy_meters between 0 and 150
-    and d.location is not null
-    and (d.location->>'latitude') ~ '^-?[0-9]+([.][0-9]+)?
+    and case
+      when (d.location->>'latitude') ~ '^-?[0-9]+([.][0-9]+)?$'
+        and (d.location->>'longitude') ~ '^-?[0-9]+([.][0-9]+)?$'
+      then private.nexride_distance_km(
+        ride.pickup_lat,ride.pickup_lng,
+        (d.location->>'latitude')::double precision,
+        (d.location->>'longitude')::double precision) <= 25
+      else false end
     -- Never recycle a previously declined, passed, expired or withdrawn
     -- offer during the same booking.
     and not exists(select 1 from public.ride_request_offers o
@@ -154,100 +151,8 @@ begin
   return inserted_count;
 end;
 $function$
-
-    and (d.location->>'longitude') ~ '^-?[0-9]+([.][0-9]+)?
-    -- Never recycle a previously declined, passed, expired or withdrawn
-    -- offer during the same booking.
-    and not exists(select 1 from public.ride_request_offers o
-      where o.request_id=ride.id and o.driver_id=d.id)
-    -- A driver cannot be offered two bookings simultaneously.
-    and not exists(select 1 from public.ride_request_offers o
-      where o.driver_id=d.id and o.status='pending')
-    and not exists(select 1 from public.ride_requests a
-      where a.assigned_driver_id=d.id
-      and a.status in ('accepted','arrived_pickup','in_trip'))
-  order by
-    case when d.location is not null
-     and (d.location->>'latitude') ~ '^-?[0-9]+([.][0-9]+)?$'
-     and (d.location->>'longitude') ~ '^-?[0-9]+([.][0-9]+)?$'
-    then private.nexride_distance_km(ride.pickup_lat,ride.pickup_lng,
-      (d.location->>'latitude')::double precision,
-      (d.location->>'longitude')::double precision)
-    else null end nulls last,
-    d.updated_at desc
-  limit 1 for update of d skip locked;
-
-  if candidate is not null then
-    insert into public.ride_request_offers
-      (request_id,driver_id,pickup_distance_km,pickup_eta_minutes,expires_at)
-    values (ride.id,candidate,distance_km,null,now()+interval '45 seconds')
-    on conflict do nothing;
-    get diagnostics inserted_count=row_count;
-  end if;
-
-  -- A temporarily empty Driver pool is not a terminal dispatch result.
-  -- Keep searching so Rider polls and the 10-second pg_cron worker
-  -- can discover a Driver who comes Online after the booking was placed.
-  -- Avoid rewriting an unchanged ride on every poll (match_version churn).
-  if inserted_count=1 or ride.dispatch_state is distinct from 'searching' then
-    update public.ride_requests
-      set dispatch_state='searching',
-          dispatch_started_at=coalesce(dispatch_started_at,now()),
-          updated_at=now()
-      where id=ride.id and status='pending';
-  end if;
-
-  return inserted_count;
-end;
-$function$
-
-    -- Never recycle a previously declined, passed, expired or withdrawn
-    -- offer during the same booking.
-    and not exists(select 1 from public.ride_request_offers o
-      where o.request_id=ride.id and o.driver_id=d.id)
-    -- A driver cannot be offered two bookings simultaneously.
-    and not exists(select 1 from public.ride_request_offers o
-      where o.driver_id=d.id and o.status='pending')
-    and not exists(select 1 from public.ride_requests a
-      where a.assigned_driver_id=d.id
-      and a.status in ('accepted','arrived_pickup','in_trip'))
-  order by
-    case when d.location is not null
-     and (d.location->>'latitude') ~ '^-?[0-9]+([.][0-9]+)?$'
-     and (d.location->>'longitude') ~ '^-?[0-9]+([.][0-9]+)?$'
-    then private.nexride_distance_km(ride.pickup_lat,ride.pickup_lng,
-      (d.location->>'latitude')::double precision,
-      (d.location->>'longitude')::double precision)
-    else null end nulls last,
-    d.updated_at desc
-  limit 1 for update of d skip locked;
-
-  if candidate is not null then
-    insert into public.ride_request_offers
-      (request_id,driver_id,pickup_distance_km,pickup_eta_minutes,expires_at)
-    values (ride.id,candidate,distance_km,null,now()+interval '45 seconds')
-    on conflict do nothing;
-    get diagnostics inserted_count=row_count;
-  end if;
-
-  -- A temporarily empty Driver pool is not a terminal dispatch result.
-  -- Keep searching so Rider polls and the 10-second pg_cron worker
-  -- can discover a Driver who comes Online after the booking was placed.
-  -- Avoid rewriting an unchanged ride on every poll (match_version churn).
-  if inserted_count=1 or ride.dispatch_state is distinct from 'searching' then
-    update public.ride_requests
-      set dispatch_state='searching',
-          dispatch_started_at=coalesce(dispatch_started_at,now()),
-          updated_at=now()
-      where id=ride.id and status='pending';
-  end if;
-
-  return inserted_count;
-end;
-$function$
 ;
 revoke all on function private.dispatch_ride_request(uuid) from public,anon,authenticated;
-
 CREATE OR REPLACE FUNCTION public.nexride_dispatch_waiting_for_driver_server(p_driver_id uuid)
  RETURNS integer
  LANGUAGE plpgsql
@@ -281,52 +186,13 @@ begin
   from public.ride_requests r
   where r.status='pending' and r.dispatch_state='searching'
     and r.created_at>now()-interval '4 minutes'
-    -- Skip waiting Riders outside this Driver's pickup coverage; otherwise
-    -- a distant older request can starve a nearby Rider at Online transition.
+    -- Match a newly-ready Driver to a waiting pickup they can approach.
     and exists (
       select 1 from public.drivers nearby
       where nearby.id=p_driver_id
         and case
-          when (nearby.location->>'latitude') ~ '^-?[0-9]+([.][0-9]+)?
-    and not exists(
-      select 1 from public.ride_request_offers o
-      where o.request_id=r.id and o.status='pending'
-        and (o.expires_at is null or o.expires_at>now())
-    )
-    and not exists(
-      select 1 from public.ride_request_offers o
-      where o.request_id=r.id and o.driver_id=p_driver_id
-    )
-  order by r.created_at,r.id
-  limit 1 for update of r skip locked;
-  if waiting_request is null then return 0; end if;
-  return private.dispatch_ride_request(waiting_request);
-end;
-$function$
-;
-revoke all on function public.nexride_dispatch_waiting_for_driver_server(uuid) from public,anon,authenticated;
-grant execute on function public.nexride_dispatch_waiting_for_driver_server(uuid) to service_role;
-
-            and (nearby.location->>'longitude') ~ '^-?[0-9]+([.][0-9]+)?
-    and not exists(
-      select 1 from public.ride_request_offers o
-      where o.request_id=r.id and o.status='pending'
-        and (o.expires_at is null or o.expires_at>now())
-    )
-    and not exists(
-      select 1 from public.ride_request_offers o
-      where o.request_id=r.id and o.driver_id=p_driver_id
-    )
-  order by r.created_at,r.id
-  limit 1 for update of r skip locked;
-  if waiting_request is null then return 0; end if;
-  return private.dispatch_ride_request(waiting_request);
-end;
-$function$
-;
-revoke all on function public.nexride_dispatch_waiting_for_driver_server(uuid) from public,anon,authenticated;
-grant execute on function public.nexride_dispatch_waiting_for_driver_server(uuid) to service_role;
-
+          when (nearby.location->>'latitude') ~ '^-?[0-9]+([.][0-9]+)?$'
+            and (nearby.location->>'longitude') ~ '^-?[0-9]+([.][0-9]+)?$'
           then private.nexride_distance_km(
             r.pickup_lat,r.pickup_lng,
             (nearby.location->>'latitude')::double precision,
