@@ -20,6 +20,7 @@ name: Build NexRide Android APKs
       - "native/android/**"
       - "lib/nexride-native-reliability.ts"
       - "components/nexride/native-push-bootstrap.tsx"
+      - "scripts/harden-android-push-notifications.mjs"
 
 permissions:
   contents: read
@@ -56,6 +57,13 @@ jobs:
 
       - name: Install Capacitor build tooling
         run: npm install --no-save @capacitor/core@8 @capacitor/cli@8 @capacitor/android@8 @capacitor/app@8 @capacitor/push-notifications@8
+
+      - name: Patch native push permission crash safeguards
+        shell: bash
+        run: |
+          node scripts/harden-android-push-notifications.mjs
+          grep -q 'nexRideAlertsEnabled' node_modules/@capacitor/push-notifications/android/src/main/java/com/capacitorjs/plugins/pushnotifications/PushNotificationsPlugin.java
+          grep -q 'notification_channel_unavailable' node_modules/@capacitor/push-notifications/android/src/main/java/com/capacitorjs/plugins/pushnotifications/PushNotificationsPlugin.java
 
       - name: Configure native shell
         shell: bash
