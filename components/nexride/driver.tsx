@@ -9,6 +9,7 @@ import { useRiderLocation } from "../../lib/nexride-location";
 import { DriverEarningsScreen } from "./driver-earnings";
 import { DriverProfileScreen } from "./driver-profile";
 import { DriverAvailabilitySwipe } from "./driver-availability-swipe";
+import { useDriverPortrait } from '../../lib/nexride-driver-portrait';
 import { supabase } from "../../lib/supabase";
 import { resolveSessionRole } from "../../lib/nexride-account-role";
 import { nexrideApiFetch } from "../../lib/nexride-api-auth";
@@ -120,6 +121,7 @@ export function DriverWorkspace({
   const { resolvedTheme } = useDriverTheme();
   const [state, setState] = useState<DriverState>(emptyState);
   const [driverId, setDriverId] = useState("");
+  const portrait = useDriverPortrait(driverId);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState("");
@@ -657,7 +659,7 @@ export function DriverWorkspace({
           onClick={() => navigate("profile")}
           aria-label={say("Open Driver profile", "የአሽከርካሪ መለያን ክፈት")}
         >
-          {state.avatarUrl ? <img src={state.avatarUrl} alt="" /> : <Icon name="user" size={22} />}
+          {portrait.url ? <img src={portrait.url} alt="" onError={() => void portrait.refresh()} /> : <Icon name="user" size={22} />}
         </button>
 
         <div

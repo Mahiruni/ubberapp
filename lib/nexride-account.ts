@@ -36,7 +36,7 @@ export async function saveAccount(account: RiderAccount, profile: PreviewProfile
 }
 
 /** Rider portraits are immediately effective on the account owner's profile.
- * Driver portraits keep their separate verification and approval flow.
+ * Driver portraits use their own private, immediately active profile-photo workflow.
  */
 export async function uploadRiderAvatar(
   account: RiderAccount,

@@ -14,6 +14,7 @@ import {
 import { usePathname, useRouter } from "next/navigation";
 import { Icon, LanguageContext, type IconName } from "./ui";
 import { announceLanguage } from "./language-provider";
+import { useDriverPortrait } from '../../lib/nexride-driver-portrait';
 import { supabase } from "../../lib/supabase";
 import { nexrideApiFetch } from "../../lib/nexride-api-auth";
 import { DriverCancellationNotice } from "./driver-cancellation-notice";
@@ -113,7 +114,8 @@ function DriverHamburgerMenu({
     if (onOpenChange) onOpenChange(next);
     else setStandaloneOpen(next);
   }, [onOpenChange, open]);
-  const [identity, setIdentity] = useState({ name: "Driver", avatarUrl: "" });
+  const [identity, setIdentity] = useState({ name: "Driver", avatarUrl: "", id: "" });
+  const portrait = useDriverPortrait(identity.id);
   const [signingOut, setSigningOut] = useState(false);
   const [signOutError, setSignOutError] = useState("");
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -132,7 +134,7 @@ function DriverHamburgerMenu({
         (typeof metadata.avatar_url === "string" && metadata.avatar_url) ||
         (typeof metadata.avatarUrl === "string" && metadata.avatarUrl) ||
         "";
-      setIdentity({ name, avatarUrl });
+      setIdentity({ name, avatarUrl, id: data.session.user.id });
     });
     return () => { mounted = false; };
   }, []);
@@ -257,7 +259,7 @@ function DriverHamburgerMenu({
             <div className="nr-driver-menu-head">
               <div className="nr-driver-menu-identity">
                 <div className="nr-driver-menu-avatar">
-                  {identity.avatarUrl ? <img src={identity.avatarUrl} alt="" /> : <span>{initials}</span>}
+                  {portrait.url ? <img src={portrait.url} alt="" onError={() => void portrait.refresh()} /> : <span>{initials}</span>}
                 </div>
                 <div>
                   <small>{language === "am" ? "NEXRIDE · አሽከርካሪ" : "NEXRIDE · DRIVER"}</small>

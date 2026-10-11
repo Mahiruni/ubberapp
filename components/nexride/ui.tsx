@@ -244,7 +244,7 @@ export function Dialog({
       ref={dialog}
       className="nr-dialog m-auto w-[min(92vw,500px)] rounded-[20px] border border-[var(--nr-border)] bg-[var(--nr-surface-raised)] p-0 text-[var(--nr-text)] shadow-[var(--nr-shadow-lg)] backdrop:bg-black/45"
       aria-labelledby="nr-dialog-title"
-      onCancel={onClose}
+      onCancel={(event) => { if (event.target === event.currentTarget) { event.preventDefault(); onClose(); } }}
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}

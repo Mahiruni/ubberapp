@@ -33,3 +33,10 @@ public/favicon-32x32.png
 public/favicon-48x48.png
 public/apple-touch-icon.png
 public/icons/icon-*.png
+
+# Driver and Android assets generated from the tracked brand source
+public/driver-favicon*
+public/driver-apple-touch-icon.png
+public/icons/driver-icon-*.png
+public/icons/driver-adaptive-*.png
+public/icons/rider-adaptive-*.png

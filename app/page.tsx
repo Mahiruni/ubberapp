@@ -1,4 +1,5 @@
 "use client";
+import type { TripSnapshot } from "../lib/nexride-trip-data";
 import Image from "next/image";
 import { RiderProfile, RiderSettings } from "../components/nexride/rider-profile";
 import { NexRideFeedbackSettings } from "../components/nexride/feedback-settings";
@@ -207,6 +208,7 @@ function AppWorkspace({
   onReset: () => void;
 }) {
   const t = useTranslation();
+  const [liveSnapshot, setLiveSnapshot] = useState<TripSnapshot | null>(null);
   const riderLocation = useRiderLocation();
   const journey = useJourney(riderLocation.position, language);
   const matching = useMatching();
@@ -502,8 +504,13 @@ function AppWorkspace({
               initials={initials}
               onProfile={() => navigate("profile")}
               showProfile={false}
+              assignedTrip={['trip','live'].includes(screen) ? liveSnapshot : null}
               journey={
-                riderHome
+                ['trip','live'].includes(screen) && liveSnapshot
+                  ? { ...journey, pinMode: null,
+                      pickup: typeof liveSnapshot.pickup.lat === 'number' && typeof liveSnapshot.pickup.lng === 'number' ? { lat: liveSnapshot.pickup.lat, lng: liveSnapshot.pickup.lng, name: liveSnapshot.pickup.name || '', address: '', source: 'provider', confirmed: true } : journey.pickup,
+                      destination: typeof liveSnapshot.destination.lat === 'number' && typeof liveSnapshot.destination.lng === 'number' ? { lat: liveSnapshot.destination.lat, lng: liveSnapshot.destination.lng, name: liveSnapshot.destination.name || '', address: '', source: 'provider', confirmed: true } : journey.destination }
+                  : riderHome
                   ? undefined
                   : ["finding", "trip", "live"].includes(screen) && matching.request
                     ? { ...journey, ...matching.request.journey, pinMode: null }
@@ -518,7 +525,7 @@ function AppWorkspace({
               showNearbyDrivers={
                 authenticated &&
                 mode === "rider" &&
-                ["home", "destination", "rides", "finding", "trip", "live"].includes(screen)
+                ["home", "destination", "rides", "finding"].includes(screen)
               }
               onStartRoute={
                 screen === "destination" && journey.canContinue
@@ -661,6 +668,7 @@ function AppWorkspace({
                   onBookingPending={onBookingPending}
                   matching={matching}
                   onTripSource={setLiveTripShown}
+                  onTripSnapshot={setLiveSnapshot}
                 />
               </div>
             )}
@@ -710,6 +718,7 @@ function AppWorkspace({
                 onBookingPending={onBookingPending}
                 matching={matching}
                 onTripSource={setLiveTripShown}
+                  onTripSnapshot={setLiveSnapshot}
               />
             </div>
           </div>

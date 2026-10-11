@@ -49,6 +49,7 @@ export async function GET(request: Request, context: RouteContext) {
     if (!ride.assigned_driver_id)
       return reply({ status: "unassigned", driver: null });
 
+    if (!['accepted','arrived_pickup','in_trip','completed'].includes(String(ride.status))) return reply({ status: 'unassigned', driver: null });
     const driverId = String(ride.assigned_driver_id);
     const active = ["accepted", "arrived_pickup", "in_trip"].includes(
       String(ride.status),
@@ -94,6 +95,8 @@ export async function GET(request: Request, context: RouteContext) {
     if (driverResult.error)
       return reply({ status: "driver_unavailable" }, 503);
 
+    const { data: portrait } = await authorized.client.from('driver_profile_photos').select('storage_path').eq('driver_id', driverId).eq('status','approved').maybeSingle();
+    const signed = portrait?.storage_path ? await authorized.client.storage.from('nexride-driver-photos').createSignedUrl(portrait.storage_path, 300) : null;
     const metadata = userResult.data.user?.user_metadata || {};
     const driver = driverResult.data;
     const profile = profileResult.error ? null : profileResult.data;
@@ -122,7 +125,7 @@ export async function GET(request: Request, context: RouteContext) {
         id: driverId,
         name: text(profile?.full_name) || "Assigned driver",
         photo:
-          text(metadata.avatar_url, 500) || text(metadata.avatarUrl, 500) || null,
+          signed?.data?.signedUrl || null,
         phone: active ? text(profile?.phone, 40) || null : null,
         rating: number(driver?.rating),
         tripCount: completedResult.error ? null : completedResult.count ?? 0,
