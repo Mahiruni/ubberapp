@@ -44,7 +44,7 @@ test('existing avatar uploads immediately, safely replaces, persists and removes
     await expect(page.getByRole('button',{name:'Save Photo',exact:true})).toBeEnabled();
     await page.getByRole('button',{name:'Save Photo',exact:true}).click();
   };
-  await upload();await expect(page.getByText('Your photo is now active.',{exact:true})).toBeVisible();expect(api.path()).toMatch(new RegExp(`^${id}/.*[.]jpg$`));
+  await upload();await expect(page.getByText(/Your photo is now active[.] .* KB/)).toBeVisible();expect(api.path()).toMatch(new RegExp(`^${id}/.*[.]jpg$`));
   expect(api.size()).toBeLessThanOrEqual(350*1024);
   const first=api.path();await expect(page.locator('.nr-photo-approved-overlay img')).toBeVisible();
   await page.reload();await expect(page.locator('.nr-photo-approved-overlay img')).toBeVisible();
