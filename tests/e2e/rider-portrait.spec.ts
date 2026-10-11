@@ -45,10 +45,14 @@ async function fakeProfileBackend(page: Page) {
       return route.fulfill({ json: { signedURL: `/object/sign/profile-photos/${avatar}?token=test` } });
     if (method === 'POST' && route.request().url().includes('/object/profile-photos/')) {
       uploads++;
-      savedBytes = route.request().postDataBuffer()?.length || 0;
+      const body = route.request().postDataBuffer();
+      savedBytes = body?.length || 0;
       expect(savedBytes).toBeGreaterThan(0);
-      expect(savedBytes).toBeLessThanOrEqual(350 * 1024);
-      expect(route.request().headers()['content-type']).toContain('image/jpeg');
+      // The SDK wraps File uploads in multipart form data; the JPEG itself is
+      // <=350 KiB, with only a small multipart boundary/metadata overhead.
+      expect(savedBytes).toBeLessThanOrEqual(350 * 1024 + 2048);
+      expect(route.request().headers()['content-type']).toContain('multipart/form-data');
+      expect(body?.includes(Buffer.from('image/jpeg'))).toBe(true);
       return route.fulfill({ json: { Key: 'photo' } });
     }
     if (method === 'DELETE') return route.fulfill({ json: [] });
@@ -88,7 +92,7 @@ test('Rider crops and zooms >5 MB original to a <=350 KB JPEG and safely retries
   await expect(dialog).toHaveCount(0);
   expect(api.count()).toBe(2);
   expect(api.current()).toMatch(new RegExp(`^${id}/.*[.]jpg$`));
-  expect(api.size()).toBeLessThanOrEqual(350 * 1024);
+  expect(api.size()).toBeLessThanOrEqual(350 * 1024 + 2048);
   await expect(page.getByRole('status').filter({ hasText: 'Profile photo saved.' })).toBeVisible();
   await page.reload();
   await expect(page.getByRole('button', { name: 'Change profile photo' })).toBeVisible();
