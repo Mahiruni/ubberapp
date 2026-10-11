@@ -105,7 +105,7 @@ export const messages = {
   photoRemoved: ["Your photo was removed.", "ፎቶዎ ተወግዷል።"],
   photoConfirm: ["Remove your profile photo? Your initials will appear instead.", "የመገለጫ ፎቶዎ ይወገድ? በምትኩ የስምዎ የመጀመሪያ ፊደላት ይታያሉ።"],
   photoInvalidType: ["Choose a JPG, PNG or WebP image.", "JPG፣ PNG ወይም WebP ፎቶ ይምረጡ።"],
-  photoInvalidSize: ["Choose a photo up to 5 MB.", "እስከ 5 MB የሆነ ፎቶ ይምረጡ።"],
+  photoInvalidSize: ["Choose a photo up to 25 MB. NexRide will optimize it before upload.", "እስከ 25 MB የሚደርስ ፎቶ ይምረጡ። NexRide ከመጫኑ በፊት መጠኑን ያሳንሳል።"],
   photoFailed: ["Photo could not be saved. Your previous photo is safe. Try again.", "ፎቶውን ማስቀመጥ አልተቻለም። የቀድሞው ፎቶዎ ተጠብቋል። እንደገና ይሞክሩ።"],
   photoOffline: ["Connection lost. Reconnect and try again.", "ግንኙነት ተቋርጧል። ዳግም ይገናኙና ይሞክሩ።"],
   photoZoom: ["Zoom", "አጉላ"],
