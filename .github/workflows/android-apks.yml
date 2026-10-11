@@ -2,6 +2,15 @@ name: Build NexRide Android APKs
 
 'on':
   workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/android-apks.yml"
+      - "native/android/**"
+      - "scripts/setup-android-reliability.mjs"
+      - "lib/nexride-live-trip.ts"
+      - "components/nexride/trip-experience.tsx"
+      - "app/driver/navigation/page.tsx"
   push:
     branches: [main]
     paths:
@@ -18,6 +27,9 @@ name: Build NexRide Android APKs
       - "app/driver/home/page.tsx"
       - "scripts/setup-android-reliability.mjs"
       - "native/android/**"
+      - "lib/nexride-live-trip.ts"
+      - "components/nexride/trip-experience.tsx"
+      - "app/driver/navigation/page.tsx"
       - "lib/nexride-native-reliability.ts"
       - "components/nexride/native-push-bootstrap.tsx"
       - "scripts/harden-android-push-notifications.mjs"
@@ -108,6 +120,11 @@ jobs:
         run: |
           node scripts/setup-android-reliability.mjs "${{ matrix.role }}"
           python3 scripts/validate-android-firebase-config.py "${{ matrix.role }}"
+          NATIVE_DIR="android/app/src/main/java/com/nexride/${{ matrix.role }}"
+          grep -q 'registerPlugin(NexRideLiveTripPlugin.class)' "$NATIVE_DIR/MainActivity.java"
+          grep -q 'Notification.ProgressStyle' "$NATIVE_DIR/NexRideLiveTripPlugin.java"
+          grep -q 'setRequestPromotedOngoing' "$NATIVE_DIR/NexRideLiveTripPlugin.java"
+          grep -q 'POST_PROMOTED_NOTIFICATIONS' android/app/src/main/AndroidManifest.xml
           if [ "${{ matrix.role }}" = "driver" ]; then
             python3 scripts/generate-nexride-alert-sound.py
             test -s android/app/src/main/res/raw/nexride_ride_request.wav
@@ -161,6 +178,8 @@ jobs:
           grep -q 'android:enableOnBackInvokedCallback="true"' android/app/src/main/AndroidManifest.xml
           grep -q 'capacitor-app' android/capacitor.settings.gradle
           grep -q 'capacitor-push-notifications' android/capacitor.settings.gradle
+          grep -q 'POST_PROMOTED_NOTIFICATIONS' android/app/src/main/AndroidManifest.xml
+          grep -q 'registerPlugin(NexRideLiveTripPlugin.class)' android/app/src/main/java/com/nexride/${{ matrix.role }}/MainActivity.java
           if [ "${{ matrix.role }}" = "driver" ]; then
             grep -q 'foregroundServiceType="location"' android/app/src/main/AndroidManifest.xml
             grep -q 'registerPlugin(NexRideDriverLocationPlugin.class)' android/app/src/main/java/com/nexride/driver/MainActivity.java

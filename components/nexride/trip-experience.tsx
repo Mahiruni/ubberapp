@@ -7,6 +7,7 @@ import { mergeTrip, type TripSnapshot } from '../../lib/nexride-trip-data';
 import { readRiderTrip, sendTripMessage, submitRiderRating } from '../../lib/nexride-trip-service';
 import { emitNexRideFeedback } from '../../lib/nexride-feedback';
 import { nexrideApiFetch } from '../../lib/nexride-api-auth';
+import { updateNexRideLiveTrip,clearNexRideLiveTrip,freshNexRideEta } from '../../lib/nexride-live-trip';
 import { Button, Dialog, useTranslation } from './ui';
 import type { PreviewTrip } from '../../lib/nexride-preview';
 import type { RiderScreen } from './rider';
@@ -76,6 +77,7 @@ export function TripExperience({ screen, tripId, userId, preview, navigate, setP
         setCancelConfirm(false);
         setCancelled(true);
         setConfirmedStatus('cancelled');
+        void clearNexRideLiveTrip(tripId);
         onCancelled?.();
         // Only authoritative confirmation can end the active trip on-screen.
       } else {
@@ -197,6 +199,20 @@ export function TripExperience({ screen, tripId, userId, preview, navigate, setP
         }
         feedbackStatus = next.status || feedbackStatus;
         latest.current = mergeTrip(latest.current, next);
+        // Only a fresh authenticated server snapshot starts/updates the
+        // native Live Update. Never post from a cached/offline Rider view.
+        if (next.status === "approaching" || next.status === "arrived" || next.status === "in_trip") {
+          const tracking=next.tracking;
+          const eta=tracking ? freshNexRideEta(
+            tracking.etaMinutes, tracking.etaUpdatedAt ?? tracking.updatedAt,
+          ) : undefined;
+          void updateNexRideLiveTrip({
+            role:"rider",tripId,stage:next.status,
+            ...(next.status==="approaching" && eta!==undefined ? {etaMinutes:eta}:{}),
+          });
+        } else {
+          void clearNexRideLiveTrip(tripId);
+        }
         setTripSnapshot(latest.current);
         setConfirmedStatus(latest.current.status);
         if (latest.current.status === 'cancelled') {

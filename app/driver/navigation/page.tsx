@@ -9,6 +9,7 @@ import { useOperationalTranslation } from "../../../components/nexride/operation
 import { supabase } from "../../../lib/supabase";
 import { nexrideApiFetch } from "../../../lib/nexride-api-auth";
 import { storeDriverTrip, readDriverTrip, clearDriverTrip } from "../../../lib/nexride-offline-recovery";
+import { updateNexRideLiveTrip,clearNexRideLiveTrip } from "../../../lib/nexride-live-trip";
 import { resolveSessionRole } from "../../../lib/nexride-account-role";
 import {
   emitNexRideFeedback, speakNexRideNavigation, stopNexRideNavigationVoice,
@@ -337,6 +338,27 @@ export default function DriverNavigationPage() {
       document.removeEventListener("visibilitychange", onVisible);
     };
   }, [trip?.requestId, trip?.status, driverId]);
+
+  useEffect(() => {
+    if (!trip || !driverId) return;
+    if (trip.status === "cancelled" || trip.status === "withdrawn" || trip.status === "completed") {
+      void clearNexRideLiveTrip(trip.requestId);
+      return;
+    }
+    // A Driver must have an accepted, server-verified trip before the ongoing
+    // Android notification can start. Saved/offline state is never sufficient.
+    if (!safeToUpdate || !navigator.onLine) return;
+    if (trip.status === "accepted" || trip.status === "arrived_pickup" || trip.status === "in_trip") {
+      void updateNexRideLiveTrip({
+        role: "driver",
+        tripId: trip.requestId,
+        stage: trip.status,
+        ...(trip.status === "accepted" && trip.pickupEtaMinutes !== null &&
+          Number.isInteger(trip.pickupEtaMinutes) && trip.pickupEtaMinutes > 0 &&
+          trip.pickupEtaMinutes <= 120 ? { etaMinutes: trip.pickupEtaMinutes } : {}),
+      });
+    }
+  }, [driverId,trip?.requestId,trip?.status,trip?.pickupEtaMinutes,safeToUpdate]);
 
   useEffect(() => {
     // Initial load might fail before a trip was ever cached. Recover on reconnection
