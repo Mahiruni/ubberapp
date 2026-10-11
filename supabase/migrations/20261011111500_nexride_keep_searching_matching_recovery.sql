@@ -174,7 +174,7 @@ begin
       select 1 from public.ride_request_offers o
       where o.request_id=r.id and o.driver_id=p_driver_id
     )
-  order by r.created_at,r.id
+  order by coalesce(r.dispatch_started_at,r.created_at),r.id
   limit 1 for update of r skip locked;
   if waiting_request is null then return 0; end if;
   return private.dispatch_ride_request(waiting_request);
