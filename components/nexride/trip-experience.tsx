@@ -12,21 +12,36 @@ import type { PreviewTrip } from '../../lib/nexride-preview';
 import type { RiderScreen } from './rider';
 import { RiderSheetHandle } from './rider-sheet';
 
-const cacheKey = (tripId: string) => `nexride.trip.cache.${tripId}`;
-const readCachedTrip = (tripId: string): TripSnapshot | null => {
+// Scope saved trip views to the authenticated Rider; old unscoped keys are
+// invalidated so two accounts on the same phone cannot read each other's trips.
+const cacheKey = (tripId: string, userId: string) => `nexride.offline.v2.rider.snapshot.${userId}.${tripId}`;
+const readCachedTrip = (tripId: string, userId: string | null): TripSnapshot | null => {
+  if (!userId) return null;
   try {
-    const raw = localStorage.getItem(cacheKey(tripId));
+    localStorage.removeItem(`nexride.trip.cache.${tripId}`);
+    const raw = localStorage.getItem(cacheKey(tripId, userId));
     if (!raw) return null;
     const parsed = JSON.parse(raw) as { savedAt?: number; snapshot?: TripSnapshot };
-    if (!parsed.snapshot || !parsed.savedAt || Date.now() - parsed.savedAt > 12 * 60 * 60 * 1000) return null;
-    return parsed.snapshot;
+    const age = Date.now() - Number(parsed.savedAt);
+    if (!parsed.snapshot || parsed.snapshot.id !== tripId || !Number.isFinite(age) ||
+        age < 0 || age > 6 * 60 * 60 * 1000) {
+      localStorage.removeItem(cacheKey(tripId, userId)); return null;
+    }
+    // An old GPS fix or Driver contact from local storage must never be
+    // displayed as fresh, verified information while the Rider is offline.
+    return { ...parsed.snapshot, tracking: null,
+      driver: parsed.snapshot.driver
+        ? { ...parsed.snapshot.driver, contactPhone: undefined } : null };
   } catch {
     return null;
   }
 };
-const writeCachedTrip = (tripId: string, snapshot: TripSnapshot) => {
+const writeCachedTrip = (tripId: string, userId: string | null, snapshot: TripSnapshot) => {
+  if (!userId || snapshot.id !== tripId) return;
   try {
-    localStorage.setItem(cacheKey(tripId), JSON.stringify({ savedAt: Date.now(), snapshot }));
+    const safeSnapshot = { ...snapshot, tracking: null,
+      driver: snapshot.driver ? { ...snapshot.driver, contactPhone: undefined } : null };
+    localStorage.setItem(cacheKey(tripId,userId), JSON.stringify({ savedAt: Date.now(), snapshot: safeSnapshot }));
   } catch {}
 };
 
@@ -117,7 +132,7 @@ export function TripExperience({ screen, tripId, userId, preview, navigate, setP
     let channel: ReturnType<typeof supabase.channel> | null = null;
     ready.current = false;
     setEmbeddedReady(nativeIdentity);
-    latest.current = tripId ? readCachedTrip(tripId) : null;
+    latest.current = tripId ? readCachedTrip(tripId, userId) : null;
     revision = latest.current?.revision || 0;
     setTripSnapshot(latest.current);
     setConfirmedStatus(latest.current?.status || null);
@@ -188,7 +203,7 @@ export function TripExperience({ screen, tripId, userId, preview, navigate, setP
           setCancelled(true);
           // Retain the trip screen until the rider acknowledges.
         }
-        writeCachedTrip(tripId, latest.current);
+        writeCachedTrip(tripId, userId, latest.current);
         failures = 0;
         publish();
         announce(true);
