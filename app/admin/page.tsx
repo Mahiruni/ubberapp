@@ -527,6 +527,7 @@ export default function AdminPage() {
             <i><Icon name="chat" size={20} /></i><span>Email Campaigns</span>
           </Link>
           <Link href="/admin/campaign-settings" className="admin-campaign-link" style={{display:"flex",alignItems:"center",gap:12,padding:"12px 16px",color:"inherit",textDecoration:"none",borderRadius:12}}><i><Icon name="shield" size={20} /></i><span>Messaging Security</span></Link>
+          <Link href="/admin/reliability" className="admin-campaign-link" style={{display:"flex",alignItems:"center",gap:12,padding:"12px 16px",color:"inherit",textDecoration:"none",borderRadius:12}}><i><Icon name="pin" size={20} /></i><span>Android Reliability</span></Link>
         </nav>
 
         <div className="admin-side-foot">
