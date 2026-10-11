@@ -42,7 +42,7 @@ export function NexRideNativeNavigationBridge() {
   useEffect(() => {
     let disposed = false;
     let remove: (() => Promise<void>) | undefined;
-    let clearNotice: ReturnType<typeof setTimeout> | undefined;
+    let clearNotice: number | undefined;
 
     const showNotice = (message: string) => {
       setNotice(message);
