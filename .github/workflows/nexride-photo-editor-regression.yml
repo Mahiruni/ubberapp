@@ -30,7 +30,7 @@ jobs:
       NEXT_PUBLIC_APP_URL: http://localhost:3000
       NEXT_PUBLIC_SUPABASE_URL: https://eyyvvwecpyctttiueban.supabase.co
       NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_kXFOrtwKkKmrqCtYTTuzdg__CjjABBf
-      NEXT_PUBLIC_MAPBOX_TOKEN: replace_me
+      NEXT_PUBLIC_MAPBOX_TOKEN: pk.eyJ1IjoibmV4cmlkZS1lMmUiLCJhIjoiZml4dHVyZSJ9.fixture
       PLAYWRIGHT_SERVER_COMMAND: npm run start -- --hostname 127.0.0.1
     steps:
       - uses: actions/checkout@v4

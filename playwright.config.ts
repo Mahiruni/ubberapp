@@ -33,7 +33,9 @@ export default defineConfig({
               executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH,
               args: [
                 "--no-sandbox",
-                "--disable-gpu",
+                "--use-gl=angle",
+                "--use-angle=swiftshader",
+                "--enable-unsafe-swiftshader",
                 "--disable-dev-shm-usage",
               ],
             }
@@ -49,7 +51,9 @@ export default defineConfig({
               executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH,
               args: [
                 "--no-sandbox",
-                "--disable-gpu",
+                "--use-gl=angle",
+                "--use-angle=swiftshader",
+                "--enable-unsafe-swiftshader",
                 "--disable-dev-shm-usage",
               ],
             }

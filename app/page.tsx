@@ -545,7 +545,7 @@ function AppWorkspace({
             )}
           </div>
         </header>
-        {!authenticated && !liveTripShown && !profileView && <div className="nr-preview-banner">
+        {!authenticated && !liveTripShown && !profileView && !riderMapView && <div className="nr-preview-banner">
           <span className="nr-preview-label">{t("preview")}</span>
           <p>{t("previewInfo")}</p>
           <button

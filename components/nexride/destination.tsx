@@ -39,7 +39,7 @@ function restoreRecentSearches(): Endpoint[] {
     for (const value of raw) {
       const lat = Number(value?.lat);
       const lng = Number(value?.lng);
-      const source = value?.source === "provider" ? "provider" : value?.source === "preview" ? "preview" : null;
+      const source = value?.source === "preview" ? "preview" : null;
       if (
         !source ||
         !Number.isFinite(lat) ||
@@ -63,6 +63,8 @@ function restoreRecentSearches(): Endpoint[] {
       });
       if (results.length === 6) break;
     }
+    // Remove legacy temporary provider results from device storage.
+    if (raw.some((value) => value?.source !== "preview")) storeRecentSearches(results);
     return results;
   } catch {
     return [];
@@ -74,7 +76,7 @@ function storeRecentSearches(items: Endpoint[]) {
     localStorage.setItem(
       RECENT_SEARCHES_KEY,
       JSON.stringify(
-        items.slice(0, 6).map((item) => ({
+        items.filter((item) => item.source === "preview").slice(0, 6).map((item) => ({
           lat: item.lat,
           lng: item.lng,
           name: item.name,
@@ -219,7 +221,8 @@ export function DestinationPanel({
   }, [field, query, language, position?.lat, position?.lng]);
 
   const rememberSearch = (point: Endpoint) => {
-    if (!["provider", "preview"].includes(point.source)) return;
+    // Provider geocoding results are temporary; keep them in memory only.
+    if (point.source !== "preview") return;
     setRecentSearches((current) => {
       const next = [
         point,
@@ -516,7 +519,7 @@ export function DestinationPanel({
                         <Icon name="clock" />
                         <span>
                           <strong>{endpointName(point, language, t)}</strong>
-                          <small>{point.address || locality(point, language)}</small>
+                          <small>{point.source === "preview" ? locality(point, language) : point.address || locality(point, language)}</small>
                         </span>
                         <Icon name="chevron" size={16} />
                       </button>
@@ -563,7 +566,7 @@ export function DestinationPanel({
                     <Icon name="pin" />
                     <span>
                       <strong>{endpointName(point, language, t)}</strong>
-                      <small>{point.address || locality(point, language)}</small>
+                      <small>{point.source === "preview" ? locality(point, language) : point.address || locality(point, language)}</small>
                     </span>
                     <Icon name="chevron" size={16} />
                   </button>

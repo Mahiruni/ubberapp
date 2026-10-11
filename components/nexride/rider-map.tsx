@@ -1050,7 +1050,9 @@ export function RiderMap({
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!mounted || !map || !map.isStyleLoaded()) return;
+    // DOM location markers do not depend on the style sources being settled.
+    // Adding the accuracy/traffic sources during load can briefly unset that flag.
+    if (!mounted || !map) return;
     syncAccuracy(map, position, status);
     syncDriverRadar(map, position, showDriverRadar && !gpsStale && driverGpsQuality(position, status, Date.now()) === "live");
 

@@ -19,8 +19,8 @@ jobs:
       NEXT_PUBLIC_APP_URL: http://localhost:3000
       NEXT_PUBLIC_SUPABASE_URL: https://eyyvvwecpyctttiueban.supabase.co
       NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_kXFOrtwKkKmrqCtYTTuzdg__CjjABBf
-      # Keep routing in its explicit provider-unavailable fallback during deterministic CI.
-      NEXT_PUBLIC_MAPBOX_TOKEN: replace_me
+      # Syntactically valid dummy token; browser map requests use local fixtures.
+      NEXT_PUBLIC_MAPBOX_TOKEN: pk.eyJ1IjoibmV4cmlkZS1lMmUiLCJhIjoiZml4dHVyZSJ9.fixture
     steps:
       - name: Checkout
         uses: actions/checkout@v4
