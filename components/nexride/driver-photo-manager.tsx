@@ -24,6 +24,11 @@ export function DriverPhotoManager({ driverId, fullName, children }: { driverId:
       if (!active) return;
       const canvas = canvasRef.current, ctx = canvas?.getContext('2d'); if (!canvas || !ctx) return;
       const crop = portraitCrop(image.width, image.height, zoom, position.x, position.y);
+      ctx.clearRect(0, 0, 512, 512);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, 512, 512);
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
       ctx.drawImage(image, crop.x, crop.y, crop.side, crop.side, 0, 0, 512, 512);
       setCropReady(true);
     }).catch(() => { if (active) setError(t('photoInvalidType')); });
