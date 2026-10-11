@@ -219,3 +219,92 @@
 .nr-driver-matching .nr-match-online-wait-note{display:flex;align-items:flex-start;gap:10px;margin:12px 0 14px;padding:12px 14px;border-radius:14px;background:rgba(0,200,120,.09);border:1px solid rgba(0,200,120,.23);color:inherit;font-size:12px;line-height:1.55}
 .nr-driver-matching .nr-match-online-wait-note>svg{flex:0 0 auto;margin-top:1px;color:#00a964}
 @media(max-width:360px){.nr-driver-matching .nr-match-online-wait-note{font-size:11px;padding:10px}}
+
+
+/* Keep payment information readable at every Rider sheet snap height.
+   The method label must never shrink into a single-character column. */
+.nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper
+  .nr-ride-selection footer .nr-ride-payment {
+  box-sizing: border-box;
+  display: grid!important;
+  grid-template-columns: 36px minmax(0, 1fr) auto!important;
+  align-items: center!important;
+  gap: 12px!important;
+  width: 100%!important;
+  min-width: 0!important;
+  max-width: 100%!important;
+  min-height: 58px!important;
+  margin: 0!important;
+  padding: 6px 2px 8px!important;
+  background: transparent!important;
+  border: 0!important;
+  box-shadow: none!important;
+}
+.nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper
+  .nr-ride-selection footer .nr-ride-payment > svg {
+  box-sizing: border-box;
+  width: 36px!important;
+  height: 36px!important;
+  min-width: 36px!important;
+  padding: 8px!important;
+  border-radius: 11px;
+  color: #5145e5!important;
+  background: #f1efff!important;
+}
+.nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper
+  .nr-ride-selection footer .nr-ride-payment > .nr-payment-details {
+  display: flex!important;
+  flex-direction: column!important;
+  align-items: flex-start!important;
+  justify-content: center!important;
+  gap: 2px;
+  flex: none!important;
+  width: auto!important;
+  min-width: 0!important;
+  max-width: 100%;
+  overflow: hidden;
+  writing-mode: horizontal-tb!important;
+}
+.nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper
+  .nr-ride-selection footer .nr-payment-details > :is(small, strong) {
+  display: block;
+  max-width: 100%;
+  margin: 0!important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  overflow-wrap: normal!important;
+  word-break: normal!important;
+  white-space: nowrap!important;
+  line-height: 1.35;
+  text-align: left;
+}
+.nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper
+  .nr-ride-selection footer .nr-payment-details > small {
+  color: #667587!important;
+  font-size: 11px!important;
+  font-weight: 650;
+}
+.nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper
+  .nr-ride-selection footer .nr-payment-details > strong {
+  color: #19172a!important;
+  font-size: 15px!important;
+  font-weight: 750;
+}
+.nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper
+  .nr-ride-selection footer .nr-ride-payment > .nr-text-button {
+  justify-self: end!important;
+  flex: none!important;
+  min-width: 44px;
+  margin: 0!important;
+  padding: 9px 8px!important;
+  color: #5145e5!important;
+  font-size: 14px;
+  font-weight: 750;
+  white-space: nowrap!important;
+}
+.nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper
+  .nr-ride-selection footer .nr-ride-payment > .nr-text-button:focus-visible {
+  outline: 2px solid #5145e5;
+  outline-offset: 2px;
+  border-radius: 9px;
+}

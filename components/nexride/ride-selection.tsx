@@ -319,7 +319,7 @@ export function RideSelection({
       <footer>
         <div className="nr-ride-payment">
           <Icon name="wallet" />
-          <span>
+          <span className="nr-payment-details">
             <small>{t("payment")}</small>
             <strong>{t("cash")}</strong>
           </span>

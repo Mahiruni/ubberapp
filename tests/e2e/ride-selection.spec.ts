@@ -287,3 +287,45 @@ test("short mobile and desktop workspaces keep map, sheet and footer separate", 
       .toBe(true);
   }
 });
+
+test("payment footer stays a compact, readable horizontal row on mobile", async ({ page }) => {
+  await openRides(page);
+  for (const size of [
+    { width: 320, height: 700 },
+    { width: 360, height: 780 },
+    { width: 390, height: 844 },
+    { width: 430, height: 932 },
+  ]) {
+    await page.setViewportSize(size);
+    const metrics = await page.locator(".nr-ride-payment").evaluate((row) => {
+      const details = row.querySelector<HTMLElement>(".nr-payment-details")!;
+      const label = details.querySelector<HTMLElement>("small")!;
+      const method = details.querySelector<HTMLElement>("strong")!;
+      const edit = row.querySelector<HTMLElement>(".nr-text-button")!;
+      const rowRect = row.getBoundingClientRect();
+      const labelRect = label.getBoundingClientRect();
+      const methodRect = method.getBoundingClientRect();
+      const editRect = edit.getBoundingClientRect();
+      return {
+        rowHeight: rowRect.height,
+        labelHeight: labelRect.height,
+        labelWidth: labelRect.width,
+        labelToMethod: methodRect.top - labelRect.bottom,
+        editWithinRow: editRect.left >= rowRect.left && editRect.right <= rowRect.right + 1,
+        labelDoesNotOverlapEdit: labelRect.right <= editRect.left,
+        horizontalText: getComputedStyle(details).writingMode === "horizontal-tb",
+        labelDoesNotWrap: getComputedStyle(label).whiteSpace === "nowrap",
+      };
+    });
+    expect(metrics.horizontalText).toBe(true);
+    expect(metrics.labelDoesNotWrap).toBe(true);
+    expect(metrics.labelWidth).toBeGreaterThan(80);
+    expect(metrics.labelHeight).toBeLessThan(25);
+    expect(metrics.labelToMethod).toBeGreaterThanOrEqual(-1);
+    expect(metrics.rowHeight).toBeLessThan(83);
+    expect(metrics.editWithinRow).toBe(true);
+    expect(metrics.labelDoesNotOverlapEdit).toBe(true);
+    await expect(page.locator(".nr-ride-payment")).toContainText("Cash");
+    await expect(page.getByRole("button", { name: "Edit payment method" })).toBeEnabled();
+  }
+});
