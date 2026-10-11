@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { ServiceWorkerRegistration } from "../components/nexride/service-worker";
 import { NexRideFeedbackBootstrap } from "../components/nexride/feedback-bootstrap";
 import { NexRideNativeNavigationBridge } from "../components/nexride/native-navigation-bridge";
+import { NexRideNativePushBootstrap } from "../components/nexride/native-push-bootstrap";
 import { NexRideLanguageProvider } from "../components/nexride/language-provider";
 import { NexRideResilienceProvider } from "../components/nexride/resilience-provider";
 import { NEXRIDE_SITE_URL } from "../lib/nexride-site";
@@ -164,6 +165,7 @@ export default function RootLayout({
       <body>
         <NexRideLanguageProvider><NexRideResilienceProvider>{children}</NexRideResilienceProvider></NexRideLanguageProvider>
         <NexRideNativeNavigationBridge />
+        <NexRideNativePushBootstrap />
         <ServiceWorkerRegistration />
         <NexRideFeedbackBootstrap />
         <script

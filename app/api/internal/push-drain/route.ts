@@ -39,7 +39,11 @@ export async function GET(request: Request) {
     return Response.json({ status: "unauthorized" }, { status: 401 });
   let config: ServiceAccount;
   try {
-    config = JSON.parse(process.env.GOOGLE_FCM_SERVICE_ACCOUNT_JSON || "") as ServiceAccount;
+    config = process.env.GOOGLE_FCM_SERVICE_ACCOUNT_JSON
+      ? JSON.parse(process.env.GOOGLE_FCM_SERVICE_ACCOUNT_JSON) as ServiceAccount
+      : { project_id: process.env.FCM_PROJECT_ID || "",
+          client_email: process.env.FCM_CLIENT_EMAIL || "",
+          private_key: (process.env.FCM_PRIVATE_KEY || "").replace(/\\n/g, "\n") };
     if (!config.project_id || !config.client_email || !config.private_key) throw new Error("missing_fcm");
   } catch { return Response.json({ status: "fcm_not_configured" }, { status: 503 }); }
   try {

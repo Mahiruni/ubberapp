@@ -12,6 +12,7 @@ import type { PreviewProfile } from '../../lib/nexride-preview';
 import { Button, Dialog, Icon, InputField, useTranslation, type IconName } from './ui';
 import { AppearanceSelector } from "./appearance-selector";
 import { PermissionSettings } from "./permission-settings";
+import { NativeReliabilitySettings } from "./native-reliability-settings";
 import { NexRideFeedbackSettings } from './feedback-settings';
 import './rider-avatar-upload.css';
 
@@ -69,7 +70,7 @@ export function RiderSettings({language,setLanguage}: Pick<Props,'language'|'set
       }}/>
     </label>
     <NexRideFeedbackSettings role="rider" language={language}/>
-    <PermissionSettings/>
+    <PermissionSettings/><NativeReliabilitySettings role="rider"/>
     <a className="nr-settings-security-link" href="/account/manage"><Icon name="shield" size={20}/><span>{t("entryAccountSecurity")}</span><Icon name="chevron" size={17}/></a>
     <nav className="nr-settings-legal" aria-label={say("Help & legal", "እገዛ እና ሕጋዊ መረጃ")}><a href="/support?role=rider">{say("Help & support", "እገዛ እና ድጋፍ")}</a><a href="/explore/terms">{t("entryTerms")}</a><a href="/explore/privacy">{t("entryPrivacy")}</a></nav>
     <p className="nr-muted">{say('System notifications are available when this device supports them and you allow permission. SMS and email alerts are not connected yet. Safety and trip status remain visible in the app.','የስርዓት ማሳወቂያዎች መሣሪያው ሲደግፍና ፈቃድ ሲሰጡ ይገኛሉ። የSMS እና ኢሜይል ማሳወቂያዎች ገና አልተገናኙም።')}</p>

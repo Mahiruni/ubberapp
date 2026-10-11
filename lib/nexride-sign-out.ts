@@ -1,4 +1,5 @@
 import { supabase } from "./supabase";
+import { unregisterNexRidePushDevice, stopNativeDriverGps } from "./nexride-native-reliability";
 import { ACTIVE_ACCOUNT_ROLE_KEY, PREVIEW_ENABLED_KEY, markExplicitSignOut, retryStartup, type SignedOutRole } from "./nexride-startup";
 
 /** Write the logout barrier before auth callbacks can restore an old session.
@@ -6,6 +7,10 @@ import { ACTIVE_ACCOUNT_ROLE_KEY, PREVIEW_ENABLED_KEY, markExplicitSignOut, retr
  * signed in because Supabase uses local sign-out scope.
  */
 export async function signOutNexRide(role: SignedOutRole): Promise<void> {
+  // Unregister this installation while the session is valid. Never block logout offline.
+  await Promise.race([unregisterNexRidePushDevice(role).catch(() => {}),
+    new Promise(resolve => setTimeout(resolve, 1200))]);
+  if (role === "driver") void stopNativeDriverGps();
   markExplicitSignOut(role);
   const result = await supabase.auth.signOut({ scope: "local" });
   if (result.error) throw result.error;

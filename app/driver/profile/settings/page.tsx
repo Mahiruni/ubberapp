@@ -4,6 +4,7 @@ import { FormEvent, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { NexRideFeedbackSettings } from "../../../../components/nexride/feedback-settings";
 import { PermissionSettings } from "../../../../components/nexride/permission-settings";
+import { NativeReliabilitySettings } from "../../../../components/nexride/native-reliability-settings";
 import { Icon, LanguageContext, useTranslation } from "../../../../components/nexride/ui";
 import { announceLanguage } from "../../../../components/nexride/language-provider";
 import { DriverThemeSelector } from "../../../../components/nexride/driver-app-shell";
@@ -125,7 +126,7 @@ export default function DriverProfileSettingsPage() {
           <div className="nr-driver-preference-block"><div className="nr-driver-preference-label"><strong>{t("appearance")}</strong></div><DriverThemeSelector/></div>
           <div className="nr-driver-preference-block"><div className="nr-driver-preference-label"><strong>{t("language")}</strong></div><div className="nr-driver-language-selector" role="group" aria-label={t("language")}><button type="button" data-active={language === "en"} aria-pressed={language === "en"} onClick={() => announceLanguage("en")}>English</button><button type="button" data-active={language === "am"} aria-pressed={language === "am"} onClick={() => announceLanguage("am")}>አማርኛ</button></div></div>
         </section>
-        <section className="nr-profile-panel"><NexRideFeedbackSettings role="driver" language={language}/><PermissionSettings/></section>
+        <section className="nr-profile-panel"><NexRideFeedbackSettings role="driver" language={language}/><PermissionSettings/><NativeReliabilitySettings role="driver"/></section>
         <section className="nr-profile-panel"><div className="nr-profile-panel-head"><div><h2>{t("entryVerifiedInformation")}</h2><p>{t("entryVerifiedInformationHint")}</p></div></div><div className="nr-doc-actions"><button className="nr-doc-secondary" onClick={() => router.push("/driver/profile/documents")}><Icon name="shield" size={16}/>{t("entryDocuments")}</button><button className="nr-doc-secondary" onClick={() => router.push("/driver/profile/vehicle")}><Icon name="pin" size={16}/>{t("entryVehicle")}</button></div></section>
         <nav className="nr-settings-legal" aria-label={t("entryAccountSecurity")}><a href="/support?role=driver">{t("help")}</a><a href="/explore/terms">{t("entryTerms")}</a><a href="/explore/privacy">{t("entryPrivacy")}</a></nav>
       </> : <section className="nr-profile-state-card" role="alert"><Icon name="info" size={22}/><strong>{t("entrySettingsUnavailable")}</strong><p>{feedback || t("entryProfileLoadFailure")}</p><button type="button" onClick={() => window.location.reload()}>{t("tryAgain")}</button></section>}
