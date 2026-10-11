@@ -23,6 +23,7 @@ import {
 } from "../../lib/location";
 import "mapbox-gl/dist/mapbox-gl.css";
 import "@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css";
+import "./brand-map-markers.css";
 
 type MapStyleKey = "streets" | "satellite" | "dark";
 
@@ -248,7 +249,7 @@ function syncRoutes(map: MapboxMap, journey: Journey | undefined) {
         "line-color": [
           "case",
           ["boolean", ["get", "selected"], false],
-          "#246bc6",
+          "#00c878",
           "#7f8d98",
         ],
         "line-width": [
@@ -285,7 +286,7 @@ function syncRoutes(map: MapboxMap, journey: Journey | undefined) {
           "#f08a24",
           "severe",
           "#dc3f45",
-          "#246bc6",
+          "#00c878",
         ],
         "line-width": 5.5,
         "line-opacity": 0.98,

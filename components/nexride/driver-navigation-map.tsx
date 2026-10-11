@@ -5,6 +5,7 @@ import type { GeoJSONSource, Map as MapboxMap, Marker as MapboxMarker } from "ma
 import { Icon, Spinner } from "./ui";
 import { useDriverTheme } from "./driver-app-shell";
 import "mapbox-gl/dist/mapbox-gl.css";
+import "./brand-map-markers.css";
 
 export type NavigationCoordinate = { lat: number; lng: number };
 export type NavigationTrafficSegment = {
@@ -247,7 +248,7 @@ export function DriverNavigationMap({
           "moderate", "#d7a121",
           "heavy", "#e17729",
           "severe", "#d84a57",
-          "#2679d8",
+          "#00c878",
         ],
       },
       layout: { "line-cap": "round", "line-join": "round" },
@@ -268,7 +269,16 @@ export function DriverNavigationMap({
         const element = document.createElement("div");
         element.className = `nr-driver-map-marker ${kind}${active ? " active" : ""}${gpsState !== "fresh" && kind === "vehicle" ? " stale" : ""}`;
         if (kind === "vehicle" && Number.isFinite(heading)) element.style.setProperty("--nr-heading", `${Math.round(Number(heading))}deg`);
-        element.setAttribute("aria-hidden", "true");
+        if (kind === "vehicle") {
+          // Approaching is only shown while navigating to a real pickup.
+          if (target === "pickup") element.classList.add("approaching");
+          element.setAttribute("role", "img");
+          element.setAttribute("aria-label", target === "pickup" ? "NexRide driver approaching pickup" : "NexRide vehicle");
+          element.innerHTML = '<svg class="nr-branded-car-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 17-1 2v2m15-4 1 2v2M5 17H4a2 2 0 0 1-2-2v-3l2-2 2-5a2 2 0 0 1 2-1h8a2 2 0 0 1 2 1l2 5 2 2v3a2 2 0 0 1-2 2h-1M5 17h14M4 10h16M7 14h.01M17 14h.01"/></svg>';
+        } else {
+          element.setAttribute("role", "img");
+          element.setAttribute("aria-label", kind === "pickup" ? "Pickup location" : "Destination");
+        }
         const marker = new mapboxgl.default.Marker({ element, anchor: "center" }).setLngLat(lngLat(point)).addTo(mapRef.current!);
         markers.current.push(marker);
       };
