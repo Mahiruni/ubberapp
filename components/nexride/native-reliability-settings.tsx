@@ -11,15 +11,30 @@ export function NativeReliabilitySettings({ role }: { role: "rider" | "driver" }
     void import("@capacitor/core").then(({ Capacitor }) => {
       if (mounted) setNative(Capacitor.isNativePlatform());
     }).catch(() => {});
-    return () => { mounted = false; };
-  }, []);
+    const onStatus = (event: Event) => {
+      if (!mounted) return;
+      const detail = (event as CustomEvent<{ status?: string; role?: string }>).detail;
+      if (detail?.status === "registered" && detail.role === role) {
+        setMessage("Your NexRide Android device is registered for push alerts.");
+      } else if (detail?.status === "registration_failed") {
+        setMessage("Device registration failed. Stay signed in and tap Enable alerts again.");
+      } else if (detail?.status === "firebase_registration_failed") {
+        setMessage("Firebase could not issue a device token. Check Google Play services and your connection.");
+      }
+    };
+    window.addEventListener("nexride:native-push-status", onStatus);
+    return () => {
+      mounted = false;
+      window.removeEventListener("nexride:native-push-status", onStatus);
+    };
+  }, [role]);
   if (!native) return null;
   const enable = async () => {
     setBusy(true); setMessage("");
     try {
       const status = await enableNexRideNativeNotifications(role);
       setMessage(status === "registration_started"
-        ? "Android notifications enabled. Device registration will complete when Firebase is configured."
+        ? "Android notification permission granted. Registering this device with NexRide…"
         : status === "denied" ? "Notifications are disabled. Enable them in Android app settings."
         : "This feature requires the installed Android app.");
     } catch { setMessage("Unable to register notifications. Check network access and Android notification settings."); }
