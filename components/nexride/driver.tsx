@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { Icon, LanguageContext } from "./ui";
 import { useDriverTheme } from "./driver-app-shell";
 import { RiderMap } from "./rider-map";
-import { DriverLiveRadar } from "./driver-live-radar";
 import { useRiderLocation } from "../../lib/nexride-location";
 import { DriverEarningsScreen } from "./driver-earnings";
 import { DriverProfileScreen } from "./driver-profile";
@@ -125,7 +124,6 @@ export function DriverWorkspace({
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState("");
   const [locationPermission, setLocationPermission] = useState<LocationPermission>("checking");
-  const [radarEnabled, setRadarEnabled] = useState(true);
   const [alertPermission, setAlertPermission] = useState<NotificationPermission | "unsupported">("unsupported");
   useEffect(() => {
     if (typeof Notification === "undefined") return;
@@ -575,18 +573,11 @@ export function DriverWorkspace({
             readOnly
             topLabel={state.online ? "ONLINE" : "OFFLINE"}
             showProfile={false}
-            showDriverRadar={state.online && radarEnabled}
+            showDriverRadar={state.online}
             preferredStyle={resolvedTheme === "dark" ? "dark" : "streets"}
           />
 
-          <DriverLiveRadar
-            online={state.online}
-            position={mapLocation.position}
-            status={mapLocation.status}
-            enabled={radarEnabled}
-            onToggle={() => setRadarEnabled((enabled) => !enabled)}
-            onLocate={mapLocation.locate}
-          />
+
           <div className="nr-driver-map-float">
             <div className="nr-driver-map-state">
               <span className={`nr-status-dot ${state.online ? "online" : "offline"}`} aria-hidden="true" />
@@ -656,17 +647,10 @@ export function DriverWorkspace({
           preferredStyle={resolvedTheme === "dark" ? "dark" : "streets"}
           showSearch={false}
           showNativeControls={false}
-          showDriverRadar={state.online && radarEnabled}
+          showDriverRadar={state.online}
         />
 
-        <DriverLiveRadar
-          online={state.online}
-          position={mapLocation.position}
-          status={mapLocation.status}
-          enabled={radarEnabled}
-          onToggle={() => setRadarEnabled((enabled) => !enabled)}
-          onLocate={mapLocation.locate}
-        />
+
         <button
           type="button"
           className="nr-driver-home-profile"
