@@ -7,6 +7,7 @@ const token=`eyJhbGciOiJIUzI1NiJ9.${Buffer.from(JSON.stringify({sub:id,exp:41024
 const session={access_token:token,refresh_token:'test',expires_at:4102444800,expires_in:3600,token_type:'bearer',user};
 async function backend(page:Page) {
   let activePath='', fail=false, serial=0;
+  let uploadedBytes=0;
   const image=await sharp({create:{width:900,height:700,channels:3,background:'#00C878'}}).jpeg().toBuffer();
   await page.addInitScript(session => localStorage.setItem('sb-eyyvvwecpyctttiueban-auth-token',JSON.stringify(session)),session);
   await page.route('**/auth/v1/user',route=>route.fulfill({json:user}));
@@ -26,13 +27,13 @@ async function backend(page:Page) {
   });
   await page.route('**/storage/v1/**',route=>{
     if(route.request().method()==='POST' && route.request().url().includes('/object/sign/')) return route.fulfill({json:{signedURL:`/object/sign/nexride-driver-photos/${activePath}?token=${++serial}`}});
-    if(route.request().method()==='POST') {expect(route.request().url()).toContain(`${id}/`);return route.fulfill({json:{Key:'photo'}});}
+    if(route.request().method()==='POST') {expect(route.request().url()).toContain(`${id}/`);uploadedBytes=route.request().postDataBuffer()?.length || 0;expect(uploadedBytes).toBeGreaterThan(0);expect(uploadedBytes).toBeLessThanOrEqual(350*1024);return route.fulfill({json:{Key:'photo'}});}
     if(route.request().method()==='DELETE') return route.fulfill({json:[]});
     return route.fulfill({contentType:'image/jpeg',body:image});
   });
   await page.routeWebSocket('**/realtime/v1/**',ws=>ws.close());
   await page.route('**/api/**',route=>route.fulfill({status:503,json:{status:'unavailable'}}));
-  return {image,failNext:()=>{fail=true;},path:()=>activePath};
+  return {image,failNext:()=>{fail=true;},path:()=>activePath,size:()=>uploadedBytes};
 }
 test('existing avatar uploads immediately, safely replaces, persists and removes without approving Driver documents',async({page})=>{
   const api=await backend(page); await page.goto('/driver/profile');
@@ -44,6 +45,7 @@ test('existing avatar uploads immediately, safely replaces, persists and removes
     await page.getByRole('button',{name:'Save Photo',exact:true}).click();
   };
   await upload();await expect(page.getByText('Your photo is now active.',{exact:true})).toBeVisible();expect(api.path()).toMatch(new RegExp(`^${id}/.*[.]jpg$`));
+  expect(api.size()).toBeLessThanOrEqual(350*1024);
   const first=api.path();await expect(page.locator('.nr-photo-approved-overlay img')).toBeVisible();
   await page.reload();await expect(page.locator('.nr-photo-approved-overlay img')).toBeVisible();
   api.failNext();await upload();await expect(page.getByRole('dialog').getByRole('alert')).toContainText('Your previous photo is safe');expect(api.path()).toBe(first);
@@ -55,5 +57,5 @@ test('existing avatar uploads immediately, safely replaces, persists and removes
 test('rejects unsupported formats and oversized originals before storage',async({page})=>{
   await backend(page);await page.goto('/driver/profile');await page.getByRole('button',{name:'Profile Photo',exact:true}).click();await page.getByRole('button',{name:'Change Photo',exact:true}).click();
   await page.locator('input[type=file]').setInputFiles({name:'bad.svg',mimeType:'image/svg+xml',buffer:Buffer.from('<svg/>')});await expect(page.getByRole('dialog').getByRole('alert')).toContainText('JPG, PNG or WebP');
-  await page.locator('input[type=file]').setInputFiles({name:'large.jpg',mimeType:'image/jpeg',buffer:Buffer.alloc(5*1024*1024+1)});await expect(page.getByRole('dialog').getByRole('alert')).toContainText('up to 5 MB');
+  await page.locator('input[type=file]').setInputFiles({name:'large.jpg',mimeType:'image/jpeg',buffer:Buffer.alloc(25*1024*1024+1)});await expect(page.getByRole('dialog').getByRole('alert')).toContainText('up to 25 MB');
 });
