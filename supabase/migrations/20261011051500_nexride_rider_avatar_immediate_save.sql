@@ -18,7 +18,7 @@ with check (
   bucket_id = 'profile-photos'
   and (storage.foldername(name))[1] = (select auth.uid())::text
   and array_length(storage.foldername(name),1) = 1
-  and name ~* '^[0-9a-f-]{36}/[0-9a-f-]{36}\\.(jpg|png|webp)$'
+  and name ~* '^[0-9a-f-]{36}/[0-9a-f-]{36}[.](jpg|png|webp)$'
   and exists (
     select 1 from public.account_roles r
     join public.profiles p on p.id = r.user_id
