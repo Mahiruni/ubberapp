@@ -16,6 +16,10 @@ name: Build NexRide Android APKs
       - "components/nexride/use-sheet-motion.ts"
       - "app/page.tsx"
       - "app/driver/home/page.tsx"
+      - "scripts/setup-android-reliability.mjs"
+      - "native/android/**"
+      - "lib/nexride-native-reliability.ts"
+      - "components/nexride/native-push-bootstrap.tsx"
 
 permissions:
   contents: read
@@ -51,7 +55,7 @@ jobs:
         run: npm install --no-audit --no-fund
 
       - name: Install Capacitor build tooling
-        run: npm install --no-save @capacitor/core@8 @capacitor/cli@8 @capacitor/android@8 @capacitor/app@8
+        run: npm install --no-save @capacitor/core@8 @capacitor/cli@8 @capacitor/android@8 @capacitor/app@8 @capacitor/push-notifications@8
 
       - name: Configure native shell
         shell: bash
@@ -87,6 +91,18 @@ jobs:
 
       - name: Sync native navigation plugin
         run: npx cap sync android
+
+      - name: Install native Driver GPS and role-specific Firebase settings
+        env:
+          FIREBASE_CONFIG_B64: ${{ matrix.role == 'driver' && secrets.NEXRIDE_DRIVER_GOOGLE_SERVICES_BASE64 || secrets.NEXRIDE_RIDER_GOOGLE_SERVICES_BASE64 }}
+        run: |
+          node scripts/setup-android-reliability.mjs "${{ matrix.role }}"
+          if [ -n "$FIREBASE_CONFIG_B64" ]; then
+            printf '%s' "$FIREBASE_CONFIG_B64" | base64 --decode > android/app/google-services.json
+            node -e 'const c=require("./android/app/google-services.json");if(!c.client?.some(v=>v.client_info?.android_client_info?.package_name==="com.nexride.${{ matrix.role }}"))process.exit(1)'
+          else
+            echo "::warning::Firebase Android config missing; FCM cannot register this APK."
+          fi
 
       - name: Harden Android manifest
         shell: bash
@@ -133,6 +149,11 @@ jobs:
           grep -q 'CAMERA' android/app/src/main/AndroidManifest.xml
           grep -q 'android:enableOnBackInvokedCallback="true"' android/app/src/main/AndroidManifest.xml
           grep -q 'capacitor-app' android/capacitor.settings.gradle
+          grep -q 'capacitor-push-notifications' android/capacitor.settings.gradle
+          if [ "${{ matrix.role }}" = "driver" ]; then
+            grep -q 'foregroundServiceType="location"' android/app/src/main/AndroidManifest.xml
+            grep -q 'registerPlugin(NexRideDriverLocationPlugin.class)' android/app/src/main/java/com/nexride/driver/MainActivity.java
+          fi
 
       - name: Build debug APK
         working-directory: android

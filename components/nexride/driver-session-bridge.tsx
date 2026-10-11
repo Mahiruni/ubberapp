@@ -8,6 +8,7 @@ import { explicitSignOutRole } from "../../lib/nexride-startup";
 import { emitNexRideFeedback } from "../../lib/nexride-feedback";
 import { eligibleDriverOffer, shouldOpenDriverOffer } from "../../lib/nexride-driver-presence";
 import { gpsFixUsable, DRIVER_GPS_HEARTBEAT_MS, DRIVER_GPS_SYNC_MIN_INTERVAL_MS } from "../../lib/nexride-driver-gps";
+import { startNativeDriverGps, stopNativeDriverGps } from "../../lib/nexride-native-reliability";
 
 export const DRIVER_AVAILABILITY_CHANGED = "nexride:driver-availability-changed";
 
@@ -38,6 +39,29 @@ export function DriverSessionBridge() {
     let lastGpsSent = 0;
     let gpsUploadInFlight = false;
     let gpsWatch: number | null = null;
+    let nativeGpsActive = false;
+    let lastNativeAttempt = 0;
+    const syncNativeGps = () => {
+      if (!mounted || !driverId) return;
+      if (!activeOnline) {
+        nativeGpsActive = false;
+        void stopNativeDriverGps();
+        return;
+      }
+      if (Date.now() - lastNativeAttempt < 20000) return;
+      lastNativeAttempt = Date.now();
+      void startNativeDriverGps().then(started => {
+        if (!mounted || !activeOnline) {
+          if (started) void stopNativeDriverGps();
+          return;
+        }
+        nativeGpsActive = started;
+        if (started && gpsWatch !== null) {
+          navigator.geolocation?.clearWatch(gpsWatch);
+          gpsWatch = null;
+        }
+      }).catch(() => {});
+    };
     let offerChannel: ReturnType<typeof supabase.channel> | null = null;
     let availabilityChannel: ReturnType<typeof supabase.channel> | null = null;
 
@@ -95,6 +119,7 @@ export function DriverSessionBridge() {
       if (!mounted || !data) return;
       activeOnline = (data as DriverOnline).is_online === true &&
         (data as DriverOnline).review_status === "approved";
+      syncNativeGps();
       if (activeOnline) void readPending();
     };
 
@@ -139,7 +164,7 @@ export function DriverSessionBridge() {
       }
     };
     const startGps = () => {
-      if (!activeOnline || gpsWatch !== null || !navigator.geolocation) return;
+      if (!activeOnline || nativeGpsActive || gpsWatch !== null || !navigator.geolocation) return;
       gpsWatch = navigator.geolocation.watchPosition(sendGps, () => {
         // Do not silently take the driver offline when Android suspends GPS.
         // On returning to the app, location/availability are rechecked.
@@ -150,7 +175,7 @@ export function DriverSessionBridge() {
       if (!mounted) return;
       void reconcileAvailability().then(() => {
         if (!mounted) return;
-        if (!activeOnline) { stopGps(); return; }
+        if (!activeOnline) { stopGps(); void stopNativeDriverGps(); return; }
         startGps();
         if (document.visibilityState === "visible") {
           navigator.geolocation?.getCurrentPosition(sendGps, () => {},
@@ -177,6 +202,7 @@ export function DriverSessionBridge() {
       await reconcileAvailability();
       if (!mounted) return;
       if (activeOnline) {
+        syncNativeGps();
         startGps();
         // An already-Online driver must publish immediately on app re-entry,
         // not wait for the next GPS watchPosition movement event.
@@ -207,6 +233,7 @@ export function DriverSessionBridge() {
           const wasOnline = activeOnline;
           activeOnline = data.is_online === true && data.review_status === "approved";
           if (activeOnline) {
+            syncNativeGps();
             startGps();
             // Location-only row updates also fire this subscription. Only
             // reacquire a one-shot GPS fix when availability turns Online.
@@ -218,6 +245,8 @@ export function DriverSessionBridge() {
             void readPending();
           } else {
             stopGps();
+            nativeGpsActive = false;
+            void stopNativeDriverGps();
           }
         }).subscribe();
     };

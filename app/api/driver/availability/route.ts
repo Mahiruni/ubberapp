@@ -246,3 +246,7 @@ export async function PATCH(request: Request) {
     return reply({ status: "availability_service_unavailable" }, 503);
   }
 }
+
+// Native Android's foreground location service sends POST. Apply the same
+// authenticated fix validation as the web availability PATCH endpoint.
+export { PATCH as POST };
