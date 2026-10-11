@@ -1,4 +1,5 @@
 import { supabase } from "./supabase";
+import { purgeOfflineTripContext } from "./nexride-offline-recovery";
 import { unregisterNexRidePushDevice, stopNativeDriverGps } from "./nexride-native-reliability";
 import { ACTIVE_ACCOUNT_ROLE_KEY, PREVIEW_ENABLED_KEY, markExplicitSignOut, retryStartup, type SignedOutRole } from "./nexride-startup";
 
@@ -22,6 +23,7 @@ export async function signOutNexRide(role: SignedOutRole): Promise<void> {
   try {
     window.localStorage.removeItem(ACTIVE_ACCOUNT_ROLE_KEY);
     window.localStorage.removeItem(PREVIEW_ENABLED_KEY);
+    purgeOfflineTripContext(window.localStorage);
   } catch {}
   retryStartup(false);
 }

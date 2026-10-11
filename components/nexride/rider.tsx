@@ -174,7 +174,7 @@ export function RiderWorkspace({
   if (screen === "home")
     return (
       <>
-      {realTrips.active && <button className="nr-resume-trip" onClick={() => openRealTrip(String(realTrips.active!.id), realTrips.active!.state)}>Resume your trip <Icon name="arrow" /></button>}
+      {realTrips.active && <button className="nr-resume-trip" onClick={() => openRealTrip(String(realTrips.active!.id), realTrips.active!.state)}>{realTrips.cached ? "Review saved trip · Reconnecting" : "Resume your trip"} <Icon name="arrow" /></button>}
       <RiderHomePanel
         navigate={() => {
           setSavingShortcut(null);
@@ -283,6 +283,7 @@ export function RiderWorkspace({
     <Sheet title={t("history")}>
       {realTrips.userId && <section className="nr-real-trip-history" aria-label="Your booked trips">
         {realTrips.loading && <p role="status">Loading your trips…</p>}
+        {realTrips.cached && <p className="nr-muted" role="status">Saved trip history · Last confirmed details only. Changes are verified automatically when your connection returns.</p>}
         {realTrips.error && <div role="alert"><p>We couldn’t refresh your rides. Previously loaded details may be out of date.</p><Button variant="secondary" onClick={() => void realTrips.refresh()}>Try again</Button></div>}
         {realTrips.rows.map(row => <ListRow key={String(row.id)} icon={row.state === 'completed' ? 'check' : 'navigation'}
           title={String(row.destination_address || 'Destination unavailable')}

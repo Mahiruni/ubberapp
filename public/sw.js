@@ -1,4 +1,4 @@
-const VERSION = "nexride-role-icons-v8";
+const VERSION = "nexride-phase2-offline-recovery-v1";
 const CORE_CACHE = VERSION + "-core";
 const RUNTIME_CACHE = VERSION + "-runtime";
 const CORE_ASSETS = [
@@ -47,18 +47,27 @@ self.addEventListener("fetch", (event) => {
   if (url.origin !== self.location.origin || url.pathname.startsWith("/api/")) return;
 
   if (request.mode === "navigate") {
+    // Retain ONLY selected app shells, never auth/account/admin pages.
+    // A Driver navigation failure must never display a stale Rider page.
+    // No POST/ride mutation, auth response, or /api endpoint is cached.
+    const appShell = url.pathname === "/" ||
+      url.pathname === "/driver/home" ||
+      url.pathname === "/driver/navigation" ||
+      url.pathname === "/driver/request" ||
+      url.pathname === "/rider/trips";
     event.respondWith(
       fetch(request)
         .then((response) => {
-          if (response.ok) {
+          if (appShell && response.ok && response.type === "basic" &&
+              !response.headers.has("Set-Cookie")) {
             const copy = response.clone();
-            caches.open(RUNTIME_CACHE).then((cache) => cache.put(request, copy));
+            event.waitUntil(caches.open(RUNTIME_CACHE)
+              .then(cache => cache.put(request, copy)).catch(() => {}));
           }
           return response;
         })
         .catch(async () =>
-          (await caches.match(request)) ||
-          (await caches.match("/")) ||
+          (appShell ? (await caches.match(request)) : null) ||
           (await caches.match("/offline.html"))
         )
     );

@@ -132,9 +132,45 @@ html[data-nr-network="reconnecting"] .nr-mapbox-surface {
 }
 
 
-/* Connectivity is an internal resilience concern only.
-   Never surface connection strength/state chrome in the product UI. */
-.nr-network-banner,
-.nr-network-live {
-  display:none!important;
+/* Phase 2 recovery: show status only during true offline/reconnecting.
+   This lightweight strip must not cover or dismiss the Driver/Rider map sheet. */
+.nr-network-live { display: none !important; }
+.nr-network-recovery {
+  grid-template-columns: 9px minmax(0, 1fr);
+  min-height: 40px;
+  width: min(94vw, 460px);
+  padding: 9px 13px;
+  pointer-events: none;
+  z-index: 2147481000;
+  background: color-mix(in srgb, #041c30 92%, transparent);
+  border-color: rgba(255,255,255,.2);
+  color: #fff;
+}
+.nr-network-recovery .nr-network-copy {
+  font-size: 12px;
+  font-weight: 650;
+  white-space: normal;
+}
+.nr-network-recovery[data-state="reconnecting"] .nr-network-dot {
+  background: #ffd166;
+}
+.nr-nav-offline-recovery {
+  position: absolute;
+  top: calc(82px + env(safe-area-inset-top));
+  left: 12px;
+  right: 12px;
+  z-index: 9;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(4,28,48,.94);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,.22);
+  border-radius: 13px;
+  padding: 10px 12px;
+  font-size: 12px;
+  font-weight: 650;
+  pointer-events: none;
+  max-width: 430px;
+  margin-inline: auto;
 }
