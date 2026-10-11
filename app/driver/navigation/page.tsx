@@ -13,6 +13,7 @@ import { emitNexRideFeedback, speakNexRideNavigation, stopNexRideNavigationVoice
 import "../../nexride.css";
 import "./navigation.css";
 import "../../detail-system.css";
+import "../driver-wrapper-brand.css";
 
 type TripStatus = "accepted" | "arrived_pickup" | "in_trip" | "completed" | "withdrawn" | "cancelled";
 type GpsState = "acquiring" | "fresh" | "stale" | "lost" | "unsupported";
@@ -708,7 +709,7 @@ export default function DriverNavigationPage() {
             </span>
           ))}
         </div>
-        <div className="nr-nav-trip-meta"><span>{trip.rideCategory}</span><span>{stage.badge}</span></div>
+        <div className="nr-nav-trip-meta"><span>NexRide · {trip.rideCategory}</span><span>{stage.badge}</span></div>
         <div className="nr-nav-current-destination">
           <small>{stage.target === "pickup" ? op("PICKUP") : op("DESTINATION")}</small>
           <h1>{stage.destination}</h1>
