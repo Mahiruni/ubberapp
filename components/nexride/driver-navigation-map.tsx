@@ -247,7 +247,7 @@ export function DriverNavigationMap({
           "moderate", "#d7a121",
           "heavy", "#e17729",
           "severe", "#d84a57",
-          "#2679d8",
+          "#5145e5",
         ],
       },
       layout: { "line-cap": "round", "line-join": "round" },
