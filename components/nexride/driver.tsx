@@ -15,6 +15,7 @@ import { resolveSessionRole } from "../../lib/nexride-account-role";
 import { nexrideApiFetch } from "../../lib/nexride-api-auth";
 import { driverGpsHealth } from "../../lib/nexride-driver-gps";
 import { emitNexRideFeedback } from "../../lib/nexride-feedback";
+import { enableNexRideNativeNotifications, getNexRideNativeAppRole } from "../../lib/nexride-native-reliability";
 import "../../app/driver/driver-dashboard.css";
 import "../../app/driver/driver-home-v2.css";
 import "../../app/rider-home.css";
@@ -143,20 +144,37 @@ export function DriverWorkspace({
     };
   }, []);
   useEffect(() => {
-    if (typeof Notification === "undefined") return;
-    const sync = () => setAlertPermission(Notification.permission);
-    sync();
+    let active = true;
+    const sync = async () => {
+      try {
+        if (await getNexRideNativeAppRole() === "driver") {
+          const { PushNotifications } = await import("@capacitor/push-notifications");
+          const status = await PushNotifications.checkPermissions();
+          if (active) setAlertPermission(status.receive === "granted" ? "granted" :
+            status.receive === "denied" ? "denied" : "default");
+          return;
+        }
+      } catch { /* Fall back to web notification controls. */ }
+      if (active) setAlertPermission(typeof Notification === "undefined" ? "unsupported" : Notification.permission);
+    };
+    void sync();
     window.addEventListener("focus", sync);
-    return () => window.removeEventListener("focus", sync);
+    return () => { active = false; window.removeEventListener("focus", sync); };
   }, []);
 
   const enableDriverAlerts = async () => {
-    if (typeof Notification === "undefined") return;
     try {
-      const permission = await Notification.requestPermission();
-      setAlertPermission(permission);
+      if (await getNexRideNativeAppRole() === "driver") {
+        const status = await enableNexRideNativeNotifications("driver");
+        setAlertPermission(status === "registration_started" ? "granted" :
+          status === "denied" ? "denied" : "default");
+        return;
+      }
+      if (typeof Notification !== "undefined") {
+        setAlertPermission(await Notification.requestPermission());
+      }
     } catch {
-      setAlertPermission(Notification.permission);
+      setAlertPermission("default");
     }
   };
   const mapLocation = useRiderLocation();
@@ -731,7 +749,7 @@ export function DriverWorkspace({
                   type="button"
                   className="nr-driver-home-alert-icon"
                   data-permission={alertPermission}
-                  disabled={alertPermission !== "default"}
+                  disabled={alertPermission === "granted" || alertPermission === "denied" || alertPermission === "unsupported"}
                   onClick={() => void enableDriverAlerts()}
                   aria-label={alertPermission === "granted" ? say("Ride notifications enabled", "የጉዞ ማሳወቂያዎች በርተዋል")
                     : alertPermission === "denied" ? say("Ride notifications blocked in device settings", "የጉዞ ማሳወቂያዎች በመሣሪያ ቅንብሮች ታግደዋል")
