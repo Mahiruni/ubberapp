@@ -82,7 +82,9 @@ export async function sendSmtpTest(to: string, subject: string, body: string) {
     send("EHLO nexride.app"); await read([250]);
     if (port === 587) {
       send("STARTTLS"); await read([220]);
-      socket.removeAllListeners("data");\n      socket.removeAllListeners("close");\n      socket.removeAllListeners("error");
+      socket.removeAllListeners("data");
+      socket.removeAllListeners("close");
+      socket.removeAllListeners("error");
       socket = await new Promise<tls.TLSSocket>((resolve, reject) => {
         const upgraded = tls.connect({ socket, servername: host, rejectUnauthorized: true }, () => resolve(upgraded));
         upgraded.once("error", reject);
