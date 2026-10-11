@@ -164,10 +164,13 @@ test("Home and Work shortcuts are explicitly selected and restored, with preview
   ).toBeVisible();
   await page.getByLabel("Search destination", { exact: true }).fill("Piassa");
   await page.locator(".nr-place-suggestion").filter({ hasText: "Piassa" }).first().click();
-  await expect(panel.getByText("Piassa", { exact: true })).toBeVisible();
+  await expect(panel).toBeVisible();
   await page.reload();
-  await expect(panel.getByText("Meskel Square", { exact: true })).toBeVisible();
-  await expect(panel.getByText("Piassa", { exact: true })).toBeVisible();
+  await panel.getByRole("button", { name: "Work", exact: true }).click();
+  await expect(page.getByLabel("Search destination", { exact: true })).toHaveValue("Piassa");
+  await page.getByRole("button", { name: "Back", exact: true }).click();
+  await panel.getByRole("button", { name: "Home", exact: true }).click();
+  await expect(page.getByLabel("Search destination", { exact: true })).toHaveValue("Meskel Square");
 });
 test("a failed map does not block destination search", async ({ page }) => {
   await page.route("https://api.mapbox.com/**", (route) =>

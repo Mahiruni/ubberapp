@@ -2238,3 +2238,20 @@
   backdrop-filter:none!important;
   -webkit-backdrop-filter:none!important;
 }
+
+/* Short landscape screens need one scroll surface for fares and all actions. */
+@media (max-width: 800px) and (max-height: 480px) {
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-ride-selection {
+    display: block!important;
+    overflow-y: auto!important;
+    overscroll-behavior: contain;
+  }
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-ride-selection-body {
+    height: auto!important;
+    max-height: none!important;
+    overflow: visible!important;
+  }
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-ride-selection footer {
+    position: static!important;
+  }
+}

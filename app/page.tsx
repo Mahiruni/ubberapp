@@ -225,6 +225,9 @@ function AppWorkspace({
   // Saved places and map screens render in different workspace containers.
   // Keep the shortcut being edited across that transition.
   const [savingShortcut, setSavingShortcut] = useState<"home" | "work" | null>(null);
+  useEffect(() => {
+    if (riderScreen !== "destination") setSavingShortcut(null);
+  }, [riderScreen]);
   const [driverScreen, setDriverScreen] = useState<DriverScreen>("home");
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);

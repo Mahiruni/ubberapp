@@ -275,7 +275,7 @@ test("a reconnect during an older trip read immediately fetches the completed tr
   await expect(page.locator(".nr-accepted-driver-card").getByRole("heading",{name:"Connected Driver"})).toBeVisible();
   // Freeze polling: reconnection must recover immediately, without waiting for its timer.
   await page.clock.install();
-  await page.clock.pauseAt(new Date());
+  await page.clock.pauseAt(new Date(Date.now() + 60_000));
   const pending = api.holdNextRead();
   try {
     await page.evaluate(()=>window.dispatchEvent(new Event("online")));

@@ -147,8 +147,8 @@ export function DestinationPanel({
         // keyboard focus when the Rider reopens Plan your ride.
         if (saved?.query && typeof saved.query.pickup === "string" && typeof saved.query.destination === "string") {
           setQuery({
-            pickup: saved.query.pickup.slice(0, 120),
-            destination: saved.query.destination.slice(0, 120),
+            pickup: j.pickup ? "" : saved.query.pickup.slice(0, 120),
+            destination: j.destination ? "" : saved.query.destination.slice(0, 120),
           });
         }
       }
@@ -358,7 +358,7 @@ export function DestinationPanel({
                         aria-label={t(
                           target === "pickup" ? "editPickup" : "destination",
                         )}
-                        autoFocus={target === "pickup"}
+                        autoFocus={target === "pickup" && !j.pickup}
                         placeholder={
                           target === "pickup"
                             ? (language === "am" ? "ጉዞዎን ያቅዱ" : "Plan your ride")

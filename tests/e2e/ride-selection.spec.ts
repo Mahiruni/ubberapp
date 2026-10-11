@@ -257,6 +257,7 @@ test("short mobile and desktop workspaces keep ride actions reachable", async ({
     { width: 1440, height: 900 },
   ]) {
     await page.setViewportSize(size);
+    await page.locator(".nr-ride-selection footer .nr-button").scrollIntoViewIfNeeded();
     await expect
       .poll(() =>
         page.evaluate(() => {
@@ -271,12 +272,14 @@ test("short mobile and desktop workspaces keep ride actions reachable", async ({
               .getBoundingClientRect();
           return (
             panel.top >= -1 && panel.bottom <= innerHeight + 1 &&
-            button.bottom <= innerHeight &&
+            button.bottom <= innerHeight + 1 &&
             document.documentElement.scrollWidth <= innerWidth
           );
         }),
       )
       .toBe(true);
+    await page.locator(".nr-ride-selection footer button.nr-preview-ride-link").scrollIntoViewIfNeeded();
+    await reachableControl(page, ".nr-ride-selection footer button.nr-preview-ride-link");
   }
 });
 

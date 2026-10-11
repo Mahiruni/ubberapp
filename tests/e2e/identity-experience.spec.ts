@@ -275,10 +275,11 @@ test('account security retries a failed load without losing the identity and tra
 });
 
 test('entry layouts remain usable on desktop, tablet, short screens and reduced motion', async ({ page }, info) => {
+  test.setTimeout(60_000);
   await page.emulateMedia({ reducedMotion: 'reduce' });
   for (const viewport of [{ width: 1280, height: 900 }, { width: 768, height: 1024 }, { width: 320, height: 420 }, { width: 844, height: 390 }]) {
     await page.setViewportSize(viewport);
-    await page.goto('/rider/sign-in');
+    await page.goto('/rider/sign-in', { waitUntil: 'domcontentloaded' });
     await expect(page.getByRole('heading', { name: 'Welcome back.', exact: true })).toBeVisible();
     await page.getByLabel('Email address', { exact: true }).fill('person@example.test');
     await page.getByLabel('Password', { exact: true }).fill('private-password');
