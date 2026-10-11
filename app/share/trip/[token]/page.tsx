@@ -27,12 +27,12 @@ export default function PrivateTripViewer(){
     method:"GET",cache:"no-store",signal,headers:{Accept:"application/json"},
    });
    if(response.status===410||response.status===404){setData(null);setState("ended");return;}
-   if(!response.ok){setState(current=>current==="active"?"active":"unavailable");return;}
+   if(!response.ok){setData(null);setState("unavailable");return;}
    const result=await response.json() as LiveData;
    if(signal?.aborted)return;
    if(result.status!=="active"){setData(null);setState("ended");return;}
    setData(result);setState("active");setLastUpdated(Date.now());
-  }catch{if(!signal?.aborted)setState(current=>current==="active"?"active":"unavailable");}
+  }catch{if(!signal?.aborted){setData(null);setState("unavailable");}}
  },[token]);
  useEffect(()=>{
   const controller=new AbortController();
