@@ -1,5 +1,6 @@
 import { supabase } from "./supabase";
 import { purgeOfflineTripContext } from "./nexride-offline-recovery";
+import { clearNexRideLiveTrip } from "./nexride-live-trip";
 import { unregisterNexRidePushDevice, stopNativeDriverGps } from "./nexride-native-reliability";
 import { ACTIVE_ACCOUNT_ROLE_KEY, PREVIEW_ENABLED_KEY, markExplicitSignOut, retryStartup, type SignedOutRole } from "./nexride-startup";
 
@@ -18,6 +19,9 @@ export async function signOutNexRide(role: SignedOutRole): Promise<void> {
   if (result.error) throw result.error;
   const current = await supabase.auth.getSession();
   if (current.error || current.data.session) throw new Error("Local session was not fully cleared");
+  // End any local lock-screen trip tracker after verified local sign-out.
+  // This is independent of Driver foreground GPS and Firebase device cleanup.
+  void clearNexRideLiveTrip();
   // This flag is only a navigation preference. Discard it on logout so a
   // later visit cannot resume the old Driver/Rider experience implicitly.
   try {
