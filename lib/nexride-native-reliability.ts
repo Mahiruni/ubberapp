@@ -25,8 +25,23 @@ async function nativeCapacitor() {
   return { Capacitor, registerPlugin };
 }
 
+/** The native Android package is the authority for push device identity.
+ * URL routes and sessionStorage must never decide which APK owns an FCM token.
+ */
+export async function getNexRideNativeAppRole(): Promise<Role | null> {
+  if (!await nativeCapacitor()) return null;
+  try {
+    const { App } = await import("@capacitor/app");
+    const { id } = await App.getInfo();
+    if (id === "com.nexride.driver") return "driver";
+    if (id === "com.nexride.rider") return "rider";
+  } catch { /* Do not register a push token if app identity cannot be verified. */ }
+  return null;
+}
+
 export async function enableNexRideNativeNotifications(role: Role) {
   if (!await nativeCapacitor()) return "web_only" as const;
+  if (await getNexRideNativeAppRole() !== role) return "wrong_app_role" as const;
   const { PushNotifications } = await import("@capacitor/push-notifications");
   const permission = await PushNotifications.requestPermissions();
   if (permission.receive !== "granted") return "denied" as const;
@@ -34,24 +49,22 @@ export async function enableNexRideNativeNotifications(role: Role) {
     name: role === "driver" ? "Ride requests" : "Trip updates",
     description: "Important NexRide ride and trip events", importance: role === "driver" ? 4 : 3,
     vibration: true, visibility: 1 });
-  sessionStorage.setItem("nexride.push.role", role);
   await PushNotifications.register();
   return "registration_started" as const;
 }
 
 export async function reconcileNexRideNativePush(role: Role) {
-  if (!await nativeCapacitor()) return;
+  if (!await nativeCapacitor() || await getNexRideNativeAppRole() !== role) return;
   const { PushNotifications } = await import("@capacitor/push-notifications");
   const permission = await PushNotifications.checkPermissions();
   if (permission.receive !== "granted") return;
-  sessionStorage.setItem("nexride.push.role", role);
   await PushNotifications.register();
 }
 
 export async function registerNexRidePushToken(token: string) {
   const { data } = await supabase.auth.getSession();
-  const role = sessionStorage.getItem("nexride.push.role");
-  if (!data.session || (role !== "driver" && role !== "rider") || !token) return;
+  const role = await getNexRideNativeAppRole();
+  if (!data.session || !role || !token) return;
   const result = await nexrideApiFetch("/api/native/devices", {
     method: "POST", body: JSON.stringify({ role, token, installationId: installationId() }),
   });

@@ -45,6 +45,7 @@ export function DriverSessionBridge() {
       if (!mounted || !driverId) return;
       if (!activeOnline) {
         nativeGpsActive = false;
+        lastNativeAttempt = 0;
         void stopNativeDriverGps();
         return;
       }
@@ -171,6 +172,21 @@ export function DriverSessionBridge() {
       }, { enableHighAccuracy: true, maximumAge: 10_000, timeout: 15_000 });
     };
 
+    // A native GPS service can outlive the WebView and must receive rotated
+    // Supabase access tokens. Never leave a stale JWT in the foreground service.
+    const { data: nativeAuthListener } = supabase.auth.onAuthStateChange(event => {
+      if (event === "TOKEN_REFRESHED" && mounted && activeOnline) {
+        lastNativeAttempt = 0;
+        syncNativeGps(); // Re-start is idempotent: the Android service swaps its bearer.
+      } else if (event === "SIGNED_OUT") {
+        driverId = "";
+        activeOnline = false;
+        nativeGpsActive = false;
+        stopGps();
+        void stopNativeDriverGps();
+      }
+    });
+
     const onResume = () => {
       if (!mounted) return;
       void reconcileAvailability().then(() => {
@@ -280,6 +296,7 @@ export function DriverSessionBridge() {
       window.removeEventListener("online", onResume);
       window.removeEventListener(DRIVER_AVAILABILITY_CHANGED, onResume);
       document.removeEventListener("visibilitychange", onVisibility);
+      nativeAuthListener.subscription.unsubscribe();
       stopGps();
       if (offerChannel) void supabase.removeChannel(offerChannel);
       if (availabilityChannel) void supabase.removeChannel(availabilityChannel);

@@ -1,7 +1,7 @@
 "use client";
 import { useEffect } from "react";
 import { supabase } from "../../lib/supabase";
-import { reconcileNexRideNativePush, registerNexRidePushToken } from "../../lib/nexride-native-reliability";
+import { getNexRideNativeAppRole, reconcileNexRideNativePush, registerNexRidePushToken } from "../../lib/nexride-native-reliability";
 
 /** One Capacitor subscription for both account roles and all route changes. */
 export function NexRideNativePushBootstrap() {
@@ -26,8 +26,8 @@ export function NexRideNativePushBootstrap() {
       if (removed) { await Promise.all(unsub.map(s => s.remove())); return; }
       const { data } = await supabase.auth.getSession();
       if (data.session) {
-        const role = window.location.pathname.startsWith("/driver") ? "driver" : "rider";
-        await reconcileNexRideNativePush(role).catch(() => {});
+        const role = await getNexRideNativeAppRole();
+        if (role) await reconcileNexRideNativePush(role).catch(() => {});
       }
     })().catch(() => {});
     return () => { removed = true; void Promise.all(unsub.map(s => s.remove())); };
