@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { RIDER_AVATAR_EXTENSIONS, riderAvatarValidation } from './nexride-rider-avatar';
 import type { PreviewProfile } from './nexride-preview';
 export type RiderAccount = { id: string; profile: PreviewProfile; avatar: string | null; avatarPath: string | null };
 export const ALERTS_KEY = 'nexride:trip-alerts';
@@ -37,19 +38,6 @@ export async function saveAccount(account: RiderAccount, profile: PreviewProfile
 /** Rider portraits are immediately effective on the account owner's profile.
  * Driver portraits keep their separate verification and approval flow.
  */
-export const RIDER_AVATAR_MAX_BYTES = 5 * 1024 * 1024;
-const RIDER_AVATAR_EXTENSIONS: Record<string, string> = {
-  'image/jpeg': 'jpg',
-  'image/png': 'png',
-  'image/webp': 'webp',
-};
-
-export function riderAvatarValidation(file: Pick<File, 'size' | 'type'>): 'type' | 'size' | null {
-  if (!(file.type in RIDER_AVATAR_EXTENSIONS)) return 'type';
-  if (!Number.isFinite(file.size) || file.size <= 0 || file.size > RIDER_AVATAR_MAX_BYTES) return 'size';
-  return null;
-}
-
 export async function uploadRiderAvatar(
   account: RiderAccount,
   file: File,
