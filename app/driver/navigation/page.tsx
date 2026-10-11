@@ -682,7 +682,27 @@ export default function DriverNavigationPage() {
         </div>
       )}
 
-      <DriverBottomSheet className="nr-nav-bottom-card" label="Trip controls" defaultSnap="collapsed">
+      <DriverBottomSheet className="nr-nav-bottom-card" label="Trip controls" defaultSnap="collapsed"
+        footer={<div className="nr-nav-pinned-actions" aria-label={op("Trip stage action")}>
+          {invalidTrip ? (
+          <button className="nr-nav-stage-primary" onClick={() => router.replace("/driver/home")}>{op("Back to Driver Home")}</button>
+        ) : trip.status === "accepted" ? (
+          <button type="button" className="nr-nav-stage-primary" disabled={busy} onClick={() => void transition("arrived_pickup")}>
+            <Icon name="check" size={19} />{busy ? op("Updating…") : op("Arrived at pickup")}
+          </button>
+        ) : trip.status === "arrived_pickup" ? (
+          <button className="nr-nav-stage-primary" disabled={busy} onClick={() => setConfirmAction("in_trip")}><Icon name="navigation" size={19} /> {busy ? op("Starting…") : op("Start trip")}</button>
+        ) : trip.status === "in_trip" ? (
+          <button type="button" className="nr-nav-stage-primary" disabled={busy} onClick={() => setConfirmAction("completed")}>
+            <Icon name="check" size={19} />{busy ? op("Completing…") : op("Complete trip")}
+          </button>
+        ) : (
+          <div className="nr-nav-stage-actions">
+            <button className="nr-nav-stage-primary" onClick={() => router.replace("/driver/earnings")}><Icon name="money" size={19} /> {op("View earnings")}</button>
+            <button className="nr-nav-stage-secondary" onClick={() => router.replace("/driver/home")}><Icon name="home" size={18} /> Driver Home</button>
+          </div>
+        )}
+        </div>}>
         <div className="nr-nav-utility-row" aria-label="Trip quick actions">
           <button type="button" className={mapView === "overview" ? "active" : ""} onClick={() => setMapView("overview")}><Icon name="globe" size={17} /> {op("Overview")}</button>
           <button type="button" onClick={() => router.push(`/trip/chat?ride=${trip.requestId}&role=driver&offer=${trip.offerId}`)}><Icon name="chat" size={17} /> {op("Chat")}</button>
@@ -717,25 +737,6 @@ export default function DriverNavigationPage() {
         </div>
 
         {message && <div className="nr-nav-action-error" role="alert"><Icon name="info" size={16} /><span>{message}</span></div>}
-
-        {invalidTrip ? (
-          <button className="nr-nav-stage-primary" onClick={() => router.replace("/driver/home")}>{op("Back to Driver Home")}</button>
-        ) : trip.status === "accepted" ? (
-          <button type="button" className="nr-nav-stage-primary" disabled={busy} onClick={() => void transition("arrived_pickup")}>
-            <Icon name="check" size={19} />{busy ? op("Updating…") : op("Arrived at pickup")}
-          </button>
-        ) : trip.status === "arrived_pickup" ? (
-          <button className="nr-nav-stage-primary" disabled={busy} onClick={() => setConfirmAction("in_trip")}><Icon name="navigation" size={19} /> {busy ? op("Starting…") : op("Start trip")}</button>
-        ) : trip.status === "in_trip" ? (
-          <button type="button" className="nr-nav-stage-primary" disabled={busy} onClick={() => setConfirmAction("completed")}>
-            <Icon name="check" size={19} />{busy ? op("Completing…") : op("Complete trip")}
-          </button>
-        ) : (
-          <div className="nr-nav-stage-actions">
-            <button className="nr-nav-stage-primary" onClick={() => router.replace("/driver/earnings")}><Icon name="money" size={19} /> {op("View earnings")}</button>
-            <button className="nr-nav-stage-secondary" onClick={() => router.replace("/driver/home")}><Icon name="home" size={18} /> Driver Home</button>
-          </div>
-        )}
 
         {canNavigate && !activeRoute && <div className="nr-nav-handoff"><Icon name="info" size={15} /><span>{op("Live route guidance is unavailable. Check your location and connection; trip actions are still available.")}</span></div>}
       </DriverBottomSheet>
