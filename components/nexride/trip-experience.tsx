@@ -369,6 +369,9 @@ export function TripExperience({ screen, tripId, userId, preview, navigate, setP
       {screen === 'summary' && <button onClick={() => window.location.assign('/rider/trips')}>Activity</button>}
       <span role="status" aria-live="polite">{live ? connection : 'Preview ride'}</span>
       {screen !== 'summary' && !nativeIdentity && <button onClick={openSafety}>Safety</button>}
+      {live && tripId && screen !== "summary" && confirmedStatus !== "completed" && confirmedStatus !== "cancelled" &&
+       <button type="button" onClick={() => window.location.assign("/safety?role=rider&trip="+encodeURIComponent(tripId))}
+         aria-label="Share live trip with a trusted contact">Share trip</button>}
       {live && screen !== 'summary' && confirmedStatus !== 'completed' && confirmedStatus !== 'cancelled' &&
         <button type="button" className="nr-trip-cancel-trigger" disabled={cancelBusy} onClick={() => { setCancelError(''); setCancelConfirm(true); }}><span aria-hidden="true">×</span>{t('matchingCancel')}</button>}
       {!live && screen !== 'summary' && <button onClick={() => { if (screen === 'live' && preview) setPreview({ ...preview, completed: true }); navigate(screen === 'trip' ? 'live' : 'summary'); }}>{screen === 'trip' ? 'Start trip' : 'Complete trip'}</button>}
