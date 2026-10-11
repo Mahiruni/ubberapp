@@ -177,12 +177,48 @@ describe("rider initialization", () => {
     getSession.mockResolvedValueOnce({ data: { session }, error: null });
     expect((await initializeRider()).destination).toBe("/");
   });
+  it("sends expired refresh tokens to sign-in without destroying saved preferences", async () => {
+    values.set("nexride:onboarding-complete", "true");
+    values.set("nexride:language", "am");
+    values.set("sb-auth-token", "existing-expired-token");
+    getSession.mockResolvedValueOnce({
+      data: { session: null },
+      error: Object.assign(new Error("Invalid Refresh Token"), { code: "refresh_token_not_found" }),
+    });
+    const result = await initializeRider();
+    expect(result.destination).toBe("/rider/sign-in");
+    expect(result.session).toBeNull();
+    expect(result.preferences.language).toBe("am");
+    expect(values.get("sb-auth-token")).toBe("existing-expired-token");
+  });
+
+  it("does not convert a temporary network failure into an automatic sign-out", async () => {
+    getSession.mockResolvedValueOnce({
+      data: { session: null },
+      error: new Error("Failed to fetch"),
+    });
+    await expect(initializeRider()).rejects.toMatchObject({ kind: "session" });
+    expect(completedStartup()).toBeNull();
+    expect(values.has(EXPLICIT_SIGNOUT_KEY)).toBe(false);
+  });
+
+  it("bounds an account role lookup that stops responding", async () => {
+    vi.useFakeTimers();
+    getSession.mockResolvedValueOnce({ data: { session }, error: null });
+    resolveSessionRole.mockImplementationOnce(() => new Promise(() => {}));
+    const promise = initializeRider();
+    const rejection = expect(promise).rejects.toMatchObject({ kind: "session" });
+    await vi.advanceTimersByTimeAsync(10000);
+    await rejection;
+    expect(completedStartup()).toBeNull();
+  });
+
   it("bounds a stalled service and offers another initialization attempt", async () => {
     vi.useFakeTimers();
     getSession.mockImplementationOnce(() => new Promise(() => {}));
     const result = initializeRider();
     const rejection = expect(result).rejects.toMatchObject({ kind: "session" });
-    await vi.advanceTimersByTimeAsync(8000);
+    await vi.advanceTimersByTimeAsync(15000);
     await rejection;
     expect((await initializeRider()).destination).toBe("/onboarding");
   });
