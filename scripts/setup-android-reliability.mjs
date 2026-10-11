@@ -6,7 +6,7 @@ if(role!=="driver")process.exit(0);
 const base="android/app/src/main";
 const folder=path.join(base,"java/com/nexride/driver");
 fs.mkdirSync(folder,{recursive:true});
-for(const name of ["NexRideDriverLocationService.java","NexRideDriverLocationPlugin.java"])
+for(const name of ["NexRideDriverLocationService.java","NexRideDriverLocationPlugin.java","NexRideDriverAlertChannels.java"])
   fs.copyFileSync(path.join("native/android",name),path.join(folder,name));
 const main=path.join(folder,"MainActivity.java");
 let source=fs.readFileSync(main,"utf8");
@@ -16,6 +16,7 @@ if(!source.includes("registerPlugin(NexRideDriverLocationPlugin.class);"))
     "  @Override public void onCreate(android.os.Bundle savedInstanceState){\n"+
     "    registerPlugin(NexRideDriverLocationPlugin.class);\n"+
     "    super.onCreate(savedInstanceState);\n"+
+    "    NexRideDriverAlertChannels.ensure(this);\n"+
     "  }\n");
 fs.writeFileSync(main,source);
 const manifest=path.join(base,"AndroidManifest.xml");
