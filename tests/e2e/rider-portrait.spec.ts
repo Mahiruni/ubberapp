@@ -72,9 +72,9 @@ test('Rider crops and zooms >5 MB original to a <=350 KB JPEG and safely retries
   });
   await expect(dialog.getByRole('heading', { name: 'Adjust photo' })).toBeVisible();
   const zoom = dialog.getByRole('slider', { name: 'Zoom' });
-  await zoom.fill('1.5');
-  await dialog.getByRole('slider', { name: 'Move left / right' }).fill('20');
-  await dialog.getByRole('slider', { name: 'Move up / down' }).fill('-15');
+  await zoom.focus(); await zoom.press('ArrowRight');
+  await dialog.getByRole('slider', { name: 'Move left / right' }).press('End');
+  await dialog.getByRole('slider', { name: 'Move up / down' }).press('Home');
   await expect(dialog.getByRole('button', { name: 'Save Photo' })).toBeEnabled();
   expect(api.count()).toBe(0); // edit before any network upload
   await dialog.getByRole('button', { name: 'Save Photo' }).click();
@@ -83,7 +83,7 @@ test('Rider crops and zooms >5 MB original to a <=350 KB JPEG and safely retries
   expect(api.count()).toBe(1);
 
   // Editing and prior image remain intact after a failed DB write.
-  await expect(zoom).toHaveValue('1.5');
+  await expect(zoom).toHaveValue('1.05');
   await dialog.getByRole('button', { name: 'Save Photo' }).click();
   await expect(dialog).toHaveCount(0);
   expect(api.count()).toBe(2);
