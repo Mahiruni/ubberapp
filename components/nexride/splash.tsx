@@ -46,7 +46,7 @@ export function RiderSplash({
             {error.kind === "session" && (
               <nav className="nr-splash-recovery-links" aria-label="NexRide account access">
                 <Link href="/rider/sign-in">{t("signIn")}</Link>
-                <Link href="/rider">{t("continueAuth")}</Link>
+                <Link href="/rider">{t("startupOpenRiderWelcome")}</Link>
               </nav>
             )}
           </div>
