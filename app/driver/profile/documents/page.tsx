@@ -2,6 +2,7 @@
 
 import { ChangeEvent, useEffect, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
+import { useOperationalTranslation } from "../../../../components/nexride/operational-i18n";
 import { Icon } from "../../../../components/nexride/ui";
 import { supabase } from "../../../../lib/supabase";
 import {
@@ -34,6 +35,7 @@ function statusTone(status: DriverDocumentStatus) {
 
 export default function DriverDocumentsPage() {
   const router = useRouter();
+  const say = useOperationalTranslation();
   const licenseInput = useRef<HTMLInputElement>(null);
   const registrationInput = useRef<HTMLInputElement>(null);
   const [profile, setProfile] = useState<DriverProfileData | null>(null);
@@ -57,7 +59,8 @@ export default function DriverDocumentsPage() {
   useEffect(() => {
     let active = true;
     (async () => {
-      const { data } = await supabase.auth.getSession();
+      const { data, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) throw sessionError;
       if (!active) return;
       if (!data.session) {
         router.replace("/driver/auth");
@@ -68,12 +71,12 @@ export default function DriverDocumentsPage() {
       } catch {
         if (active) {
           setMessageTone("error");
-          setMessage("We couldn’t load your verification documents.");
+          setMessage(say("We couldn’t load your verification documents."));
         }
       } finally {
         if (active) setLoading(false);
       }
-    })();
+    })().catch(() => { if (active) { setMessage(say("We couldn’t load your verification documents.")); setLoading(false); } });
     return () => {
       active = false;
     };
@@ -158,7 +161,7 @@ export default function DriverDocumentsPage() {
     if (upload.error) {
       setBusy(null);
       setMessageTone("error");
-      setMessage(upload.error.message || "Document upload failed.");
+      setMessage(say("Document upload failed."));
       return;
     }
 
@@ -175,7 +178,7 @@ export default function DriverDocumentsPage() {
       await supabase.storage.from("driver-verification").remove([nextPath]);
       setBusy(null);
       setMessageTone("error");
-      setMessage(updateError.message || "The replacement could not be submitted for review.");
+      setMessage(say("The replacement could not be submitted for review."));
       return;
     }
 
@@ -186,7 +189,7 @@ export default function DriverDocumentsPage() {
     await refresh(profile.id);
     setBusy(null);
     setMessageTone("success");
-    setMessage("Document submitted. Your verification is under review, and you’ll stay offline until it is approved.");
+    setMessage(say("Document submitted. Your verification is under review, and you’ll stay offline until it is approved."));
   }
 
   function handleFile(kind: "license" | "registration") {
@@ -207,13 +210,13 @@ export default function DriverDocumentsPage() {
     <main className="nr-app nr-driver-profile-subpage" data-mode="driver">
       <div className="nr-driver-profile-subwrap">
         <header className="nr-profile-subhead">
-          <button className="nr-driver-icon-btn" onClick={() => router.replace("/driver/home?screen=profile")} aria-label="Back to driver profile">
+          <button className="nr-driver-icon-btn" onClick={() => router.replace("/driver/home?screen=profile")} aria-label={say("Back to driver profile")}>
             <Icon name="back" />
           </button>
           <div>
-            <span className="nr-driver-kicker">NEXRIDE · DRIVER</span>
-            <h1>Documents</h1>
-            <p>Private documents used to verify your driver account.</p>
+            <span className="nr-driver-kicker">NexRide · {say("Driver account")}</span>
+            <h1>{say("Documents")}</h1>
+            <p>{say("Private documents used to verify your driver account.")}</p>
           </div>
         </header>
 
@@ -224,7 +227,7 @@ export default function DriverDocumentsPage() {
             {profile.reviewStatus === "rejected" && (
               <div className="nr-profile-alert">
                 <Icon name="info" size={17} />
-                <span>{profile.rejectionReason || "Your latest submission needs an update."}</span>
+                <span>{profile.rejectionReason || say("Your latest submission needs an update.")}</span>
               </div>
             )}
 
@@ -238,19 +241,19 @@ export default function DriverDocumentsPage() {
             <section className="nr-profile-panel">
               <div className="nr-profile-panel-head">
                 <div>
-                  <h2>Verification documents</h2>
-                  <p>Replacing an approved document sends your verification back for review and keeps you offline until approval.</p>
+                  <h2>{say("Verification documents")}</h2>
+                  <p>{say("Replacing an approved document sends your verification back for review and keeps you offline until approval.")}</p>
                 </div>
               </div>
 
               <DocumentCard
-                title="Driver license"
+                title={say("Driver license")}
                 status={licenseStatus}
-                detail={profile.licenseNumber ? "License ending " + profile.licenseNumber.slice(-4) : "License number not provided"}
-                secondary={profile.licenseExpiry ? "Expires " + profile.licenseExpiry : "Expiry not provided"}
+                detail={profile.licenseNumber ? say("License ending ") + profile.licenseNumber.slice(-4) : say("License number not provided")}
+                secondary={profile.licenseExpiry ? say("Expires ") + profile.licenseExpiry : say("Expiry not provided")}
                 canView={Boolean(profile.licenseDocumentPath)}
                 onView={() => void openDocument(profile.licenseDocumentPath)}
-                actionLabel={incomplete ? "Complete verification" : licenseStatus === "Expired" ? "Replace renewed license" : "Replace document"}
+                actionLabel={incomplete ? say("Complete verification") : licenseStatus === "Expired" ? say("Replace renewed license") : say("Replace document")}
                 onAction={() => {
                   if (incomplete) router.push("/driver/verification");
                   else licenseInput.current?.click();
@@ -259,20 +262,20 @@ export default function DriverDocumentsPage() {
               >
                 {(licenseStatus === "Expired" || profile.reviewStatus === "rejected") && !incomplete && (
                   <label className="nr-safety-field">
-                    New license expiry
+                    {say("New license expiry")}
                     <input type="date" value={replacementExpiry} onChange={(event) => setReplacementExpiry(event.target.value)} />
                   </label>
                 )}
               </DocumentCard>
 
               <DocumentCard
-                title="Vehicle registration"
+                title={say("Vehicle registration")}
                 status={registrationStatus}
-                detail={profile.vehiclePlate ? "Plate " + profile.vehiclePlate : "Plate not provided"}
-                secondary="Vehicle registration"
+                detail={profile.vehiclePlate ? say("Plate ") + profile.vehiclePlate : say("Plate not provided")}
+                secondary={say("Vehicle registration")}
                 canView={Boolean(profile.vehicleRegistrationPath)}
                 onView={() => void openDocument(profile.vehicleRegistrationPath)}
-                actionLabel={incomplete ? "Complete verification" : "Replace document"}
+                actionLabel={incomplete ? say("Complete verification") : say("Replace document")}
                 onAction={() => {
                   if (incomplete) router.push("/driver/verification");
                   else registrationInput.current?.click();
@@ -286,14 +289,14 @@ export default function DriverDocumentsPage() {
 
             <div className="nr-profile-locked-note">
               <Icon name="shield" size={17} />
-              <span>License, vehicle, and document changes require review. Contact details can be changed in Settings.</span>
+              <span>{say("License, vehicle, and document changes require review. Contact details can be changed in Settings.")}</span>
             </div>
           </>
         ) : (
           <section className="nr-profile-state-card" role="alert">
             <Icon name="info" size={22} />
-            <strong>Documents unavailable</strong>
-            <p>{message || "Your verification documents could not be loaded."}</p>
+            <strong>{say("Documents unavailable")}</strong>
+            <p>{message || say("Your verification documents could not be loaded.")}</p>
           </section>
         )}
       </div>
@@ -324,19 +327,20 @@ function DocumentCard({
   disabled: boolean;
   children?: ReactNode;
 }) {
+  const say = useOperationalTranslation();
   return (
     <article className="nr-document-card">
       <div className="nr-document-card-head">
-        <div><h3>{title}</h3><small>Private verification file</small></div>
-        <span className={"nr-doc-status " + statusTone(status)}>{status}</span>
+        <div><h3>{title}</h3><small>{say("Private verification file")}</small></div>
+        <span className={"nr-doc-status " + statusTone(status)}>{say(status)}</span>
       </div>
       <div className="nr-document-meta">
-        <div><span>Details</span><strong>{detail}</strong></div>
-        <div><span>Record</span><strong>{secondary}</strong></div>
+        <div><span>{say("Details")}</span><strong>{detail}</strong></div>
+        <div><span>{say("Record")}</span><strong>{secondary}</strong></div>
       </div>
       {children}
       <div className="nr-doc-actions">
-        <button className="nr-doc-secondary" disabled={!canView || disabled} onClick={onView}><Icon name="search" size={15} /> View</button>
+        <button className="nr-doc-secondary" disabled={!canView || disabled} onClick={onView}><Icon name="search" size={15} /> {say("View")}</button>
         <button className="nr-doc-primary" disabled={disabled} onClick={onAction}><Icon name="share" size={15} /> {actionLabel}</button>
       </div>
     </article>

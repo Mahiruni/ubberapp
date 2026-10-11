@@ -1,10 +1,10 @@
 "use client";
-import Image from "next/image";
 import {
   createContext,
   useContext,
   useEffect,
   useRef,
+  useState,
   type ButtonHTMLAttributes,
   type InputHTMLAttributes,
   type ReactNode,
@@ -83,16 +83,7 @@ export function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
 export function Brand({ driver = false }: { driver?: boolean }) {
   const t = useTranslation();
   return (
-    <div className="nr-brand">
-      <Image
-        className="nr-brand-symbol"
-        src="/brand/nexride-mark.svg"
-        alt=""
-        width={32}
-        height={32}
-        aria-hidden="true"
-        unoptimized
-      />
+    <div className="nr-brand nr-text-wordmark">
       <div>
         <strong>NexRide</strong>
         {driver && <small>{t("driver")}</small>}
@@ -109,6 +100,20 @@ export function Spinner({ label }: { label?: string }) {
       aria-hidden={label ? undefined : true}
     />
   );
+}
+
+export function PasswordField({ label, ...props }: InputHTMLAttributes<HTMLInputElement> & { label: string }) {
+  const t = useTranslation();
+  const [visible, setVisible] = useState(false);
+  return <label className="nr-input-field nr-auth-password-field">
+    <span>{label}</span>
+    <div className="nr-auth-password-row">
+      <input {...props} type={visible ? "text" : "password"} aria-label={props["aria-label"] || label}/>
+      <button type="button" className="nr-auth-password-toggle" disabled={props.disabled} aria-pressed={visible} onClick={() => setVisible(value => !value)}>
+        {t(visible ? "entryHide" : "entryShow")}
+      </button>
+    </div>
+  </label>;
 }
 export function Button({
   children,

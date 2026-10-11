@@ -10,7 +10,9 @@ export async function getAccountRole(userId: string): Promise<string> {
     .from("profiles")
     .select("role")
     .eq("id", userId)
-    .maybeSingle();
+    // Startup owns the visible retry action. Do not hide a failed role lookup
+    // behind repeated SDK requests or fall back to a different account role.
+    .maybeSingle().retry(false);
 
   if (error) throw error;
   return cleanRole(data?.role);

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { EntryShell } from "./entry";
-import { Button, Icon, InputField, StatusBanner, useTranslation } from "./ui";
+import { Button, Icon, InputField, PasswordField, StatusBanner, useTranslation } from "./ui";
 import { supabase } from "../../lib/supabase";
 import {
   clearExplicitSignOut,
@@ -24,14 +24,30 @@ import { normalizeEthiopianPhone } from "../../lib/nexride-identity";
 export type RiderAuthMode = "signin" | "signup" | "forgot" | "reset";
 
 export function RiderAuthScreen({ mode }: { mode: RiderAuthMode }) {
+  const [entryRole, setEntryRole] = useState<"rider" | "driver">("rider");
+  useEffect(() => {
+    if (mode !== "forgot" && mode !== "reset") return;
+    let active = true;
+    try {
+      const target = JSON.parse(sessionStorage.getItem("nexride:verification-target") || "{}");
+      if (target.role === "driver" || new URLSearchParams(location.search).get("role") === "driver") {
+        setEntryRole("driver");
+        return;
+      }
+    } catch { /* Recovery remains available without device storage. */ }
+    void supabase.auth.getSession().then(({ data }) => {
+      if (active && data.session?.user.user_metadata?.role === "driver") setEntryRole("driver");
+    }).catch(() => {});
+    return () => { active = false; };
+  }, [mode]);
   return (
-    <EntryShell authMode={mode}>
-      <RiderAuth mode={mode} />
+    <EntryShell authMode={mode} role={entryRole}>
+      <RiderAuth mode={mode} entryRole={entryRole} />
     </EntryShell>
   );
 }
 
-function RiderAuth({ mode }: { mode: RiderAuthMode }) {
+function RiderAuth({ mode, entryRole }: { mode: RiderAuthMode; entryRole: "rider" | "driver" }) {
   const t = useTranslation();
   const router = useRouter();
   const [fullName, setFullName] = useState("");
@@ -61,7 +77,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
       if (params.get("created") === "1") {
         setNotice(t("accountCreatedConfirm"));
       } else if (confirmationLanding) {
-        setNotice("Email confirmed. Opening NexRide…");
+        setNotice(t("entryConfirmNotice"));
       }
     }
 
@@ -123,7 +139,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
           return;
         }
 
-        setError("Your Rider account could not be prepared. Please sign in again.");
+        setError(t("entryAccountNotReady"));
         setCheckingSession(false);
       } finally {
         restoringSession = false;
@@ -237,7 +253,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
         await supabase.auth.signOut({ scope: "local" });
         setError(t("riderAuthOnly"));
       } else if (cause instanceof RiderProfileBootstrapError) {
-        setError("Your Rider profile is not ready. Please try again.");
+        setError(t("entryAccountNotReady"));
       } else {
         setError(t("authFailure"));
       }
@@ -265,7 +281,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
     }
 
     if (password.length < 8) {
-      setError("Use a password with at least 8 characters.");
+      setError(t("entryPasswordHelp"));
       return;
     }
 
@@ -342,7 +358,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
       }
 
       setNotice(t("recoverySent"));
-      try { window.sessionStorage.setItem("nexride:verification-target", JSON.stringify({ email: email.trim().toLowerCase(), role: "rider", purpose: "recovery" })); } catch { /* Verification still works with manual entry. */ }
+      try { window.sessionStorage.setItem("nexride:verification-target", JSON.stringify({ email: email.trim().toLowerCase(), role: entryRole, purpose: "recovery" })); } catch { /* Verification still works with manual entry. */ }
       router.push("/rider/verify-email");
     } catch {
       setError(t("recoveryFailure"));
@@ -409,7 +425,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
         await supabase.auth.signOut({ scope: "local" });
         setError(t("riderAuthOnly"));
       } else if (cause instanceof RiderProfileBootstrapError) {
-        setError("Your Rider profile is not ready. Please try again.");
+        setError(t("entryAccountNotReady"));
       } else {
         setError(t("passwordUpdateFailure"));
       }
@@ -433,18 +449,18 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
   if (mode === "signin" && checkingSession) {
     return (
       <>
-        <span className="nr-rider-entry-kicker">NEXRIDE · RIDER</span>
-        <h1>Sign in</h1>
-        <p>Getting your account ready…</p>
+        <span className="nr-rider-entry-kicker">NEXRIDE · {t("rider")}</span>
+        <h1>{t("entrySignInHeadline")}</h1>
+        <p>{t("startupRestoring")}</p>
         {notice && <p className="nr-auth-notice" role="status">{notice}</p>}
         {error && <p className="nr-auth-error" role="alert">{error}</p>}
-        <StatusBanner>Restoring your account securely. You’ll continue automatically.</StatusBanner>
+        <StatusBanner>{t("startupRestoring")}</StatusBanner>
       </>
     );
   }
 
   const nav = mode !== "reset" ? (
-    <nav className="nr-rider-auth-nav" aria-label="Rider account">
+    <nav className="nr-rider-auth-nav" aria-label={t("entryRiderAccount")}>
       <Link href="/rider/sign-in" aria-current={mode === "signin" ? "page" : undefined}>
         {t("signIn")}
       </Link>
@@ -457,7 +473,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
   if (mode === "signup") {
     return (
       <>
-        <span className="nr-rider-entry-kicker">NEXRIDE · RIDER</span>
+        <span className="nr-rider-entry-kicker">NEXRIDE · {t("rider")}</span>
         <h1>{t("createAccount")}</h1>
         <p>{t("createAccountIntro")}</p>
         <form className="nr-profile-form nr-auth-signup-form" onSubmit={signUp} aria-busy={busy}>
@@ -478,11 +494,11 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
                 aria-describedby="rider-password-help"
               />
               <button type="button" className="nr-auth-password-toggle" onClick={() => setShowPassword((value) => !value)} aria-pressed={showPassword}>
-                {showPassword ? "Hide" : "Show"}
+                {t(showPassword ? "entryHide" : "entryShow")}
               </button>
             </div>
           </label>
-          <p id="rider-password-help" className="nr-auth-helper">Use at least 8 characters.</p>
+          <p id="rider-password-help" className="nr-auth-helper">{t("entryPasswordHelp")}</p>
           <label className="nr-input-field nr-auth-password-field">
             <span>{t("confirmPassword")}</span>
             <div className="nr-auth-password-row">
@@ -496,7 +512,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
                 onChange={(event) => setConfirmPassword(event.target.value)}
               />
               <button type="button" className="nr-auth-password-toggle" onClick={() => setShowPassword((value) => !value)} aria-pressed={showPassword}>
-                {showPassword ? "Hide" : "Show"}
+                {t(showPassword ? "entryHide" : "entryShow")}
               </button>
             </div>
           </label>
@@ -507,15 +523,15 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
             </Button>
           </div>
         </form>
-        <div className="nr-auth-divider"><span>or</span></div>
+        <div className="nr-auth-divider"><span>{t("entryOr")}</span></div>
         <p className="nr-auth-switch">
           {t("alreadyHaveAccount")} <Link href="/rider/sign-in">{t("signIn")}</Link>
         </p>
         <div className="nr-auth-role-note">
           <span><Icon name="user" size={20} /></span>
-          <div><strong>Rider account</strong><small>Book rides, save places, and manage your trips.</small></div>
+          <div><strong>{t("entryRiderAccount")}</strong><small>{t("entryRiderAccountHint")}</small></div>
         </div>
-        <Link className="nr-auth-role-link" href="/driver">Driving with NexRide? <strong>Switch to Driver →</strong></Link>
+        <Link className="nr-auth-role-link" href="/driver">{t("entrySwitchDriver")} <Icon name="arrow" size={16}/></Link>
       </>
     );
   }
@@ -523,7 +539,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
   if (mode === "forgot") {
     return (
       <>
-        <span className="nr-rider-entry-kicker">NEXRIDE · RIDER</span>
+        <span className="nr-rider-entry-kicker">NEXRIDE · {t(entryRole)}</span>
         {nav}
         <h1>{t("resetPassword")}</h1>
         <p>{t("resetPasswordIntro")}</p>
@@ -536,7 +552,7 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
           </Button>
         </form>
         <p className="nr-auth-switch">
-          <Link href="/rider/verify-email">Enter a recovery code</Link> · <Link href="/rider/sign-in">{t("signIn")}</Link>
+          <Link href={"/rider/verify-email?purpose=recovery&role=" + entryRole}>{t("entryCodeOption")}</Link> · <Link href={entryRole === "driver" ? "/driver/auth" : "/rider/sign-in"}>{t("signIn")}</Link>
         </p>
       </>
     );
@@ -545,19 +561,20 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
   if (mode === "reset") {
     return (
       <>
-        <span className="nr-rider-entry-kicker">NEXRIDE · RIDER</span>
+        <span className="nr-rider-entry-kicker">NEXRIDE · {t(entryRole)}</span>
         <h1>{t("chooseNewPassword")}</h1>
         <p>{t("resetPasswordIntro")}</p>
         <form className="nr-profile-form" onSubmit={updatePassword} aria-busy={busy}>
-          <InputField label={t("password")} type="password" autoComplete="new-password" required minLength={8} value={password} onChange={(event) => setPassword(event.target.value)} />
-          <InputField label={t("confirmPassword")} type="password" autoComplete="new-password" required minLength={8} value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} />
+          <PasswordField label={t("password")} autoComplete="new-password" required minLength={8} value={password} onChange={(event) => setPassword(event.target.value)} />
+          <p className="nr-auth-helper">{t("entryPasswordHelp")}</p>
+          <PasswordField label={t("confirmPassword")} autoComplete="new-password" required minLength={8} value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} />
           {error && <p className="nr-auth-error" role="alert">{error}</p>}
           <Button type="submit" disabled={busy} loading={busy}>
             {t(busy ? "updatingPassword" : "updatePassword")}
           </Button>
         </form>
         <p className="nr-auth-switch">
-          <Link href="/rider/forgot-password">{t("sendRecovery")}</Link>
+          <Link href={entryRole === "driver" ? "/rider/verify-email?purpose=recovery&role=driver" : "/rider/forgot-password"}>{t("sendRecovery")}</Link>
         </p>
       </>
     );
@@ -565,16 +582,16 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
 
   return (
     <>
-      <span className="nr-rider-entry-kicker">NEXRIDE · RIDER</span>
-      <h1>Sign in</h1>
-      <p>Sign in to book a ride or manage your trips.</p>
+      <span className="nr-rider-entry-kicker">NEXRIDE · {t("rider")}</span>
+      <h1>{t("entrySignInHeadline")}</h1>
+      <p>{t("entrySignInIntro")}</p>
       <form className="nr-profile-form" onSubmit={signIn} aria-busy={busy}>
         <InputField label={t("authEmail")} type="email" inputMode="email" autoComplete="username" required value={email} onChange={(event) => setEmail(event.target.value)} />
         <label className="nr-input-field nr-auth-password-field">
           <span>{t("password")}</span>
           <div className="nr-auth-password-row">
             <input type={showPassword ? "text" : "password"} aria-label={t("password")} autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} />
-            <button type="button" className="nr-auth-password-toggle" onClick={() => setShowPassword((value) => !value)} aria-pressed={showPassword}>{showPassword ? "Hide" : "Show"}</button>
+            <button type="button" className="nr-auth-password-toggle" onClick={() => setShowPassword((value) => !value)} aria-pressed={showPassword}>{t(showPassword ? "entryHide" : "entryShow")}</button>
           </div>
         </label>
         {error && <p className="nr-auth-error" role="alert">{error}</p>}
@@ -586,22 +603,22 @@ function RiderAuth({ mode }: { mode: RiderAuthMode }) {
 
       <Link className="nr-auth-inline-link" href="/rider/forgot-password">{t("forgotPassword")}</Link>
 
-      <div className="nr-auth-divider"><span>or</span></div>
+      <div className="nr-auth-divider"><span>{t("entryOr")}</span></div>
 
       <Link className="nr-auth-create-link" href="/rider/sign-up">
         <Icon name="plus" size={18} />
-        Create Rider Account
+        {t("createAccount")}
       </Link>
 
       <div className="nr-auth-role-note">
         <span><Icon name="user" size={20} /></span>
-        <div><strong>Rider account</strong><small>Book rides, manage trips, and keep your saved places close.</small></div>
+        <div><strong>{t("entryRiderAccount")}</strong><small>{t("entryRiderAccountHint")}</small></div>
       </div>
 
-      <Link className="nr-auth-role-link" href="/driver">Driving with NexRide? <strong>Switch to Driver →</strong></Link>
+      <Link className="nr-auth-role-link" href="/driver">{t("entrySwitchDriver")} <Icon name="arrow" size={16}/></Link>
 
       <details className="nr-auth-preview">
-        <summary>Explore without signing in</summary>
+        <summary>{t("explorePreview")}</summary>
         <StatusBanner compact>{t("previewInfo")}</StatusBanner>
         <Button variant="ghost" onClick={preview} disabled={busy}>{t("explorePreview")}</Button>
       </details>

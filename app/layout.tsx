@@ -20,6 +20,7 @@ import "./resilience.css";
 import "./live-location.css";
 import "./driver/driver-shell.css";
 import "./audio-system.css";
+import "./identity-experience.css";
 
 const description =
   "Book reliable rides across Addis Ababa with NexRide, a rider and driver mobility platform built for Ethiopia.";
@@ -149,7 +150,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
+    <html lang="en" dir="ltr">
       <head>
         <link
           rel="preload"

@@ -45,7 +45,7 @@ export async function loadDriverProfileData(userId: string): Promise<DriverProfi
       .maybeSingle(),
     supabase
       .from("drivers")
-      .select("vehicle,vehicle_plate,license_number,license_expiry,license_document_path,vehicle_registration_path,rating,review_status,rejection_reason,submitted_at,reviewed_at")
+      .select("vehicle,vehicle_color,vehicle_plate,license_number,license_expiry,license_document_path,vehicle_registration_path,rating,review_status,rejection_reason,submitted_at,reviewed_at")
       .eq("id", userId)
       .maybeSingle(),
     supabase
@@ -74,7 +74,7 @@ export async function loadDriverProfileData(userId: string): Promise<DriverProfi
     rating: number(driver?.rating),
     completedTrips: tripsResult.error ? null : tripsResult.count ?? 0,
     vehicle: text(driver?.vehicle) || text(metadata.vehicle),
-    vehicleColor: text(metadata.vehicle_color),
+    vehicleColor: text(driver?.vehicle_color) || text(metadata.vehicle_color),
     vehiclePlate: text(driver?.vehicle_plate) || text(metadata.vehicle_plate),
     licenseNumber: text(driver?.license_number),
     licenseExpiry: text(driver?.license_expiry),

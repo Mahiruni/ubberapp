@@ -8,6 +8,8 @@ import { signOutNexRide } from '../../lib/nexride-sign-out';
 import type { Language } from '../../lib/nexride-i18n';
 import type { PreviewProfile } from '../../lib/nexride-preview';
 import { Button, Dialog, Icon, InputField, useTranslation, type IconName } from './ui';
+import { AppearanceSelector } from "./appearance-selector";
+import { PermissionSettings } from "./permission-settings";
 import { NexRideFeedbackSettings } from './feedback-settings';
 import './rider-avatar-upload.css';
 
@@ -36,6 +38,7 @@ export function RiderSettings({language,setLanguage}: Pick<Props,'language'|'set
   useEffect(()=>{try{setAlerts(localStorage.getItem(ALERTS_KEY)!=='off')}catch{}},[]);
 
   return <div className="nr-account-settings nr-account-settings-v2">
+    <div className="nr-settings-block"><div><strong>{t("appearance")}</strong><small>{t("appearanceHint")}</small></div><AppearanceSelector role="rider"/></div>
     <div className="nr-settings-block">
       <div>
         <strong>{t('language')}</strong>
@@ -63,6 +66,9 @@ export function RiderSettings({language,setLanguage}: Pick<Props,'language'|'set
       }}/>
     </label>
     <NexRideFeedbackSettings role="rider" language={language}/>
+    <PermissionSettings/>
+    <a className="nr-settings-security-link" href="/account/manage"><Icon name="shield" size={20}/><span>{t("entryAccountSecurity")}</span><Icon name="chevron" size={17}/></a>
+    <nav className="nr-settings-legal" aria-label={say("Help & legal", "እገዛ እና ሕጋዊ መረጃ")}><a href="/support?role=rider">{say("Help & support", "እገዛ እና ድጋፍ")}</a><a href="/explore/terms">{t("entryTerms")}</a><a href="/explore/privacy">{t("entryPrivacy")}</a></nav>
     <p className="nr-muted">{say('System notifications are available when this device supports them and you allow permission. SMS and email alerts are not connected yet. Safety and trip status remain visible in the app.','የስርዓት ማሳወቂያዎች መሣሪያው ሲደግፍና ፈቃድ ሲሰጡ ይገኛሉ። የSMS እና ኢሜይል ማሳወቂያዎች ገና አልተገናኙም።')}</p>
     {feedback&&<p className="nr-settings-feedback" role="status">{feedback}</p>}
   </div>;
@@ -232,11 +238,11 @@ export function RiderProfile(props:Props) {
 
     <section className="nr-account-hero nr-account-identity-card">
       <div className="nr-account-avatar-wrap">
-        <div className="nr-account-avatar">
+        <button type="button" className="nr-account-avatar" disabled={!account || photoBusy} onClick={()=>photoInput.current?.click()} aria-label={say('Change profile photo','የመገለጫ ፎቶ ቀይር')}>
           {account?.avatar&&!photoFailed
             ?<Image src={account.avatar} alt={say('Your profile photo','የመገለጫዎ ፎቶ')} width={72} height={72} unoptimized onError={()=>setPhotoFailed(true)}/>
             :<span aria-label={say('Profile initials','የስም መጀመሪያ ፊደላት')}>{initials}</span>}
-        </div>
+        </button>
         {account&&<>
           <input
             ref={photoInput}
@@ -248,14 +254,7 @@ export function RiderProfile(props:Props) {
             disabled={photoBusy}
             tabIndex={-1}
           />
-          <button
-            type="button"
-            className="nr-rider-avatar-change"
-            onClick={()=>photoInput.current?.click()}
-            disabled={photoBusy}
-            aria-label={say('Change profile photo','የመገለጫ ፎቶ ቀይር')}
-            title={say('Change photo','ፎቶ ቀይር')}
-          ><Icon name={photoBusy?'refresh':'plus'} size={16}/></button>
+          <span className="nr-rider-avatar-change" aria-hidden="true"><Icon name={photoBusy?'refresh':'plus'} size={16}/></span>
         </>}
       </div>
       <div className="nr-account-identity">
@@ -297,12 +296,12 @@ export function RiderProfile(props:Props) {
 
       <section className="nr-account-secondary-actions" aria-label={say('More NexRide options','ተጨማሪ የNexRide አማራጮች')}>
         <button onClick={props.switchDriver}>
-          <span className="nr-account-row-icon"><Icon name="navigation" size={19}/></span>
+          <span className="nr-account-row-icon" data-tone="navigation"><Icon name="navigation" size={19}/></span>
           <span className="nr-account-row-copy"><strong>{say('Drive with NexRide','በNexRide ያሽከርክሩ')}</strong><small>{say('Open the Driver experience','የአሽከርካሪ ልምድን ይክፈቱ')}</small></span>
           <Icon name="chevron" size={17}/>
         </button>
         {props.isAdmin&&<button className="admin-access" onClick={()=>window.location.assign('/admin')}>
-          <span className="nr-account-row-icon"><Icon name="shield" size={19}/></span>
+          <span className="nr-account-row-icon" data-tone="shield"><Icon name="shield" size={19}/></span>
           <span className="nr-account-row-copy"><strong>Admin Control Center</strong><small>Operations and platform management</small></span>
           <Icon name="chevron" size={17}/>
         </button>}
@@ -335,9 +334,6 @@ export function RiderProfile(props:Props) {
           <InputField label={t('email')} type="email" readOnly={!!account} autoComplete="email" maxLength={254} value={form.email} onChange={e=>setForm({...form,email:e.target.value})}/>
         </fieldset>
         {account&&<>
-          <button type="button" className="nr-rider-avatar-edit-action" disabled={photoBusy} onClick={()=>photoInput.current?.click()}>
-            <Icon name="plus" size={17}/>{photoBusy?say('Saving photo…','ፎቶ በማስቀመጥ ላይ…'):say('Change profile photo · saved immediately','የመገለጫ ፎቶ ቀይር · ወዲያውኑ ይቀመጣል')}
-          </button>
           {photoError&&<p className="nr-account-error" role="alert">{photoError}</p>}
           <p className="nr-muted">{say('Verified email and phone changes require account ownership confirmation.','ኢሜይልን እና ስልክን ለመቀየር የባለቤትነት ማረጋገጫ ያስፈልጋል።')}</p>
           <button type="button" className="nr-account-edit" onClick={()=>window.location.assign("/account/manage")}>
@@ -353,7 +349,7 @@ export function RiderProfile(props:Props) {
         <h3>{say('Your data, clearly explained','ስለ ውሂብዎ ግልጽ መረጃ')}</h3>
         <p>{say('Signed-in profile details, bookings and feedback are stored with your NexRide account and protected by the existing account permissions.','የመገለጫ ዝርዝሮች፣ ጉዞዎችና አስተያየቶች በNexRide መለያዎ ይቀመጣሉ።')}</p>
         <p>{say('Preview details and preferences are stored in this browser. Location permission stays under your browser or device controls.','የማሳያ ዝርዝሮችና ምርጫዎች በዚህ አሳሽ ይቀመጣሉ።')}</p>
-        <p>{say('Account export and deletion requests are not available in the app yet.','የመለያ ውሂብ ማውረድና መሰረዝ ጥያቄዎች ገና አይገኙም።')}</p>
+        <a className="nr-settings-security-link" href="/account/manage">{t('entryAccountSecurity')}<Icon name="chevron" size={17}/></a>
       </div>
       :<>
         <div className="nr-signout-confirm">
@@ -379,7 +375,7 @@ function AccountSection({title,subtitle,children}:{title:string;subtitle:string;
 
 function AccountRow({icon,title,detail,onClick,accent=false}:{icon:IconName;title:string;detail:string;onClick:()=>void;accent?:boolean}) {
   return <button className={"nr-account-row"+(accent?" accent":"")} onClick={onClick}>
-    <span className="nr-account-row-icon"><Icon name={icon} size={19}/></span>
+    <span className="nr-account-row-icon" data-tone={icon}><Icon name={icon} size={19}/></span>
     <span className="nr-account-row-copy"><strong>{title}</strong><small>{detail}</small></span>
     <Icon name="chevron" size={17}/>
   </button>;

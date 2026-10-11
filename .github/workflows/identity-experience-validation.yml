@@ -1,0 +1,46 @@
+name: NexRide Identity Experience
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+    paths-ignore: ['**/*.md']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nexride-identity-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  browser:
+    name: Opening, accounts, portraits and live trips
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      NEXT_PUBLIC_APP_ENV: test
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      NEXT_PUBLIC_SUPABASE_URL: https://eyyvvwecpyctttiueban.supabase.co
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_kXFOrtwKkKmrqCtYTTuzdg__CjjABBf
+      NEXT_PUBLIC_MAPBOX_TOKEN: replace_me
+      PLAYWRIGHT_SERVER_COMMAND: npm run start -- --hostname 127.0.0.1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm install --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - name: Browser validation against the production build
+        run: npx playwright test tests/e2e/identity-experience.spec.ts tests/e2e/driver-portrait.spec.ts tests/e2e/trip-screens.spec.ts --project=chromium --project=mobile --workers=2
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: nexride-identity-report
+          path: playwright-report/

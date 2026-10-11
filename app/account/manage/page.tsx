@@ -13,7 +13,9 @@ import {
   normalizeEthiopianPhone,
   sameIdentityDocumentScope,
 } from "../../../lib/nexride-identity";
-import { LanguageContext } from "../../../components/nexride/ui";
+import { useAppearance } from "../../../lib/nexride-appearance";
+import { Brand, LanguageContext, PasswordField } from "../../../components/nexride/ui";
+import { useOperationalTranslation } from "../../../components/nexride/operational-i18n";
 import "./manage.css";
 import { identityActivityLabel } from "../../../lib/nexride-identity-events";
 
@@ -42,10 +44,12 @@ const maskPhone = (value: string) => value.length < 7 ? "••••" : value.s
 export default function NexRideManageAccountPage() {
   const router = useRouter();
   const language = useContext(LanguageContext);
+  const op = useOperationalTranslation();
   const say = (en: string, am: string) => language === "am" ? am : en;
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<UserRecord | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const appearance = useAppearance(profile?.role === "driver" ? "driver" : "rider");
   const [roles, setRoles] = useState<Role[]>([]);
   const [documents, setDocuments] = useState<Identity[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -72,6 +76,8 @@ export default function NexRideManageAccountPage() {
 
   async function reload() {
     const auth = await supabase.auth.getUser();
+    if (auth.error && auth.error.name !== "AuthSessionMissingError" &&
+      auth.error.status !== 401 && auth.error.status !== 403) throw auth.error;
     if (auth.error || !auth.data.user) {
       router.replace("/rider/sign-in");
       return;
@@ -79,7 +85,7 @@ export default function NexRideManageAccountPage() {
     const identity = auth.data.user;
     setUser(identity);
     const [pr, ro, docs, rev, del, phone, events] = await Promise.all([
-      supabase.from("profiles").select("id,role,full_name,phone,account_status").eq("id", identity.id).maybeSingle(),
+      supabase.from("profiles").select("id,role,full_name,phone,account_status").eq("id", identity.id).maybeSingle().retry(false),
       supabase.from("account_roles").select("role").eq("user_id", identity.id),
       supabase.from("account_identity_documents").select("id,document_type,issuing_country,status,created_at,expires_at,storage_path,storage_bucket").eq("user_id", identity.id).order("created_at",{ascending:false}),
       supabase.from("account_identity_reviews").select("id,category,status,created_at").eq("user_id",identity.id).order("created_at",{ascending:false}).limit(8),
@@ -101,6 +107,12 @@ export default function NexRideManageAccountPage() {
     setLoading(false);
   }
 
+  async function retryLoad() {
+    setError(""); setLoading(true);
+    try { await reload(); }
+    catch { setError("Unable to load account details. Please try again."); setLoading(false); }
+  }
+
   useEffect(() => {
     const signedOut = explicitSignOutRole(window.localStorage);
     if (signedOut) {
@@ -111,7 +123,7 @@ export default function NexRideManageAccountPage() {
     }
     let mounted = true;
     void reload().catch(() => {
-      if (mounted) { setError("Unable to load account details. Please refresh."); setLoading(false); }
+      if (mounted) { setError("Unable to load account details. Please try again."); setLoading(false); }
     });
     return () => { mounted = false; };
     // Only refresh on mount. Explicit action handlers call reload.
@@ -312,10 +324,10 @@ export default function NexRideManageAccountPage() {
   const activeDocs=documents.filter(d=>identityDocumentReusable(d.status));
   const existingDocument=activeDocs.find(d=>sameIdentityDocumentScope(d,documentType,documentCountry));
   return (
-    <main className="nex-manage">
+    <main className="nex-manage" data-theme={appearance.resolvedTheme}>
       <div className="nex-manage-top">
         <Link href={back} className="nex-manage-back">← {say("Back","ተመለስ")}</Link>
-        <div className="nex-manage-brand">N<span>EXRIDE</span> <small>· ACCOUNT</small></div>
+        <div className="nex-manage-brand"><Brand/></div>
       </div>
       <div className="nex-manage-content">
         <header className="nex-manage-intro">
@@ -323,12 +335,11 @@ export default function NexRideManageAccountPage() {
           <h1>{say("Manage account","መለያን ያስተዳድሩ")}</h1>
           <p>{say("One secure NexRide identity for Rider and Driver. Existing verified information is reused.","ለተሳፋሪና ለአሽከርካሪ አንድ ደህንነቱ የተጠበቀ መለያ።")}</p>
         </header>
-        {error && <div className="nex-manage-error" role="alert">{error}</div>}
-        {notice && <div className="nex-manage-notice" role="status">{notice}</div>}
+        {error && <div className="nex-manage-error" role="alert">{op(error)}</div>}
+        {notice && <div className="nex-manage-notice" role="status">{op(notice)}</div>}
         {loading ? <section className="nex-manage-card" aria-busy="true">{say("Loading your verified account…","መለያዎ በመጫን ላይ…")}</section> : !profile || !user ? (
           <section className="nex-manage-card">
-            {say("Sign in to access your account.","መለያዎን ለማየት ይግቡ።")}
-            <Link href="/rider/sign-in">{say("Sign in","ግባ")}</Link>
+            {error ? <><p>{op("Your account is temporarily unavailable. Your session has not been changed.")}</p><button className="nex-manage-retry" type="button" onClick={() => void retryLoad()}>{say("Try again", "እንደገና ይሞክሩ")}</button></> : <><p>{say("Sign in to access your account.","መለያዎን ለማየት ይግቡ።")}</p><Link href="/rider/sign-in">{say("Sign in","ግባ")}</Link></>}
           </section>
         ) : <>
           <section className="nex-manage-card nex-manage-identity">
@@ -338,18 +349,18 @@ export default function NexRideManageAccountPage() {
             <div>
               <span className="nex-manage-eyebrow">{say("PRIMARY ACCOUNT","ዋና መለያ")}</span>
               <h2>{profile.full_name || say("NexRide member","NexRide አባል")}</h2>
-              <p>{user.email || "Email unavailable"}</p>
+              <p>{user.email || op("Email unavailable")}</p>
               <div className="nex-manage-chips">
                 <span>{user.email_confirmed_at ? say("Email verified","ኢሜይል ተረጋግጧል") : say("Email pending","ኢሜይል በጥበቃ ላይ")}</span>
                 <span>{verifiedPhone ? say("Phone verified","ስልክ ተረጋግጧል") : say("Phone not verified","ስልክ አልተረጋገጠም")}</span>
-                <span>{profile.account_status}</span>
+                <span>{op(profile.account_status.replace(/_/g, " "))}</span>
               </div>
             </div>
           </section>
 
           <section className="nex-manage-card">
             <div className="nex-manage-section"><h2>{say("Personal information","የግል መረጃ")}</h2><p>{say("Your primary email and verified phone belong to this account.","የመለያዎ መረጃ።")}</p></div>
-            <div className="nex-manage-detail"><span>Email</span><strong>{user.email||"—"}</strong></div>
+            <div className="nex-manage-detail"><span>{say("Email", "ኢሜይል")}</span><strong>{user.email||"—"}</strong></div>
             <div className="nex-manage-detail"><span>{say("Contact phone","የስልክ ቁጥር")}</span><strong>{profile.phone||say("Not provided","የለም")}</strong></div>
             <div className="nex-manage-detail"><span>{say("Verified phone owner","የተረጋገጠ ስልክ")}</span><strong>{verifiedPhone ? maskPhone(verifiedPhone.phone_e164) : say("Not verified","አልተረጋገጠም")}</strong></div>
           </section>
@@ -370,15 +381,15 @@ export default function NexRideManageAccountPage() {
             <div className="nex-manage-section"><h2>{say("Verification center","የማረጋገጫ ማዕከል")}</h2><p>{say("Approved or pending documents are restored automatically and never requested twice.","የተረጋገጡ እና በጥበቃ ላይ ያሉ ሰነዶች በራስ ሰር ይቀመጣሉ።")}</p></div>
             {documents.length===0 ? <p className="nex-manage-muted">{say("No identity documents submitted yet.","ሰነድ ገና አልተላከም።")}</p>
               : documents.map(doc=><div className="nex-manage-detail" key={doc.id}>
-                  <span>{identityDocumentLabel(doc.document_type)} · {doc.issuing_country}</span>
-                  <strong className={"nex-manage-status "+doc.status}>{doc.status.replace("_"," ")}</strong>
+                  <span>{op(identityDocumentLabel(doc.document_type))} · {doc.issuing_country}</span>
+                  <strong className={"nex-manage-status "+doc.status}>{op(doc.status.replace(/_/g," "))}</strong>
                 </div>)}
             {profile.role==="driver" && <p className="nex-manage-muted"><Link href="/driver/profile/documents">{say("Review existing Driver and vehicle documents →","የአሽከርካሪ ሰነዶች →")}</Link></p>}
             <form onSubmit={e=>void sendIdentity(e)} className="nex-manage-form">
               <h3>{existingDocument?say("Document already on file","ሰነዱ ተቀምጧል"):say("Submit a new identity","አዲስ የማንነት ማረጋገጫ")}</h3>
               <label>{say("Document type","የሰነድ አይነት")}
                 <select value={documentType} onChange={e=>setDocumentType(e.target.value)}>
-                  {IDENTITY_DOCUMENT_TYPES.map(d=><option key={d.value} value={d.value}>{d.label}</option>)}
+                  {IDENTITY_DOCUMENT_TYPES.map(d=><option key={d.value} value={d.value}>{op(d.label)}</option>)}
                 </select>
               </label>
               <label>{say("Issuing country (2-letter code)","ሀገር")}
@@ -440,9 +451,8 @@ export default function NexRideManageAccountPage() {
               <button type="submit" disabled={busy}>{say("Request email change","ኢሜይል ቀይር")}</button>
             </form>
             <form className="nex-manage-form" onSubmit={e=>void changePassword(e)}>
-              <label>{say("New password","አዲስ የይለፍ ቃል")}
-                <input type="password" minLength={8} autoComplete="new-password" value={newPassword} onChange={e=>setNewPassword(e.target.value)} required/>
-              </label>
+              <PasswordField label={say("New password","አዲስ የይለፍ ቃል")} minLength={8} autoComplete="new-password" value={newPassword} onChange={e=>setNewPassword(e.target.value)} required/>
+              <small>{op("Use at least 8 password characters.")}</small>
               <button type="submit" disabled={busy}>{say("Update password","የይለፍ ቃል አዘምን")}</button>
             </form>
             <div className="nex-manage-actions">
@@ -453,14 +463,14 @@ export default function NexRideManageAccountPage() {
 
           <section className="nex-manage-card">
             <div className="nex-manage-section"><h2>{say("Account ownership & recovery","የመለያ ባለቤትነት")}</h2><p>{say("Request a private review. Never upload someone else's identity or expose private numbers.","የግል የመለያ ግምገማ ይጠይቁ።")}</p></div>
-            {reviews.map(r=><div className="nex-manage-detail" key={r.id}><span>{r.category.replace(/_/g," ")}</span><strong>{r.status}</strong></div>)}
+            {reviews.map(r=><div className="nex-manage-detail" key={r.id}><span>{op(r.category.replace(/_/g," "))}</span><strong>{op(r.status.replace(/_/g," "))}</strong></div>)}
             <form className="nex-manage-form" onSubmit={e=>void sendReview(e)}>
               <label>{say("Review type","የግምገማ አይነት")}
                 <select value={reviewCategory} onChange={e=>setReviewCategory(e.target.value)}>
-                  <option value="duplicate_identity">Duplicate identity</option>
-                  <option value="phone_ownership">Phone ownership</option>
-                  <option value="document_replacement">Replace an expired or incorrect document</option>
-                  <option value="account_recovery">Account recovery</option>
+                  <option value="duplicate_identity">{op("Duplicate identity")}</option>
+                  <option value="phone_ownership">{op("Phone ownership")}</option>
+                  <option value="document_replacement">{op("Replace an expired or incorrect document")}</option>
+                  <option value="account_recovery">{op("Account recovery")}</option>
                 </select>
               </label>
               <label>{say("Describe the issue (no passwords or full ID numbers)","የችግኙ መግለጫ")}
@@ -472,13 +482,11 @@ export default function NexRideManageAccountPage() {
 
           <section className="nex-manage-card nex-manage-danger">
             <div className="nex-manage-section"><h2>{say("Account deletion","መለያ መሰረዝ")}</h2><p>{say("Deletion requires reauthentication, active-trip and payment checks, and authorized review. Your data is not removed just by requesting.","ለመሰረዝ የደህንነት ማረጋገጫ ያስፈልጋል።")}</p></div>
-            {deletion && <p className="nex-manage-notice">Request: {deletion.status}</p>}
+            {deletion && <p className="nex-manage-notice">{op("Request")}: {op(deletion.status.replace(/_/g, " "))}</p>}
             {!deletion || !["pending","under_review","on_hold"].includes(deletion.status) ? <>
               {!deleteConfirm ? <button type="button" className="nex-manage-danger-button" onClick={()=>setDeleteConfirm(true)}>{say("Request account deletion","መለያ መሰረዝን ጠይቅ")}</button>
                 : <form className="nex-manage-form" onSubmit={e=>void requestDeletion(e)}>
-                    <label>{say("Confirm your password","የይለፍ ቃልዎን ያረጋግጡ")}
-                      <input type="password" autoComplete="current-password" value={deletePassword} onChange={e=>setDeletePassword(e.target.value)} required/>
-                    </label>
+                    <PasswordField label={say("Confirm your password","የይለፍ ቃልዎን ያረጋግጡ")} autoComplete="current-password" value={deletePassword} onChange={e=>setDeletePassword(e.target.value)} required/>
                     <div className="nex-manage-actions">
                       <button type="button" onClick={()=>{setDeleteConfirm(false);setDeletePassword("");}}>{say("No, keep my account","አይ፣ መለያው ይቆይ")}</button>
                       <button type="submit" className="nex-manage-danger-button" disabled={busy}>{say("Yes, request review","አዎ፣ ጥያቄውን ላክ")}</button>

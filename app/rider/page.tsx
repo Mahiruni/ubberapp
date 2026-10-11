@@ -2,12 +2,14 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { RiderSplash } from "../../components/nexride/splash";
 import { EntryShell } from "../../components/nexride/entry";
 import { Button, Icon, StatusBanner, useTranslation } from "../../components/nexride/ui";
 import {
   clearExplicitSignOut,
   enterRider,
   explicitSignOutRole,
+  StartupError,
   ONBOARDING_KEY,
   PREVIEW_ENABLED_KEY,
 } from "../../lib/nexride-startup";
@@ -31,23 +33,28 @@ function RiderWelcome() {
   const t = useTranslation();
   const router = useRouter();
   const [checkingSession, setCheckingSession] = useState(true);
+  const [startupError, setStartupError] = useState<StartupError | null>(null);
+  const [attempt, setAttempt] = useState(0);
   const [returningDriver, setReturningDriver] = useState(false);
   const [switchingRole, setSwitchingRole] = useState(false);
   const [switchError, setSwitchError] = useState("");
 
   useEffect(() => {
     let active = true;
+    setCheckingSession(true);
+    setStartupError(null);
     if (explicitSignOutRole(window.localStorage)) {
       setCheckingSession(false);
       return () => { active = false; };
     }
     supabase.auth.getSession().then(async ({ data, error }) => {
       if (!active || explicitSignOutRole(window.localStorage)) return;
-      if (error || !data.session) {
+      if (error) throw error;
+      if (!data.session) {
         setCheckingSession(false);
         return;
       }
-      const accountRole = await resolveSessionRole(data.session).catch(() => "");
+      const accountRole = await resolveSessionRole(data.session);
       if (!active || explicitSignOutRole(window.localStorage)) return;
       if (accountRole === "driver") {
         const prefersRider = window.localStorage.getItem(ACTIVE_ACCOUNT_ROLE_KEY) === "rider";
@@ -76,16 +83,16 @@ function RiderWelcome() {
           cause.code === "rider_profile_incomplete") {
           router.replace("/rider/complete-profile");
         } else {
-          setCheckingSession(false);
+          setStartupError(new StartupError("session"));
         }
       }
     }).catch(() => {
-      if (active) setCheckingSession(false);
+      if (active) setStartupError(new StartupError("session"));
     });
     return () => {
       active = false;
     };
-  }, [router]);
+  }, [router, attempt]);
 
   const continueAsRider = async () => {
     if (switchingRole) return;
@@ -99,7 +106,7 @@ function RiderWelcome() {
       }
       const { data: activated, error: activationError } = await supabase.rpc("account_activate_rider_role");
       if (activationError || activated !== "ready") {
-        setSwitchError("Please go Offline and complete any active Driver trip before switching to Rider.");
+        setSwitchError(t("entryRoleSwitchBlocked"));
         return;
       }
       await ensureRiderProfile(data.session);
@@ -112,7 +119,7 @@ function RiderWelcome() {
         cause.code === "rider_profile_incomplete") {
         router.push("/rider/complete-profile");
       } else {
-        setSwitchError("Unable to confirm Rider access right now. Please try again.");
+        setSwitchError(t("entryRoleSwitchUnavailable"));
       }
     } finally {
       setSwitchingRole(false);
@@ -130,7 +137,7 @@ function RiderWelcome() {
   };
 
   if (checkingSession) {
-    return <div className="nr-rider-entry-restoring" role="status" aria-live="polite">{t("startupRestoring")}</div>;
+    return <RiderSplash error={startupError} onRetry={() => setAttempt(value => value + 1)}/>;
   }
 
   return (
@@ -138,28 +145,28 @@ function RiderWelcome() {
       <div className="nr-rider-welcome-intro">
         <span className="nr-rider-entry-kicker">
           <Icon name="navigation" size={15} />
-          NEXRIDE · RIDER
+          NEXRIDE · {t("rider")}
         </span>
-        <h1>{t("welcome")}</h1>
-        <p>{t("brandMessage")}</p>
+        <h1>{t("entryWelcomeTitle")}</h1>
+        <p>{t("entryWelcomeIntro")}</p>
       </div>
 
-      <div className="nr-rider-entry-benefits" aria-label="Rider experience">
-        <span><Icon name="pin" size={18} /> Pickup & drop-off</span>
-        <span><Icon name="navigation" size={18} /> Ride choices</span>
-        <span><Icon name="shield" size={18} /> Safety first</span>
+      <div className="nr-rider-entry-benefits" aria-label={t("rider")}>
+        <span><Icon name="pin" size={18} /> {t("entryPickupDropoff")}</span>
+        <span><Icon name="navigation" size={18} /> {t("entryRideChoices")}</span>
+        <span><Icon name="shield" size={18} /> {t("entrySafetyFirst")}</span>
       </div>
 
       {returningDriver && <div className="nr-auth-role-note" role="status">
         <Icon name="check" size={20} />
-        <div><strong>Welcome to NexRide Rider</strong><small>Already driving with NexRide? Use your existing account to start riding.</small></div>
+        <div><strong>{t("entryWelcomeRider")}</strong><small>{t("entryReturningDriver")}</small></div>
       </div>}
       {switchError && <p className="nr-auth-error" role="alert">{switchError}</p>}
       <div className="nr-rider-entry-actions">
         {returningDriver ? (
           <button className="nr-rider-get-started" type="button" disabled={switchingRole}
             onClick={() => void continueAsRider()}>
-            <span>{switchingRole ? "Preparing Rider access…" : "Continue with NexRide"}</span>
+            <span>{switchingRole ? t("entryPreparingRider") : t("entryContinue")}</span>
             <Icon name="arrow" size={20} />
           </button>
         ) : <Link className="nr-rider-get-started" href="/rider/sign-up">
@@ -167,7 +174,7 @@ function RiderWelcome() {
           <Icon name="arrow" size={20} />
         </Link>}
         <Link className="nr-rider-welcome-sign-in" href={returningDriver ? "/driver/home" : "/rider/sign-in"}>
-          <span>{returningDriver ? "Return to Driver" : t("signIn")}</span>
+          <span>{returningDriver ? t("entryReturnDriver") : t("signIn")}</span>
           <Icon name="chevron" size={19} />
         </Link>
       </div>
