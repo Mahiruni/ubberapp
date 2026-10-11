@@ -18,6 +18,7 @@ import {
 import "../../nexride.css";
 import "./driver-request.css";
 import "../../detail-system.css";
+import "../driver-wrapper-brand.css";
 
 type OfferStatus = "pending" | "accepted" | "declined" | "withdrawn" | "expired";
 
@@ -716,7 +717,7 @@ export default function DriverRideRequestPage() {
           <>
             <div className="nr-request-heading">
               <div>
-                <span className="nr-request-eyebrow">NEW REQUEST</span>
+                <span className="nr-request-eyebrow">NexRide · {op("New request")}</span>
                 <h1>New ride request</h1>
               </div>
               {offer.expires_at && secondsRemaining !== null && (
