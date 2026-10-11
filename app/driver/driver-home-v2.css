@@ -582,3 +582,31 @@
 /* Biloo-inspired Driver home accent, scoped to non-semantic surfaces. */
 .nr-driver-app-shell{--driver-accent:#5145e5;--driver-success:#00b77a}
 .nr-driver-home-quick-actions button:focus-visible{outline-color:#5145e5}
+
+/* Live Driver availability should distinguish the user-selected Online mode
+   from accurate, server-confirmed GPS. Compact and non-interactive over map. */
+.nr-driver-home-cockpit .nr-driver-presence-label{
+  position:absolute;
+  z-index:18;
+  top:calc(max(68px,env(safe-area-inset-top,0px) + 60px));
+  left:max(12px,env(safe-area-inset-left,0px));
+  max-width:min(80vw,340px);
+  pointer-events:none;
+  border:1px solid rgba(185,168,255,.35);
+  border-radius:999px;
+  background:rgba(40,33,127,.91);
+  color:#f7f7ff;
+  padding:9px 13px;
+  font-size:11px;
+  font-weight:800;
+  line-height:1.4;
+  box-shadow:0 5px 18px rgba(25,23,42,.16);
+  backdrop-filter:blur(10px);
+}
+.nr-driver-home-cockpit .nr-driver-presence-label[data-ready="true"]{
+  border-color:rgba(197,240,0,.56);
+  color:#c5f000;
+}
+@media(prefers-reduced-motion:reduce){
+  .nr-driver-home-cockpit .nr-driver-presence-label{transition:none!important}
+}
