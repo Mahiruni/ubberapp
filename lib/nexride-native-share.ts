@@ -1,7 +1,15 @@
 /** Android's native system Sharesheet with browser/clipboard fallbacks. */
+import { publicConfig } from "./runtime-config";
+
 export async function shareNexRideTripLink(url:string):Promise<"shared"|"copied"|"cancelled"|"unavailable"> {
- if(typeof window==="undefined"||!/^https:\/\/ubberapp\.vercel\.app\/share\/trip\/[A-Za-z0-9_-]{43}$/.test(url))
-  return "unavailable";
+ if(typeof window==="undefined")return "unavailable";
+ try {
+  const parsed=new URL(url);
+  const trusted=new URL(publicConfig.appUrl);
+  if(parsed.protocol!=="https:" || parsed.origin!==trusted.origin ||
+     !/^\/share\/trip\/[A-Za-z0-9_-]{43}$/.test(parsed.pathname) ||
+     parsed.search || parsed.hash)return "unavailable";
+ }catch{return "unavailable";}
  const text="Follow my NexRide trip safely. This link expires automatically and can be revoked.";
  try {
   const {Capacitor}=await import("@capacitor/core");
