@@ -22,7 +22,7 @@ export default function AdminDriverPhotos() {
     try {
       const {data,error:e} = await supabase.from("driver_profile_photos")
         .select("id,driver_id,storage_path,created_at,status,rejection_reason")
-        .eq("status","pending_review").order("created_at",{ascending:true}).limit(100);
+        .eq("status","approved").order("created_at",{ascending:true}).limit(100);
       if(e) throw e;
       const list = (data||[]) as Photo[];
       const signed = await Promise.all(list.map(async p => {
@@ -32,7 +32,7 @@ export default function AdminDriverPhotos() {
       setPhotos(list);
       setUrls(Object.fromEntries(signed));
     } catch {
-      setError("Unable to load pending photos. Check your connection and permissions.");
+      setError("Unable to load active portraits. Check your connection and permissions.");
     } finally { setLoading(false); }
   }, []);
 
@@ -62,7 +62,7 @@ export default function AdminDriverPhotos() {
         p_photo_id:id,p_approve:approve,p_reason:approve?null:why
       });
       if(e) throw e;
-      setMessage(approve?"Driver portrait approved.":"Driver portrait rejected.");
+      setMessage(approve?"Driver portrait approved.":"Driver portrait removed.");
       await load();
     } catch {setError("Review could not be saved. Refresh the queue and try again.");}
     finally {setBusy("");}
@@ -76,21 +76,21 @@ export default function AdminDriverPhotos() {
       <div className="nr-photo-admin-heading">
         <Link href="/admin" className="nr-photo-admin-back">← Admin dashboard</Link>
         <span className="nr-photo-admin-kicker">NEXRIDE / TRUST & SAFETY</span>
-        <h1>Driver photo verification</h1>
-        <p>Review pending portraits before they appear on active Rider trips. Originals stay in private storage.</p>
+        <h1>Driver portrait moderation</h1>
+        <p>Driver portraits are active immediately. Remove a portrait only for a documented safety or policy violation. Driver eligibility and documents retain their separate review.</p>
       </div>
       <button type="button" className="nr-photo-admin-refresh" onClick={()=>void load()} disabled={loading||!!busy}>
         {loading?"Refreshing…":"↻ Refresh queue"}
       </button>
     </header>
     <section className="nr-photo-admin-stats" aria-label="Review queue status">
-      <div><strong>{photos.length}</strong><span>Awaiting review</span></div>
+      <div><strong>{photos.length}</strong><span>Active portraits</span></div>
       <div><strong>Private</strong><span>Storage protection</span></div>
-      <div><strong>Approval</strong><span>Required for Riders</span></div>
+      <div><strong>Immediate</strong><span>Driver photo activation</span></div>
     </section>
     {error&&<p role="alert" className="nr-photo-admin-error">{error}</p>}
     {message&&<p role="status" className="nr-photo-admin-success">{message}</p>}
-    {!loading&&photos.length===0&&!error&&<section className="nr-photo-admin-empty"><span aria-hidden="true">✓</span><h2>All caught up</h2><p>No Driver portraits currently await review.</p></section>}
+    {!loading&&photos.length===0&&!error&&<section className="nr-photo-admin-empty"><span aria-hidden="true">✓</span><h2>All caught up</h2><p>No active Driver portraits to moderate.</p></section>}
     {loading&&photos.length===0&&<p className="nr-photo-admin-loading" role="status">Loading secure review queue…</p>}
     <div className="nr-photo-admin-list">
       {photos.map(photo=><article className="nr-photo-admin-card" key={photo.id} aria-label="Driver submitted photo">
@@ -98,17 +98,17 @@ export default function AdminDriverPhotos() {
           {urls[photo.id]?<img src={urls[photo.id]} alt="Private portrait submitted by a Driver for review"/>:<div role="status">Preview unavailable. Refresh to retry.</div>}
         </div>
         <div className="nr-photo-admin-details">
-          <div className="nr-photo-admin-meta"><span className="nr-photo-admin-pending">Pending review</span><time dateTime={photo.created_at}>{new Date(photo.created_at).toLocaleString()}</time></div>
+          <div className="nr-photo-admin-meta"><span className="nr-photo-admin-pending">Active portrait</span><time dateTime={photo.created_at}>{new Date(photo.created_at).toLocaleString()}</time></div>
           <h2>Driver portrait</h2>
           <p className="nr-photo-admin-id">Account: {photo.driver_id}</p>
-          <p className="nr-photo-admin-guidance">Approve only if the image clearly shows one identifiable person, without filters or obstructions.</p>
-          <label htmlFor={"photo-reason-"+photo.id}>Reason for rejection</label>
+          <p className="nr-photo-admin-guidance">Record the safety or policy violation before removing this portrait.</p>
+          <label htmlFor={"photo-reason-"+photo.id}>Moderation reason</label>
           <textarea id={"photo-reason-"+photo.id} value={reason[photo.id]||""}
             onChange={e=>setReason(s=>({...s,[photo.id]:e.target.value}))}
-            placeholder="Required when rejecting this photo" rows={2} maxLength={500} disabled={busy===photo.id}/>
+            placeholder="Required when removing this photo" rows={2} maxLength={500} disabled={busy===photo.id}/>
           <div className="nr-photo-admin-actions">
-            <button type="button" className="nr-photo-admin-approve" disabled={!!busy||!urls[photo.id]} onClick={()=>void review(photo.id,true)}>{busy===photo.id?"Saving…":"✓ Approve photo"}</button>
-            <button type="button" className="nr-photo-admin-reject" disabled={!!busy} onClick={()=>void review(photo.id,false)}>Reject photo</button>
+
+            <button type="button" className="nr-photo-admin-reject" disabled={!!busy} onClick={()=>void review(photo.id,false)}>Remove portrait</button>
           </div>
         </div>
       </article>)}

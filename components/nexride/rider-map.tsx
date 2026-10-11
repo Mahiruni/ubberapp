@@ -12,6 +12,7 @@ import { endpointName } from "./destination";
 import type { Journey } from "../../lib/nexride-journey";
 import type { LocationStatus, RiderLocation } from "../../lib/nexride-location";
 import { nexrideApiFetch } from "../../lib/nexride-api-auth";
+import type { TripSnapshot } from '../../lib/nexride-trip-data';
 import { withinNearbyDriverRadius } from "../../lib/nexride-nearby-vehicles";
 import { driverRadarCollection, driverGpsQuality } from "../../lib/nexride-driver-radar";
 import {
@@ -532,6 +533,7 @@ export function RiderMap({
   showSearch = true,
   showNativeControls = true,
   showNearbyDrivers = false,
+  assignedTrip,
   showDriverRadar = false,
   onStartRoute,
 }: {
@@ -553,6 +555,7 @@ export function RiderMap({
   showSearch?: boolean;
   showNativeControls?: boolean;
   showNearbyDrivers?: boolean;
+  assignedTrip?: TripSnapshot | null;
   /** Real GPS-centered 500 m and 1 km rings, never simulated Rider positions. */
   showDriverRadar?: boolean;
   onStartRoute?: () => void;
@@ -612,6 +615,10 @@ export function RiderMap({
   const [fasterNotice, setFasterNotice] = useState<number | null>(null);
   const [gpsStale, setGpsStale] = useState(false);
   const [nearbyDrivers, setNearbyDrivers] = useState<NearbyDriver[]>([]);
+  const assignedFix = assignedTrip && ['approaching','arrived','in_trip'].includes(assignedTrip.status) ? assignedTrip.tracking : null;
+  const assignedDrivers: NearbyDriver[] = assignedFix && (!assignedTrip?.driver || assignedFix.driverId === assignedTrip.driver.id)
+    ? [{ key: assignedFix.driverId, lat: assignedFix.lat, lng: assignedFix.lng, updatedAt: new Date(assignedFix.updatedAt).toISOString(), distanceMeters: 0 }] : [];
+  const displayedDrivers = assignedTrip ? assignedDrivers : nearbyDrivers;
   trafficVisibleRef.current = trafficVisible;
   driverRadarRef.current = showDriverRadar;
 
@@ -1272,7 +1279,7 @@ export function RiderMap({
     const map = mapRef.current;
     if (!mounted || !map) return;
 
-    if (!showNearbyDrivers) {
+    if (!showNearbyDrivers && !assignedTrip) {
       for (const entry of nearbyDriverMarkers.current.values()) {
         if (entry.animation !== null) cancelAnimationFrame(entry.animation);
         entry.marker.remove();
@@ -1285,7 +1292,7 @@ export function RiderMap({
     void import("mapbox-gl").then((mapboxgl) => {
       if (disposed || !mapRef.current) return;
       const currentMap = mapRef.current;
-      const visible = new Set(nearbyDrivers.map((driver) => driver.key));
+      const visible = new Set(displayedDrivers.map((driver) => driver.key));
 
       for (const [key, entry] of nearbyDriverMarkers.current) {
         if (visible.has(key)) continue;
@@ -1298,7 +1305,7 @@ export function RiderMap({
         "(prefers-reduced-motion: reduce)",
       ).matches;
 
-      for (const driver of nearbyDrivers) {
+      for (const driver of displayedDrivers) {
         const target: [number, number] = [driver.lng, driver.lat];
         const existing = nearbyDriverMarkers.current.get(driver.key);
 
@@ -1367,7 +1374,7 @@ export function RiderMap({
     return () => {
       disposed = true;
     };
-  }, [nearbyDrivers, showNearbyDrivers, mounted, language]);
+  }, [displayedDrivers, assignedTrip, showNearbyDrivers, mounted, language]);
 
   useEffect(() => {
     const map = mapRef.current;

@@ -12,7 +12,7 @@ import {
 } from "./ui";
 import { TripExperience } from "./trip-experience";
 import { useRiderTrips } from "../../lib/nexride-use-trips";
-import { tripStatus } from "../../lib/nexride-trip-data";
+import { tripStatus, type TripSnapshot } from "../../lib/nexride-trip-data";
 import { RiderHomePanel } from "./rider-home";
 import {
   emptyHomePlaces,
@@ -56,7 +56,9 @@ export function RiderWorkspace({
   onBookingPending,
   matching,
   onTripSource,
+  onTripSnapshot,
 }: {
+  onTripSnapshot?: (snapshot: TripSnapshot | null) => void;
   screen: RiderScreen;
   navigate: (s: RiderScreen) => void;
   onSafety: () => void;
@@ -262,7 +264,7 @@ export function RiderWorkspace({
       changeCategory={() => { matching.clear(); navigate('rides'); }}
       previewAssigned={() => { setSelectedTripId(null); matching.clear(); navigate('trip'); }} />;
   if (screen === "trip" || screen === "live" || screen === "summary")
-    return <TripExperience screen={screen} tripId={selectedTripId} userId={realTrips.userId} preview={trip}
+    return <TripExperience onSnapshot={onTripSnapshot} screen={screen} tripId={selectedTripId} userId={realTrips.userId} preview={trip}
       navigate={navigate} setPreview={setTrip} safety={onSafety} onCancelled={() => void realTrips.refresh()} />;
   if (screen === "wallet")
     return (

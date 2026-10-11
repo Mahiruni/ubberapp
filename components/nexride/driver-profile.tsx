@@ -4,7 +4,7 @@ import Image from "next/image";
 import { DriverPhotoManager } from "./driver-photo-manager";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Dialog, Icon, type IconName } from "./ui";
+import { Dialog, Icon, useTranslation, type IconName } from "./ui";
 import { supabase } from "../../lib/supabase";
 import { signOutNexRide } from "../../lib/nexride-sign-out";
 import { nexrideApiFetch } from "../../lib/nexride-api-auth";
@@ -27,6 +27,7 @@ export function DriverProfileScreen({
   onSafety: () => void;
 }) {
   const router = useRouter();
+  const t = useTranslation();
   const [profile, setProfile] = useState<DriverProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -269,7 +270,7 @@ export function DriverProfileScreen({
 
       {!profile.avatarUrl && (
         <p className="nr-profile-photo-note">
-          Tap your profile avatar to upload a verified photo. Riders see it only after approval.
+          {t('photoInstantNote')}
         </p>
       )}
 

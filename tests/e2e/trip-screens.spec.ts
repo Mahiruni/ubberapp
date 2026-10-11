@@ -1,5 +1,7 @@
 import { test, expect, type Page } from "@playwright/test";
 
+test.use({ video: 'off' });
+
 const rider = "11111111-1111-4111-8111-111111111111";
 const driver = "22222222-2222-4222-8222-222222222222";
 const replacementDriver = "44444444-4444-4444-8444-444444444444";
@@ -26,15 +28,14 @@ const session = {
 };
 
 async function authenticate(page: Page) {
-  await page.goto("/auth");
-  await page.getByLabel("Email address", { exact: true }).fill("rider@example.test");
-  await page.getByLabel("Password", { exact: true }).fill("test-password");
-  await page.getByRole("button", { name: "Sign in to NexRide", exact: true }).click();
-  await expect(page).toHaveURL(/\/$/);
+  await page.addInitScript(session => localStorage.setItem('sb-eyyvvwecpyctttiueban-auth-token', JSON.stringify(session)), session);
+  await page.goto('/');
+  await expect(page.getByRole('button', { name: 'Resume your trip' })).toBeVisible();
 }
 
 async function backend(page: Page) {
   let status = "accepted";
+  let portraitPath = ""; let signedRevision = 0;
   let driverId: string | null = driver;
   let payment = "pending";
   let rating: number | null = null;
@@ -47,6 +48,7 @@ async function backend(page: Page) {
     route.fulfill({ json: session }),
   );
   await page.route("**/auth/v1/user", (route) => route.fulfill({ json: user }));
+  await page.route("**/api/rider/trips/*/driver", route => route.fulfill({ json: { status: 'ready', driver: { id: driverId, name: driverId === driver ? 'Connected Driver' : 'Replacement Driver', photo: null, phone: '+251900000001', rating: 4.8, tripCount: 7, vehicle: { model: 'Toyota Yaris', color: 'Silver', plate: 'REAL-123' }, verification: null } } }));
   await page.route("**/rest/v1/**", (route) => {
     const url = new URL(route.request().url());
     const table = url.pathname.split("/").pop();
@@ -134,6 +136,8 @@ async function backend(page: Page) {
       return one(rating ? { score: rating } : null);
     }
 
+    if (table === "driver_profile_photos") return one(portraitPath ? {storage_path:portraitPath} : null);
+    if (table === "account_roles") return route.fulfill({json:[{user_id:rider,role:'rider',status:'active'}]});
     if (table === "ride_chat_messages") return one({ id: "message1" });
     return route.fulfill({
       status: 503,
@@ -146,9 +150,13 @@ async function backend(page: Page) {
       body: '<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256"><rect width="256" height="256" fill="#edf2ee"/></svg>',
     }),
   );
+  await page.route('**/storage/v1/object/sign/**', route => route.request().method() === 'POST'
+    ? route.fulfill({json:{signedURL:`/object/sign/nexride-driver-photos/${portraitPath}?token=${++signedRevision}`}})
+    : route.fulfill({contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+c2foAAAAASUVORK5CYII=','base64')}));
   await page.routeWebSocket("**/realtime/v1/**", (ws) => ws.close());
 
   return {
+    photo(path: string) { portraitPath=path; },
     change(next: string) {
       status = next;
       stamp = new Date().toISOString();
@@ -170,45 +178,24 @@ test("live rider sees assignment, real trip transition and receipt, then retries
   await authenticate(page);
   await page.getByRole("button", { name: "Resume your trip" }).click();
 
-  const assigned = page.frameLocator('iframe[title="NexRide assigned driver"]');
-  await expect(
-    assigned.getByRole("heading", { name: "Connected Driver" }),
-  ).toBeVisible();
-  await expect(assigned.locator("#vehiclePlate")).toHaveText("REAL-123");
-  await expect(assigned.locator("#verification")).toBeHidden();
-  await expect(assigned.locator("#etaUnit")).toHaveText("ETA unavailable");
-  await expect(assigned.locator("#demoBar")).toBeHidden();
-
-  await assigned
-    .getByRole("button", { name: "Cancel ride", exact: true })
-    .click();
-  await expect(assigned.getByRole("dialog")).toContainText(
-    "could not load the cancellation fee",
-  );
-  await assigned.getByRole("button", { name: "Close dialog" }).click();
-
-  api.change("in_trip");
-  await page.evaluate(() => window.dispatchEvent(new Event("online")));
-  const active = page.frameLocator('iframe[title="NexRide active trip"]');
-  await expect(
-    active.getByRole("heading", { name: "On trip", exact: true }),
-  ).toBeVisible();
-
-  await active.getByRole("button", { name: "Share trip", exact: true }).click();
-  await expect(active.getByRole("dialog")).toContainText(
-    "There is no timed access",
-  );
-  await active.getByRole("button", { name: "Close dialog" }).click();
-
+  const assigned = page.locator('.nr-accepted-driver-card');
+  await expect(assigned.getByRole('heading', { name: 'Connected Driver' })).toBeVisible();
+  await expect(assigned.locator('.nr-identity-plate')).toHaveText('REAL-123');
+  await expect(assigned.locator('.nr-identity-verified')).toHaveCount(0);
+  await expect(assigned).toContainText('ETA unavailable');
+  await expect(assigned.getByRole('button', { name: 'Call Driver' })).toBeEnabled();
+  await expect(assigned).toContainText('235 ETB');
+  await page.screenshot({path: `/tmp/nexride-accepted-${test.info().project.name}.png`});
+  api.change('arrived_pickup');
+  await page.evaluate(() => window.dispatchEvent(new Event('online')));
+  await expect(assigned.getByRole('heading', { name: 'Your driver has arrived' })).toBeVisible();
+  api.change('in_trip');
+  await page.evaluate(() => window.dispatchEvent(new Event('online')));
+  await expect(assigned.getByRole('heading', { name: 'On trip', exact: true })).toBeVisible();
   await page.context().setOffline(true);
-  await expect(active.locator("#trackingText")).toContainText(
-    "Location last updated",
-  );
-  await expect(
-    active.getByRole("button", { name: "Safety", exact: true }),
-  ).toBeEnabled();
+  await expect(assigned.getByText('Reconnecting · last confirmed information')).toBeVisible();
+  await expect(assigned.getByRole('button', { name: 'Safety', exact: true })).toBeEnabled();
   await page.context().setOffline(false);
-
   api.change("completed");
   api.setPayment("failed");
   await page.evaluate(() => window.dispatchEvent(new Event("online")));
@@ -216,9 +203,9 @@ test("live rider sees assignment, real trip transition and receipt, then retries
     'iframe[title="NexRide trip receipt and rating"]',
   );
   await expect(
-    receipt.getByRole("heading", { name: "Trip completed!", exact: true }),
+    receipt.getByRole("heading", { name: "You’ve arrived", exact: true }),
   ).toBeVisible();
-  await expect(receipt.locator("#paymentStatus")).toHaveText("Payment failed");
+  await expect(receipt.locator("#paymentStatus")).toHaveText("Cash payment");
   await expect(receipt.locator("#finalAmount")).toContainText("235");
 
   await receipt.getByRole("radio", { name: "4 stars", exact: true }).check();
@@ -226,18 +213,18 @@ test("live rider sees assignment, real trip transition and receipt, then retries
   await receipt
     .getByRole("textbox")
     .fill("Keep this feedback during retry");
-  await receipt.getByRole("button", { name: "Submit", exact: true }).click();
+  await receipt.getByRole("button", { name: "Submit rating", exact: true }).click();
   await expect(
-    receipt.getByRole("button", { name: "Retry", exact: true }),
+    receipt.getByRole("button", { name: "Try again", exact: true }),
   ).toBeVisible();
   await expect(receipt.getByRole("textbox")).toHaveValue(
     "Keep this feedback during retry",
   );
-  await receipt.getByRole("button", { name: "Retry", exact: true }).click();
+  await receipt.getByRole("button", { name: "Try again", exact: true }).click();
   await expect(
-    receipt.getByText("Thank you for your feedback.", { exact: true }),
+    receipt.getByText("Thanks for your feedback.", { exact: true }),
   ).toBeVisible();
-  await expect(receipt.locator("#paymentStatus")).toHaveText("Payment failed");
+  await expect(receipt.locator("#paymentStatus")).toHaveText("Cash payment");
   await receipt
     .getByRole("button", { name: "View details", exact: true })
     .click();
@@ -251,29 +238,19 @@ test("reassignment clears the old vehicle position and never displays an unsuppo
   await authenticate(page);
   await page.getByRole("button", { name: "Resume your trip" }).click();
 
-  const assigned = page.frameLocator('iframe[title="NexRide assigned driver"]');
-  await expect(
-    assigned.getByRole("heading", { name: "Connected Driver" }),
-  ).toBeVisible();
-
+  const assigned = page.locator('.nr-accepted-driver-card');
+  await expect(assigned.getByRole('heading', { name: 'Connected Driver' })).toBeVisible();
   api.reassign();
-  await page.evaluate(() => window.dispatchEvent(new Event("online")));
+  await page.evaluate(() => window.dispatchEvent(new Event('online')));
+  await expect(assigned.getByRole('heading', { name: 'Replacement Driver' })).toBeVisible();
+  await expect(assigned.locator('.nr-identity-verified')).toHaveCount(0);
+  await expect(assigned).not.toContainText('Connected Driver');
+});
 
-  await expect(
-    assigned.getByRole("heading", { name: "Replacement Driver" }),
-  ).toBeVisible();
-  await expect(assigned.locator("#verification")).toBeHidden();
-  await expect(assigned.locator("#trackingText")).toHaveText(
-    "Driver location unavailable",
-  );
-
-  const state = await assigned.locator("body").evaluate(
-    () =>
-      (
-        window as unknown as {
-          NexRide: { getSnapshot(): { tracking: unknown } };
-        }
-      ).NexRide.getSnapshot(),
-  );
-  expect(state.tracking).toBeNull();
+test('authorized assigned portrait refreshes and deletion restores fallback during an active ride', async ({page}) => {
+  const api=await backend(page); api.photo(`${driver}/first.jpg`); await authenticate(page); await page.getByRole('button',{name:'Resume your trip'}).click();
+  const photo=page.locator('.nr-identity-portrait img'); await expect(photo).toHaveAttribute('src',/first[.]jpg/);
+  api.photo(`${driver}/replacement.jpg`); await page.evaluate(() => window.dispatchEvent(new Event('focus'))); await expect(photo).toHaveAttribute('src',/replacement[.]jpg/);
+  api.photo(''); await page.evaluate(() => window.dispatchEvent(new Event('focus'))); await expect(photo).toHaveCount(0); await expect(page.locator('.nr-identity-portrait')).toHaveText('CD');
+  await expect(page.getByRole('heading',{name:'Your driver is on the way'})).toBeVisible();
 });

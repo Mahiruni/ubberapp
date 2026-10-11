@@ -1,29 +1,86 @@
-"use client";
-import {type ReactNode,useEffect,useRef,useState} from "react";
-import {supabase} from "../../lib/supabase";
-import "./driver-photo-manager.css";
-type Photo={id:string;storage_path:string;status:string;rejection_reason:string|null};
-const bucket="nexride-driver-photos";
-const examples=[["✓","Clear face","Face forward, eyes visible"],["✓","Professional portrait","Sharp head-and-shoulders image"],["✓","Natural lighting","One person, good daylight"],["✕","Face obstructed","Avoid sunglasses and masks"],["✕","Blurry or dark","Avoid poor light and blur"],["✕","Group or filtered","No other people or filters"]];
-export function DriverPhotoManager({driverId,fullName,children}:{driverId:string;fullName:string;children:ReactNode}){
- const fileRef=useRef<HTMLInputElement>(null);
- const [photos,setPhotos]=useState<Photo[]>([]);
- const [approvedUrl,setApprovedUrl]=useState("");
- const [open,setOpen]=useState(false),[guidelines,setGuidelines]=useState(false),[busy,setBusy]=useState(false);
- const [preview,setPreview]=useState(""),[zoom,setZoom]=useState(1),[error,setError]=useState(""),[notice,setNotice]=useState("");
- const [position,setPosition]=useState({x:0,y:0});
- useEffect(()=>{let active=true;(async()=>{if(!driverId)return;const {data,error:loadError}=await supabase.from("driver_profile_photos").select("id,storage_path,status,rejection_reason").eq("driver_id",driverId).order("created_at",{ascending:false});if(!active)return;if(loadError){setError("Unable to load photo status. Check your connection.");return;}const list=(data||[]) as Photo[];setPhotos(list);const approved=list.find(p=>p.status==="approved");if(!approved&&active)setApprovedUrl("");if(approved){const {data:url}=await supabase.storage.from(bucket).createSignedUrl(approved.storage_path,3600);if(active)setApprovedUrl(url?.signedUrl||"");}})();return()=>{active=false;};},[driverId,notice]);
- useEffect(()=>()=>{if(preview)URL.revokeObjectURL(preview);},[preview]);
- const choose=(file?:File)=>{setError("");if(!file)return;if(file.size>5242880){setError("This photo is too large. Maximum 5 MB.");return;}if(!["image/jpeg","image/png","image/webp"].includes(file.type)){setError("Choose JPG, PNG or WebP.");return;}const url=URL.createObjectURL(file);const img=new window.Image();img.onload=()=>{if(img.width<320||img.height<320){setError("Photo must be at least 320 × 320 pixels.");URL.revokeObjectURL(url);return;}setPreview(url);setPosition({x:0,y:0});setZoom(1);setGuidelines(false);};img.onerror=()=>{setError("This photo could not be opened.");URL.revokeObjectURL(url);};img.src=url;};
- const submit=async()=>{if(!preview||busy)return;if(photos.some(p=>p.status==="pending_review")){setError("Your photo is awaiting review. Replace it after the review finishes.");return;}setBusy(true);setError("");try{
- const {data:auth,error:authError}=await supabase.auth.getUser();if(authError||auth.user?.id!==driverId)throw Error("Sign in to your Driver account again.");
- const img=new window.Image();img.src=preview;await img.decode();const canvas=document.createElement("canvas");canvas.width=512;canvas.height=512;const ctx=canvas.getContext("2d");if(!ctx)throw Error("Unable to process image.");
- const side=Math.min(img.width,img.height)/zoom;const x=Math.max(0,Math.min(img.width-side,(img.width-side)/2+position.x*side/200));const y=Math.max(0,Math.min(img.height-side,(img.height-side)/2+position.y*side/200));ctx.drawImage(img,x,y,side,side,0,0,512,512);
- const blob=await new Promise<Blob>((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(Error("Photo conversion failed.")),"image/jpeg",.88));
- const path=driverId+"/"+crypto.randomUUID()+".jpg";const {error:upload}=await supabase.storage.from(bucket).upload(path,blob,{contentType:"image/jpeg",upsert:false});if(upload)throw upload;
- const {error:insert}=await supabase.from("driver_profile_photos").insert({driver_id:driverId,storage_path:path,status:"pending_review"});if(insert){const {error:cleanupError}=await supabase.storage.from(bucket).remove([path]);throw new Error(cleanupError?"Photo registration failed; unused upload could not be removed. Contact support.":"Photo registration failed. Try again.");}
- setNotice("Photo submitted for administrator review.");setOpen(false);setPreview("");
- }catch(e){setError(e instanceof Error?e.message:"Upload failed. Try again.");}finally{setBusy(false);}};
- const pending=photos.some(p=>p.status==="pending_review"),rejected=photos.find(p=>p.status==="rejected");
- return <div className="nr-driver-photo-editor"><button type="button" className="nr-photo-trigger" onClick={()=>setOpen(true)} aria-label="Add or change driver profile photo" title="Change profile photo">{children}{approvedUrl&&<img className="nr-photo-approved-overlay" src={approvedUrl} alt="" aria-hidden="true"/>}<span className="nr-photo-edit-mark" aria-hidden="true">✎</span></button>{pending&&<small>Photo pending review</small>}{rejected&&!pending&&<small>Previous photo rejected</small>}{notice&&<small role="status">{notice}</small>}{open&&<div className="nr-photo-overlay" onMouseDown={e=>{if(e.target===e.currentTarget&&!busy)setOpen(false);}}><section className="nr-photo-panel" role="dialog" aria-modal="true" aria-label="Driver profile photo"><header><strong>{guidelines?"Photo guidelines":preview?"Adjust photo":"Driver photo"}</strong><button disabled={busy} aria-label="Close" onClick={()=>setOpen(false)}>✕</button></header>{guidelines?<><div className="nr-photo-examples">{examples.map(([symbol,title,detail])=><div key={title}><b>{symbol} {title}</b><small>{detail}</small></div>)}</div><p>Use a recent clear portrait of yourself. These are guidance descriptions, not automatic photo verification.</p><button className="nr-photo-primary" onClick={()=>fileRef.current?.click()}>Choose my photo</button></>:preview?<><div className="nr-photo-preview"><img src={preview} alt="Photo preview" style={{transform:`translate(${-position.x}px,${-position.y}px) scale(${zoom})`}}/></div><label>Zoom<input type="range" min="1" max="2.5" step=".05" value={zoom} onChange={e=>setZoom(Number(e.target.value))}/></label><label>Move left/right<input type="range" min="-70" max="70" value={position.x} onChange={e=>setPosition(p=>({...p,x:Number(e.target.value)}))}/></label><label>Move up/down<input type="range" min="-70" max="70" value={position.y} onChange={e=>setPosition(p=>({...p,y:Number(e.target.value)}))}/></label><button className="nr-photo-primary" disabled={busy} onClick={()=>void submit()}>{busy?"Uploading…":"Submit for review"}</button><button onClick={()=>fileRef.current?.click()} disabled={busy}>Choose another</button></>:<><div className="nr-photo-preview">{approvedUrl?<img src={approvedUrl} alt={fullName+" profile"}/>:<span>{fullName.slice(0,2).toUpperCase()}</span>}</div><p>Approved photos remain visible to riders while new submissions are reviewed.</p><button className="nr-photo-primary" onClick={()=>fileRef.current?.click()}>Choose from gallery</button><button onClick={()=>setGuidelines(true)}>Photo guidelines</button></>}{error&&<p role="alert" className="nr-photo-error">{error}</p>}<input hidden ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={e=>{choose(e.target.files?.[0]);e.target.value="";}}/></section></div>}</div>;
+'use client';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
+import { supabase } from '../../lib/supabase';
+import { cleanupRetiredPortraits, DRIVER_PHOTO_BUCKET, portraitCrop, useDriverPortrait, validateDriverPhoto } from '../../lib/nexride-driver-portrait';
+import { Dialog, useTranslation } from './ui';
+import './driver-photo-manager.css';
+export function DriverPhotoManager({ driverId, fullName, children }: { driverId: string; fullName: string; children: ReactNode }) {
+  const t = useTranslation(), portrait = useDriverPortrait(driverId);
+  const fileRef = useRef<HTMLInputElement>(null), canvasRef = useRef<HTMLCanvasElement>(null);
+  const [open, setOpen] = useState(false), [view, setView] = useState(false), [confirm, setConfirm] = useState(false);
+  const [cropReady, setCropReady] = useState(false);
+  const [busy, setBusy] = useState(false), [step, setStep] = useState(0);
+  const [source, setSource] = useState(''), [zoom, setZoom] = useState(1), [position, setPosition] = useState({ x: 0, y: 0 });
+  const [error, setError] = useState(''), [notice, setNotice] = useState(''), [failedURL, setFailedURL] = useState('');
+  const initials = fullName.trim().split(/\s+/).slice(0, 2).map(word => word[0]).join('').toUpperCase() || 'N';
+  useEffect(() => () => { if (source) URL.revokeObjectURL(source); }, [source]);
+  useEffect(() => {
+    let active = true;
+    if (!source) return;
+    setCropReady(false);
+    const image = new window.Image(); image.src = source;
+    void image.decode().then(() => {
+      if (!active) return;
+      const canvas = canvasRef.current, ctx = canvas?.getContext('2d'); if (!canvas || !ctx) return;
+      const crop = portraitCrop(image.width, image.height, zoom, position.x, position.y);
+      ctx.drawImage(image, crop.x, crop.y, crop.side, crop.side, 0, 0, 512, 512);
+      setCropReady(true);
+    }).catch(() => { if (active) setError(t('photoInvalidType')); });
+    return () => { active = false; };
+  }, [source, zoom, position]);
+  const choose = (file?: File) => {
+    if (!file) return; setError(''); setNotice('');
+    const invalid = validateDriverPhoto(file); if (invalid) { setError(t(invalid)); return; }
+    setSource(URL.createObjectURL(file)); setZoom(1); setPosition({ x: 0, y: 0 }); setView(false); setConfirm(false);
+  };
+  const save = async (remove = false) => {
+    if (busy || (!remove && (!source || !cropReady))) return;
+    if (!navigator.onLine) { setError(t('photoOffline')); return; }
+    setBusy(true); setStep(0); setError(''); let uploadedPath = '';
+    try {
+      const { data, error: authError } = await supabase.auth.getUser();
+      if (authError || data.user?.id !== driverId) throw Error('Authentication required');
+      if (!remove) {
+        const blob = await new Promise<Blob>((resolve, reject) => canvasRef.current?.toBlob(b => b ? resolve(b) : reject(Error('Image conversion failed')), 'image/jpeg', .88));
+        setStep(1); uploadedPath = `${driverId}/${crypto.randomUUID()}.jpg`;
+        const { error: uploadError } = await supabase.storage.from(DRIVER_PHOTO_BUCKET).upload(uploadedPath, blob, { contentType: 'image/jpeg', upsert: false });
+        if (uploadError) throw uploadError;
+      }
+      setStep(2);
+      const { data: retired, error: saveError } = await supabase.rpc('set_driver_profile_photo', { p_storage_path: remove ? null : uploadedPath });
+      if (saveError) throw saveError;
+      setStep(3); await portrait.refresh();
+      const cleaned = await cleanupRetiredPortraits((retired || []) as string[]);
+      setNotice(!cleaned ? t('photoCleanup') : t(remove ? 'photoRemoved' : 'photoSaved'));
+      setOpen(false); setSource(''); setConfirm(false);
+    } catch {
+      if (uploadedPath) await cleanupRetiredPortraits([uploadedPath]); // RLS refuses deleting an active portrait if a response was lost.
+      void portrait.refresh(); setError(t(navigator.onLine ? 'photoFailed' : 'photoOffline'));
+    } finally { setBusy(false); }
+  };
+  const close = () => { if (!busy) { setOpen(false); setSource(''); setConfirm(false); setView(false); } };
+  const url = portrait.url && failedURL !== portrait.url ? portrait.url : '';
+  return <div className="nr-driver-photo-editor">
+    <button type="button" className="nr-photo-trigger" onClick={() => { setOpen(true); setError(''); }} aria-label={t('photoTitle')}>
+      {children}<span className="nr-photo-approved-overlay">{url ? <img src={url} alt={`${fullName} ${t('photoTitle')}`} onError={() => { setFailedURL(url); void portrait.refresh(); }}/> : <span>{initials}</span>}</span>
+      <span className="nr-photo-edit-mark" aria-hidden="true">✎</span>
+    </button>
+    {portrait.stale && <small role="status">{t('photoOffline')}</small>}
+    {notice && <small role="status">{notice}</small>}
+    {open && <Dialog title={t(source ? 'photoAdjust' : 'photoTitle')} onClose={close}>
+      <div className="nr-photo-panel" aria-busy={busy}>
+        {confirm ? <><p>{t('photoConfirm')}</p><button className="nr-photo-danger" disabled={busy} onClick={() => void save(true)}>{t('photoRemove')}</button><button disabled={busy} onClick={() => setConfirm(false)}>{t('photoCancel')}</button></>
+          : source ? <><div className="nr-photo-preview"><canvas ref={canvasRef} width={512} height={512} role="img" aria-label={t('photoAdjust')}/></div>
+            <label>{t('photoZoom')}<input disabled={busy} type="range" min="1" max="2.5" step=".05" value={zoom} onChange={e => setZoom(Number(e.target.value))}/></label>
+            <label>{t('photoHorizontal')}<input disabled={busy} type="range" min="-100" max="100" value={position.x} onChange={e => setPosition(p => ({ ...p, x: Number(e.target.value) }))}/></label>
+            <label>{t('photoVertical')}<input disabled={busy} type="range" min="-100" max="100" value={position.y} onChange={e => setPosition(p => ({ ...p, y: Number(e.target.value) }))}/></label>
+            <button className="nr-photo-primary" disabled={busy || !cropReady} onClick={() => void save()}>{t(busy ? 'photoSaving' : 'photoSave')}</button><button disabled={busy} onClick={() => fileRef.current?.click()}>{t('photoChange')}</button></>
+          : view ? <div className="nr-photo-preview">{url ? <img src={url} alt={`${fullName} ${t('photoTitle')}`}/> : <span>{initials}</span>}</div>
+          : <div className="nr-photo-actions"><button disabled={!url} onClick={() => setView(true)}>{t('photoView')}</button><button onClick={() => fileRef.current?.click()}>{t('photoChange')}</button><button className="nr-photo-danger" disabled={!portrait.exists} onClick={() => setConfirm(true)}>{t('photoRemove')}</button><button onClick={close}>{t('photoCancel')}</button></div>}
+        {busy && <div role="status"><progress max={3} value={step} aria-label={t('photoSaving')}/><p>{t('photoSaving')}</p></div>}
+        {error && <p role="alert" className="nr-photo-error">{error}</p>}
+        <input hidden ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={e => { choose(e.target.files?.[0]); e.target.value = ''; }}/>
+      </div>
+    </Dialog>}
+  </div>;
 }
