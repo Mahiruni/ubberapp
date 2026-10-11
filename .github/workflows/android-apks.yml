@@ -8,6 +8,7 @@ name: Build NexRide Android APKs
       - ".github/workflows/android-apks.yml"
       - "native/android/**"
       - "scripts/setup-android-reliability.mjs"
+      - "scripts/setup-android-splash.mjs"
       - "lib/nexride-live-trip.ts"
       - "components/nexride/trip-experience.tsx"
       - "app/driver/navigation/page.tsx"
@@ -19,6 +20,7 @@ name: Build NexRide Android APKs
       - "public/icons/nexride-driver.webp"
       - "scripts/generate-brand-assets.mjs"
       - "scripts/sync-android-icons.mjs"
+      - "scripts/setup-android-splash.mjs"
       - "package.json"
       - "components/nexride/native-navigation-bridge.tsx"
       - "lib/nexride-native-navigation.ts"
@@ -72,7 +74,7 @@ jobs:
         run: npm install --no-audit --no-fund
 
       - name: Install Capacitor build tooling
-        run: npm install --no-save @capacitor/core@8 @capacitor/cli@8 @capacitor/android@8 @capacitor/app@8 @capacitor/push-notifications@8 @capacitor/share@8
+        run: npm install --no-save @capacitor/core@8 @capacitor/cli@8 @capacitor/android@8 @capacitor/app@8 @capacitor/push-notifications@8 @capacitor/share@8 @capacitor/splash-screen@8.0.2
 
       - name: Patch native push permission crash safeguards
         shell: bash
@@ -106,6 +108,15 @@ jobs:
             },
             "android": {
               "allowMixedContent": false
+            },
+            "plugins": {
+              "SplashScreen": {
+                "launchAutoHide": true,
+                "launchShowDuration": 0,
+                "launchFadeOutDuration": 160,
+                "backgroundColor": "#041C30",
+                "showSpinner": false
+              }
             }
           }
           EOF
@@ -115,6 +126,9 @@ jobs:
 
       - name: Sync native navigation plugin
         run: npx cap sync android
+
+      - name: Brand supported Android launch screen
+        run: node scripts/setup-android-splash.mjs "${{ matrix.role }}"
 
       - name: Install native Driver GPS and role-specific Firebase settings
         env:
@@ -181,6 +195,10 @@ jobs:
           grep -q 'capacitor-app' android/capacitor.settings.gradle
           grep -q 'capacitor-push-notifications' android/capacitor.settings.gradle
           grep -q 'capacitor-share' android/capacitor.settings.gradle
+          grep -q 'capacitor-splash-screen' android/capacitor.settings.gradle
+          grep -q 'Theme.SplashScreen' android/app/src/main/res/values/styles.xml
+          grep -q 'nexride_splash_wordmark' android/app/src/main/res/values/styles.xml
+          test -s android/app/src/main/res/drawable-nodpi/nexride_splash_wordmark.png
           grep -q 'POST_PROMOTED_NOTIFICATIONS' android/app/src/main/AndroidManifest.xml
           grep -q 'registerPlugin(NexRideLiveTripPlugin.class)' android/app/src/main/java/com/nexride/${{ matrix.role }}/MainActivity.java
           if [ "${{ matrix.role }}" = "driver" ]; then

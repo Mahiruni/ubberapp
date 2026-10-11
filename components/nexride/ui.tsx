@@ -20,6 +20,8 @@ export const useTranslation = () => {
   return (key: MessageKey) => translate(language, key);
 };
 const paths = {
+  mail: "M3 5h18v14H3ZM3 5l9 8 9-8",
+  lock: "M5 11h14v10H5ZM8 11V7a4 4 0 0 1 8 0v4",
   arrow: "M4 12h16m-6-6 6 6-6 6",
   briefcase: "M3 7h18v14H3ZM8 7V3h8v4M3 12c6 3 12 3 18 0M10 12h4v4h-4Z",
   home: "M3 10 12 3l9 7M5 9v12h14V9M9 21v-7h6v7",
@@ -429,12 +431,14 @@ export function SkeletonBlock({
 
 export function InputField({
   label,
+  icon,
   ...props
-}: InputHTMLAttributes<HTMLInputElement> & { label: string }) {
+}: InputHTMLAttributes<HTMLInputElement> & { label: string; icon?: IconName }) {
   return (
     <label className="nr-input-field grid gap-1.5 rounded-[12px] border border-[var(--nr-border)] bg-[var(--nr-surface)] px-3 py-2 text-xs font-semibold text-[var(--nr-text-secondary)] transition-[border-color,box-shadow] duration-200 focus-within:border-[var(--nr-emerald)] focus-within:shadow-[0_0_0_4px_rgba(0,200,120,.12)] motion-reduce:transition-none">
-      {label}
-      <input className="min-h-7 w-full border-0 bg-transparent p-0 text-[15px] font-medium text-[var(--nr-text)] outline-none placeholder:text-[var(--nr-text-muted)]" {...props} />
+      <span>{label}</span>
+      {icon ? <span className="nr-field-value"><Icon name={icon} size={20}/><input className="min-h-7 w-full border-0 bg-transparent p-0 text-[15px] font-medium text-[var(--nr-text)] outline-none placeholder:text-[var(--nr-text-muted)]" {...props}/></span>
+        : <input className="min-h-7 w-full border-0 bg-transparent p-0 text-[15px] font-medium text-[var(--nr-text)] outline-none placeholder:text-[var(--nr-text-muted)]" {...props} />}
     </label>
   );
 }

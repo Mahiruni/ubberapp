@@ -92,8 +92,8 @@ export default function DriverAuth() {
             <p>{t("entryDriverSignInIntro")}</p>
 
             <form onSubmit={submit} className="nr-auth-form" aria-busy={busy}>
-              <label><span>{t("authEmail")}</span><div className="nr-auth-input"><Icon name="user" size={19}/><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username" placeholder={t("authEmail")} required /></div></label>
-              <label><span>{t("password")}</span><div className="nr-auth-input nr-auth-password-row"><Icon name="shield" size={19}/><input type={showPassword ? "text" : "password"} aria-label={t("password")} value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" placeholder={t("password")} required /><button type="button" className="nr-auth-password-toggle" onClick={() => setShowPassword((value) => !value)} aria-pressed={showPassword}>{t(showPassword ? "entryHide" : "entryShow")}</button></div></label>
+              <label><span>{t("authEmail")}</span><div className="nr-auth-input"><Icon name="mail" size={20}/><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username" inputMode="email" placeholder={t("authEmail")} required /></div></label>
+              <label><span>{t("password")}</span><div className="nr-auth-input nr-auth-password-row"><Icon name="lock" size={20}/><input type={showPassword ? "text" : "password"} aria-label={t("password")} value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" placeholder={t("password")} required /><button type="button" className="nr-auth-password-toggle" onClick={() => setShowPassword((value) => !value)} aria-pressed={showPassword}>{t(showPassword ? "entryHide" : "entryShow")}</button></div></label>
               {error && <div className="driver-auth-error" role="alert">{error}</div>}
               {notice && <div className="driver-auth-notice" role="status">{notice}</div>}
               <Link className="nr-auth-inline-link" href="/rider/verify-email?role=driver&purpose=recovery">{t("forgotPassword")}</Link>

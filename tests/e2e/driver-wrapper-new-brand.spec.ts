@@ -39,15 +39,15 @@ async function connectedDriver(page: Page, trip: 'pending' | 'accepted' | 'in_tr
   await page.routeWebSocket('**/realtime/v1/**', ws => ws.close());
 }
 
-test('incoming Rider call uses new violet-indigo-lime brand, not old green or fixed white surfaces', async ({ page }) => {
+test('incoming Rider call uses navy and emerald brand with theme-aware surfaces', async ({ page }) => {
   await connectedDriver(page, 'pending', 'dark');
   await page.goto(`/driver/request?offer=${offerId}`);
   const wrapper = page.locator('.nr-driver-request-page .nr-request-sheet');
   await expect(wrapper).toBeVisible();
-  await expect(wrapper).toHaveCSS('background-color', 'rgb(36, 33, 62)');
+  await expect(wrapper).toHaveCSS('background-color', 'rgb(11, 43, 67)');
   await expect(wrapper.locator('.nr-request-eyebrow')).toContainText('NexRide');
-  await expect(wrapper.getByRole('button', { name: 'Accept' })).toHaveCSS('background-color', 'rgb(197, 240, 0)');
-  await expect(wrapper.getByRole('button', { name: 'Pass/Skip' })).toHaveCSS('background-color', 'rgb(81, 69, 229)');
+  await expect(wrapper.getByRole('button', { name: 'Accept' })).toHaveCSS('background-color', 'rgb(0, 200, 120)');
+  await expect(wrapper.getByRole('button', { name: 'Pass/Skip' })).toHaveCSS('background-color', 'rgb(4, 28, 48)');
   await expect(wrapper.locator('.nr-request-route-horizontal')).toBeVisible();
   await expect(wrapper.getByRole('button', { name: 'Accept' })).toBeInViewport();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
@@ -58,16 +58,16 @@ test('accepted Rider trip retains pinned stage action and brand-aware light/dark
   await page.goto(`/driver/navigation?offer=${offerId}`);
   const wrapper = page.locator('.nr-driver-navigation-page .nr-nav-bottom-card');
   await expect(wrapper).toBeVisible();
-  await expect(wrapper).toHaveCSS('background-color', 'rgb(36, 33, 62)');
+  await expect(wrapper).toHaveCSS('background-color', 'rgb(11, 43, 67)');
   await expect(wrapper.locator('.nr-nav-trip-meta')).toContainText('NexRide');
   const pinned = wrapper.locator('.nr-driver-sheet-footer').getByRole('button', { name: 'Arrived at pickup' });
   await expect(pinned).toBeVisible();
-  await expect(pinned).toHaveCSS('background-color', 'rgb(197, 240, 0)');
+  await expect(pinned).toHaveCSS('background-color', 'rgb(0, 200, 120)');
   await expect(pinned).toBeInViewport();
   await page.evaluate(() => { localStorage.setItem('nexride.driver.theme', 'light'); window.dispatchEvent(new Event('nexride:appearance-change')); });
   await expect(page.locator('.nr-driver-app-shell')).toHaveAttribute('data-theme','light');
   await expect(wrapper).toHaveCSS('background-color', 'rgb(255, 255, 255)');
-  await expect(pinned).toHaveCSS('background-color', 'rgb(197, 240, 0)');
+  await expect(pinned).toHaveCSS('background-color', 'rgb(0, 200, 120)');
 });
 
 

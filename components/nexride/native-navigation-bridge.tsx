@@ -97,9 +97,9 @@ export function NexRideNativeNavigationBridge() {
   return notice ? <div role="status" aria-live="polite" style={{
     position: "fixed", bottom: "calc(24px + env(safe-area-inset-bottom))",
     left: "50%", transform: "translateX(-50%)", zIndex: 2147483647,
-    background: "#28217f", color: "#fff", borderRadius: 14,
+    background: "#041C30", color: "#fff", borderRadius: 14,
     padding: "12px 18px", maxWidth: "calc(100vw - 36px)",
-    width: "max-content", boxShadow: "0 12px 28px #14114840",
+    width: "max-content", boxShadow: "0 12px 28px #041c3040",
     textAlign: "center", fontSize: 13, fontWeight: 650,
   }}>{notice}</div> : null;
 }

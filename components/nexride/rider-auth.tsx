@@ -50,6 +50,7 @@ export function RiderAuthScreen({ mode }: { mode: RiderAuthMode }) {
 function RiderAuth({ mode, entryRole }: { mode: RiderAuthMode; entryRole: "rider" | "driver" }) {
   const t = useTranslation();
   const router = useRouter();
+  const [signupStep, setSignupStep] = useState<1 | 2>(1);
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -211,7 +212,7 @@ function RiderAuth({ mode, entryRole }: { mode: RiderAuthMode; entryRole: "rider
       });
 
       if (authError || !data.session) {
-        setError(t("authFailure"));
+        setError(t(authErrorKey(authError, "signin")));
         return;
       }
 
@@ -474,16 +475,31 @@ function RiderAuth({ mode, entryRole }: { mode: RiderAuthMode; entryRole: "rider
     return (
       <>
         <span className="nr-rider-entry-kicker">NEXRIDE · {t("rider")}</span>
-        <h1>{t("createAccount")}</h1>
-        <p>{t("createAccountIntro")}</p>
-        <form className="nr-profile-form nr-auth-signup-form" onSubmit={signUp} aria-busy={busy}>
+        <h1>{t("entrySignupHeadline")}</h1>
+        <p>{t("entrySignupIntro")}</p>
+        <ol className="nr-signup-steps" aria-label={t("createAccount")}>
+          <li aria-current={signupStep === 1 ? "step" : undefined} data-complete={signupStep === 2}><span>{signupStep === 2 ? <Icon name="check" size={16}/> : "1"}</span>{t("entryDetailsStep")}</li>
+          <li aria-current={signupStep === 2 ? "step" : undefined}><span>2</span>{t("entrySecurityStep")}</li>
+        </ol>
+        <form className="nr-profile-form nr-auth-signup-form" onSubmit={event => {
+          if (signupStep === 1) {
+            event.preventDefault();
+            if (!normalizeEthiopianPhone(phone)) { setError(t("entryPhoneInvalid")); return; }
+            setError(""); setSignupStep(2);
+            requestAnimationFrame(() => document.getElementById("rider-signup-password")?.focus());
+          } else void signUp(event);
+        }} aria-busy={busy}>
+          {signupStep === 1 ? <>
           <InputField label={t("fullName")} autoComplete="name" required maxLength={80} value={fullName} onChange={(event) => setFullName(event.target.value)} />
-          <InputField label={t("phoneNumber")} type="tel" inputMode="tel" autoComplete="tel" required value={phone} onChange={(event) => setPhone(event.target.value)} />
-          <InputField label={t("authEmail")} type="email" inputMode="email" autoComplete="email" required value={email} onChange={(event) => setEmail(event.target.value)} />
+          <InputField label={t("phoneNumber")} type="tel" inputMode="tel" autoComplete="tel" placeholder="+251 9…" required value={phone} onChange={(event) => setPhone(event.target.value)} />
+          <InputField icon="mail" label={t("authEmail")} type="email" inputMode="email" autoComplete="email" required value={email} onChange={(event) => setEmail(event.target.value)} />
+          </> : <>
+          <div className="nr-signup-summary"><span><strong>{fullName}</strong><small>{email}</small></span><button type="button" onClick={() => { setSignupStep(1); setError(""); }}>{t("entryEditDetails")}</button></div>
           <label className="nr-input-field nr-auth-password-field">
             <span>{t("password")}</span>
-            <div className="nr-auth-password-row">
+            <div className="nr-auth-password-row"><Icon name="lock" size={20}/>
               <input
+                id="rider-signup-password"
                 type={showPassword ? "text" : "password"}
                 aria-label={t("password")}
                 autoComplete="new-password"
@@ -501,7 +517,7 @@ function RiderAuth({ mode, entryRole }: { mode: RiderAuthMode; entryRole: "rider
           <p id="rider-password-help" className="nr-auth-helper">{t("entryPasswordHelp")}</p>
           <label className="nr-input-field nr-auth-password-field">
             <span>{t("confirmPassword")}</span>
-            <div className="nr-auth-password-row">
+            <div className="nr-auth-password-row"><Icon name="lock" size={20}/>
               <input
                 type={showPassword ? "text" : "password"}
                 autoComplete="new-password"
@@ -516,10 +532,12 @@ function RiderAuth({ mode, entryRole }: { mode: RiderAuthMode; entryRole: "rider
               </button>
             </div>
           </label>
+          <label className="nr-auth-consent"><input type="checkbox" required disabled={busy}/><span>{t("entryAcceptTerms")} <Link href="/explore/terms">{t("entryTerms")}</Link> {t("entryTermsAnd")} <Link href="/explore/privacy">{t("entryPrivacy")}</Link>.</span></label>
+          </>}
           {error && <p id="rider-signup-error" className="nr-auth-error" role="alert">{error}</p>}
           <div className="nr-auth-cta-dock">
             <Button type="submit" disabled={busy} loading={busy}>
-              {t(busy ? "creatingAccount" : "createAccount")}
+              {t(signupStep === 1 ? "entryContinueSecurity" : busy ? "creatingAccount" : "createAccount")}
             </Button>
           </div>
         </form>
@@ -544,7 +562,7 @@ function RiderAuth({ mode, entryRole }: { mode: RiderAuthMode; entryRole: "rider
         <h1>{t("resetPassword")}</h1>
         <p>{t("resetPasswordIntro")}</p>
         <form className="nr-profile-form" onSubmit={sendRecovery} aria-busy={busy}>
-          <InputField label={t("authEmail")} type="email" autoComplete="email" required value={email} onChange={(event) => setEmail(event.target.value)} />
+          <InputField icon="mail" label={t("authEmail")} type="email" autoComplete="email" required value={email} onChange={(event) => setEmail(event.target.value)} />
           {error && <p className="nr-auth-error" role="alert">{error}</p>}
           {notice && <p className="nr-auth-notice" role="status">{notice}</p>}
           <Button type="submit" disabled={busy} loading={busy}>
@@ -586,10 +604,10 @@ function RiderAuth({ mode, entryRole }: { mode: RiderAuthMode; entryRole: "rider
       <h1>{t("entrySignInHeadline")}</h1>
       <p>{t("entrySignInIntro")}</p>
       <form className="nr-profile-form" onSubmit={signIn} aria-busy={busy}>
-        <InputField label={t("authEmail")} type="email" inputMode="email" autoComplete="username" required value={email} onChange={(event) => setEmail(event.target.value)} />
+        <InputField icon="mail" label={t("authEmail")} type="email" inputMode="email" autoComplete="username" required value={email} onChange={(event) => setEmail(event.target.value)} />
         <label className="nr-input-field nr-auth-password-field">
           <span>{t("password")}</span>
-          <div className="nr-auth-password-row">
+          <div className="nr-auth-password-row"><Icon name="lock" size={20}/>
             <input type={showPassword ? "text" : "password"} aria-label={t("password")} autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} />
             <button type="button" className="nr-auth-password-toggle" onClick={() => setShowPassword((value) => !value)} aria-pressed={showPassword}>{t(showPassword ? "entryHide" : "entryShow")}</button>
           </div>

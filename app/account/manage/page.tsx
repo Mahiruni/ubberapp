@@ -442,7 +442,7 @@ export default function NexRideManageAccountPage() {
             </form>}
           </section>
 
-          <section className="nex-manage-card">
+          <section id="account-security" className="nex-manage-card">
             <div className="nex-manage-section"><h2>{say("Security & sessions","ደህንነት እና መግቢያ")}</h2><p>{say("Make changes only after signing in. Explicit sign-out remains effective.","የመለያዎን ደህንነት ያስተዳድሩ።")}</p></div>
             <form className="nex-manage-form" onSubmit={e=>void changeEmail(e)}>
               <label>{say("New email address","አዲስ ኢሜይል")}
@@ -480,7 +480,7 @@ export default function NexRideManageAccountPage() {
             </form>
           </section>
 
-          <section className="nex-manage-card nex-manage-danger">
+          <section id="account-deletion" className="nex-manage-card nex-manage-danger">
             <div className="nex-manage-section"><h2>{say("Account deletion","መለያ መሰረዝ")}</h2><p>{say("Deletion requires reauthentication, active-trip and payment checks, and authorized review. Your data is not removed just by requesting.","ለመሰረዝ የደህንነት ማረጋገጫ ያስፈልጋል።")}</p></div>
             {deletion && <p className="nex-manage-notice">{op("Request")}: {op(deletion.status.replace(/_/g, " "))}</p>}
             {!deletion || !["pending","under_review","on_hold"].includes(deletion.status) ? <>

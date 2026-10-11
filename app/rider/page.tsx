@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { RiderSplash } from "../../components/nexride/splash";
-import { EntryShell } from "../../components/nexride/entry";
+import { EntryShell, EntryPhoto } from "../../components/nexride/entry";
 import { Button, Icon, StatusBanner, useTranslation } from "../../components/nexride/ui";
 import {
   clearExplicitSignOut,
@@ -151,11 +151,7 @@ function RiderWelcome() {
         <p>{t("entryWelcomeIntro")}</p>
       </div>
 
-      <div className="nr-rider-entry-benefits" aria-label={t("rider")}>
-        <span><Icon name="pin" size={18} /> {t("entryPickupDropoff")}</span>
-        <span><Icon name="navigation" size={18} /> {t("entryRideChoices")}</span>
-        <span><Icon name="shield" size={18} /> {t("entrySafetyFirst")}</span>
-      </div>
+      <EntryPhoto />
 
       {returningDriver && <div className="nr-auth-role-note" role="status">
         <Icon name="check" size={20} />
@@ -170,11 +166,11 @@ function RiderWelcome() {
             <Icon name="arrow" size={20} />
           </button>
         ) : <Link className="nr-rider-get-started" href="/rider/sign-up">
-          <span>{t("createAccount")}</span>
+          <span>{t("entryGetStarted")}</span>
           <Icon name="arrow" size={20} />
         </Link>}
         <Link className="nr-rider-welcome-sign-in" href={returningDriver ? "/driver/home" : "/rider/sign-in"}>
-          <span>{returningDriver ? t("entryReturnDriver") : t("signIn")}</span>
+          <span>{returningDriver ? t("entryReturnDriver") : t("alreadyHaveAccount")}</span>
           <Icon name="chevron" size={19} />
         </Link>
       </div>

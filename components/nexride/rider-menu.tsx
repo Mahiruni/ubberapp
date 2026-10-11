@@ -1,6 +1,7 @@
 "use client";
 
 import { createPortal } from "react-dom";
+import { AppVersion } from "./app-version";
 
 import {
   useContext,
@@ -163,13 +164,13 @@ export function RiderMenu({
     },
     {
       id: "trips",
-      label: say("Activity", "እንቅስቃሴ"),
+      label: say("My rides", "ጉዞዎቼ"),
       detail: say("Trips and receipts", "ጉዞዎች እና ደረሰኞች"),
       icon: "clock",
     },
     {
       id: "wallet",
-      label: say("Payments", "ክፍያዎች"),
+      label: say("Wallet & payments", "ቦርሳ እና ክፍያዎች"),
       detail: say("Payment methods and status", "የክፍያ መንገዶች እና ሁኔታ"),
       icon: "wallet",
     },
@@ -296,7 +297,7 @@ export function RiderMenu({
             </header>
 
 
-            <div className="nr-menu-person"><span className="nr-menu-person-avatar">{identity.avatar ? <img src={identity.avatar} alt="" onError={e => {setIdentity(current => ({...current,avatar:""}));}}/> : (identity.name.trim().split(/\s+/).slice(0,2).map(v=>v[0]).join("").toUpperCase() || <Icon name="user"/>)}</span><div><strong>{identity.name || say("Welcome to NexRide", "እንኳን ወደ NexRide መጡ")}</strong><small>{hasSession ? say("Rider account", "የተሳፋሪ መለያ") : say("Guest preview", "የእንግዳ ማሳያ")}</small></div></div>
+            <button type="button" className="nr-menu-person" disabled={locked} onClick={() => navigate("profile")}><span className="nr-menu-person-avatar">{identity.avatar ? <img src={identity.avatar} alt="" onError={() => setIdentity(current => ({...current,avatar:""}))}/> : (identity.name.trim().split(/\s+/).slice(0,2).map(v=>v[0]).join("").toUpperCase() || <Icon name="user"/>)}</span><span className="nr-menu-person-copy"><strong>{identity.name || say("Welcome to NexRide", "እንኳን ወደ NexRide መጡ")}</strong><small>{say("View profile", "መገለጫ ይመልከቱ")}</small></span><Icon name="chevron" size={18}/></button>
             <div className="nr-rider-drawer-section-label">{say("Your NexRide", "የእርስዎ NexRide")}</div>
             <nav
               className="nr-rider-drawer-nav"
@@ -372,6 +373,7 @@ export function RiderMenu({
                   <div>
                     <strong>NexRide</strong>
                     <small>{say("Better Rides. A Brighter Tomorrow.", "የተሻለ ጉዞ። ብሩህ ነገ።")}</small>
+                    <AppVersion />
                   </div>
                 </div>
                 <button

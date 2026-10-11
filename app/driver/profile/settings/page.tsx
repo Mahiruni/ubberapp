@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { NexRideFeedbackSettings } from "../../../../components/nexride/feedback-settings";
 import { PermissionSettings } from "../../../../components/nexride/permission-settings";
 import { NativeReliabilitySettings } from "../../../../components/nexride/native-reliability-settings";
+import { AppVersion } from "../../../../components/nexride/app-version";
 import { Icon, LanguageContext, useTranslation } from "../../../../components/nexride/ui";
 import { announceLanguage } from "../../../../components/nexride/language-provider";
 import { DriverThemeSelector } from "../../../../components/nexride/driver-app-shell";
@@ -120,7 +121,7 @@ export default function DriverProfileSettingsPage() {
             <button type="submit" disabled={busy || profile.accountStatus !== "active"}>{t(busy ? "entrySaving" : "entrySaveChanges")}</button>
           </form>
           {feedback && <div className={"nr-profile-alert " + (success ? "success" : "")} role={success ? "status" : "alert"}><Icon name={success ? "check" : "info"} size={17}/><span>{feedback}</span></div>}
-          <a className="nr-settings-security-link" href="/account/manage"><Icon name="shield" size={20}/><span>{t("entryAccountSecurity")}</span><Icon name="chevron" size={17}/></a>
+          <a className="nr-settings-security-link" href="/account/manage?role=driver#account-security"><Icon name="shield" size={20}/><span>{t("entryAccountSecurity")}</span><Icon name="chevron" size={17}/></a>
         </section>
         <section className="nr-profile-panel"><div className="nr-profile-panel-head"><div><h2>{t("entryPreferences")}</h2><p>{t("appearanceHint")}</p></div></div>
           <div className="nr-driver-preference-block"><div className="nr-driver-preference-label"><strong>{t("appearance")}</strong></div><DriverThemeSelector/></div>
@@ -128,7 +129,7 @@ export default function DriverProfileSettingsPage() {
         </section>
         <section className="nr-profile-panel"><NexRideFeedbackSettings role="driver" language={language}/><PermissionSettings/><NativeReliabilitySettings role="driver"/></section>
         <section className="nr-profile-panel"><div className="nr-profile-panel-head"><div><h2>{t("entryVerifiedInformation")}</h2><p>{t("entryVerifiedInformationHint")}</p></div></div><div className="nr-doc-actions"><button className="nr-doc-secondary" onClick={() => router.push("/driver/profile/documents")}><Icon name="shield" size={16}/>{t("entryDocuments")}</button><button className="nr-doc-secondary" onClick={() => router.push("/driver/profile/vehicle")}><Icon name="pin" size={16}/>{t("entryVehicle")}</button></div></section>
-        <nav className="nr-settings-legal" aria-label={t("entryAccountSecurity")}><a href="/support?role=driver">{t("help")}</a><a href="/explore/terms">{t("entryTerms")}</a><a href="/explore/privacy">{t("entryPrivacy")}</a></nav>
+        <nav className="nr-settings-legal" aria-label={t("entryAccountSecurity")}><a href="/support?role=driver">{t("help")}</a><a href="/explore/terms">{t("entryTerms")}</a><a href="/explore/privacy">{t("entryPrivacy")}</a><a href="/explore/about">{language === "am" ? "ስለ NexRide" : "About NexRide"}</a><a href="/account/manage?role=driver#account-deletion">{language === "am" ? "መለያ መሰረዝ" : "Account deletion"}</a></nav><AppVersion/>
       </> : <section className="nr-profile-state-card" role="alert"><Icon name="info" size={22}/><strong>{t("entrySettingsUnavailable")}</strong><p>{feedback || t("entryProfileLoadFailure")}</p><button type="button" onClick={() => window.location.reload()}>{t("tryAgain")}</button></section>}
     </div>
   </main>;

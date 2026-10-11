@@ -33,6 +33,10 @@ export function EntryShell({ children, authMode, role = 'rider' }: {
   </main>;
 }
 
-export function EntryPhoto() {
-  return <div className="nr-entry-photo"><Image src="/images/addis-nexride-auth.webp" alt="Addis Ababa city skyline and boulevard" fill sizes="440px" quality={85}/></div>;
+export function EntryPhoto({ role = 'rider' }: { role?: 'rider' | 'driver' }) {
+  const t = useTranslation();
+  return <figure className="nr-welcome-art">
+    <Image src={role === 'driver' ? '/images/addis-skyline.webp' : '/images/addis-nexride-auth.webp'} alt="" fill priority sizes="(max-width:899px) 440px, 480px" quality={85}/>
+    <figcaption><span aria-hidden="true"/><span>{t('entryMadeInAddis')}</span></figcaption>
+  </figure>;
 }
