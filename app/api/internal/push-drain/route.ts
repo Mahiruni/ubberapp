@@ -34,8 +34,10 @@ async function firebaseAccessToken(config: ServiceAccount) {
   return result.access_token;
 }
 export async function GET(request: Request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret || request.headers.get("authorization") !== "Bearer " + secret)
+  const authorization = request.headers.get("authorization") || "";
+  const allowed = [process.env.CRON_SECRET, process.env.NEXRIDE_PUSH_WORKER_SECRET]
+    .some(secret => !!secret && secret.length >= 20 && authorization === "Bearer " + secret);
+  if (!allowed)
     return Response.json({ status: "unauthorized" }, { status: 401 });
   let config: ServiceAccount;
   try {
@@ -48,6 +50,13 @@ export async function GET(request: Request) {
   } catch { return Response.json({ status: "fcm_not_configured" }, { status: 503 }); }
   try {
     const admin = serverAdminSupabase();
+    // A 10-second worker must not request a Google OAuth token while idle.
+    const { data: queued, error: queueError } = await admin.from("nexride_push_outbox")
+      .select("id").in("status", ["pending", "processing"]).limit(1);
+    if (queueError) throw new Error("outbox_probe_failed");
+    if (!queued?.length) return Response.json({ status: "idle", events: 0 },
+      { headers: { "Cache-Control": "no-store" } });
+
     // A missing FCM integration never claims events or fabricates success.
     const access = await firebaseAccessToken(config);
     const { data: events, error } = await admin.rpc("nexride_claim_native_push_server", { p_limit: 20 });
