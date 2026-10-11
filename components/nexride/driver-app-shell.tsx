@@ -3,6 +3,7 @@
 import { createPortal } from "react-dom";
 
 import Link from "next/link";
+import { AppVersion } from "./app-version";
 import {
   createContext,
   useCallback,
@@ -265,15 +266,16 @@ function DriverHamburgerMenu({
           <button className="nr-driver-menu-backdrop" type="button" aria-label={language === "am" ? "ምናሌን ዝጋ" : "Close menu"} onClick={() => setOpen(false)} />
           <aside ref={panelRef} id="nr-driver-menu" className="nr-driver-menu-panel" role="dialog" aria-modal="true" aria-labelledby="nr-driver-menu-title">
             <div className="nr-driver-menu-head">
-              <div className="nr-driver-menu-identity">
+              <Link href="/driver/profile" className="nr-driver-menu-identity" onClick={() => setOpen(false)}>
                 <div className="nr-driver-menu-avatar">
                   {portrait.url ? <img src={portrait.url} alt="" onError={() => void portrait.refresh()} /> : <span>{initials}</span>}
                 </div>
                 <div>
                   <small>{language === "am" ? "NEXRIDE · አሽከርካሪ" : "NEXRIDE · DRIVER"}</small>
                   <strong id="nr-driver-menu-title">{identity.name}</strong>
+                  <span className="nr-menu-view-profile">{language === "am" ? "መገለጫ ይመልከቱ" : "View profile"} <Icon name="arrow" size={14}/></span>
                 </div>
-              </div>
+              </Link>
               <button ref={closeRef} type="button" className="nr-driver-menu-close" onClick={() => setOpen(false)} aria-label={language === "am" ? "ዝጋ" : "Close"}>
                 <Icon name="close" size={21} />
               </button>
@@ -289,7 +291,10 @@ function DriverHamburgerMenu({
               {menuRows(accountItems)}
             </nav>
             <div className="nr-driver-menu-utilities">
-              <Link href="/account/manage" className="nr-driver-menu-utility" onClick={() => setOpen(false)}><Icon name="user" size={19}/><span>{language === "am" ? "መለያ እና ደህንነት" : "Account & security"}</span><Icon name="chevron" size={15}/></Link>
+              <Link href="/driver/profile/vehicle" className="nr-driver-menu-utility" onClick={() => setOpen(false)}><Icon name="navigation" size={20}/><span>{language === "am" ? "ተሽከርካሪ" : "Vehicle"}</span><Icon name="chevron" size={16}/></Link>
+              <Link href="/driver/profile/documents" className="nr-driver-menu-utility" onClick={() => setOpen(false)}><Icon name="shield" size={20}/><span>{language === "am" ? "ሰነዶች እና ማረጋገጫ" : "Documents & verification"}</span><Icon name="chevron" size={16}/></Link>
+              <Link href="/driver/profile/payouts" className="nr-driver-menu-utility" onClick={() => setOpen(false)}><Icon name="card" size={20}/><span>{language === "am" ? "የክፍያ መረጃ" : "Payout information"}</span><Icon name="chevron" size={16}/></Link>
+              <Link href="/account/manage?role=driver" className="nr-driver-menu-utility" onClick={() => setOpen(false)}><Icon name="user" size={20}/><span>{language === "am" ? "መለያ እና ደህንነት" : "Account & security"}</span><Icon name="chevron" size={16}/></Link>
               <Link href="/safety?role=driver" className="nr-driver-menu-utility" onClick={() => setOpen(false)}>
                 <Icon name="shield" size={19} /><span>{language === "am" ? "የደህንነት ማዕከል" : "Safety Center"}</span><Icon name="chevron" size={15} />
               </Link>
@@ -315,6 +320,7 @@ function DriverHamburgerMenu({
                                 <div>
                   <strong>NexRide</strong>
                   <small>{language === "am" ? "የተሻለ ጉዞ። ብሩህ ነገ።" : "Better Rides. A Brighter Tomorrow."}</small>
+                  <AppVersion />
                 </div>
               </div>
               <button type="button" className="nr-driver-menu-logout" onClick={() => void signOutDriver()} disabled={signingOut}>

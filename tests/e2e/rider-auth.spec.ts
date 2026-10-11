@@ -22,6 +22,10 @@ test("rider sign-in, sign-up and recovery are addressable screens", async ({ pag
   await page.goto("/rider/sign-up");
   await expect(page.getByLabel("Full name", { exact: true })).toBeVisible();
   await expect(page.getByLabel("Phone number", { exact: true })).toBeVisible();
+  await page.getByLabel("Full name", { exact: true }).fill("NexRide Rider");
+  await page.getByLabel("Phone number", { exact: true }).fill("+251912345678");
+  await page.getByLabel("Email address", { exact: true }).fill("rider@example.test");
+  await page.getByRole("button", { name: "Continue", exact: true }).click();
   await expect(page.getByLabel("Confirm password", { exact: true })).toBeVisible();
 
   await page.goto("/rider/forgot-password");

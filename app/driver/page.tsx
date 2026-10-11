@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { EntryShell } from "../../components/nexride/entry";
+import { EntryShell, EntryPhoto } from "../../components/nexride/entry";
 import { RiderSplash } from "../../components/nexride/splash";
 import { Icon, useTranslation } from "../../components/nexride/ui";
 import { supabase } from "../../lib/supabase";
@@ -50,7 +50,8 @@ export default function DriverWelcome() {
     <span className="driver-auth-role">NEXRIDE · {t("driver")}</span>
     <h1>{t("entryDriveHeadline")}</h1>
     <p>{t("entryDriverIntro")}</p>
-    <div className="nr-rider-entry-actions"><Link className="nr-rider-get-started" href="/driver/onboarding">{t("entryGetStarted")}<Icon name="arrow" size={20}/></Link><Link className="nr-rider-welcome-sign-in" href="/driver/auth">{t("signIn")}</Link></div>
+    <EntryPhoto role="driver"/>
+    <div className="nr-rider-entry-actions"><Link className="nr-rider-get-started" href="/driver/onboarding">{t("entryStartDriving")}<Icon name="arrow" size={20}/></Link><Link className="nr-rider-welcome-sign-in" href="/driver/auth">{t("signIn")}</Link></div>
     <div className="nr-auth-role-note"><span><Icon name="user" size={20}/></span><div><strong>{t("entryOneAccount")}</strong><small>{t("entryExistingIdentity")}</small></div></div>
     <Link className="nr-auth-role-link" href="/rider">{t("entrySwitchRider")}<Icon name="arrow" size={16}/></Link>
   </EntryShell>;

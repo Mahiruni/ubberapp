@@ -1,44 +1,43 @@
 /* NexRide 2026 — one Driver trip-wrapper identity.
    This file is imported LAST by both operational screens. The Driver's
-   current Biloo-inspired violet/indigo/lime identity replaces legacy navy,
-   emerald and hardcoded white-only wrappers. No trip logic is changed. */
+   current navy and emerald identity supports both light and dark wrappers. No trip logic is changed. */
 .nr-driver-app-shell :is(.nr-driver-request-page,.nr-driver-navigation-page){
-  --trip-brand:#5145e5;
-  --trip-brand-strong:#28217f;
-  --trip-lime:#c5f000;
-  --trip-ink:#19172a;
+  --trip-brand:#007746;
+  --trip-brand-strong:#041c30;
+  --trip-primary:#00c878;
+  --trip-ink:#102334;
   --trip-surface:#ffffff;
-  --trip-elevated:#f1effb;
-  --trip-subtle:#f7f7fb;
-  --trip-border:#dfdbf1;
-  --trip-text:#19172a;
-  --trip-muted:#636076;
-  --trip-stroke:rgba(81,69,229,.25);
-  --trip-shadow:0 -12px 36px rgba(40,33,127,.14);
-  --trip-action-text:#19172a;
-  --trip-handle:#5145e5;
-  --trip-active-bg:#e9e6ff;
-  --trip-active-text:#4337c9;
+  --trip-elevated:#edf2f5;
+  --trip-subtle:#f5f7f9;
+  --trip-border:#e4eaf0;
+  --trip-text:#102334;
+  --trip-muted:#667587;
+  --trip-stroke:rgba(0,200,120,.25);
+  --trip-shadow:0 -12px 36px rgba(4,28,48,.14);
+  --trip-action-text:#102334;
+  --trip-handle:#00c878;
+  --trip-active-bg:#e9fbf3;
+  --trip-active-text:#007746;
   color-scheme:light;
-  background:#28217f;
+  background:#041c30;
 }
 .nr-driver-app-shell[data-theme="dark"] :is(.nr-driver-request-page,.nr-driver-navigation-page){
-  --trip-surface:#24213e;
-  --trip-elevated:#322b60;
-  --trip-subtle:#292542;
-  --trip-border:rgba(185,168,255,.25);
-  --trip-text:#f7f7ff;
-  --trip-muted:#c2bdd9;
-  --trip-stroke:rgba(197,240,0,.32);
+  --trip-surface:#0b2b43;
+  --trip-elevated:#10374f;
+  --trip-subtle:#082337;
+  --trip-border:rgba(178,196,209,.25);
+  --trip-text:#f2f7fa;
+  --trip-muted:#b2c4d1;
+  --trip-stroke:rgba(0,200,120,.32);
   --trip-shadow:0 -14px 38px rgba(13,9,35,.35);
-  --trip-handle:#c5f000;
-  --trip-active-bg:#3c3478;
-  --trip-active-text:#c5f000;
+  --trip-handle:#00c878;
+  --trip-active-bg:#123c38;
+  --trip-active-text:#00c878;
   color-scheme:dark;
 }
 /* Driver map remains dominant and uncluttered across all trip states. */
 .nr-driver-app-shell :is(.nr-driver-request-page,.nr-driver-navigation-page) :is(.nr-driver-request-map,.nr-nav-map){
-  background:#28217f!important;
+  background:#041c30!important;
 }
 .nr-driver-app-shell :is(.nr-driver-request-page,.nr-driver-navigation-page) :is(.nr-request-sheet,.nr-nav-bottom-card){
   background:var(--trip-surface)!important;
@@ -69,7 +68,7 @@
 .nr-driver-app-shell :is(.nr-driver-request-page,.nr-driver-navigation-page) .nr-driver-sheet-footer{
   background:var(--trip-surface)!important;
   border-color:var(--trip-border)!important;
-  box-shadow:0 -8px 22px rgba(25,23,42,.10)!important;
+  box-shadow:0 -8px 22px rgba(4,28,48,.10)!important;
   padding:10px 16px max(12px,env(safe-area-inset-bottom))!important;
 }
 .nr-driver-app-shell :is(.nr-driver-request-page,.nr-driver-navigation-page) :is(button,a){
@@ -77,7 +76,7 @@
   touch-action:manipulation;
 }
 .nr-driver-app-shell :is(.nr-driver-request-page,.nr-driver-navigation-page) :is(button,a):focus-visible{
-  outline:3px solid var(--trip-lime)!important;
+  outline:3px solid var(--trip-primary)!important;
   outline-offset:3px!important;
 }
 /* Incoming Rider call: branded copy, confident countdown, clear route. */
@@ -100,7 +99,7 @@
   border:1px solid var(--trip-border)!important;
   box-shadow:none!important;
 }
-.nr-driver-app-shell[data-theme="dark"] .nr-driver-request-page .nr-request-sheet .nr-request-countdown{--request-ring:var(--trip-lime)}
+.nr-driver-app-shell[data-theme="dark"] .nr-driver-request-page .nr-request-sheet .nr-request-countdown{--request-ring:var(--trip-primary)}
 .nr-driver-app-shell .nr-driver-request-page .nr-request-sheet .nr-request-countdown strong{
   color:var(--trip-text)!important;
   font-variant-numeric:tabular-nums;
@@ -134,14 +133,14 @@
   height:3px;
 }
 .nr-driver-app-shell .nr-driver-request-page .nr-request-road-endpoint.pickup{
-  background:var(--trip-lime)!important;
+  background:var(--trip-primary)!important;
   border-color:var(--trip-surface)!important;
   box-shadow:0 0 0 2px var(--trip-brand)!important;
 }
 .nr-driver-app-shell .nr-driver-request-page .nr-request-road-endpoint.destination{
   background:var(--trip-brand-strong)!important;
   border-color:var(--trip-surface)!important;
-  box-shadow:0 0 0 2px var(--trip-lime)!important;
+  box-shadow:0 0 0 2px var(--trip-primary)!important;
 }
 .nr-driver-app-shell .nr-driver-request-page .nr-request-road-distance{
   background:var(--trip-surface)!important;
@@ -149,7 +148,7 @@
   color:var(--trip-text)!important;
 }
 .nr-driver-app-shell .nr-driver-request-page .nr-request-road-car{
-  filter:drop-shadow(0 2px 2px rgba(40,33,127,.22));
+  filter:drop-shadow(0 2px 2px rgba(4,28,48,.22));
 }
 .nr-driver-app-shell .nr-driver-request-page .nr-request-summary{
   background:var(--trip-border)!important;
@@ -180,12 +179,12 @@
 .nr-driver-app-shell .nr-driver-request-page .nr-request-loading span{
   background:var(--trip-elevated)!important;
 }
-/* One primary decision. Lime Accept, quiet violet Pass/Skip, red Decline.
+/* One primary decision. Emerald Accept, quiet navy Pass/Skip, red Decline.
    All three remain in the fixed, map-safe footer. */
 .nr-driver-app-shell .nr-driver-request-page .nr-driver-sheet-footer .nr-request-actions>.nr-request-accept{
-  background:var(--trip-lime)!important;
+  background:var(--trip-primary)!important;
   color:var(--trip-ink)!important;
-  border:1px solid var(--trip-lime)!important;
+  border:1px solid var(--trip-primary)!important;
   box-shadow:none!important;
   min-height:62px!important;
   border-radius:16px!important;
@@ -194,8 +193,8 @@
 }
 .nr-driver-app-shell .nr-driver-request-page .nr-driver-sheet-footer .nr-request-actions-secondary .nr-request-pass{
   color:#fff!important;
-  background:var(--trip-brand)!important;
-  border:1px solid var(--trip-brand)!important;
+  background:var(--trip-brand-strong)!important;
+  border:1px solid var(--trip-brand-strong)!important;
 }
 .nr-driver-app-shell .nr-driver-request-page .nr-driver-sheet-footer .nr-request-actions-secondary .nr-request-decline{
   color:#fff!important;
@@ -297,10 +296,10 @@
   color:var(--trip-active-text)!important;
 }
 .nr-driver-app-shell .nr-driver-navigation-page .nr-nav-trip-progress>span.active i{
-  background:var(--trip-lime)!important;
-  border-color:var(--trip-lime)!important;
+  background:var(--trip-primary)!important;
+  border-color:var(--trip-primary)!important;
   color:var(--trip-ink)!important;
-  box-shadow:0 0 0 3px rgba(197,240,0,.13)!important;
+  box-shadow:0 0 0 3px rgba(0,200,120,.13)!important;
 }
 /* Keep the next ride-stage action always visible, even at minimum snap. */
 .nr-driver-app-shell .nr-driver-navigation-page .nr-nav-bottom-card>.nr-driver-sheet-footer{
@@ -328,8 +327,8 @@
   font-weight:850!important;
 }
 .nr-driver-app-shell .nr-driver-navigation-page .nr-nav-stage-primary{
-  background:var(--trip-lime)!important;
-  border-color:var(--trip-lime)!important;
+  background:var(--trip-primary)!important;
+  border-color:var(--trip-primary)!important;
   color:var(--trip-ink)!important;
   box-shadow:none!important;
 }
@@ -372,7 +371,7 @@
   color:var(--trip-muted)!important;
 }
 .nr-driver-app-shell .nr-driver-navigation-page .nr-nav-guidance-icon{
-  color:var(--trip-lime)!important;
+  color:var(--trip-primary)!important;
   background:var(--trip-brand-strong)!important;
 }
 .nr-driver-app-shell .nr-driver-navigation-page .nr-nav-status.warning{
@@ -394,10 +393,10 @@
 }
 /* Do not resurrect old white-only floating header controls. */
 .nr-driver-app-shell[data-request-map="true"] .nr-driver-global-header-side :is(.nr-driver-global-icon-button,.nr-driver-menu-trigger){
-  background:#28217f!important;
-  border-color:rgba(197,240,0,.34)!important;
-  color:#f8f8ff!important;
-  box-shadow:0 4px 16px rgba(25,23,42,.25)!important;
+  background:#041c30!important;
+  border-color:rgba(0,200,120,.34)!important;
+  color:#f2f7fa!important;
+  box-shadow:0 4px 16px rgba(4,28,48,.25)!important;
 }
 .nr-driver-app-shell :is(.nr-driver-request-page,.nr-driver-navigation-page) :is(button,a):active:not(:disabled){
   filter:brightness(.97);
@@ -509,11 +508,11 @@
 .nr-driver-app-shell .nr-driver-request-page
   .nr-driver-sheet-footer .nr-request-actions > .nr-request-accept {
   min-height:58px!important;
-  background:var(--trip-lime)!important;
-  border-color:var(--trip-lime)!important;
+  background:var(--trip-primary)!important;
+  border-color:var(--trip-primary)!important;
   color:var(--trip-ink)!important;
 }
-/* Keep route / offer action semantics and the existing indigo + lime palette. */
+/* Keep route / offer action semantics and the existing navy + emerald palette. */
 @media (min-width:760px) {
   .nr-driver-app-shell :is(.nr-driver-request-page,.nr-driver-navigation-page)
     :is(.nr-request-sheet,.nr-nav-bottom-card) {

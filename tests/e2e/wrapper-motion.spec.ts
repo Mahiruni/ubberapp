@@ -25,7 +25,7 @@ test("brand contrast and essential actions survive narrow screens and orientatio
     expect(box.y).toBeGreaterThanOrEqual(0);
     expect(box.x + box.width).toBeLessThanOrEqual(viewport.width + 1);
     expect(box.y + box.height).toBeLessThanOrEqual(viewport.height + 1);
-    await expect(page.locator(".nr-home-sheet-grab-area")).toHaveCSS("background-color", "rgb(40, 33, 127)");
+    await expect(page.locator(".nr-home-sheet-grab-area")).toHaveCSS("background-color", "rgb(4, 28, 48)");
     await expect(page.getByRole("button", { name: "Search destination", exact: true })).toBeInViewport();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   }

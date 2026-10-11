@@ -15,6 +15,7 @@ import { PermissionSettings } from "./permission-settings";
 import { NativeReliabilitySettings } from "./native-reliability-settings";
 import { NexRideFeedbackSettings } from './feedback-settings';
 import './rider-avatar-upload.css';
+import { AppVersion } from './app-version';
 
 type Props = {
   language: Language;
@@ -71,8 +72,8 @@ export function RiderSettings({language,setLanguage}: Pick<Props,'language'|'set
     </label>
     <NexRideFeedbackSettings role="rider" language={language}/>
     <PermissionSettings/><NativeReliabilitySettings role="rider"/>
-    <a className="nr-settings-security-link" href="/account/manage"><Icon name="shield" size={20}/><span>{t("entryAccountSecurity")}</span><Icon name="chevron" size={17}/></a>
-    <nav className="nr-settings-legal" aria-label={say("Help & legal", "እገዛ እና ሕጋዊ መረጃ")}><a href="/support?role=rider">{say("Help & support", "እገዛ እና ድጋፍ")}</a><a href="/explore/terms">{t("entryTerms")}</a><a href="/explore/privacy">{t("entryPrivacy")}</a></nav>
+    <a className="nr-settings-security-link" href="/account/manage#account-security"><Icon name="shield" size={20}/><span>{t("entryAccountSecurity")}</span><Icon name="chevron" size={17}/></a>
+    <nav className="nr-settings-legal" aria-label={say("Help & legal", "እገዛ እና ሕጋዊ መረጃ")}><a href="/support?role=rider">{say("Help & support", "እገዛ እና ድጋፍ")}</a><a href="/explore/terms">{t("entryTerms")}</a><a href="/explore/privacy">{t("entryPrivacy")}</a><a href="/explore/about">{say("About NexRide", "ስለ NexRide")}</a><a href="/account/manage#account-deletion">{say("Account deletion", "መለያ መሰረዝ")}</a></nav><AppVersion/>
     <p className="nr-muted">{say('System notifications are available when this device supports them and you allow permission. SMS and email alerts are not connected yet. Safety and trip status remain visible in the app.','የስርዓት ማሳወቂያዎች መሣሪያው ሲደግፍና ፈቃድ ሲሰጡ ይገኛሉ። የSMS እና ኢሜይል ማሳወቂያዎች ገና አልተገናኙም።')}</p>
     {feedback&&<p className="nr-settings-feedback" role="status">{feedback}</p>}
   </div>;
@@ -203,8 +204,8 @@ export function RiderProfile(props:Props) {
     <header className="nr-account-top nr-account-standard-top">
       <div>
         <span className="nr-account-eyebrow">NEXRIDE · {say('ACCOUNT','መለያ')}</span>
-        <h1 id="nr-account-title">{say('Account','መለያ')}</h1>
-        <p>{say('Manage your profile, rides and preferences.','መገለጫዎን፣ ጉዞዎችዎን እና ምርጫዎችዎን ያስተዳድሩ።')}</p>
+        <h1 id="nr-account-title">{say('Your account','የእርስዎ መለያ')}</h1>
+        <p>{say('Everything about you, in one place.','ስለ እርስዎ ሁሉም መረጃ በአንድ ቦታ።')}</p>
       </div>
     </header>
 
@@ -279,6 +280,7 @@ export function RiderProfile(props:Props) {
         <Icon name="power" size={18}/>{account||loadError?say('Sign out','ውጣ'):say('Exit preview','ከማሳያ ውጣ')}
       </button>
       <small>{say('NexRide · Better Rides. A Brighter Tomorrow.','NexRide · የተሻለ ጉዞ። ብሩህ ነገ።')}</small>
+      <AppVersion />
     </footer>
 
     {panel&&<Dialog title={

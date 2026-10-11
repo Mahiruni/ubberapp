@@ -50,14 +50,14 @@ const noSymbol = async (page: Page) => {
 test('welcome actions fit small phones, preserve role context and use a text wordmark', async ({ page }, info) => {
   await page.setViewportSize({ width: 360, height: 640 });
   for (const [path, heading, action] of [
-    ['/rider', 'A better way to move.', 'Create account'],
-    ['/driver', 'Drive. Earn. Grow.', 'Get started'],
+    ['/rider', 'Your city. Your ride.', 'Get started'],
+    ['/driver', 'Drive. Earn. Grow.', 'Start driving'],
   ]) {
     await page.goto(path);
     await expect(page.getByRole('heading', { level: 1 })).toContainText(heading);
     await noSymbol(page);
     await expect(page.getByRole('link', { name: action, exact: true })).toBeInViewport();
-    await expect(page.getByRole('link', { name: 'Sign in', exact: true })).toBeInViewport();
+    await expect(page.getByRole('link', { name: path === '/rider' ? 'Already have an account?' : 'Sign in', exact: true })).toBeInViewport();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await page.screenshot({ path: `/tmp/nexride-${path.slice(1)}-welcome-${info.project.name}.png`, fullPage: true });
   }
@@ -97,11 +97,15 @@ test('registration and recovery are localized, match confirmation links and pres
   await page.getByLabel('Full name', { exact: true }).fill('Example Account');
   await page.getByLabel('Phone number', { exact: true }).fill('+251912345678');
   await page.getByLabel('Email address', { exact: true }).fill('existing@example.test');
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
   await page.getByLabel('Password', { exact: true }).fill('strong-password');
   await page.getByLabel('Confirm password', { exact: true }).fill('strong-password');
+  await page.getByRole('checkbox').check();
   await page.getByRole('button', { name: 'Create account', exact: true }).click();
   await expect(page.locator('main [role=alert]')).toBeVisible();
   await expect(page.locator('main [role=alert]')).not.toContainText('technical_database');
+  await expect(page.locator('.nr-signup-summary')).toContainText('existing@example.test');
+  await page.getByRole('button', { name: 'Edit your details', exact: true }).click();
   await expect(page.getByLabel('Email address', { exact: true })).toHaveValue('existing@example.test');
   await expect(page.getByRole('link', { name: 'Terms', exact: true })).toHaveAttribute('href', '/explore/terms');
   await page.goto('/rider/verify-email?role=driver&purpose=recovery');
@@ -236,7 +240,7 @@ test('startup does not confuse a failed authenticated profile lookup with being 
     : route.fulfill({ json: { id, role: 'driver', full_name: 'Connected Account', account_status: 'active', phone: '+251912345678' } }));
   await page.goto('/driver');
   await expect(page.locator('.nr-splash-error')).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Get started', exact: true })).toHaveCount(0);
+  await expect(page.getByRole('link', { name: 'Start driving', exact: true })).toHaveCount(0);
   await expect(page.locator('.nr-splash-wordmark')).toHaveText('NexRide');
   unavailable = false;
   await page.getByRole('button', { name: 'Try again', exact: true }).click();

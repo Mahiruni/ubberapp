@@ -2211,35 +2211,35 @@
   letter-spacing:-.025em;
 }
 
-/* Biloo-inspired NexRide palette — visual tokens only; no map or trip logic changes. */
+/* NexRide navy and emerald NexRide palette — visual tokens only; no map or trip logic changes. */
 .nr-app {
-  --nr-brand-primary:#5145e5;
-  --nr-brand-primary-strong:#3f33c5;
-  --nr-brand-indigo:#28217f;
-  --nr-brand-lime:#c5f000;
-  --nr-brand-ink:#19172a;
-  --bg:#f7f7fb;
+  --nr-brand-primary:#00c878;
+  --nr-brand-primary-strong:#00aa66;
+  --nr-brand-indigo:#041c30;
+  --nr-brand-lime:#00c878;
+  --nr-brand-ink:#102334;
+  --bg:#f5f7f9;
   --surface:#ffffff;
-  --surface-alt:#f0eff8;
-  --text:#19172a;
-  --muted:#646576;
-  --line:#e4e2ee;
-  --navy:#28217f;
-  --green:#5145e5;
-  --green-text:#4337c9;
-  --green-wash:#efedff;
+  --surface-alt:#edf2f5;
+  --text:#102334;
+  --muted:#667587;
+  --line:#e4eaf0;
+  --navy:#041c30;
+  --green:#00c878;
+  --green-text:#007746;
+  --green-wash:#e9fbf3;
   accent-color:var(--nr-brand-primary);
 }
 .nr-app[data-mode="driver"],.nr-app[data-theme="dark"] {
-  --bg:#1e2030;
-  --surface:#262839;
-  --surface-alt:#303146;
-  --text:#f8f8ff;
-  --muted:#b9b9cb;
-  --line:#444459;
-  --navy:#28217f;
-  --green:#a89fff;
-  --green-text:#c5f000;
-  --green-wash:#363451;
+  --bg:#041c30;
+  --surface:#0b2b43;
+  --surface-alt:#082337;
+  --text:#f2f7fa;
+  --muted:#b2c4d1;
+  --line:#244459;
+  --navy:#041c30;
+  --green:#77edb9;
+  --green-text:#00c878;
+  --green-wash:#123c38;
 }
-.nr-app :is(button,a,input,select,textarea):focus-visible{outline-color:#5145e5}
+.nr-app :is(button,a,input,select,textarea):focus-visible{outline-color:#00c878}
