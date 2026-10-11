@@ -1,5 +1,6 @@
 import { createSign } from "node:crypto";
 import { serverAdminSupabase } from "../../../../lib/nexride-server-admin";
+import { nexrideDriverOfferTtlSeconds } from "../../../../lib/nexride-push-routing";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -72,13 +73,15 @@ export async function GET(request: Request) {
         }).eq("id", event.id).eq("status", "processing");
       };
       try {
+        let offerExpiresAt: string | null = null;
         if (event.kind === "driver_offer") {
           const { data: offer } = await admin.from("ride_request_offers")
             .select("status,expires_at,driver_id").eq("id", event.offer_id).maybeSingle();
           if (!offer || offer.status !== "pending" || offer.driver_id !== event.user_id ||
-            (offer.expires_at && Date.parse(offer.expires_at) <= Date.now())) {
+            nexrideDriverOfferTtlSeconds(offer.expires_at) === 0) {
             await finish("skipped", "offer_no_longer_pending"); skipped++; continue;
           }
+          offerExpiresAt = offer.expires_at;
         } else {
           const { data: ride } = await admin.from("ride_requests")
             .select("status,rider_id").eq("id", event.request_id).maybeSingle();
@@ -95,6 +98,12 @@ export async function GET(request: Request) {
           "Your trip status has changed. Open NexRide for details.";
         const url = event.kind === "driver_offer" ?
           "/driver/request?offer=" + event.offer_id : "/rider/trips";
+        // An offer can expire while we resolve devices; do not ring stale requests.
+        const remainingTtl = event.kind === "driver_offer"
+          ? nexrideDriverOfferTtlSeconds(offerExpiresAt) : 300;
+        if (remainingTtl === 0) {
+          await finish("skipped", "offer_expired_before_fcm"); skipped++; continue;
+        }
         let successes = 0;
         for (const device of devices) {
           const sentResponse = await fetch(
@@ -103,11 +112,24 @@ export async function GET(request: Request) {
               headers: { Authorization: "Bearer " + access, "Content-Type": "application/json" },
               body: JSON.stringify({ message: { token: device.fcm_token,
                 notification: { title, body },
-                data: { url, kind: event.kind, eventId: event.id },
-                android: { priority: event.kind === "driver_offer" ? "HIGH" : "NORMAL",
-                  ttl: event.kind === "driver_offer" ? "40s" : "300s",
-                  notification: { channel_id: event.kind === "driver_offer" ? "nexride_driver_requests" : "nexride_trip_updates",
-                    tag: event.id } } } }),
+                data: {
+                  url, kind: event.kind, eventId: event.id,
+                  ...(offerExpiresAt ? { expiresAt: offerExpiresAt } : {}),
+                },
+                android: {
+                  priority: event.kind === "driver_offer" ? "HIGH" : "NORMAL",
+                  // TTL cannot exceed the server-owned 30-second offer window.
+                  ttl: `${remainingTtl}s`,
+                  collapse_key: event.kind === "driver_offer" ? "nexride_active_ride_offer" : undefined,
+                  notification: {
+                    channel_id: event.kind === "driver_offer"
+                      ? "nexride_driver_requests_v2" : "nexride_trip_updates",
+                    // New offers replace older notification tray entries.
+                    tag: event.kind === "driver_offer" ? "nexride_active_ride_offer" : event.id,
+                    ...(event.kind === "driver_offer" ? { sound: "nexride_ride_request" } : {}),
+                  },
+                },
+              } }),
               signal: AbortSignal.timeout(12000),
             });
           if (sentResponse.ok) { successes++; continue; }

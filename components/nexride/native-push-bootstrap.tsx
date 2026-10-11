@@ -1,6 +1,7 @@
 "use client";
 import { useEffect } from "react";
 import { supabase } from "../../lib/supabase";
+import { nexridePushDestination } from "../../lib/nexride-push-routing";
 import {
   getNexRideNativeAppRole,
   reconcileNexRideNativePush,
@@ -48,10 +49,30 @@ export function NexRideNativePushBootstrap() {
         }));
       });
       const opened = await PushNotifications.addListener("pushNotificationActionPerformed", event => {
-        const url = event.notification.data?.url;
-        if (typeof url !== "string") return;
-        if (/^\/driver\/request\?offer=[0-9a-f-]{36}$/i.test(url) ||
-          url === "/rider/trips" || url === "/driver/home") window.location.assign(url);
+        void (async () => {
+          const role = await getNexRideNativeAppRole();
+          const url = nexridePushDestination(event.notification.data, role);
+          if (!url || removed) return;
+
+          // FCM TTL prevents late delivery, not stale entries in Android's tray.
+          // Verify current server state before opening an actionable offer.
+          let destination = url;
+          const match = role === "driver"
+            ? /^\/driver\/request\?offer=([0-9a-f-]{36})$/i.exec(url)
+            : null;
+          if (match) {
+            const { data, error } = await supabase.from("ride_request_offers")
+              .select("status,expires_at")
+              .eq("id", match[1]).maybeSingle();
+            if (!error && (!data || data.status !== "pending" ||
+                (data.expires_at && Date.parse(data.expires_at) <= Date.now()))) {
+              destination = "/driver/activity";
+            }
+          }
+          if (!removed) window.location.assign(destination);
+        })().catch(() => {
+          // Never follow a raw, unvalidated URL when a native callback fails.
+        });
       });
       subscriptions = [registration, registrationError, opened];
       if (removed) { await Promise.all(subscriptions.map(s => s.remove())); return; }
