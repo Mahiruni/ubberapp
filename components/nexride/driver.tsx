@@ -128,6 +128,20 @@ export function DriverWorkspace({
   const [error, setError] = useState("");
   const [locationPermission, setLocationPermission] = useState<LocationPermission>("checking");
   const [alertPermission, setAlertPermission] = useState<NotificationPermission | "unsupported">("unsupported");
+  const [gpsConfirmedAt, setGpsConfirmedAt] = useState(0);
+  const [presenceClock, setPresenceClock] = useState(Date.now());
+  useEffect(() => {
+    const update = (event: Event) => {
+      const detail = (event as CustomEvent<{ status?: string; gpsStatus?: string }>).detail;
+      setGpsConfirmedAt(detail?.status === "synced" && detail.gpsStatus === "ready" ? Date.now() : 0);
+    };
+    window.addEventListener("nexride:driver-gps-sync", update);
+    const timer = window.setInterval(() => setPresenceClock(Date.now()), 10_000);
+    return () => {
+      window.removeEventListener("nexride:driver-gps-sync", update);
+      window.clearInterval(timer);
+    };
+  }, []);
   useEffect(() => {
     if (typeof Notification === "undefined") return;
     const sync = () => setAlertPermission(Notification.permission);
@@ -524,6 +538,7 @@ export function DriverWorkspace({
           setError("NexRide could not update availability. Refresh your Driver status and try again.");
         }
       } else if (payload?.driver) {
+        setGpsConfirmedAt(payload.gpsStatus === "ready" ? Date.now() : 0);
         const confirmed = payload.driver as Record<string, unknown>;
         setState((current) => mergeDriverState(current, confirmed));
         if ((confirmed.is_online === true) === nextOnline) {
@@ -630,8 +645,10 @@ export function DriverWorkspace({
     ? say("Offline", "ከመስመር ውጭ")
     : mapLocation.status === "denied"
       ? say("Location permission blocked", "የቦታ ፈቃድ ተከልክሏል")
-      : gpsHealth === "ready"
-        ? say("GPS ready · receiving ride requests", "ጂፒኤስ ዝግጁ ነው · የጉዞ ጥያቄዎችን በመቀበል ላይ")
+      : gpsHealth === "ready" && gpsConfirmedAt > 0 && presenceClock - gpsConfirmedAt <= 60_000
+        ? say("GPS verified · ready for requests", "ጂፒኤስ ተረጋግጧል · ለጉዞ ጥያቄዎች ዝግጁ")
+        : gpsHealth === "ready"
+          ? say("Confirming GPS with NexRide", "ጂፒኤስን ከኔክስራይድ ጋር በማረጋገጥ ላይ")
         : gpsHealth === "inaccurate"
           ? say("Improving GPS accuracy", "የጂፒኤስ ትክክለኛነትን በማሻሻል ላይ")
           : gpsHealth === "stale"
@@ -680,7 +697,7 @@ export function DriverWorkspace({
           {portrait.url ? <img src={portrait.url} alt="" onError={() => void portrait.refresh()} /> : <Icon name="user" size={22} />}
         </button>
 
-        <div className="nr-driver-presence-label" role="status" aria-live="polite" data-ready={state.online && gpsHealth === "ready" ? "true" : "false"}>
+        <div className="nr-driver-presence-label" role="status" aria-live="polite" data-ready={state.online && gpsHealth === "ready" && gpsConfirmedAt > 0 && presenceClock - gpsConfirmedAt <= 60_000 ? "true" : "false"}>
           {gpsHealthMessage}
         </div>
         <div
