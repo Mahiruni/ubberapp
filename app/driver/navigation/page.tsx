@@ -8,6 +8,7 @@ import { Button, Dialog, Icon } from "../../../components/nexride/ui";
 import { useOperationalTranslation } from "../../../components/nexride/operational-i18n";
 import { supabase } from "../../../lib/supabase";
 import { nexrideApiFetch } from "../../../lib/nexride-api-auth";
+import { storeDriverTrip, readDriverTrip, clearDriverTrip } from "../../../lib/nexride-offline-recovery";
 import { resolveSessionRole } from "../../../lib/nexride-account-role";
 import { emitNexRideFeedback, speakNexRideNavigation, stopNexRideNavigationVoice } from "../../../lib/nexride-feedback";
 import "../../nexride.css";
@@ -95,6 +96,10 @@ export default function DriverNavigationPage() {
   const op = useOperationalTranslation();
   const [driverId, setDriverId] = useState("");
   const [trip, setTrip] = useState<NavigationData | null>(null);
+  // A cached trip is for orientation only. Stage mutations require a fresh
+  // confirmation of ownership and status from Supabase after connectivity recovers.
+  const [safeToUpdate, setSafeToUpdate] = useState(false);
+  const [showingSavedTrip, setShowingSavedTrip] = useState(false);
   const [riderPhone, setRiderPhone] = useState("");
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -154,6 +159,15 @@ export default function DriverNavigationPage() {
       tripDurationMinutes: asNumber(ride.estimated_trip_duration_minutes),
     };
     setTrip(next);
+    setShowingSavedTrip(false);
+    setSafeToUpdate(typeof navigator !== "undefined" && navigator.onLine);
+    try {
+      if (["accepted", "arrived_pickup", "in_trip"].includes(next.status)) {
+        storeDriverTrip(window.localStorage, userId, next as Parameters<typeof storeDriverTrip>[2]);
+      } else {
+        clearDriverTrip(window.localStorage, userId, next.offerId);
+      }
+    } catch {}
     // Resolve only the assigned rider's verified contact via the same
     // profiles source used by trip chat. Never invent a dialable number.
     setRiderPhone("");
@@ -226,7 +240,18 @@ export default function DriverNavigationPage() {
           })
           .subscribe();
       } catch (error) {
-        setMessage(error instanceof Error ? error.message : "We couldn’t load this trip.");
+        const lastConfirmed = readDriverTrip(window.localStorage, session.user.id, offerId);
+        if (lastConfirmed) {
+          // Read-only: never claim a cached status as current or permit trip
+          // actions until the server confirms assignment and stage again.
+          setTrip(lastConfirmed);
+          setSafeToUpdate(false);
+          setShowingSavedTrip(true);
+          setRiderPhone("");
+          setMessage("Saved trip details are shown. Trip actions will unlock after live verification.");
+        } else {
+          setMessage(error instanceof Error ? error.message : "We couldn’t load this trip.");
+        }
       } finally {
         if (active) setLoading(false);
       }
@@ -239,30 +264,82 @@ export default function DriverNavigationPage() {
   }, [loadTrip, router]);
 
   useEffect(() => {
-    if (!trip || !driverId || ['completed','withdrawn','cancelled'].includes(trip.status)) return;
-    let active = true;
+    if (!trip || !driverId || ["completed", "withdrawn", "cancelled"].includes(trip.status)) return;
+    let alive = true;
+    let pending = false;
     const sync = async () => {
-      if (!navigator.onLine) return;
-      const { data } = await supabase.from('ride_requests')
-        .select('status,cancellation_reason')
-        .eq('id', trip.requestId).eq('assigned_driver_id', driverId).maybeSingle();
-      if (!active || !data) return;
-      const status = normalizeStatus(data.status);
-      if (status === 'cancelled' || status === 'withdrawn') {
-        stopNexRideNavigationVoice();
-        setTrip(current => current ? { ...current, status } : current);
+      if (!navigator.onLine || pending) {
+        if (!navigator.onLine) setSafeToUpdate(false);
+        return;
       }
+      pending = true;
+      try {
+        const { data, error } = await supabase.from("ride_requests")
+          .select("status,cancellation_reason,estimated_trip_distance_km,estimated_trip_duration_minutes")
+          .eq("id", trip.requestId).eq("assigned_driver_id", driverId).maybeSingle();
+        if (!alive) return;
+        const status = normalizeStatus(data?.status);
+        if (error || !data || !status) {
+          setSafeToUpdate(false);
+          return;
+        }
+        setSafeToUpdate(true);
+        setShowingSavedTrip(false);
+        setMessage("");
+        if (status === "cancelled" || status === "withdrawn") stopNexRideNavigationVoice();
+        setTrip(current => {
+          if (!current || current.requestId !== trip.requestId) return current;
+          const next = {
+            ...current, status,
+            tripDistanceKm: asNumber(data.estimated_trip_distance_km) ?? current.tripDistanceKm,
+            tripDurationMinutes: asNumber(data.estimated_trip_duration_minutes) ?? current.tripDurationMinutes,
+          };
+          if (["accepted", "arrived_pickup", "in_trip"].includes(status)) {
+            storeDriverTrip(window.localStorage, driverId, next as Parameters<typeof storeDriverTrip>[2]);
+          } else {
+            clearDriverTrip(window.localStorage, driverId, current.offerId);
+          }
+          return next;
+        });
+      } catch {
+        if (alive) setSafeToUpdate(false);
+      } finally { pending = false; }
     };
-    const onVisible = () => { if (document.visibilityState === 'visible') void sync(); };
-    window.addEventListener('online', sync);
-    document.addEventListener('visibilitychange', onVisible);
+    const onOffline = () => {
+      setSafeToUpdate(false);
+      setMessage("Offline. Showing your last confirmed trip stage. Actions are paused.");
+    };
+    const onOnline = () => { setSafeToUpdate(false); void sync(); };
+    const onVisible = () => {
+      if (document.visibilityState === "visible") { setSafeToUpdate(false); void sync(); }
+    };
+    window.addEventListener("offline", onOffline);
+    window.addEventListener("online", onOnline);
+    document.addEventListener("visibilitychange", onVisible);
+    // Polling also repairs missed Realtime events after Android WebView sleep.
     const timer = window.setInterval(() => void sync(), 10000);
+    void sync();
     return () => {
-      active = false; window.clearInterval(timer);
-      window.removeEventListener('online', sync);
-      document.removeEventListener('visibilitychange', onVisible);
+      alive = false; window.clearInterval(timer);
+      window.removeEventListener("offline", onOffline);
+      window.removeEventListener("online", onOnline);
+      document.removeEventListener("visibilitychange", onVisible);
     };
   }, [trip?.requestId, trip?.status, driverId]);
+
+  useEffect(() => {
+    // Initial load might fail before a trip was ever cached. Recover on reconnection
+    // without requiring the Driver to navigate away or accept another offer.
+    if (!driverId || trip) return;
+    const offerId = new URLSearchParams(window.location.search).get("offer");
+    if (!offerId) return;
+    const recover = () => {
+      if (!navigator.onLine) return;
+      void loadTrip(driverId, offerId).then(() => setMessage("")).catch(() => {});
+    };
+    window.addEventListener("online", recover);
+    return () => window.removeEventListener("online", recover);
+  }, [driverId, trip, loadTrip]);
 
   useEffect(() => {
     if (typeof navigator === "undefined" || !navigator.geolocation) {
@@ -574,6 +651,10 @@ export default function DriverNavigationPage() {
 
   async function transition(next: "arrived_pickup" | "in_trip" | "completed") {
     if (!trip || !driverId || busy) return;
+    if (!safeToUpdate || !navigator.onLine) {
+      setMessage("Trip actions are paused until NexRide confirms the latest stage online.");
+      return;
+    }
     const valid =
       (trip.status === "accepted" && next === "arrived_pickup") ||
       (trip.status === "arrived_pickup" && next === "in_trip") ||
@@ -585,25 +666,42 @@ export default function DriverNavigationPage() {
 
     setBusy(true);
     setMessage("");
-    const { data, error } = await supabase
-      .from("ride_requests")
-      .update({ status: next })
-      .eq("id", trip.requestId)
-      .eq("assigned_driver_id", driverId)
-      .eq("status", trip.status)
-      .select("status")
-      .maybeSingle();
-
-    if (error || !data) {
-      setMessage(error?.message?.includes("INVALID_TRIP_STAGE_TRANSITION")
-        ? "The trip stage changed before this action completed."
-        : "NexRide could not update the trip stage. Check your connection and try again.");
+    setSafeToUpdate(false);
+    // Never persist/replay a non-idempotent stage action. The conditional
+    // update and fresh server read resolve uncertain network outcomes.
+    let changed: { status: string } | null = null;
+    let errorMessage = "";
+    try {
+      const result = await supabase.from("ride_requests")
+        .update({ status: next })
+        .eq("id", trip.requestId)
+        .eq("assigned_driver_id", driverId)
+        .eq("status", trip.status)
+        .select("status").maybeSingle();
+      changed = result.data;
+      errorMessage = result.error?.message || "";
+    } catch {
+      errorMessage = "network_unavailable";
+    }
+    if (!changed) {
+      setMessage(errorMessage.includes("INVALID_TRIP_STAGE_TRANSITION")
+        ? "The trip stage changed before this action completed. Rechecking…"
+        : "The action could not be confirmed. Checking the latest trip stage before retry is allowed.");
+      if (navigator.onLine) {
+        try { await loadTrip(driverId, trip.offerId); setMessage(""); } catch {}
+      }
       setBusy(false);
       return;
     }
-    const status = normalizeStatus(data.status);
+    const status = normalizeStatus(changed.status);
     if (status) {
       setTrip((current) => current ? { ...current, status } : current);
+      if (["accepted", "arrived_pickup", "in_trip"].includes(status)) {
+        storeDriverTrip(window.localStorage, driverId, { ...trip, status } as Parameters<typeof storeDriverTrip>[2]);
+      } else {
+        clearDriverTrip(window.localStorage, driverId, trip.offerId);
+      }
+      setSafeToUpdate(true);
       emitNexRideFeedback({
         event:
           status === "arrived_pickup" ? "driver_arrived"
@@ -653,6 +751,10 @@ export default function DriverNavigationPage() {
 
   return (
     <main className="nr-app nr-driver-navigation-page" data-mode="driver">
+      {!safeToUpdate && <div className="nr-nav-offline-recovery" role="status" aria-live="polite">
+        <Icon name="info" size={17} />
+        <span>{showingSavedTrip ? "Saved trip · " : ""}Reconnecting — trip actions paused until the latest stage is confirmed.</span>
+      </div>}
       <DriverNavigationMap vehicle={position} pickup={trip.pickupCoordinate} destination={trip.destinationCoordinate} route={nativeRoute?.target === stage.target ? nativeRoute.geometry : []} segments={nativeRoute?.target === stage.target ? nativeRoute.segments : []} target={stage.target} view={mapView} gpsState={gpsState} heading={position?.heading ?? null} />
 
       <button className="nr-nav-home" onClick={() => router.replace("/driver/home")} aria-label={op("Driver home")}><Icon name="home" size={19} /></button>
@@ -687,13 +789,13 @@ export default function DriverNavigationPage() {
           {invalidTrip ? (
           <button className="nr-nav-stage-primary" onClick={() => router.replace("/driver/home")}>{op("Back to Driver Home")}</button>
         ) : trip.status === "accepted" ? (
-          <button type="button" className="nr-nav-stage-primary" disabled={busy} onClick={() => void transition("arrived_pickup")}>
+          <button type="button" className="nr-nav-stage-primary" disabled={busy || !safeToUpdate} onClick={() => void transition("arrived_pickup")}>
             <Icon name="check" size={19} />{busy ? op("Updating…") : op("Arrived at pickup")}
           </button>
         ) : trip.status === "arrived_pickup" ? (
-          <button className="nr-nav-stage-primary" disabled={busy} onClick={() => setConfirmAction("in_trip")}><Icon name="navigation" size={19} /> {busy ? op("Starting…") : op("Start trip")}</button>
+          <button className="nr-nav-stage-primary" disabled={busy || !safeToUpdate} onClick={() => setConfirmAction("in_trip")}><Icon name="navigation" size={19} /> {busy ? op("Starting…") : op("Start trip")}</button>
         ) : trip.status === "in_trip" ? (
-          <button type="button" className="nr-nav-stage-primary" disabled={busy} onClick={() => setConfirmAction("completed")}>
+          <button type="button" className="nr-nav-stage-primary" disabled={busy || !safeToUpdate} onClick={() => setConfirmAction("completed")}>
             <Icon name="check" size={19} />{busy ? op("Completing…") : op("Complete trip")}
           </button>
         ) : (
@@ -755,7 +857,7 @@ export default function DriverNavigationPage() {
           </p>
           <Button
             loading={busy}
-            disabled={busy}
+            disabled={busy || !safeToUpdate}
             onClick={() => {
               const next = confirmAction;
               setConfirmAction(null);
