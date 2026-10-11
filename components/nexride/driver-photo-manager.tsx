@@ -1,6 +1,7 @@
 'use client';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { supabase } from '../../lib/supabase';
+import { compressPortraitCanvas, photoSizeLabel } from '../../lib/nexride-photo-processing';
 import { cleanupRetiredPortraits, DRIVER_PHOTO_BUCKET, portraitCrop, useDriverPortrait, validateDriverPhoto } from '../../lib/nexride-driver-portrait';
 import { Dialog, useTranslation } from './ui';
 import './driver-photo-manager.css';
@@ -23,6 +24,11 @@ export function DriverPhotoManager({ driverId, fullName, children }: { driverId:
       if (!active) return;
       const canvas = canvasRef.current, ctx = canvas?.getContext('2d'); if (!canvas || !ctx) return;
       const crop = portraitCrop(image.width, image.height, zoom, position.x, position.y);
+      ctx.clearRect(0, 0, 512, 512);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, 512, 512);
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
       ctx.drawImage(image, crop.x, crop.y, crop.side, crop.side, 0, 0, 512, 512);
       setCropReady(true);
     }).catch(() => { if (active) setError(t('photoInvalidType')); });
@@ -36,12 +42,15 @@ export function DriverPhotoManager({ driverId, fullName, children }: { driverId:
   const save = async (remove = false) => {
     if (busy || (!remove && (!source || !cropReady))) return;
     if (!navigator.onLine) { setError(t('photoOffline')); return; }
-    setBusy(true); setStep(0); setError(''); let uploadedPath = '';
+    setBusy(true); setStep(0); setError(''); let uploadedPath = ''; let compressedBytes = 0;
     try {
       const { data, error: authError } = await supabase.auth.getUser();
       if (authError || data.user?.id !== driverId) throw Error('Authentication required');
       if (!remove) {
-        const blob = await new Promise<Blob>((resolve, reject) => canvasRef.current?.toBlob(b => b ? resolve(b) : reject(Error('Image conversion failed')), 'image/jpeg', .88));
+        const canvas = canvasRef.current;
+        if (!canvas) throw Error('Image preview unavailable');
+        const blob = await compressPortraitCanvas(canvas);
+        compressedBytes = blob.size;
         setStep(1); uploadedPath = `${driverId}/${crypto.randomUUID()}.jpg`;
         const { error: uploadError } = await supabase.storage.from(DRIVER_PHOTO_BUCKET).upload(uploadedPath, blob, { contentType: 'image/jpeg', upsert: false });
         if (uploadError) throw uploadError;
@@ -51,7 +60,7 @@ export function DriverPhotoManager({ driverId, fullName, children }: { driverId:
       if (saveError) throw saveError;
       setStep(3); await portrait.refresh();
       const cleaned = await cleanupRetiredPortraits((retired || []) as string[]);
-      setNotice(!cleaned ? t('photoCleanup') : t(remove ? 'photoRemoved' : 'photoSaved'));
+      setNotice(!cleaned ? t('photoCleanup') : remove ? t('photoRemoved') : `${t('photoSaved')} · ${photoSizeLabel(compressedBytes)}`);
       setOpen(false); setSource(''); setConfirm(false);
     } catch {
       if (uploadedPath) await cleanupRetiredPortraits([uploadedPath]); // RLS refuses deleting an active portrait if a response was lost.

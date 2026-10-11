@@ -1,5 +1,6 @@
 /** Validations shared by the Rider uploader and unit tests. */
-export const RIDER_AVATAR_MAX_BYTES = 5 * 1024 * 1024;
+import { PHOTO_SOURCE_MAX_BYTES } from './nexride-photo-processing';
+export const RIDER_AVATAR_MAX_BYTES = PHOTO_SOURCE_MAX_BYTES;
 export const RIDER_AVATAR_EXTENSIONS: Record<string, string> = {
   'image/jpeg': 'jpg',
   'image/png': 'png',

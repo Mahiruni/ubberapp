@@ -1,6 +1,8 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { supabase } from './supabase';
+import { PHOTO_SOURCE_MAX_BYTES } from './nexride-photo-processing';
+export { portraitCrop } from './nexride-photo-processing';
 export const DRIVER_PHOTO_BUCKET = 'nexride-driver-photos';
 type State = { url: string; loading: boolean; stale: boolean; exists: boolean };
 type Entry = { state: State; listeners: Set<(s: State) => void>; refresh: () => Promise<void>; stop: () => void };
@@ -58,11 +60,7 @@ export function useDriverPortrait(id?: string | null) {
 }
 export const validateDriverPhoto = (file: Pick<File, 'size' | 'type'>) =>
   !['image/jpeg', 'image/png', 'image/webp'].includes(file.type) ? 'photoInvalidType'
-  : !Number.isFinite(file.size) || file.size <= 0 || file.size > 5 * 1024 * 1024 ? 'photoInvalidSize' : null;
-export function portraitCrop(width: number, height: number, zoom: number, x: number, y: number) {
-  const side = Math.min(width, height) / zoom;
-  return { side, x: (width-side) * (x+100)/200, y: (height-side) * (y+100)/200 };
-}
+  : !Number.isFinite(file.size) || file.size <= 0 || file.size > PHOTO_SOURCE_MAX_BYTES ? 'photoInvalidSize' : null;
 export async function cleanupRetiredPortraits(paths: string[]) {
   if (!paths.length) return true;
   const { error } = await supabase.storage.from(DRIVER_PHOTO_BUCKET).remove(paths); return !error;

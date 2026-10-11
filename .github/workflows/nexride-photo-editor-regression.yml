@@ -1,0 +1,57 @@
+name: NexRide Profile Photo Regression
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "components/nexride/rider-photo-editor.tsx"
+      - "components/nexride/driver-photo-manager.tsx"
+      - "components/nexride/rider-profile.tsx"
+      - "lib/nexride-photo-processing.ts"
+      - "lib/nexride-rider-avatar.ts"
+      - "lib/nexride-driver-portrait.ts"
+      - "tests/e2e/rider-portrait.spec.ts"
+      - "tests/e2e/driver-portrait.spec.ts"
+      - "tests/unit/nexride-photo-processing.test.ts"
+      - "tests/unit/nexride-rider-avatar.test.ts"
+      - "tests/unit/nexride-driver-portrait.test.ts"
+      - ".github/workflows/nexride-photo-editor-regression.yml"
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  photo-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NEXT_PUBLIC_APP_ENV: test
+      NEXT_PUBLIC_APP_NAME: NexRide
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      NEXT_PUBLIC_SUPABASE_URL: https://eyyvvwecpyctttiueban.supabase.co
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_kXFOrtwKkKmrqCtYTTuzdg__CjjABBf
+      NEXT_PUBLIC_MAPBOX_TOKEN: replace_me
+      PLAYWRIGHT_SERVER_COMMAND: npm run start -- --hostname 127.0.0.1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Dependencies
+        run: npm install --no-audit --no-fund
+      - name: Portrait compression and validation unit tests
+        run: npx vitest run tests/unit/nexride-photo-processing.test.ts tests/unit/nexride-rider-avatar.test.ts tests/unit/nexride-driver-portrait.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit --pretty false
+      - name: Production build
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Rider and Driver photo browser regression
+        run: npx playwright test tests/e2e/rider-portrait.spec.ts tests/e2e/driver-portrait.spec.ts --project=chromium --project=mobile --workers=2 --timeout=60000
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: nexride-photo-regression-report
+          path: playwright-report/
+          if-no-files-found: ignore
