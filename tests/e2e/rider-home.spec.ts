@@ -1,4 +1,4 @@
-import { mapFixture, readyMap, reachableControl } from "./helpers/mobility";
+import { mapFixture, readyMap, reachableControl, headlessFirefoxMapFallback } from "./helpers/mobility";
 import { test, expect } from "@playwright/test";
 test.beforeEach(async ({ page }) => {
   await mapFixture(page);
@@ -38,6 +38,12 @@ test("a real browser location creates a centered marker and recenter moves the m
   });
   await context.grantPermissions(["geolocation"]);
   await page.goto("/");
+  if (await headlessFirefoxMapFallback(page)) {
+    await expect(page.locator('.nr-map-unavailable')).toBeVisible();
+    await expect(page.locator('.nr-home-location')).toContainText('Current location');
+    await page.getByRole('button', { name: 'Recenter on my location' }).click();
+    return;
+  }
   await expect(page.locator(".nr-live-location-dot")).toHaveCount(1);
   await readyMap(page);
   await expect(page.locator(".nr-home-location")).toContainText("Current location");

@@ -193,6 +193,25 @@ function syncRoutes(map: MapboxMap, journey: Journey | undefined) {
   const routesData = routeCollection(routes, selectedIndex);
   const segmentsData = segmentCollection(selectedRoute);
 
+  // Once an endpoint is edited the old visual layers must disappear, not just
+  // the React route class. Explicit layer removal avoids stale GPU frames
+  // on Safari while the asynchronous GeoJSON source update is settling.
+  if (!routes.length && map.isStyleLoaded()) {
+    for (const layer of [
+      "nexride-route-hitbox",
+      "nexride-route-congestion",
+      "nexride-route-lines",
+      "nexride-route-casing",
+    ]) {
+      if (map.getLayer(layer)) map.removeLayer(layer);
+    }
+    for (const source of ["nexride-route-segments", "nexride-routes"]) {
+      if (map.getSource(source)) map.removeSource(source);
+    }
+    map.triggerRepaint();
+    return;
+  }
+
   // Style/source loading is not an obstacle to invalidating an existing route.
   // Clear stale line pixels immediately when a Rider edits either endpoint.
   if (!map.isStyleLoaded()) {

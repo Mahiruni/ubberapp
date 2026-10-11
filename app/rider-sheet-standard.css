@@ -619,6 +619,16 @@
 .nr-mapbox-surface .nr-map-unavailable {
   z-index:40;
 }
+/* A failed WebGL renderer must never cover Rider navigation or GPS controls. */
+.nr-mapbox-surface .nr-map-unavailable {
+  pointer-events:none;
+}
+.nr-mapbox-surface .nr-map-unavailable button {
+  pointer-events:auto;
+}
+.nr-mapbox-surface .nr-map-control-stack {
+  z-index:41;
+}
 
 .nr-mapbox-surface .nr-map-route-summary {
   left:50%!important;

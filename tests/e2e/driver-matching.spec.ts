@@ -1,5 +1,5 @@
 import { connectedBooking, bookingId } from "./helpers/account";
-import { mapFixture, chooseJourney, reachableControl } from "./helpers/mobility";
+import { mapFixture, chooseJourney, reachableControl, headlessFirefoxMapFallback } from "./helpers/mobility";
 import { test, expect, type Page } from '@playwright/test';
 import { translate } from '../../lib/nexride-i18n';
 import type { MatchSnapshot } from '../../lib/nexride-matching';
@@ -38,7 +38,10 @@ test('preview waits for an explicit action, preserves map/summary, and provides 
   await expect(page.locator('.nr-match-summary')).toContainText('Bole Atlas');
   await expect(page.locator('.nr-match-summary')).toContainText('Economy');
   await expect(page.locator('.nr-map-has-route')).toHaveCount(1);
-  await expect(page.locator('.nr-pickup-search-area')).toHaveCount(1);
+  if (await headlessFirefoxMapFallback(page))
+    await expect(page.locator('.nr-map-unavailable')).toBeVisible();
+  else
+    await expect(page.locator('.nr-pickup-search-area')).toHaveCount(1);
   // Longer than the removed 1.6s auto-assignment timer.
   await page.waitForTimeout(1900);
   await expect(page.getByRole('heading', { name: 'Meet your driver' })).not.toBeVisible();
@@ -67,7 +70,10 @@ test('reduced motion stops pulse animation', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await openRides(page);
   await page.getByRole('button', { name: /Preview this ride/ }).click();
-  await expect(page.locator('.nr-search-area-pulse')).toHaveCSS('animation-name', 'none');
+  if (await headlessFirefoxMapFallback(page))
+    await expect(page.locator('.nr-map-unavailable')).toBeVisible();
+  else
+    await expect(page.locator('.nr-search-area-pulse')).toHaveCSS('animation-name', 'none');
   await expect(page.locator('.nr-matching-symbol')).toHaveCSS('animation-name', 'none');
 
 });
@@ -202,6 +208,9 @@ test('provider retry keeps the original request and category changes follow serv
   await expect(page.getByRole('button', { name: 'Change ride', exact: true })).not.toBeVisible();
   await page.getByRole('button', { name: 'Keep searching', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Finding your driver…' })).toBeVisible();
-  await expect(page.locator('.nr-pickup-search-area')).toHaveCount(1);
+  if (await headlessFirefoxMapFallback(page))
+    await expect(page.locator('.nr-map-unavailable')).toBeVisible();
+  else
+    await expect(page.locator('.nr-pickup-search-area')).toHaveCount(1);
   expect(creates).toBe(1); expect(retries).toBe(1);
 });

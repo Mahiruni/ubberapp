@@ -1,4 +1,4 @@
-import { expect, type Page } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import sharp from 'sharp';
 
 /** Exercise the real Mapbox renderer without depending on external tiles. */
@@ -24,6 +24,16 @@ export async function chooseJourney(page: Page) {
 
 export async function readyMap(page: Page) {
   await expect(page.locator('.nr-mapbox-surface')).toHaveAttribute('data-map-status','ready');
+}
+
+/** GitHub's headless Firefox runner has no working WebGL2 implementation.
+ * Verify accessible search/controls in its fallback; render tests stay active
+ * in Chromium/mobile/WebKit and on Firefox systems that do have WebGL2. */
+export async function headlessFirefoxMapFallback(page: Page) {
+  if (test.info().project.name !== 'firefox') return false;
+  const surface = page.locator('.nr-mapbox-surface');
+  await expect(surface).toHaveAttribute('data-map-status', /ready|unavailable/);
+  return await surface.getAttribute('data-map-status') === 'unavailable';
 }
 
 /** Controls must remain reachable above the overlaid ride sheet. */
