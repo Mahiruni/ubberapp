@@ -84,6 +84,15 @@ begin
     case when d.location is not null
      and (d.location->>'latitude') ~ '^-?[0-9]+([.][0-9]+)?$'
      and (d.location->>'longitude') ~ '^-?[0-9]+([.][0-9]+)?$'
+    -- Only dispatch within the operational pickup approach area.
+    and case
+      when (d.location->>'latitude') ~ '^-?[0-9]+([.][0-9]+)?$'
+       and (d.location->>'longitude') ~ '^-?[0-9]+([.][0-9]+)?$'
+      then private.nexride_distance_km(
+        ride.pickup_lat,ride.pickup_lng,
+        (d.location->>'latitude')::double precision,
+        (d.location->>'longitude')::double precision) <= 25
+      else false end
     then round(private.nexride_distance_km(
       ride.pickup_lat,ride.pickup_lng,
       (d.location->>'latitude')::double precision,
@@ -272,6 +281,58 @@ begin
   from public.ride_requests r
   where r.status='pending' and r.dispatch_state='searching'
     and r.created_at>now()-interval '4 minutes'
+    -- Skip waiting Riders outside this Driver's pickup coverage; otherwise
+    -- a distant older request can starve a nearby Rider at Online transition.
+    and exists (
+      select 1 from public.drivers nearby
+      where nearby.id=p_driver_id
+        and case
+          when (nearby.location->>'latitude') ~ '^-?[0-9]+([.][0-9]+)?
+    and not exists(
+      select 1 from public.ride_request_offers o
+      where o.request_id=r.id and o.status='pending'
+        and (o.expires_at is null or o.expires_at>now())
+    )
+    and not exists(
+      select 1 from public.ride_request_offers o
+      where o.request_id=r.id and o.driver_id=p_driver_id
+    )
+  order by r.created_at,r.id
+  limit 1 for update of r skip locked;
+  if waiting_request is null then return 0; end if;
+  return private.dispatch_ride_request(waiting_request);
+end;
+$function$
+;
+revoke all on function public.nexride_dispatch_waiting_for_driver_server(uuid) from public,anon,authenticated;
+grant execute on function public.nexride_dispatch_waiting_for_driver_server(uuid) to service_role;
+
+            and (nearby.location->>'longitude') ~ '^-?[0-9]+([.][0-9]+)?
+    and not exists(
+      select 1 from public.ride_request_offers o
+      where o.request_id=r.id and o.status='pending'
+        and (o.expires_at is null or o.expires_at>now())
+    )
+    and not exists(
+      select 1 from public.ride_request_offers o
+      where o.request_id=r.id and o.driver_id=p_driver_id
+    )
+  order by r.created_at,r.id
+  limit 1 for update of r skip locked;
+  if waiting_request is null then return 0; end if;
+  return private.dispatch_ride_request(waiting_request);
+end;
+$function$
+;
+revoke all on function public.nexride_dispatch_waiting_for_driver_server(uuid) from public,anon,authenticated;
+grant execute on function public.nexride_dispatch_waiting_for_driver_server(uuid) to service_role;
+
+          then private.nexride_distance_km(
+            r.pickup_lat,r.pickup_lng,
+            (nearby.location->>'latitude')::double precision,
+            (nearby.location->>'longitude')::double precision) <= 25
+          else false end
+    )
     and not exists(
       select 1 from public.ride_request_offers o
       where o.request_id=r.id and o.status='pending'
