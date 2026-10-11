@@ -341,6 +341,7 @@ export const messages = {
     "የተቀመጡ የማሳያ ቅንብሮችን ማንበብ አልተቻለም። እንደገና ይሞክሩ ወይም እነዚያን ቅንብሮች ብቻ ዳግም ያስጀምሩ።",
   ],
   startupReset: ["Reset local preview settings", "የማሳያ ቅንብሮችን ዳግም አስጀምር"],
+  startupOpenRiderWelcome: ["Open Rider welcome", "ወደ ተሳፋሪ መግቢያ ይሂዱ"],
   welcome: ["Move around Addis with confidence.", "በአዲስ አበባ በልበ ሙሉነት ይንቀሳቀሱ።"],
   onboardingIntro: ["Choose where you’re going, compare ride options, and stay informed from pickup to arrival.", "መድረሻዎን ይምረጡ፣ የጉዞ አማራጮችን ያወዳድሩ፣ ከመነሻ እስከ መድረሻ ድረስ ሁኔታውን ይከታተሉ።"],
   continueAuth: ["Get started", "ይጀምሩ"],
