@@ -222,6 +222,9 @@ function AppWorkspace({
     setRequestPending(pending);
   }, []);
   const [riderScreen, setRiderScreen] = useState<RiderScreen>("home");
+  // Saved places and map screens render in different workspace containers.
+  // Keep the shortcut being edited across that transition.
+  const [savingShortcut, setSavingShortcut] = useState<"home" | "work" | null>(null);
   const [driverScreen, setDriverScreen] = useState<DriverScreen>("home");
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -723,6 +726,8 @@ function AppWorkspace({
             {mode === "rider" && !riderMapView && (
               <div hidden={profileView}>
                 <RiderWorkspace
+                  savingShortcut={savingShortcut}
+                  setSavingShortcut={setSavingShortcut}
                   screen={riderScreen}
                   navigate={navigateRider}
                   onSafety={() => openSafety("rider")}
@@ -773,6 +778,8 @@ function AppWorkspace({
               data-rider-screen={riderScreen}
             >
               <RiderWorkspace
+                savingShortcut={savingShortcut}
+                setSavingShortcut={setSavingShortcut}
                 screen={riderScreen}
                 navigate={navigateRider}
                 onSafety={() => openSafety("rider")}

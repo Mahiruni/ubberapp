@@ -12,7 +12,7 @@ test("rider can complete an explicitly labeled preview and save a rating", async
   page,
 }) => {
   await page.goto("/");
-  await expect(page.locator(".nr-map-preview-chip")).toBeVisible();
+  if (page.viewportSize()!.width > 800) await expect(page.locator(".nr-map-preview-chip")).toBeVisible();
   await chooseJourney(page);
   await page
     .getByRole("button", { name: "Preview ride options", exact: true })

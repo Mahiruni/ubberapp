@@ -297,9 +297,12 @@ test("Amharic UI uses translated place names and locality details", async ({
   page,
 }) => {
   await page.goto("/");
-  if (page.viewportSize()!.width <= 800) await page.getByRole("button",{name:"Open menu",exact:true}).click();
-  await page.getByRole("button", {name:"አማርኛ",exact:true}).last().click();
-  if (page.viewportSize()!.width <= 800) await page.keyboard.press("Escape");
+  if (page.viewportSize()!.width <= 800) {
+    await page.getByRole("button", { name: "Open menu", exact: true }).click();
+    await page.getByRole("navigation", { name: "Rider navigation" }).getByRole("button", { name: /^Settings/ }).click();
+    await page.getByRole("dialog").getByRole("button", { name: "አማርኛ", exact: true }).click();
+    await page.keyboard.press("Escape");
+  } else await page.getByRole("button", { name: "አማርኛ", exact: true }).last().click();
   await page.locator(".nr-rider-home-panel").getByRole("button",{name:"መድረሻ ይፈልጉ",exact:true}).click();
   await page.locator(".nr-endpoint-field input").last().fill("ኮልፌ");
   await expect(

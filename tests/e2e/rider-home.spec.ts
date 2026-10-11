@@ -18,9 +18,12 @@ test("home exposes empty history, labeled examples and the requested navigation"
       .locator(".nr-rider-home-panel")
       .getByRole("button", { name: "Search destination", exact: true }),
   ).toContainText("Plan your ride");
-  if (page.viewportSize()!.width <= 800) await page.getByRole("button",{name:"Open menu",exact:true}).click();
-  for (const label of ["Home", "Activity", "Safety", "Support", "Account"])
-    await expect(page.getByRole("navigation",{name:"NexRide",exact:true}).getByRole("button",{name:label,exact:true})).toBeVisible();
+  const mobile = page.viewportSize()!.width <= 800;
+  if (mobile) await page.getByRole("button", { name: "Open menu", exact: true }).click();
+  const navigation = page.getByRole("navigation", { name: mobile ? "Rider navigation" : "NexRide", exact: true });
+  for (const label of ["Home", mobile ? "My rides" : "Activity", "Safety", "Support", "Account"])
+    await expect(navigation.getByRole("button", { name: mobile ? new RegExp(`^${label}`) : label, exact: !mobile })).toBeVisible();
+  if (mobile) await page.keyboard.press("Escape");
   await expect(page.locator(".nr-live-location-dot")).toHaveCount(0);
   await expect(page.locator(".map-position")).toHaveCount(0);
 });
@@ -96,7 +99,10 @@ test("loading and unavailable location states remain recoverable", async ({
         watchPosition: (
           _ok: unknown,
           error: (e: { code: number; PERMISSION_DENIED?: number }) => void,
-        ) => setTimeout(() => error({ code: 2 }), 500),
+        ) => {
+          Object.assign(window, { failLocation: () => error({ code: 2 }) });
+          return 1;
+        },
       },
     });
   });
@@ -108,6 +114,7 @@ test("loading and unavailable location states remain recoverable", async ({
   await expect(
     page.getByRole("button", { name: "Recenter on my location" }),
   ).toBeDisabled();
+  await page.evaluate(() => (window as unknown as { failLocation: () => void }).failLocation());
   await expect(page.locator(".nr-home-location")).toContainText(
     "We couldn’t find your location",
   );
@@ -155,6 +162,12 @@ test("Home and Work shortcuts are explicitly selected and restored, with preview
   await expect(
     page.getByRole("heading", { name: "Set your Work shortcut" }),
   ).toBeVisible();
+  await page.getByLabel("Search destination", { exact: true }).fill("Piassa");
+  await page.locator(".nr-place-suggestion").filter({ hasText: "Piassa" }).first().click();
+  await expect(panel.getByText("Piassa", { exact: true })).toBeVisible();
+  await page.reload();
+  await expect(panel.getByText("Meskel Square", { exact: true })).toBeVisible();
+  await expect(panel.getByText("Piassa", { exact: true })).toBeVisible();
 });
 test("a failed map does not block destination search", async ({ page }) => {
   await page.route("https://api.mapbox.com/**", (route) =>

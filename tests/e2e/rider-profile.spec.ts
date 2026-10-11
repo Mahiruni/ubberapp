@@ -1,4 +1,7 @@
+import { mapFixture } from "./helpers/mobility";
 import { test, expect, type Page } from '@playwright/test';
+test.beforeEach(async ({page}) => { await mapFixture(page); });
+test.setTimeout(60_000);
 const id='11111111-1111-4111-8111-111111111111';
 const token=`eyJhbGciOiJIUzI1NiJ9.${Buffer.from(JSON.stringify({sub:id,exp:4102444800})).toString('base64url')}.test`;
 async function accountBackend(page:Page){

@@ -1430,16 +1430,18 @@ export function RiderMap({
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!mounted || !map || !map.isStyleLoaded()) return;
-    syncRoutes(map, journey);
-
-    if (
-      !manualView.current &&
-      pickup?.confirmed &&
-      destination?.confirmed
-    ) {
-      fitJourney(map, journey, rideLabel);
-    }
+    if (!mounted || !map) return;
+    const sync = () => {
+      if (!map.isStyleLoaded()) return;
+      syncRoutes(map, journey);
+      if (!manualView.current && pickup?.confirmed && destination?.confirmed)
+        fitJourney(map, journey, rideLabel);
+    };
+    // Route changes can arrive while traffic/style sources are still loading.
+    // Apply the latest route once they settle instead of dropping that update.
+    if (map.isStyleLoaded()) sync();
+    else map.once("idle", sync);
+    return () => { map.off("idle", sync); };
   }, [
     geometry,
     pickup?.lat,
