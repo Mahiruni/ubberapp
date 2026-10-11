@@ -1,0 +1,401 @@
+/* NexRide 2026 — one Driver trip-wrapper identity.
+   This file is imported LAST by both operational screens. The Driver's
+   current Biloo-inspired violet/indigo/lime identity replaces legacy navy,
+   emerald and hardcoded white-only wrappers. No trip logic is changed. */
+.nr-driver-app-shell :is(.nr-driver-request-page,.nr-driver-navigation-page){
+  --trip-brand:#5145e5;
+  --trip-brand-strong:#28217f;
+  --trip-lime:#c5f000;
+  --trip-ink:#19172a;
+  --trip-surface:#ffffff;
+  --trip-elevated:#f1effb;
+  --trip-subtle:#f7f7fb;
+  --trip-border:#dfdbf1;
+  --trip-text:#19172a;
+  --trip-muted:#636076;
+  --trip-stroke:rgba(81,69,229,.25);
+  --trip-shadow:0 -12px 36px rgba(40,33,127,.14);
+  --trip-action-text:#19172a;
+  --trip-handle:#5145e5;
+  --trip-active-bg:#e9e6ff;
+  --trip-active-text:#4337c9;
+  color-scheme:light;
+  background:#28217f;
+}
+.nr-driver-app-shell[data-theme="dark"] :is(.nr-driver-request-page,.nr-driver-navigation-page){
+  --trip-surface:#24213e;
+  --trip-elevated:#322b60;
+  --trip-subtle:#292542;
+  --trip-border:rgba(185,168,255,.25);
+  --trip-text:#f7f7ff;
+  --trip-muted:#c2bdd9;
+  --trip-stroke:rgba(197,240,0,.32);
+  --trip-shadow:0 -14px 38px rgba(13,9,35,.35);
+  --trip-handle:#c5f000;
+  --trip-active-bg:#3c3478;
+  --trip-active-text:#c5f000;
+  color-scheme:dark;
+}
+/* Driver map remains dominant and uncluttered across all trip states. */
+.nr-driver-app-shell :is(.nr-driver-request-page,.nr-driver-navigation-page) :is(.nr-driver-request-map,.nr-nav-map){
+  background:#28217f!important;
+}
+.nr-driver-app-shell :is(.nr-driver-request-page,.nr-driver-navigation-page) :is(.nr-request-sheet,.nr-nav-bottom-card){
+  background:var(--trip-surface)!important;
+  color:var(--trip-text)!important;
+  border-color:var(--trip-border)!important;
+  box-shadow:var(--trip-shadow)!important;
+  border-top:2px solid var(--trip-stroke)!important;
+  color-scheme:inherit;
+  overflow:hidden!important;
+}
+.nr-driver-app-shell :is(.nr-driver-request-page,.nr-driver-navigation-page) .nr-driver-sheet-grab{
+  background:transparent!important;
+  border:0!important;
+  min-height:34px!important;
+  height:34px!important;
+  flex-basis:34px!important;
+  color:var(--trip-text)!important;
+}
+.nr-driver-app-shell :is(.nr-driver-request-page,.nr-driver-navigation-page) .nr-driver-sheet-grab>span{
+  background:var(--trip-handle)!important;
+  width:42px!important;
+  height:4px!important;
+}
+.nr-driver-app-shell :is(.nr-driver-request-page,.nr-driver-navigation-page) :is(.nr-driver-sheet-content,.nr-driver-sheet-footer){
+  color:var(--trip-text)!important;
+  scrollbar-color:var(--trip-border) transparent;
+}
+.nr-driver-app-shell :is(.nr-driver-request-page,.nr-driver-navigation-page) .nr-driver-sheet-footer{
+  background:var(--trip-surface)!important;
+  border-color:var(--trip-border)!important;
+  box-shadow:0 -8px 22px rgba(25,23,42,.10)!important;
+  padding:10px 16px max(12px,env(safe-area-inset-bottom))!important;
+}
+.nr-driver-app-shell :is(.nr-driver-request-page,.nr-driver-navigation-page) :is(button,a){
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+}
+.nr-driver-app-shell :is(.nr-driver-request-page,.nr-driver-navigation-page) :is(button,a):focus-visible{
+  outline:3px solid var(--trip-lime)!important;
+  outline-offset:3px!important;
+}
+/* Incoming Rider call: branded copy, confident countdown, clear route. */
+.nr-driver-app-shell .nr-driver-request-page .nr-request-sheet .nr-request-eyebrow{
+  color:var(--trip-active-text)!important;
+  font-size:10px!important;
+  letter-spacing:.14em;
+  font-weight:850;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-sheet .nr-request-heading h1{
+  color:var(--trip-text)!important;
+  font-size:clamp(23px,5vw,29px)!important;
+  line-height:1.12!important;
+  letter-spacing:-.045em!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-sheet .nr-request-countdown{
+  --request-ring:var(--trip-brand);
+  background:var(--trip-elevated)!important;
+  color:var(--trip-text)!important;
+  border:1px solid var(--trip-border)!important;
+  box-shadow:none!important;
+}
+.nr-driver-app-shell[data-theme="dark"] .nr-driver-request-page .nr-request-sheet .nr-request-countdown{--request-ring:var(--trip-lime)}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-sheet .nr-request-countdown strong{
+  color:var(--trip-text)!important;
+  font-variant-numeric:tabular-nums;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-countdown-ring .track{
+  stroke:var(--trip-border);
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-countdown[data-urgency="warning"]{--request-ring:#d69a23}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-countdown[data-urgency="critical"]{--request-ring:#d64a65}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-route-horizontal{
+  color:var(--trip-text)!important;
+  background:var(--trip-subtle)!important;
+  border:1px solid var(--trip-border)!important;
+  border-radius:18px!important;
+  padding:13px 14px 15px;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-route-stop small,
+.nr-driver-app-shell .nr-driver-request-page .nr-request-summary small,
+.nr-driver-app-shell .nr-driver-request-page .nr-request-approach{
+  color:var(--trip-muted)!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-route-stop strong,
+.nr-driver-app-shell .nr-driver-request-page .nr-request-heading h1,
+.nr-driver-app-shell .nr-driver-request-page .nr-request-summary strong,
+.nr-driver-app-shell .nr-driver-request-page .nr-request-approach strong,
+.nr-driver-app-shell .nr-driver-request-page .nr-request-state h1{
+  color:var(--trip-text)!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-road-track{
+  background:var(--trip-brand)!important;
+  height:3px;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-road-endpoint.pickup{
+  background:var(--trip-lime)!important;
+  border-color:var(--trip-surface)!important;
+  box-shadow:0 0 0 2px var(--trip-brand)!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-road-endpoint.destination{
+  background:var(--trip-brand-strong)!important;
+  border-color:var(--trip-surface)!important;
+  box-shadow:0 0 0 2px var(--trip-lime)!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-road-distance{
+  background:var(--trip-surface)!important;
+  border-color:var(--trip-border)!important;
+  color:var(--trip-text)!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-road-car{
+  filter:drop-shadow(0 2px 2px rgba(40,33,127,.22));
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-summary{
+  background:var(--trip-border)!important;
+  border-color:var(--trip-border)!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-summary>div{
+  background:var(--trip-elevated)!important;
+}
+.nr-driver-app-shell .nr-driver-request-page :is(.nr-request-countdown,.nr-request-traffic){
+  background:var(--trip-elevated)!important;
+  border-color:var(--trip-border)!important;
+  color:var(--trip-muted)!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-traffic i{
+  background:var(--trip-brand)!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-state>span{
+  background:var(--trip-active-bg)!important;
+  color:var(--trip-active-text)!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-state p{
+  color:var(--trip-muted)!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-state button{
+  background:var(--trip-brand)!important;
+  color:#fff!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-loading span{
+  background:var(--trip-elevated)!important;
+}
+/* One primary decision. Lime Accept, quiet violet Pass/Skip, red Decline.
+   All three remain in the fixed, map-safe footer. */
+.nr-driver-app-shell .nr-driver-request-page .nr-driver-sheet-footer .nr-request-actions>.nr-request-accept{
+  background:var(--trip-lime)!important;
+  color:var(--trip-ink)!important;
+  border:1px solid var(--trip-lime)!important;
+  box-shadow:none!important;
+  min-height:62px!important;
+  border-radius:16px!important;
+  font-size:17px!important;
+  font-weight:900!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-driver-sheet-footer .nr-request-actions-secondary .nr-request-pass{
+  color:#fff!important;
+  background:var(--trip-brand)!important;
+  border:1px solid var(--trip-brand)!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-driver-sheet-footer .nr-request-actions-secondary .nr-request-decline{
+  color:#fff!important;
+  background:#b93d54!important;
+  border:1px solid #b93d54!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-driver-sheet-footer .nr-request-actions :is(button:disabled){
+  opacity:.46!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-error{
+  background:#3a222d!important;
+  border-color:#a84964!important;
+  color:#ffe1e8!important;
+}
+.nr-driver-app-shell[data-theme="light"] .nr-driver-request-page .nr-request-error{
+  background:#fff0f3!important;color:#8b3045!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-confirm-content{
+  background:var(--trip-surface)!important;
+  color:var(--trip-text)!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-confirm-content p{
+  color:var(--trip-muted)!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-reason{
+  background:var(--trip-subtle)!important;
+  border-color:var(--trip-border)!important;
+  color:var(--trip-text)!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-reason[data-selected="true"]{
+  background:var(--trip-active-bg)!important;
+  border-color:var(--trip-brand)!important;
+  color:var(--trip-active-text)!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-reason :is(input,svg){
+  accent-color:var(--trip-brand)!important;
+  color:var(--trip-brand)!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-confirm-actions{
+  background:var(--trip-surface)!important;
+  border-color:var(--trip-border)!important;
+}
+/* Accepted ride / live navigation: same brand, same surface language. */
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-bottom-card{
+  background:var(--trip-surface)!important;
+  color:var(--trip-text)!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-trip-meta{
+  color:var(--trip-muted)!important;
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:.025em;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-trip-meta span:last-child{
+  color:var(--trip-active-text)!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-current-destination small{
+  color:var(--trip-active-text)!important;
+  font-weight:850!important;
+  letter-spacing:.1em;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-current-destination h1{
+  color:var(--trip-text)!important;
+  font-size:clamp(22px,5vw,27px)!important;
+  line-height:1.2;
+  letter-spacing:-.035em;
+  text-wrap:balance;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-current-destination p,
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-handoff{
+  color:var(--trip-muted)!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-trip-progress{
+  border-color:var(--trip-border)!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-trip-progress>span{
+  color:var(--trip-muted)!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-trip-progress>span.done{
+  color:var(--trip-active-text)!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-trip-progress>span.active{
+  color:var(--trip-text)!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-trip-progress>span:not(:last-child)::after{
+  background:var(--trip-border)!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-trip-progress>span.done:not(:last-child)::after{
+  background:var(--trip-brand)!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-trip-progress i{
+  background:var(--trip-elevated)!important;
+  border:1px solid var(--trip-border)!important;
+  color:var(--trip-muted)!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-trip-progress>span.done i{
+  background:var(--trip-active-bg)!important;
+  border-color:var(--trip-brand)!important;
+  color:var(--trip-active-text)!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-trip-progress>span.active i{
+  background:var(--trip-lime)!important;
+  border-color:var(--trip-lime)!important;
+  color:var(--trip-ink)!important;
+  box-shadow:0 0 0 3px rgba(197,240,0,.13)!important;
+}
+/* Keep the next ride-stage action always visible, even at minimum snap. */
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-bottom-card>.nr-driver-sheet-footer{
+  background:var(--trip-surface)!important;
+  border-top:1px solid var(--trip-border)!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page :is(.nr-nav-stage-primary,.nr-nav-stage-secondary){
+  min-height:52px!important;
+  border-radius:14px!important;
+  font-weight:850!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-stage-primary{
+  background:var(--trip-lime)!important;
+  border-color:var(--trip-lime)!important;
+  color:var(--trip-ink)!important;
+  box-shadow:none!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-stage-secondary{
+  background:var(--trip-elevated)!important;
+  color:var(--trip-text)!important;
+  border:1px solid var(--trip-border)!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-stage-secondary.complete{
+  background:var(--trip-active-bg)!important;
+  color:var(--trip-active-text)!important;
+  border-color:var(--trip-brand)!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-utility-row :is(button,a){
+  background:var(--trip-elevated)!important;
+  color:var(--trip-text)!important;
+  border:1px solid var(--trip-border)!important;
+  border-radius:13px!important;
+  min-height:46px!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-utility-row button.active,
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-utility-row a[href^="tel:"]{
+  background:var(--trip-active-bg)!important;
+  color:var(--trip-active-text)!important;
+  border-color:var(--trip-stroke)!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-utility-row :is(button:disabled,a[aria-disabled="true"]){
+  opacity:.48!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page :is(.nr-nav-guidance,.nr-nav-status,.nr-live-map-status,.nr-nav-unavailable){
+  background:var(--trip-surface)!important;
+  color:var(--trip-text)!important;
+  border-color:var(--trip-border)!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-guidance strong,
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-guidance-distance{
+  color:var(--trip-text)!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-guidance :is(em,small){
+  color:var(--trip-muted)!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-guidance-icon{
+  color:var(--trip-lime)!important;
+  background:var(--trip-brand-strong)!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-status.warning{
+  background:#463914!important;
+  color:#ffeab0!important;
+  border-color:#ac862b!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-status.danger,
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-action-error{
+  background:#40202d!important;
+  color:#ffd4de!important;
+  border-color:#a94a64!important;
+}
+.nr-driver-app-shell[data-theme="light"] .nr-driver-navigation-page :is(.nr-nav-status.warning){
+  background:#fff6e2!important;color:#785511!important;
+}
+.nr-driver-app-shell[data-theme="light"] .nr-driver-navigation-page :is(.nr-nav-status.danger,.nr-nav-action-error){
+  background:#fff0f3!important;color:#8b3045!important;
+}
+/* Do not resurrect old white-only floating header controls. */
+.nr-driver-app-shell[data-request-map="true"] .nr-driver-global-header-side :is(.nr-driver-global-icon-button,.nr-driver-menu-trigger){
+  background:#28217f!important;
+  border-color:rgba(197,240,0,.34)!important;
+  color:#f8f8ff!important;
+  box-shadow:0 4px 16px rgba(25,23,42,.25)!important;
+}
+.nr-driver-app-shell :is(.nr-driver-request-page,.nr-driver-navigation-page) :is(button,a):active:not(:disabled){
+  filter:brightness(.97);
+}
+@media(max-width:420px){
+  .nr-driver-app-shell .nr-driver-request-page .nr-request-sheet .nr-request-heading h1{font-size:23px!important}
+  .nr-driver-app-shell .nr-driver-navigation-page .nr-nav-current-destination h1{font-size:23px!important}
+  .nr-driver-app-shell :is(.nr-driver-request-page,.nr-driver-navigation-page) .nr-driver-sheet-footer{
+    padding-inline:12px!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .nr-driver-app-shell :is(.nr-driver-request-page,.nr-driver-navigation-page) .nr-driver-sheet-grab>span{
+    transition:none!important;
+  }
+}
