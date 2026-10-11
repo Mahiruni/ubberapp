@@ -154,13 +154,28 @@ jobs:
         working-directory: android
         run: ./gradlew assembleDebug
 
-      - name: Verify compiled Firebase resources
+      - name: Verify Firebase is compiled into the APK
         shell: bash
         run: |
-          VALUES="android/app/build/generated/res/google-services/debug/values/values.xml"
-          test -s "$VALUES" || { echo "::error::Firebase Gradle resources missing in ${{ matrix.role }} build"; exit 1; }
-          grep -q 'name="google_app_id"' "$VALUES" || { echo "::error::Firebase app ID not compiled"; exit 1; }
-          grep -q 'name="gcm_defaultSenderId"' "$VALUES" || { echo "::error::FCM sender ID not compiled"; exit 1; }
+          set -euo pipefail
+          APK="android/app/build/outputs/apk/debug/app-debug.apk"
+          test -s "$APK"
+          test -s android/app/google-services.json
+          # Verify the *packaged* Android resources, not a Gradle plugin
+          # intermediate directory, which changes between AGP versions.
+          AAPT="$(find "${ANDROID_HOME}/build-tools" -maxdepth 2 -type f -name aapt -print | sort -V | tail -n 1)"
+          if [ -z "$AAPT" ] || [ ! -x "$AAPT" ]; then
+            echo "::error::Android SDK aapt is unavailable for Firebase APK verification"
+            exit 1
+          fi
+          "$AAPT" dump resources "$APK" > /tmp/nexride-apk-resources.txt
+          for resource in google_app_id gcm_defaultSenderId; do
+            if ! grep -Fq "string/$resource" /tmp/nexride-apk-resources.txt; then
+              echo "::error::Firebase resource $resource is missing from ${{ matrix.role }} APK"
+              exit 1
+            fi
+          done
+          echo "Firebase application ID and FCM sender resources are compiled in NexRide ${{ matrix.role }} APK."
 
       - name: Stage APK
         shell: bash
