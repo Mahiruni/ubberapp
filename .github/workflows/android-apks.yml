@@ -154,6 +154,14 @@ jobs:
         working-directory: android
         run: ./gradlew assembleDebug
 
+      - name: Verify compiled Firebase resources
+        shell: bash
+        run: |
+          VALUES="android/app/build/generated/res/google-services/debug/values/values.xml"
+          test -s "$VALUES" || { echo "::error::Firebase Gradle resources missing in ${{ matrix.role }} build"; exit 1; }
+          grep -q 'name="google_app_id"' "$VALUES" || { echo "::error::Firebase app ID not compiled"; exit 1; }
+          grep -q 'name="gcm_defaultSenderId"' "$VALUES" || { echo "::error::FCM sender ID not compiled"; exit 1; }
+
       - name: Stage APK
         shell: bash
         run: |
