@@ -10,8 +10,8 @@ export async function signOutNexRide(role: SignedOutRole): Promise<void> {
   // Keep the logout barrier synchronous so auth listeners cannot restore
   // the account while native token cleanup is still pending.
   markExplicitSignOut(role);
-  await Promise.race([unregisterNexRidePushDevice(role).catch(() => {}),
-    new Promise(resolve => setTimeout(resolve, 1200))]);
+  // Cleanup is best-effort; never delay the existing synchronous signOut call.
+  void unregisterNexRidePushDevice(role).catch(() => {});
   if (role === "driver") void stopNativeDriverGps();
   const result = await supabase.auth.signOut({ scope: "local" });
   if (result.error) throw result.error;
