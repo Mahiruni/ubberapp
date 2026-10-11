@@ -1,7 +1,7 @@
 'use client';
 import Image from 'next/image';
 import { useEffect, useRef, useState, type ChangeEvent } from 'react';
-import type { Language } from '../../lib/nexride-i18n';
+import { translate, type Language } from '../../lib/nexride-i18n';
 import { uploadRiderAvatar, type RiderAccount } from '../../lib/nexride-account';
 import { riderAvatarValidation } from '../../lib/nexride-rider-avatar';
 import { compressPortraitCanvas, photoSizeLabel, portraitCrop, PHOTO_CROP_SIZE, PHOTO_OUTPUT_TARGET_BYTES } from '../../lib/nexride-photo-processing';
@@ -43,7 +43,7 @@ export function RiderPhotoEditor({
       const canvas = canvasRef.current;
       const ctx = canvas?.getContext('2d');
       if (!canvas || !ctx || !image.naturalWidth || !image.naturalHeight) {
-        setError(t('photoInvalidType'));
+        setError(translate(language, 'photoInvalidType'));
         return;
       }
       const crop = portraitCrop(image.naturalWidth, image.naturalHeight, zoom, position.x, position.y);
@@ -54,9 +54,9 @@ export function RiderPhotoEditor({
       ctx.imageSmoothingQuality = 'high';
       ctx.drawImage(image, crop.x, crop.y, crop.side, crop.side, 0, 0, PHOTO_CROP_SIZE, PHOTO_CROP_SIZE);
       setReady(true);
-    }).catch(() => { if (active) setError(t('photoInvalidType')); });
+    }).catch(() => { if (active) setError(translate(language, 'photoInvalidType')); });
     return () => { active = false; };
-  }, [source, open, zoom, position, t]);
+  }, [source, open, zoom, position, language]);
 
   const choose = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.currentTarget.files?.[0];
