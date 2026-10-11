@@ -13,6 +13,18 @@ export type StartupDestination = "/" | "/onboarding" | "/rider/sign-in" | "/driv
 export type RestoredPreferences = { language: Language; mode: "rider" | "driver"; theme: "light" | "dark"; profile: PreviewProfile; trip: PreviewTrip | null };
 export type StartupResult = { preferences: RestoredPreferences; destination: StartupDestination; session: Session | null };
 export class StartupError extends Error { constructor(public readonly kind: "preferences" | "session") { super(kind === "preferences" ? "Unable to restore saved preferences." : "Unable to restore the session."); this.name = "StartupError"; } }
+// A permanently invalid refresh token requires a new sign-in; a network failure
+// must never be mistaken for a logout or cause the stored identity to be erased.
+export function invalidStoredSessionError(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const value = error as { code?: unknown; name?: unknown; message?: unknown };
+  const code = typeof value.code === "string" ? value.code.toLowerCase() : "";
+  const name = typeof value.name === "string" ? value.name : "";
+  const message = typeof value.message === "string" ? value.message : "";
+  return name === "AuthSessionMissingError" ||
+    ["refresh_token_not_found", "invalid_refresh_token", "session_not_found"].includes(code) ||
+    /invalid refresh token|refresh token not found/i.test(message);
+}
 const defaults = (): RestoredPreferences => ({ language: "en", mode: "rider", theme: "light", profile: { name: "", phone: "", email: "" }, trip: null });
 export function storedLanguage(storage: Pick<Storage, "getItem">): Language { try { const locale = storage.getItem(LANGUAGE_KEY); if (locale) return locale === "am" ? "am" : "en"; const state = JSON.parse(storage.getItem(PREVIEW_STORAGE_KEY) || storage.getItem("nexride-state") || "{}"); return state?.language === "am" ? "am" : "en"; } catch { return "en"; } }
 export function restorePreferences(storage: Pick<Storage, "getItem" | "removeItem">): { preferences: RestoredPreferences; returningPreview: boolean; onboardingComplete: boolean; previewEnabled: boolean } {
@@ -83,19 +95,37 @@ export function initializeRider(): Promise<StartupResult> {
     }
 
     let timer: ReturnType<typeof setTimeout> | undefined;
+    let roleTimer: ReturnType<typeof setTimeout> | undefined;
 
     try {
       const result = await Promise.race([
         import("./supabase").then(({ supabase }) => supabase.auth.getSession()),
         new Promise<never>((_, reject) => {
-          timer = setTimeout(() => reject(new StartupError("session")), 8000);
+          timer = setTimeout(() => reject(new StartupError("session")), 15000);
         }),
       ]);
 
-      if (result.error) throw new StartupError("session");
+      if (result.error) {
+        if (invalidStoredSessionError(result.error)) {
+          // Never guess an authenticated role or silently grant Rider privileges.
+          // The sign-in screen can recover the identity without clearing preferences.
+          const signedOutDuringRestore = explicitSignOutRole(window.localStorage);
+          const destination = signedOutDuringRestore
+            ? startupDestination({ ...restored, session: null, signedOutRole: signedOutDuringRestore })
+            : "/rider/sign-in";
+          completed = { preferences: restored.preferences, destination, session: null };
+          return completed;
+        }
+        throw new StartupError("session");
+      }
 
       const session = result.data.session;
-      const accountRole = session ? await resolveSessionRole(session) : null;
+      const accountRole = session ? await Promise.race([
+        resolveSessionRole(session),
+        new Promise<never>((_, reject) => {
+          roleTimer = setTimeout(() => reject(new StartupError("session")), 10000);
+        }),
+      ]) : null;
       // Logout may occur while restoring the previous session.
       const signedOutDuringRestore = explicitSignOutRole(window.localStorage);
       if (signedOutDuringRestore) {
@@ -155,6 +185,7 @@ export function initializeRider(): Promise<StartupResult> {
       throw error instanceof StartupError ? error : new StartupError("session");
     } finally {
       if (timer) clearTimeout(timer);
+      if (roleTimer) clearTimeout(roleTimer);
     }
   })().catch((error) => {
     pending = null;
