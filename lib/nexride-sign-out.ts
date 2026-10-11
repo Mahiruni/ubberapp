@@ -7,11 +7,12 @@ import { ACTIVE_ACCOUNT_ROLE_KEY, PREVIEW_ENABLED_KEY, markExplicitSignOut, retr
  * signed in because Supabase uses local sign-out scope.
  */
 export async function signOutNexRide(role: SignedOutRole): Promise<void> {
-  // Unregister this installation while the session is valid. Never block logout offline.
+  // Keep the logout barrier synchronous so auth listeners cannot restore
+  // the account while native token cleanup is still pending.
+  markExplicitSignOut(role);
   await Promise.race([unregisterNexRidePushDevice(role).catch(() => {}),
     new Promise(resolve => setTimeout(resolve, 1200))]);
   if (role === "driver") void stopNativeDriverGps();
-  markExplicitSignOut(role);
   const result = await supabase.auth.signOut({ scope: "local" });
   if (result.error) throw result.error;
   const current = await supabase.auth.getSession();
