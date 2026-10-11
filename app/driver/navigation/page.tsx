@@ -659,7 +659,10 @@ export default function DriverNavigationPage() {
     const token=[trip?.requestId,stage?.target,nextManeuver.key,band].join(":");
     if(spokenBandsRef.current.has(token) || Date.now()-lastSpokenRef.current<9000)return;
     const cue=nexrideSpokenManeuver(nextManeuver,band,voicePrefs.navigationLanguage);
-    const result=speakNexRideNavigation(cue,voicePrefs.navigationLanguage);
+    // This physical maneuver+distance band is already deduplicated above.
+    // Force speech here so two different turns sharing the same wording are
+    // both announced instead of being suppressed by the generic audio helper.
+    const result=speakNexRideNavigation(cue,voicePrefs.navigationLanguage,{force:true});
     if(result==="spoken"){
       spokenBandsRef.current.add(token);
       lastSpokenRef.current=Date.now();
