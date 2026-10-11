@@ -1,0 +1,26 @@
+.nr-public-share{min-height:100dvh;background:#f5f7f9;color:#102334;padding:24px 14px calc(28px + env(safe-area-inset-bottom));font-family:var(--font-sans,system-ui,sans-serif)}
+.nr-public-share-inner{max-width:690px;margin:0 auto}
+.nr-public-share-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:20px}
+.nr-public-eyebrow{font-size:10px;font-weight:800;letter-spacing:.12em;color:#667587}
+.nr-public-share-head h1{font-size:34px;letter-spacing:-.04em;margin:4px 0 0;color:#041c30}
+.nr-public-share-head p{font-size:12px;color:#667587;margin:4px 0}
+.nr-public-status{font-size:11px;font-weight:800;white-space:nowrap;border-radius:999px;padding:8px 12px;background:#e9faf3;color:#087647}
+.nr-public-share-card{padding:22px;border-radius:22px;background:#fff;border:1px solid #dfe8eb;box-shadow:0 12px 30px rgba(4,28,48,.07)}
+.nr-public-share-card h2{font-size:24px;letter-spacing:-.03em;line-height:1.2;margin:8px 0}
+.nr-public-share-card p{font-size:13px;line-height:1.5;color:#667587}
+.nr-public-route{margin:24px 0;display:grid;gap:13px}
+.nr-public-route>div{display:flex;align-items:flex-start;gap:12px}
+.nr-public-route>div span:last-child{display:grid;gap:3px}
+.nr-public-route small{color:#667587;font-size:10px;font-weight:800;letter-spacing:.06em}
+.nr-public-route strong{font-size:14px}
+.nr-public-pin{color:#00c878;display:inline-block;font-size:17px;min-width:18px}
+.nr-public-pin.last{color:#041c30}
+.nr-share-map-container{position:relative;height:min(48vh,330px);min-height:225px;border-radius:16px;overflow:hidden;background:#eaf1f5}
+.nr-share-map-canvas{width:100%;height:100%}
+.nr-share-map-marker{height:18px;width:18px;border-radius:50%;background:#00c878;border:4px solid white;box-shadow:0 0 0 5px rgba(0,200,120,.18)}
+.nr-share-map-message{position:absolute;bottom:12px;left:12px;right:12px;border-radius:9px;background:rgba(4,28,48,.9);color:white;padding:10px;font-size:12px}
+.nr-public-map-link,.nr-public-primary{display:inline-flex;padding:11px 15px;border-radius:11px;background:#041c30;color:#fff;font-size:12px;font-weight:750;text-decoration:none;border:0}
+.nr-public-gps{font-size:11px!important}
+.nr-public-expiry{color:#667587;text-align:center;font-size:12px;line-height:1.5;margin:18px 2px}
+.nr-public-share footer{text-align:center;color:#667587;font-size:11px;margin-top:28px}
+@media(prefers-reduced-motion:reduce){.nr-public-share *{scroll-behavior:auto!important}}

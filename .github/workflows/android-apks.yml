@@ -32,6 +32,8 @@ name: Build NexRide Android APKs
       - "app/driver/navigation/page.tsx"
       - "lib/nexride-native-reliability.ts"
       - "components/nexride/native-push-bootstrap.tsx"
+      - "lib/nexride-native-share.ts"
+      - "app/safety/page.tsx"
       - "scripts/harden-android-push-notifications.mjs"
       - "scripts/generate-nexride-alert-sound.py"
       - "native/android/NexRideDriverAlertChannels.java"
@@ -70,7 +72,7 @@ jobs:
         run: npm install --no-audit --no-fund
 
       - name: Install Capacitor build tooling
-        run: npm install --no-save @capacitor/core@8 @capacitor/cli@8 @capacitor/android@8 @capacitor/app@8 @capacitor/push-notifications@8
+        run: npm install --no-save @capacitor/core@8 @capacitor/cli@8 @capacitor/android@8 @capacitor/app@8 @capacitor/push-notifications@8 @capacitor/share@8
 
       - name: Patch native push permission crash safeguards
         shell: bash
@@ -178,6 +180,7 @@ jobs:
           grep -q 'android:enableOnBackInvokedCallback="true"' android/app/src/main/AndroidManifest.xml
           grep -q 'capacitor-app' android/capacitor.settings.gradle
           grep -q 'capacitor-push-notifications' android/capacitor.settings.gradle
+          grep -q 'capacitor-share' android/capacitor.settings.gradle
           grep -q 'POST_PROMOTED_NOTIFICATIONS' android/app/src/main/AndroidManifest.xml
           grep -q 'registerPlugin(NexRideLiveTripPlugin.class)' android/app/src/main/java/com/nexride/${{ matrix.role }}/MainActivity.java
           if [ "${{ matrix.role }}" = "driver" ]; then

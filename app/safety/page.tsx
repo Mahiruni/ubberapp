@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "../../components/nexride/ui";
 import { DriverStandaloneMenu, usePersistedDriverTheme } from "../../components/nexride/driver-app-shell";
@@ -8,6 +8,7 @@ import { RiderMenu, usePersistedRiderTheme } from "../../components/nexride/ride
 import { useOperationalTranslation } from "../../components/nexride/operational-i18n";
 import { supabase } from "../../lib/supabase";
 import { emitNexRideFeedback } from "../../lib/nexride-feedback";
+import { NativeTripSharePanel } from "../../components/nexride/native-trip-share-panel";
 import "../nexride.css";
 import "./safety.css";
 import "../detail-system.css";
@@ -122,14 +123,30 @@ export default function SafetyCenterPage() {
             source: "driver_live",
           });
         }
-      } else {
+      } else if (session) {
+        // A sessionStorage snapshot is presentation-only. Confirm Rider owns a
+        // live trip before enabling a recipient-accessible GPS share link.
         const snapshot = readRiderSnapshot();
-        const requestedTrip = params.get("trip");
-        if (requestedTrip && !snapshot.tripReference) {
-          snapshot.tripReference = requestedTrip;
+        const requestedTrip = params.get("trip") || snapshot.tripReference || "";
+        let query = supabase.from("ride_requests")
+          .select("id,status,pickup_location,destination_location,ride_category")
+          .eq("rider_id",session.user.id)
+          .in("status",["accepted","arrived_pickup","in_trip"]);
+        query=requestedTrip && /^[0-9a-f-]{36}$/i.test(requestedTrip)
+          ? query.eq("id",requestedTrip)
+          : query.order("accepted_at",{ascending:false}).limit(1);
+        const {data:ride,error}=await query.maybeSingle();
+        if(active && !error && ride){
+          setTrip({
+            rideRequestId:ride.id,tripReference:ride.id,
+            status:ride.status||"",pickup:ride.pickup_location||"",
+            destination:ride.destination_location||"",
+            category:ride.ride_category||"",source:"rider_snapshot",
+          });
+        } else if(active) {
+          setTrip({...snapshot,rideRequestId:null});
         }
-        if (active) setTrip(snapshot);
-      }
+      } else if(active) setTrip(emptyTrip);
 
       if (active) setLoadingTrip(false);
     })().catch(() => {
@@ -179,7 +196,7 @@ export default function SafetyCenterPage() {
           <SafetyHome role={role} trip={trip} loadingTrip={loadingTrip} open={setView} />
         )}
         {view === "sos" && <EmergencySOS />}
-        {view === "share" && <TripShare trip={trip} role={role} online={online} />}
+        {view === "share" && <NativeTripSharePanel tripId={trip.rideRequestId} role={role} userId={userId} online={online} />}
         {view === "help" && <HelpCenter />}
         {view === "report" && (
           <SafetyReport
@@ -229,7 +246,7 @@ function SafetyHome({
           tone="success"
           icon="share"
           title={op("Share your trip")}
-          detail={op("Share a one-time trip snapshot with someone you trust.")}
+          detail={op("Share a secure, expiring live trip link with someone you trust.")}
           onClick={() => open("share")}
         />
         <SafetyAction
@@ -383,88 +400,6 @@ function EmergencySOS() {
   );
 }
 
-function TripShare({
-  trip,
-  role,
-  online,
-}: {
-  trip: TripContext;
-  role: SafetyRole;
-  online: boolean;
-}) {
-  const op = useOperationalTranslation();
-  const [status, setStatus] = useState("");
-
-  const shareText = useMemo(() => {
-    const lines = [
-      "NexRide trip snapshot",
-      `Role: ${role === "driver" ? "Driver" : "Rider"}`,
-      trip.status ? `Trip status: ${trip.status}` : "",
-      trip.category ? `Ride category: ${trip.category}` : "",
-      trip.pickup ? `Pickup: ${trip.pickup}` : "",
-      trip.destination ? `Destination: ${trip.destination}` : "",
-      trip.tripReference ? `Trip reference: ${trip.tripReference}` : "",
-    ].filter(Boolean);
-    return lines.join("\n");
-  }, [role, trip]);
-
-  const share = async () => {
-    setStatus("");
-    try {
-      if (navigator.share) {
-        await navigator.share({ title: "NexRide trip", text: shareText });
-        setStatus(op("Trip snapshot shared using your device share sheet."));
-      } else if (navigator.clipboard) {
-        await navigator.clipboard.writeText(shareText);
-        setStatus(op("Trip snapshot copied. Paste it into the app you want to use."));
-      } else {
-        setStatus(op("Sharing is not supported by this browser. You can manually copy the trip details shown below."));
-      }
-    } catch (error) {
-      if (error instanceof DOMException && error.name === "AbortError") {
-        setStatus(op("Sharing cancelled. Nothing was sent by NexRide."));
-      } else {
-        setStatus(op("The device share action could not be completed."));
-      }
-    }
-  };
-
-  return (
-    <section className="nr-share-panel">
-      <div className="nr-share-note">
-        <Icon name="share" size={20} />
-        <div>
-          <strong>Review before sharing</strong>
-          <p>NexRide currently supports a one-time text snapshot, not continuous live-location sharing. Because this is not a live share, there is no ongoing share session to stop.</p>
-        </div>
-      </div>
-
-      <div className="nr-share-preview">
-        <span>INFORMATION TO SHARE</span>
-        {trip.source === "none" ? (
-          <p>No active trip details are available. The shared text will identify only your NexRide role.</p>
-        ) : (
-          <>
-            {trip.status && <ShareRow label={op("Status")} value={trip.status} />}
-            {trip.category && <ShareRow label={op("Ride")} value={trip.category} />}
-            {trip.pickup && <ShareRow label={op("Pickup")} value={trip.pickup} />}
-            {trip.destination && <ShareRow label={op("Destination")} value={trip.destination} />}
-            {trip.tripReference && <ShareRow label={op("Trip reference")} value={trip.tripReference} />}
-          </>
-        )}
-      </div>
-
-      {!online && <p className="nr-share-offline">You are offline. Device sharing or copying may still work, but no live NexRide data can refresh until you reconnect.</p>}
-      <button className="nr-share-primary" onClick={share}><Icon name="share" size={18} /> {op("Share trip")}</button>
-      {status && <p className="nr-share-status" role="status">{status}</p>}
-    </section>
-  );
-}
-
-function ShareRow({ label, value }: { label: string; value: string }) {
-  return <div className="nr-share-row"><span>{label}</span><strong>{value}</strong></div>;
-}
-
 function HelpCenter() {
   const op = useOperationalTranslation();
   return (
@@ -486,7 +421,7 @@ function HelpCenter() {
       </details>
       <details>
         <summary>Trip sharing</summary>
-        <p>The current implementation shares a one-time trip snapshot through your device. It does not expose a continuously updating live-tracking link.</p>
+        <p>Create an expiring, revocable live trip link from Share your trip. Only trusted recipients should receive it. Recent Driver GPS is shown only while the trip is active.</p>
       </details>
       <details>
         <summary>GPS or internet is unavailable</summary>

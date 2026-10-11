@@ -29,7 +29,8 @@
     "sharp": "0.35.5",
     "@capacitor/core": "^8.0.0",
     "@capacitor/app": "^8.0.0",
-    "@capacitor/push-notifications": "^8.0.0"
+    "@capacitor/push-notifications": "^8.0.0",
+    "@capacitor/share": "^8.0.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.55.0",
