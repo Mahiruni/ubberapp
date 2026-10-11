@@ -414,3 +414,118 @@
     transition:none!important;
   }
 }
+
+
+/* Content-fit operating sheets: snap ratio is the upper bound, never empty space.
+   Their bodies scroll; a pinned footer stays immediately above the device safe area.
+   This intentionally overrides the old percentage-only fixed height. */
+.nr-driver-app-shell :is(.nr-driver-request-page,.nr-driver-navigation-page)
+  :is(.nr-request-sheet,.nr-nav-bottom-card) {
+  display:flex!important;
+  flex-direction:column!important;
+  height:fit-content!important;
+  min-height:0!important;
+  max-height:min(
+    calc(100dvh - var(--driver-header-total,56px) - 8px),
+    max(var(--nr-driver-sheet-height,55dvh),var(--nr-driver-footer-floor,132px))
+  )!important;
+  box-sizing:border-box!important;
+  padding:0!important;
+  overflow:hidden!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-sheet {
+  --nr-driver-footer-floor:258px;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-bottom-card {
+  --nr-driver-footer-floor:132px;
+}
+.nr-driver-app-shell :is(.nr-driver-request-page,.nr-driver-navigation-page)
+  :is(.nr-request-sheet,.nr-nav-bottom-card) > .nr-driver-sheet-grab {
+  flex:0 0 34px!important;
+  min-height:34px!important;
+}
+.nr-driver-app-shell :is(.nr-driver-request-page,.nr-driver-navigation-page)
+  :is(.nr-request-sheet,.nr-nav-bottom-card) > .nr-driver-sheet-content {
+  flex:0 1 auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow-y:auto!important;
+  overscroll-behavior:contain;
+  scrollbar-gutter:auto;
+  padding-bottom:10px!important;
+}
+.nr-driver-app-shell :is(.nr-driver-request-page,.nr-driver-navigation-page)
+  :is(.nr-request-sheet,.nr-nav-bottom-card) > .nr-driver-sheet-footer {
+  display:block;
+  position:relative;
+  flex:0 0 auto!important;
+  margin:0!important;
+  padding:9px 14px max(12px,env(safe-area-inset-bottom,0px))!important;
+  min-height:0!important;
+  border-top:1px solid var(--trip-border)!important;
+  background:var(--trip-surface)!important;
+  box-shadow:none!important;
+}
+.nr-driver-app-shell .nr-driver-request-page
+  .nr-request-sheet > .nr-driver-sheet-footer {
+  max-height:calc(100dvh - var(--driver-header-total,56px) - 42px);
+  overflow-y:auto;
+  overscroll-behavior:contain;
+}
+.nr-driver-app-shell .nr-driver-request-page
+  .nr-driver-sheet-footer .nr-request-actions,
+.nr-driver-app-shell .nr-driver-request-page
+  .nr-driver-sheet-footer .nr-request-actions-secondary,
+.nr-driver-app-shell .nr-driver-navigation-page
+  .nr-driver-sheet-footer .nr-nav-pinned-actions,
+.nr-driver-app-shell .nr-driver-navigation-page
+  .nr-driver-sheet-footer .nr-nav-stage-actions {
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  gap:8px!important;
+  width:100%;
+  min-width:0;
+  margin:0!important;
+  padding:0!important;
+}
+.nr-driver-app-shell .nr-driver-request-page
+  .nr-driver-sheet-footer .nr-request-actions :is(.nr-request-accept,.nr-request-pass,.nr-request-decline),
+.nr-driver-app-shell .nr-driver-navigation-page
+  .nr-driver-sheet-footer .nr-nav-pinned-actions :is(.nr-nav-stage-primary,.nr-nav-stage-secondary) {
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:100%!important;
+  min-width:0!important;
+  min-height:52px!important;
+  height:auto!important;
+  margin:0!important;
+  padding:11px 14px!important;
+  line-height:1.25!important;
+  text-align:center;
+  white-space:normal!important;
+  border-radius:14px!important;
+}
+.nr-driver-app-shell .nr-driver-request-page
+  .nr-driver-sheet-footer .nr-request-actions > .nr-request-accept {
+  min-height:58px!important;
+  background:var(--trip-lime)!important;
+  border-color:var(--trip-lime)!important;
+  color:var(--trip-ink)!important;
+}
+/* Keep route / offer action semantics and the existing indigo + lime palette. */
+@media (min-width:760px) {
+  .nr-driver-app-shell :is(.nr-driver-request-page,.nr-driver-navigation-page)
+    :is(.nr-request-sheet,.nr-nav-bottom-card) {
+    max-height:min(
+      calc(100dvh - 56px),
+      max(var(--nr-driver-sheet-height,55dvh),var(--nr-driver-footer-floor,132px))
+    )!important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nr-driver-app-shell :is(.nr-driver-request-page,.nr-driver-navigation-page)
+    :is(.nr-request-sheet,.nr-nav-bottom-card) {
+    transition:none!important;
+  }
+}

@@ -1037,8 +1037,8 @@
 }
 .nr-driver-app-shell .nr-driver-request-page .nr-driver-sheet-footer .nr-request-actions-secondary{
   display:grid;
-  grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:9px;
+  grid-template-columns:minmax(0,1fr);
+  gap:8px;
   min-width:0;
 }
 .nr-driver-app-shell .nr-driver-request-page .nr-driver-sheet-footer .nr-request-actions>.nr-request-accept{

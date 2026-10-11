@@ -648,15 +648,15 @@ export default function DriverRideRequestPage() {
                 {submitting === "accept" ? op("Accepting…") : op("Accept")}
               </button>
               <div className="nr-request-actions-secondary">
-                <button type="button" className="nr-request-decline"
-                  disabled={Boolean(submitting) || secondsRemaining === 0} onClick={() => { setDeclineReason(""); setConfirmAction("decline"); }}>
-                  <Icon name="close" size={18} />
-                  {op("Decline")}
-                </button>
                 <button type="button" className="nr-request-pass"
                   disabled={Boolean(submitting) || secondsRemaining === 0} onClick={() => void passRide()}>
                   <Icon name="arrow" size={18} />
                   {op("Pass/Skip")}
+                </button>
+                <button type="button" className="nr-request-decline"
+                  disabled={Boolean(submitting) || secondsRemaining === 0} onClick={() => { setDeclineReason(""); setConfirmAction("decline"); }}>
+                  <Icon name="close" size={18} />
+                  {op("Decline")}
                 </button>
               </div>
             </div>

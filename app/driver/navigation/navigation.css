@@ -265,9 +265,9 @@
   overflow-wrap:anywhere;
 }
 .nr-driver-navigation-page .nr-nav-stage-actions{
-  grid-template-columns:repeat(2,minmax(0,1fr))!important;
-  gap:10px;
-  margin-top:12px;
+  grid-template-columns:minmax(0,1fr)!important;
+  gap:8px;
+  margin-top:8px;
 }
 .nr-driver-navigation-page .nr-nav-stage-actions :is(.nr-nav-stage-primary,.nr-nav-stage-secondary){margin-top:0}
 .nr-driver-navigation-page .nr-nav-current-destination h1{

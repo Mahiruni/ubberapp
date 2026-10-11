@@ -329,3 +329,27 @@ test("payment footer stays a compact, readable horizontal row on mobile", async 
     await expect(page.getByRole("button", { name: "Edit payment method" })).toBeEnabled();
   }
 });
+
+
+test("Rider operational footer keeps its booking action stacked and flush to the safe area", async ({ page }) => {
+  await openRides(page);
+  await page.setViewportSize({ width: 390, height: 844 });
+  const footer = page.locator(".nr-ride-selection > footer");
+  const payment = footer.locator(".nr-ride-payment");
+  const request = footer.locator(":scope > .nr-button");
+  await expect(request).toBeVisible();
+  const payBox = (await payment.boundingBox())!;
+  const buttonBox = (await request.boundingBox())!;
+  expect(buttonBox.y - (payBox.y + payBox.height)).toBeGreaterThanOrEqual(5);
+  expect(Math.abs(buttonBox.x - payBox.x)).toBeLessThan(3);
+  expect(buttonBox.width).toBeGreaterThan(250);
+  await expect(request).toBeInViewport();
+  const metrics = await footer.evaluate(el => ({
+    direction: getComputedStyle(el).flexDirection,
+    gap: getComputedStyle(el).gap,
+    padding: getComputedStyle(el).paddingBottom,
+  }));
+  expect(metrics.direction).toBe("column");
+  expect(parseFloat(metrics.gap)).toBeLessThanOrEqual(10);
+  expect(parseFloat(metrics.padding)).toBeLessThan(35);
+});

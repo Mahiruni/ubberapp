@@ -308,3 +308,56 @@
   outline-offset: 2px;
   border-radius: 9px;
 }
+
+
+/* Unified Rider operational footers: one full-width action per line.
+   Payment method remains a separate horizontal information row. */
+.nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper
+  :is(.nr-destination-panel,.nr-ride-selection,.nr-driver-matching) > footer {
+  box-sizing:border-box!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:flex-start!important;
+  align-items:stretch!important;
+  flex:0 0 auto!important;
+  gap:8px!important;
+  min-height:0!important;
+  max-height:min(44dvh,300px);
+  margin:0!important;
+  padding:10px 16px max(12px,env(safe-area-inset-bottom,0px))!important;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  background:var(--surface,#fff)!important;
+}
+.nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper
+  :is(.nr-destination-panel,.nr-ride-selection,.nr-driver-matching) > footer > :is(button,a,.nr-button) {
+  display:flex!important;
+  justify-content:center!important;
+  align-items:center!important;
+  width:100%!important;
+  flex:0 0 auto!important;
+  min-width:0!important;
+  min-height:52px!important;
+  margin:0!important;
+  padding:10px 14px!important;
+  border-radius:14px!important;
+  white-space:normal!important;
+  text-align:center!important;
+  overflow-wrap:anywhere;
+}
+.nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper
+  .nr-ride-selection > footer > .nr-ride-payment {
+  flex:0 0 auto!important;
+  min-width:0!important;
+  margin:0!important;
+}
+.nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper
+  .nr-ride-selection > footer > .nr-booking-boundary {
+  margin:0!important;
+}
+/* Avoid artificially tall footer regions that push CTAs away from the phone edge. */
+.nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper
+  .nr-driver-matching > footer :is(.nr-button,.nr-preview-ride-link) {
+  min-height:52px!important;
+  margin:0!important;
+}
