@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
 import { clamp, nearestSheetRatio, projectedSheetHeight, sheetHeight } from "../../lib/nexride-sheet-geometry";
+import { registerNexRideBackHandler } from "../../lib/nexride-native-navigation";
 
 type Options = {
   kind: "rider" | "driver"; ratios: readonly [number, number, number]; defaultRatio: number;
@@ -84,6 +85,15 @@ export function useSheetMotion(options: Options) {
     if (options.ratio !== undefined && !gesture.current) settle(options.ratio, false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [options.ratio]);
+  useEffect(() => registerNexRideBackHandler(() => {
+    const handle = handleRef.current;
+    const { ratios } = config.current;
+    if (!handle || handle.getClientRects().length === 0 ||
+      handle.closest("[hidden]") || ratioRef.current <= ratios[0] + 0.005) return false;
+    settle(ratios[0]);
+    return true;
+  }, 65), []);
+
   const onPointerDown = (event: PointerEvent<HTMLButtonElement>) => {
     if (!event.isPrimary || (event.pointerType === "mouse" && event.button !== 0) || gesture.current) return;
     event.preventDefault(); event.stopPropagation();

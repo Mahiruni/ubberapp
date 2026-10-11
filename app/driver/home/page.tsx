@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DriverWorkspace, type DriverScreen } from "../../../components/nexride/driver";
+import { registerNexRideBackHandler } from "../../../lib/nexride-native-navigation";
 import { supabase } from "../../../lib/supabase";
 import { explicitSignOutRole } from "../../../lib/nexride-startup";
 import { getDriverReviewStatus } from "../../../lib/nexride-driver-verification";
@@ -14,6 +15,11 @@ import "../../detail-system.css";
 export default function DriverHomePage() {
   const router = useRouter();
   const [screen, setScreen] = useState<DriverScreen>("home");
+  useEffect(() => registerNexRideBackHandler(() => {
+    if (screen !== "map") return false;
+    setScreen("home");
+    return true;
+  }, 20), [screen]);
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {

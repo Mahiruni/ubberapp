@@ -11,6 +11,11 @@ name: Build NexRide Android APKs
       - "scripts/generate-brand-assets.mjs"
       - "scripts/sync-android-icons.mjs"
       - "package.json"
+      - "components/nexride/native-navigation-bridge.tsx"
+      - "lib/nexride-native-navigation.ts"
+      - "components/nexride/use-sheet-motion.ts"
+      - "app/page.tsx"
+      - "app/driver/home/page.tsx"
 
 permissions:
   contents: read
@@ -46,7 +51,7 @@ jobs:
         run: npm install --no-audit --no-fund
 
       - name: Install Capacitor build tooling
-        run: npm install --no-save @capacitor/core@latest @capacitor/cli@latest @capacitor/android@latest
+        run: npm install --no-save @capacitor/core@8 @capacitor/cli@8 @capacitor/android@8 @capacitor/app@8
 
       - name: Configure native shell
         shell: bash
@@ -80,6 +85,9 @@ jobs:
       - name: Create Android project
         run: npx cap add android
 
+      - name: Sync native navigation plugin
+        run: npx cap sync android
+
       - name: Harden Android manifest
         shell: bash
         run: |
@@ -97,6 +105,9 @@ jobs:
           if "ACCESS_FINE_LOCATION" not in s:
               s=s.replace("<application", permissions+"\n    <application", 1)
           s=s.replace('android:usesCleartextTraffic="true"', 'android:usesCleartextTraffic="false"')
+          # Capacitor AndroidX navigation also receives Android predictive Back callbacks.
+          if 'android:enableOnBackInvokedCallback=' not in s:
+              s=s.replace('<application', '<application android:enableOnBackInvokedCallback="true"', 1)
           p.write_text(s)
           PY
 
@@ -120,6 +131,8 @@ jobs:
           fi
           grep -q 'ACCESS_FINE_LOCATION' android/app/src/main/AndroidManifest.xml
           grep -q 'CAMERA' android/app/src/main/AndroidManifest.xml
+          grep -q 'android:enableOnBackInvokedCallback="true"' android/app/src/main/AndroidManifest.xml
+          grep -q 'capacitor-app' android/capacitor.settings.gradle
 
       - name: Build debug APK
         working-directory: android

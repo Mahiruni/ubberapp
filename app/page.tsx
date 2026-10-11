@@ -46,6 +46,7 @@ import { LANGUAGE_EVENT } from "../components/nexride/language-provider";
 import type { PreviewProfile, PreviewTrip } from "../lib/nexride-preview";
 import { resolveSessionRole } from "../lib/nexride-account-role";
 import { readAccount } from "../lib/nexride-account";
+import { registerNexRideBackHandler } from "../lib/nexride-native-navigation";
 import "./nexride.css";
 import "./rider-home.css";
 import "./destination.css";
@@ -288,6 +289,31 @@ function AppWorkspace({
       window.removeEventListener("focus", refreshAvatar);
     };
   }, [authenticated, mode, profileView]);
+  // Keep Android Back distinct from destructive cancellation/dispatch actions.
+  useEffect(() => {
+    if (mode !== "rider") return;
+    return registerNexRideBackHandler(() => {
+      if (requestPending || matching.active ||
+        ["finding", "trip", "live"].includes(riderScreen)) {
+        setToast(language === "am"
+          ? "ጉዞዎ ቀጥሏል። እባክዎ የጉዞ መቆጣጠሪያዎችን ይጠቀሙ።"
+          : "Your ride is still active. Use the ride controls to navigate safely.");
+        return true;
+      }
+      const previous: Partial<Record<RiderScreen, RiderScreen>> = {
+        destination: "home", rides: "destination", summary: "home",
+        profile: "home", saved: "home", wallet: "home", trips: "home",
+      };
+      const target = previous[riderScreen];
+      if (target) {
+        setPanel(null);
+        setRiderScreen(target);
+        return true;
+      }
+      return false;
+    }, 20);
+  }, [mode, riderScreen, requestPending, matching.active, language]);
+
   const riderHome = mode === "rider" && screen === "home";
   const [liveTripShown, setLiveTripShown] = useState(false);
   const riderTripView = mode === "rider" && ["trip", "live", "summary"].includes(screen);
