@@ -69,6 +69,9 @@ export async function registerNexRidePushToken(token: string) {
     method: "POST", body: JSON.stringify({ role, token, installationId: installationId() }),
   });
   if (!result.ok) throw new Error("device_registration_failed");
+  window.dispatchEvent(new CustomEvent("nexride:native-push-status", {
+    detail: { status: "registered", role },
+  }));
 }
 
 export async function unregisterNexRidePushDevice(role: Role) {
