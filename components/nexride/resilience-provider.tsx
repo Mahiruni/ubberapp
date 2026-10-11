@@ -143,5 +143,18 @@ export function NexRideResilienceProvider({ children }: { children: React.ReactN
     };
   }, [network, publish]);
 
-  return <>{children}</>;
+  return <>
+    {children}
+    {(network === "offline" || network === "reconnecting") && (
+      <div className="nr-network-banner nr-network-recovery" data-state={network}
+           role="status" aria-live="polite" aria-atomic="true">
+        <span className="nr-network-dot" aria-hidden="true" />
+        <span className="nr-network-copy">
+          {network === "offline"
+            ? "You're offline · Showing saved trip details. Live actions are paused."
+            : "Reconnecting · Your trip will update after server confirmation."}
+        </span>
+      </div>
+    )}
+  </>;
 }
