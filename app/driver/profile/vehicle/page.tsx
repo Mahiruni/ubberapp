@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useOperationalTranslation } from "../../../../components/nexride/operational-i18n";
 import { Icon } from "../../../../components/nexride/ui";
 import { supabase } from "../../../../lib/supabase";
 import {
@@ -15,6 +16,7 @@ import "../../../detail-system.css";
 
 export default function DriverVehiclePage() {
   const router = useRouter();
+  const say = useOperationalTranslation();
   const [profile, setProfile] = useState<DriverProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -22,7 +24,8 @@ export default function DriverVehiclePage() {
   useEffect(() => {
     let active = true;
     (async () => {
-      const { data } = await supabase.auth.getSession();
+      const { data, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) throw sessionError;
       if (!active) return;
       if (!data.session) {
         router.replace("/driver/auth");
@@ -37,11 +40,11 @@ export default function DriverVehiclePage() {
         }
         if (active) setProfile(next);
       } catch {
-        if (active) setError("We couldn’t load your vehicle details.");
+        if (active) setError(say("We couldn’t load your vehicle details."));
       } finally {
         if (active) setLoading(false);
       }
-    })();
+    })().catch(() => { if (active) { setError(say("We couldn’t load your vehicle details.")); setLoading(false); } });
 
     return () => {
       active = false;
@@ -54,13 +57,13 @@ export default function DriverVehiclePage() {
     <main className="nr-app nr-driver-profile-subpage" data-mode="driver">
       <div className="nr-driver-profile-subwrap">
         <header className="nr-profile-subhead">
-          <button className="nr-driver-icon-btn" onClick={() => router.replace("/driver/home?screen=profile")} aria-label="Back to driver profile">
+          <button className="nr-driver-icon-btn" onClick={() => router.replace("/driver/home?screen=profile")} aria-label={say("Back to driver profile")}>
             <Icon name="back" />
           </button>
           <div>
-            <span className="nr-driver-kicker">NEXRIDE · DRIVER</span>
-            <h1>Vehicle</h1>
-            <p>Your verified vehicle details.</p>
+            <span className="nr-driver-kicker">NexRide · {say("Driver account")}</span>
+            <h1>{say("Vehicle")}</h1>
+            <p>{say("Your verified vehicle details.")}</p>
           </div>
         </header>
 
@@ -71,40 +74,40 @@ export default function DriverVehiclePage() {
             <section className="nr-profile-panel">
               <div className="nr-profile-panel-head">
                 <div>
-                  <h2>{profile.vehicle || "Vehicle details incomplete"}</h2>
-                  <p>{verification?.title || "Verification status unavailable"}</p>
+                  <h2>{profile.vehicle || say("Vehicle details incomplete")}</h2>
+                  <p>{say(verification?.title || "Verification status unavailable")}</p>
                 </div>
                 <span className={"nr-doc-status " + (profile.reviewStatus === "approved" ? "approved" : profile.reviewStatus === "pending" ? "review" : profile.reviewStatus === "rejected" || profile.reviewStatus === "suspended" ? "danger" : "")}>
-                  {profile.reviewStatus === "approved" ? "Approved" : profile.reviewStatus === "pending" ? "Under Review" : profile.reviewStatus === "rejected" ? "Rejected" : profile.reviewStatus === "suspended" ? "Restricted" : "Incomplete"}
+                  {profile.reviewStatus === "approved" ? say("Approved") : profile.reviewStatus === "pending" ? say("Under Review") : profile.reviewStatus === "rejected" ? say("Rejected") : profile.reviewStatus === "suspended" ? say("Restricted") : say("Incomplete")}
                 </span>
               </div>
 
               <div className="nr-vehicle-detail-grid">
-                <VehicleDetail label="Vehicle model" value={profile.vehicle || "Not provided"} />
-                <VehicleDetail label="Vehicle color" value={profile.vehicleColor || "Not provided"} />
-                <VehicleDetail label="License plate" value={profile.vehiclePlate || "Not provided"} />
-                <VehicleDetail label="Driver license" value={profile.licenseNumber ? "On file" : "Missing"} />
-                <VehicleDetail label="Registration document" value={profile.vehicleRegistrationPath ? "On file" : "Missing"} />
+                <VehicleDetail label={say("Vehicle model")} value={profile.vehicle || say("Not provided")} />
+                <VehicleDetail label={say("Vehicle color")} value={profile.vehicleColor || say("Not provided")} />
+                <VehicleDetail label={say("License plate")} value={profile.vehiclePlate || say("Not provided")} />
+                <VehicleDetail label={say("Driver license")} value={profile.licenseNumber ? say("On file") : say("Missing")} />
+                <VehicleDetail label={say("Registration document")} value={profile.vehicleRegistrationPath ? say("On file") : say("Missing")} />
               </div>
 
               {profile.reviewStatus === "rejected" && (
                 <div className="nr-profile-alert">
                   <Icon name="info" size={17} />
-                  <span>{profile.rejectionReason || "Your vehicle verification needs an update."}</span>
+                  <span>{profile.rejectionReason || say("Your vehicle verification needs an update.")}</span>
                 </div>
               )}
 
               <div className="nr-profile-locked-note">
                 <Icon name="shield" size={17} />
-                <span>Vehicle and plate changes require verification because they can affect driver eligibility.</span>
+                <span>{say("Vehicle and plate changes require verification because they can affect driver eligibility.")}</span>
               </div>
             </section>
 
             <section className="nr-profile-panel">
               <div className="nr-profile-panel-head">
                 <div>
-                  <h2>Need to update the vehicle?</h2>
-                  <p>Update registration documents and submit changes for review.</p>
+                  <h2>{say("Need to update the vehicle?")}</h2>
+                  <p>{say("Update registration documents and submit changes for review.")}</p>
                 </div>
               </div>
               <div className="nr-doc-actions">
@@ -120,8 +123,8 @@ export default function DriverVehiclePage() {
         ) : (
           <section className="nr-profile-state-card" role="alert">
             <Icon name="info" size={22} />
-            <strong>Vehicle unavailable</strong>
-            <p>{error || "Vehicle information could not be loaded."}</p>
+            <strong>{say("Vehicle unavailable")}</strong>
+            <p>{error || say("Vehicle information could not be loaded.")}</p>
           </section>
         )}
       </div>

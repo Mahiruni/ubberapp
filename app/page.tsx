@@ -1,4 +1,5 @@
 "use client";
+import { useAppearance } from "../lib/nexride-appearance";
 import type { TripSnapshot } from "../lib/nexride-trip-data";
 import Image from "next/image";
 import { RiderProfile, RiderSettings } from "../components/nexride/rider-profile";
@@ -73,9 +74,9 @@ export default function Home() {
     cached?.preferences.language || "en",
   );
   const [mode, setMode] = useState<Mode>(cached?.preferences.mode || "rider");
-  // Rider UI uses one permanent light design; legacy dark preferences are ignored.
-  const theme: "light" | "dark" = "light";
-  const setTheme = (_next: "light" | "dark") => {};
+  const appearance = useAppearance("rider");
+  const theme = appearance.resolvedTheme;
+  const setTheme = appearance.setPreference;
   const [profile, setProfile] = useState<PreviewProfile>(
     cached?.preferences.profile || emptyProfile,
   );

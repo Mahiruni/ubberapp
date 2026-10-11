@@ -1,7 +1,10 @@
 "use client";
 
+import { createPortal } from "react-dom";
+
 import {
   useContext,
+  Fragment,
   useEffect,
   useRef,
   useState,
@@ -14,6 +17,8 @@ import {
 } from "../../lib/nexride-startup";
 import { signOutNexRide } from "../../lib/nexride-sign-out";
 import { resolveSessionRole } from "../../lib/nexride-account-role";
+import { useAppearance } from "../../lib/nexride-appearance";
+import { readAccount } from "../../lib/nexride-account";
 import { supabase } from "../../lib/supabase";
 import {
   Brand,
@@ -34,9 +39,8 @@ export type RiderMenuId =
 
 type RiderTheme = "light" | "dark";
 
-/* Legacy dark preference is intentionally ignored: Rider pages stay light. */
 export function usePersistedRiderTheme(): RiderTheme {
-  return "light";
+  return useAppearance("rider").resolvedTheme;
 }
 
 const hrefs: Record<RiderMenuId, string> = {
@@ -65,10 +69,12 @@ export function RiderMenu({
   className?: string;
   locked?: boolean;
 }) {
+  const { resolvedTheme } = useAppearance("rider");
   const language = useContext(LanguageContext);
   const say = (en: string, am: string) => (language === "am" ? am : en);
   const [open, setOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(Boolean(adminOverride));
+  const [identity, setIdentity] = useState({name:"", avatar:""});
   const [hasSession, setHasSession] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const [signOutError, setSignOutError] = useState("");
@@ -84,6 +90,10 @@ export function RiderMenu({
     void supabase.auth.getSession().then(async ({ data }) => {
       if (!activeEffect) return;
       setHasSession(Boolean(data.session));
+      if (data.session) {
+        const account = await readAccount().catch(() => null);
+        if (activeEffect) setIdentity({name:account?.profile.name || "",avatar:account?.avatar || ""});
+      }
       if (!data.session || adminOverride !== undefined) return;
       const role = await resolveSessionRole(data.session).catch(() => "");
       if (activeEffect) setIsAdmin(role === "admin");
@@ -181,11 +191,27 @@ export function RiderMenu({
       detail: say("Help with rides and your account", "ለጉዞና መለያ እገዛ"),
       icon: "chat",
     },
+    {
+      id: "profile",
+      label: say("Account", "መለያ"),
+      detail: say("Your profile and personal details", "መገለጫዎ እና የግል ዝርዝሮች"),
+      icon: "user",
+    },
+    {
+      id: "settings",
+      label: say("Settings", "ቅንብሮች"),
+      detail: say("Appearance, language and preferences", "ገጽታ፣ ቋንቋ እና ምርጫዎች"),
+      icon: "settings",
+    },
   ];
 
   const navigate = (id: RiderMenuId) => {
     if (locked && !["safety", "messages"].includes(id)) return;
     setOpen(false);
+    if (id === "settings" && onSettings) {
+      onSettings();
+      return;
+    }
     if (onNavigate) {
       onNavigate(id);
       return;
@@ -241,8 +267,8 @@ export function RiderMenu({
         <span className="nr-rider-hamburger-line short" />
       </button>
 
-      {open && (
-        <div className="nr-rider-drawer-layer">
+      {open && createPortal(
+        <div className="nr-rider-drawer-layer" data-theme={resolvedTheme}>
           <button
             className="nr-rider-drawer-backdrop"
             type="button"
@@ -270,6 +296,7 @@ export function RiderMenu({
             </header>
 
 
+            <div className="nr-menu-person"><span className="nr-menu-person-avatar">{identity.avatar ? <img src={identity.avatar} alt="" onError={e => {setIdentity(current => ({...current,avatar:""}));}}/> : (identity.name.trim().split(/\s+/).slice(0,2).map(v=>v[0]).join("").toUpperCase() || <Icon name="user"/>)}</span><div><strong>{identity.name || say("Welcome to NexRide", "እንኳን ወደ NexRide መጡ")}</strong><small>{hasSession ? say("Rider account", "የተሳፋሪ መለያ") : say("Guest preview", "የእንግዳ ማሳያ")}</small></div></div>
             <div className="nr-rider-drawer-section-label">{say("Your NexRide", "የእርስዎ NexRide")}</div>
             <nav
               className="nr-rider-drawer-nav"
@@ -280,15 +307,17 @@ export function RiderMenu({
                 const disabled =
                   locked && !["safety", "messages"].includes(item.id);
                 return (
+                  <Fragment key={item.id}>
+                  {item.id === "safety" && <div className="nr-rider-drawer-section-label">{say("Help & safety", "እገዛ እና ደህንነት")}</div>}
+                  {item.id === "profile" && <div className="nr-rider-drawer-section-label">{say("Your account", "የእርስዎ መለያ")}</div>}
                   <button
                     type="button"
-                    key={item.id}
                     className={selected ? "active" : ""}
                     aria-current={selected ? "page" : undefined}
                     disabled={disabled}
                     onClick={() => navigate(item.id)}
                   >
-                    <span className="nr-rider-drawer-icon">
+                    <span className="nr-rider-drawer-icon" data-tone={item.id}>
                       <Icon name={item.icon} size={19} />
                     </span>
                     <span>
@@ -297,6 +326,7 @@ export function RiderMenu({
                     </span>
                     <Icon name="chevron" size={16} />
                   </button>
+                  </Fragment>
                 );
               })}
             </nav>
@@ -339,7 +369,6 @@ export function RiderMenu({
             <footer className="nr-rider-drawer-footer">
               <div className="nr-rider-drawer-footer-card">
                 <div className="nr-rider-drawer-footer-brand">
-                  <span className="nr-rider-drawer-footer-mark" aria-hidden="true">N</span>
                   <div>
                     <strong>NexRide</strong>
                     <small>{say("Better Rides. A Brighter Tomorrow.", "የተሻለ ጉዞ። ብሩህ ነገ።")}</small>
@@ -361,7 +390,7 @@ export function RiderMenu({
               </div>
             </footer>
           </aside>
-        </div>
+        </div>, document.body
       )}
     </div>
   );

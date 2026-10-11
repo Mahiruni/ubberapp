@@ -1,5 +1,7 @@
 "use client";
 
+import { createPortal } from "react-dom";
+
 import Link from "next/link";
 import {
   createContext,
@@ -12,6 +14,8 @@ import {
   type ReactNode,
 } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { useAppearance } from "../../lib/nexride-appearance";
+import { AppearanceSelector } from "./appearance-selector";
 import { Icon, LanguageContext, type IconName } from "./ui";
 import { announceLanguage } from "./language-provider";
 import { useDriverPortrait } from '../../lib/nexride-driver-portrait';
@@ -26,8 +30,6 @@ export type DriverThemePreference = "system" | "light" | "dark";
 export type DriverResolvedTheme = "light" | "dark";
 export type DriverNavId = "home" | "requests" | "earnings" | "messages" | "account";
 
-const DRIVER_THEME_STORAGE_KEY = "nexride.driver.theme";
-const DRIVER_THEME_EVENT = "nexride:driver-theme-change";
 
 type DriverThemeContextValue = {
   preference: DriverThemePreference;
@@ -37,17 +39,8 @@ type DriverThemeContextValue = {
 
 const DriverThemeContext = createContext<DriverThemeContextValue | null>(null);
 
-/* NexRide's Rider and Driver application surfaces are light-only.
-   Normalize older saved/system dark preferences before rendering pages. */
 function useDriverThemeState(): DriverThemeContextValue {
-  useEffect(() => {
-    try { localStorage.setItem(DRIVER_THEME_STORAGE_KEY, "light"); } catch {}
-  }, []);
-  const setPreference = useCallback((_next: DriverThemePreference) => {
-    try { localStorage.setItem(DRIVER_THEME_STORAGE_KEY, "light"); } catch {}
-    window.dispatchEvent(new CustomEvent<DriverThemePreference>(DRIVER_THEME_EVENT, { detail: "light" }));
-  }, []);
-  return { preference: "light", resolvedTheme: "light", setPreference };
+  return useAppearance("driver");
 }
 
 export function usePersistedDriverTheme() {
@@ -104,6 +97,7 @@ function DriverHamburgerMenu({
   onOpenChange?: (nextOpen: boolean) => void;
 }) {
   const pathname = usePathname();
+  const { resolvedTheme } = useDriverTheme();
   const language = useContext(LanguageContext);
   const [standaloneOpen, setStandaloneOpen] = useState(false);
   const open = controlledOpen ?? standaloneOpen;
@@ -119,11 +113,14 @@ function DriverHamburgerMenu({
   const [signingOut, setSigningOut] = useState(false);
   const [signOutError, setSignOutError] = useState("");
   const closeRef = useRef<HTMLButtonElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLElement>(null);
   const active = activeOverride || driverNavForPath(pathname);
 
   useEffect(() => {
     let mounted = true;
-    void supabase.auth.getSession().then(({ data }) => {
+    const refresh = () => { void supabase.auth.getSession().then(async ({ data, error }) => {
+      if (error) return;
       if (!mounted || !data.session) return;
       const metadata = data.session.user.user_metadata || {};
       const name =
@@ -134,9 +131,12 @@ function DriverHamburgerMenu({
         (typeof metadata.avatar_url === "string" && metadata.avatar_url) ||
         (typeof metadata.avatarUrl === "string" && metadata.avatarUrl) ||
         "";
-      setIdentity({ name, avatarUrl, id: data.session.user.id });
-    });
-    return () => { mounted = false; };
+      const profile = await supabase.from("profiles").select("full_name").eq("id", data.session.user.id).maybeSingle();
+      if (mounted) setIdentity({ name: profile.data?.full_name || name, avatarUrl, id: data.session.user.id });
+    }).catch(() => {}); };
+    refresh();
+    window.addEventListener("nexride:profile-change", refresh);
+    return () => { mounted = false; window.removeEventListener("nexride:profile-change", refresh); };
   }, []);
 
   useEffect(() => {
@@ -144,13 +144,20 @@ function DriverHamburgerMenu({
     const priorOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
+      if (event.key === "Escape") { event.preventDefault(); setOpen(false); }
+      if (event.key === "Tab") {
+        const elements = Array.from(panelRef.current?.querySelectorAll<HTMLElement>('button:not([disabled]),a[href],input:not([disabled]),[tabindex="0"]') || []).filter(e => e.offsetParent !== null);
+        const first = elements[0], last = elements[elements.length-1];
+        if (event.shiftKey && document.activeElement === first) {event.preventDefault();last?.focus();}
+        else if (!event.shiftKey && document.activeElement === last) {event.preventDefault();first?.focus();}
+      }
     };
     window.addEventListener("keydown", onKey);
     window.requestAnimationFrame(() => closeRef.current?.focus());
     return () => {
       document.body.style.overflow = priorOverflow;
       window.removeEventListener("keydown", onKey);
+      requestAnimationFrame(() => triggerRef.current?.focus());
     };
   }, [open]);
 
@@ -229,7 +236,7 @@ function DriverHamburgerMenu({
           aria-current={selected ? "page" : undefined}
           onClick={() => setOpen(false)}
         >
-          <span className="nr-driver-menu-row-icon"><Icon name={item.icon} size={21} /></span>
+          <span className="nr-driver-menu-row-icon" data-tone={item.id}><Icon name={item.icon} size={21} /></span>
           <span className="nr-driver-menu-row-copy"><strong>{label}</strong><small>{detail}</small></span>
           {selected ? <span className="nr-driver-menu-active-dot" aria-hidden="true" /> : <Icon name="chevron" size={16} />}
         </Link>
@@ -240,6 +247,7 @@ function DriverHamburgerMenu({
     <>
       <button
         type="button"
+        ref={triggerRef}
         className="nr-driver-menu-trigger"
         data-open={open ? "true" : "false"}
         onClick={() => setOpen((value) => !value)}
@@ -252,10 +260,10 @@ function DriverHamburgerMenu({
         <span aria-hidden="true" />
       </button>
 
-      {open && (
-        <div className="nr-driver-menu-layer" role="presentation">
+      {open && createPortal(
+        <div className="nr-driver-menu-layer" data-theme={resolvedTheme} role="presentation">
           <button className="nr-driver-menu-backdrop" type="button" aria-label={language === "am" ? "ምናሌን ዝጋ" : "Close menu"} onClick={() => setOpen(false)} />
-          <aside id="nr-driver-menu" className="nr-driver-menu-panel" role="dialog" aria-modal="true" aria-labelledby="nr-driver-menu-title">
+          <aside ref={panelRef} id="nr-driver-menu" className="nr-driver-menu-panel" role="dialog" aria-modal="true" aria-labelledby="nr-driver-menu-title">
             <div className="nr-driver-menu-head">
               <div className="nr-driver-menu-identity">
                 <div className="nr-driver-menu-avatar">
@@ -281,6 +289,7 @@ function DriverHamburgerMenu({
               {menuRows(accountItems)}
             </nav>
             <div className="nr-driver-menu-utilities">
+              <Link href="/account/manage" className="nr-driver-menu-utility" onClick={() => setOpen(false)}><Icon name="user" size={19}/><span>{language === "am" ? "መለያ እና ደህንነት" : "Account & security"}</span><Icon name="chevron" size={15}/></Link>
               <Link href="/safety?role=driver" className="nr-driver-menu-utility" onClick={() => setOpen(false)}>
                 <Icon name="shield" size={19} /><span>{language === "am" ? "የደህንነት ማዕከል" : "Safety Center"}</span><Icon name="chevron" size={15} />
               </Link>
@@ -303,8 +312,7 @@ function DriverHamburgerMenu({
 
             <footer className="nr-driver-menu-footer">
               <div className="nr-driver-menu-footer-brand">
-                <span aria-hidden="true">N</span>
-                <div>
+                                <div>
                   <strong>NexRide</strong>
                   <small>{language === "am" ? "የተሻለ ጉዞ። ብሩህ ነገ።" : "Better Rides. A Brighter Tomorrow."}</small>
                 </div>
@@ -316,7 +324,7 @@ function DriverHamburgerMenu({
               {signOutError && <p role="alert">{signOutError}</p>}
             </footer>
           </aside>
-        </div>
+        </div>, document.body
       )}
     </>
   );
@@ -377,15 +385,7 @@ function isTripFocusPath(pathname: string) {
   );
 }
 
-export function DriverThemeSelector() {
-  const language = useContext(LanguageContext);
-  return (
-    <div className="nr-driver-theme-static" role="status">
-      <Icon name="sun" size={18} />
-      <span>{language === "am" ? "ብርሃን ገጽታ" : "Light appearance"}</span>
-    </div>
-  );
-}
+export function DriverThemeSelector() { return <AppearanceSelector role="driver"/>; }
 
 function DriverHeader({
   pathname,

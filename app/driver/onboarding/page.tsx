@@ -3,11 +3,12 @@
 import { FormEvent, useContext, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Brand, Icon, LanguageContext, useTranslation } from "../../../components/nexride/ui";
+import { EntryShell } from "../../../components/nexride/entry";
+import { Icon, LanguageContext, useTranslation } from "../../../components/nexride/ui";
 import { supabase } from "../../../lib/supabase";
 import { nexrideAuthRedirectUrl } from "../../../lib/nexride-auth-url";
 import { resolveSessionRole } from "../../../lib/nexride-account-role";
-import { announceLanguage } from "../../../components/nexride/language-provider";
+import { authErrorKey } from "../../../lib/nexride-auth-errors";
 import { VEHICLE_COLOR_OPTIONS } from "../../../lib/nexride-vehicle";
 import { normalizeEthiopianPhone } from "../../../lib/nexride-identity";
 import "../auth/driver-auth.css";
@@ -35,9 +36,11 @@ export default function DriverOnboarding() {
 
   useEffect(() => {
     let active = true;
-    supabase.auth.getSession().then(async ({ data }) => {
+    supabase.auth.getSession().then(async ({ data, error: sessionError }) => {
+      if (sessionError) throw sessionError;
       if (!active || !data.session) return;
-      const role = await resolveSessionRole(data.session).catch(() => "");
+      setExistingAccount(true);
+      const role = await resolveSessionRole(data.session);
       if (!active) return;
       if (role === "admin") {
         router.replace("/admin");
@@ -57,7 +60,7 @@ export default function DriverOnboarding() {
       if (data.session.user.user_metadata?.driver_onboarding_complete === true) {
         router.replace("/driver/verification");
       }
-    });
+    }).catch(() => { if (active) setError(t("authNetworkFailure")); });
     return () => { active = false; };
   }, [router]);
 
@@ -68,9 +71,15 @@ export default function DriverOnboarding() {
     setError("");
     setNotice("");
 
-    const { data: sessionData } = await supabase.auth.getSession();
+    try {
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError) throw sessionError;
     const existing = sessionData.session;
-    const existingRole = existing ? await resolveSessionRole(existing).catch(() => "") : "";
+    const existingRole = existing ? await resolveSessionRole(existing) : "";
+    if (existing && !["rider", "driver"].includes(existingRole)) {
+      setError(t("authNetworkFailure"));
+      return;
+    }
 
     if (existing && (existingRole === "rider" || existingRole === "driver")) {
       const { data: begin, error: beginError } = await supabase.rpc("account_begin_driver_application");
@@ -92,7 +101,7 @@ export default function DriverOnboarding() {
       });
 
       if (updateError) {
-        setError(updateError.message || "Unable to save driver profile.");
+        setError(t("entryProfileSaveFailure"));
         setBusy(false);
         return;
       }
@@ -130,7 +139,7 @@ export default function DriverOnboarding() {
     });
 
     if (signUpError) {
-      setError(signUpError.message);
+      setError(t(authErrorKey(signUpError, "signup")));
       setBusy(false);
       return;
     }
@@ -140,52 +149,30 @@ export default function DriverOnboarding() {
       return;
     }
 
-    setNotice("Your driver account was created. Enter the email confirmation code to continue.");
+    setNotice(t("entryVerificationIntro"));
     try { window.sessionStorage.setItem("nexride:verification-target", JSON.stringify({ email: email.trim().toLowerCase(), role: "driver", purpose: "signup" })); } catch { /* Session storage may be unavailable. */ }
     router.push("/rider/verify-email");
-    setBusy(false);
+    } catch {
+      setError(t("authNetworkFailure"));
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
-    <main className="nr-auth-experience driver-onboarding-page" data-auth-mode="signup" data-mode="driver">
-      <div className="nr-auth-page">
-        <section className="nr-auth-shell nr-auth-shell-driver">
-          <div className="nr-auth-hero nr-auth-hero-brand nr-auth-hero-driver" aria-hidden="true">
-            <div className="nr-auth-hero-wash driver" />
-            <div className="nr-auth-hero-top">
-              <Brand />
-              <span className="nr-auth-role-tab">Driver</span>
-            </div>
-            <div className="nr-auth-hero-copy">
-              <span>NEXRIDE · DRIVER</span>
-              <strong>Drive. Earn.<br />Grow.</strong>
-              <div className="nr-auth-hero-steps">
-                <span><b>1</b> Account</span>
-                <span><b>2</b> Vehicle</span>
-                <span><b>3</b> Verification</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="nr-auth-content">
-            <div className="nr-auth-content-tools">
-              <Link href="/driver" className="nr-auth-back">← {t("back")}</Link>
-              <button type="button" className="nr-auth-language-toggle" onClick={() => announceLanguage(language === "en" ? "am" : "en")}>
-                {language === "en" ? "አማርኛ" : "English"}
-              </button>
-            </div>
+    <EntryShell role="driver" authMode="signup">
             <span className="driver-auth-role">{t("driverAccount").toUpperCase()}</span>
             <h1>{existingAccount ? say("Apply to Drive","አሽከርካሪ ለመሆን ያመልክቱ") : t("driverCreateAccount")}</h1>
             <p>{existingAccount ? say("We reuse your existing account and verified identity. Only Driver and vehicle details are needed.","ነባሩ መለያዎ ይጠቀማል። የአሽከርካሪ መረጃ ብቻ ያስፈልጋል።") : say("Create your account now. Vehicle and document verification continues after signup.", "መለያዎን አሁን ይፍጠሩ። የተሽከርካሪ እና የሰነድ ማረጋገጫ ከምዝገባ በኋላ ይቀጥላል።")}</p>
 
-            <form onSubmit={submit} className="nr-auth-form nr-auth-signup-form">
+            <form onSubmit={submit} className="nr-auth-form nr-auth-signup-form" aria-busy={busy}>
               <div className="driver-form-grid">
                 <label><span>{t("fullName")}</span><div className="nr-auth-input"><Icon name="user" size={19}/><input value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" placeholder={t("fullName")} required /></div></label>
                 <label><span>{t("phoneNumber")}</span><div className="nr-auth-input"><Icon name="phone" size={19}/><input value={phone} onChange={(e) => setPhone(e.target.value)} autoComplete="tel" inputMode="tel" placeholder="+251…" required={!existingAccount} readOnly={existingAccount && Boolean(phone)} /></div></label>
               </div>
               <label><span>{t("authEmail")}</span><div className="nr-auth-input"><Icon name="user" size={19}/><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" inputMode="email" placeholder={t("authEmail")} required={!existingAccount} readOnly={existingAccount} /></div></label>
-              <label><span>{t("password")}</span><div className="nr-auth-input nr-auth-password-row"><Icon name="shield" size={19}/><input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" minLength={6} placeholder={existingAccount ? "Existing account — no new password" : t("password")} aria-describedby="driver-password-help" required={!existingAccount} disabled={existingAccount} /><button type="button" className="nr-auth-password-toggle" onClick={() => setShowPassword((value) => !value)} aria-pressed={showPassword}>{showPassword ? "Hide" : "Show"}</button></div></label>
-              <p id="driver-password-help" className="nr-auth-helper">{say("Use at least 6 characters.", "ቢያንስ 6 ቁምፊዎችን ይጠቀሙ።")}</p>
+              <label><span>{t("password")}</span><div className="nr-auth-input nr-auth-password-row"><Icon name="shield" size={19}/><input type={showPassword ? "text" : "password"} aria-label={t("password")} value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" minLength={6} placeholder={existingAccount ? "Existing account — no new password" : t("password")} aria-describedby="driver-password-help" required={!existingAccount} disabled={existingAccount} /><button type="button" className="nr-auth-password-toggle" onClick={() => setShowPassword((value) => !value)} aria-pressed={showPassword}>{t(showPassword ? "entryHide" : "entryShow")}</button></div></label>
+              <p id="driver-password-help" className="nr-auth-helper">{t(existingAccount ? "entryExistingIdentity" : "entryDriverPasswordHelp")}</p>
 
               <div className="nr-auth-subsection">
                 <div><span>{say("VEHICLE DETAILS", "የተሽከርካሪ መረጃ")}</span><small>{say("Used to prepare your driver verification.", "የአሽከርካሪ ማረጋገጫዎን ለማዘጋጀት ይጠቅማል።")}</small></div>
@@ -214,16 +201,13 @@ export default function DriverOnboarding() {
               <div className="nr-auth-cta-dock"><button className="driver-auth-submit" type="submit" disabled={busy}>{busy ? t("creatingAccount") : existingAccount ? say("Continue verification","ማረጋገጫውን ቀጥል") : t("createAccount")}</button></div>
             </form>
 
-            <div className="nr-auth-divider"><span>or</span></div>
+            <div className="nr-auth-divider"><span>{t("entryOr")}</span></div>
             <Link className="nr-auth-create-link" href="/driver/auth">{t("alreadyHaveAccount")} <strong>{t("signIn")}</strong></Link>
             <div className="nr-auth-role-note">
               <span><Icon name="briefcase" size={20}/></span>
-              <div><strong>Driver account</strong><small>Complete verification, manage trips, and track earnings.</small></div>
+              <div><strong>{t("driverAccount")}</strong><small>{t("entryDriverVerificationNote")}</small></div>
             </div>
-            <Link className="nr-auth-role-link" href="/rider/sign-in">Looking for a ride? <strong>Switch to Rider →</strong></Link>
-          </div>
-        </section>
-      </div>
-    </main>
+            <Link className="nr-auth-role-link" href="/rider/sign-in">{t("entrySwitchRider")} <Icon name="arrow" size={16}/></Link>
+    </EntryShell>
   );
 }

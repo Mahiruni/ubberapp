@@ -1,5 +1,4 @@
 "use client";
-import Image from "next/image";
 import { Button, Icon, useTranslation } from "./ui";
 import type { StartupError } from "../../lib/nexride-startup";
 import "./splash.css";
@@ -24,16 +23,6 @@ export function RiderSplash({
     >
       <div className="nr-splash-ambient" aria-hidden="true" />
       <div className="nr-splash-identity">
-        <Image
-          className="nr-splash-mark"
-          src="/brand/nexride-mark.svg"
-          alt=""
-          width={104}
-          height={104}
-          preload
-          unoptimized
-          aria-hidden="true"
-        />
         <h1 className="nr-splash-wordmark">NexRide</h1>
         <p className="nr-splash-tagline">{t("brandTagline")}</p>
         {error ? (

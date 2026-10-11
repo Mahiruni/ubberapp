@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { EntryPhoto, EntryShell } from "../../components/nexride/entry";
 import {
@@ -33,14 +34,15 @@ function Welcome() {
   };
   return (
     <>
-      <h1>{t("welcome")}</h1>
-      <p>{t("onboardingIntro")}</p>
-      <EntryPhoto />
-      <StatusBanner>{t("previewInfo")}</StatusBanner>
-      <Button onClick={() => finish(false)}>{t("continueAuth")}</Button>
-      <Button variant="ghost" onClick={() => finish(true)}>
-        {t("explorePreview")}
-      </Button>
+      <span className="nr-rider-entry-kicker">NEXRIDE · {t("rider")}</span>
+      <h1>{t("entryWelcomeTitle")}</h1>
+      <p>{t("entryWelcomeIntro")}</p>
+      <div className="nr-rider-entry-actions">
+        <Link className="nr-rider-get-started" href="/rider/sign-up">{t("createAccount")}</Link>
+        <Button variant="ghost" onClick={() => finish(false)}>{t("signIn")}</Button>
+      </div>
+      <Link className="nr-auth-role-link" href="/driver">{t("entrySwitchDriver")}</Link>
+      <details className="nr-auth-preview"><summary>{t("explorePreview")}</summary><StatusBanner compact>{t("previewInfo")}</StatusBanner><Button variant="ghost" onClick={() => finish(true)}>{t("explorePreview")}</Button></details>
     </>
   );
 }

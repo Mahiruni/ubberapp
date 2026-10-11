@@ -1,30 +1,38 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Brand } from "../../components/nexride/ui";
+import { EntryShell } from "../../components/nexride/entry";
+import { RiderSplash } from "../../components/nexride/splash";
+import { Icon, useTranslation } from "../../components/nexride/ui";
 import { supabase } from "../../lib/supabase";
-import { enterDriver, explicitSignOutRole } from "../../lib/nexride-startup";
+import { enterDriver, explicitSignOutRole, StartupError } from "../../lib/nexride-startup";
 import { driverResumeDestination } from "../../lib/nexride-driver-verification";
+import { resolveSessionRole } from "../../lib/nexride-account-role";
 import "./driver-welcome.css";
 import "../detail-system.css";
 
 export default function DriverWelcome() {
   const router = useRouter();
+  const t = useTranslation();
   const [checking, setChecking] = useState(true);
+  const [startupError, setStartupError] = useState<StartupError | null>(null);
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     let active = true;
+    setChecking(true);
+    setStartupError(null);
     if (explicitSignOutRole(window.localStorage)) {
       setChecking(false);
       return () => { active = false; };
     }
-    supabase.auth.getSession().then(async ({ data }) => {
+    supabase.auth.getSession().then(async ({ data, error }) => {
       if (!active || explicitSignOutRole(window.localStorage)) return;
+      if (error) throw error;
       const session = data.session;
-      const role = session?.user?.user_metadata?.role;
+      const role = session ? await resolveSessionRole(session) : "";
       if (session && role === "driver") {
         enterDriver(session);
         const destination = await driverResumeDestination(session);
@@ -32,20 +40,18 @@ export default function DriverWelcome() {
         return;
       }
       setChecking(false);
-    }).catch(() => active && setChecking(false));
+    }).catch(() => { if (active) setStartupError(new StartupError("session")); });
     return () => { active = false; };
-  }, [router]);
+  }, [router, attempt]);
 
-  if (checking) return <div className="driver-welcome driver-welcome-loading" aria-busy="true" />;
+  if (checking) return <RiderSplash error={startupError} onRetry={() => setAttempt(value => value + 1)}/>;
 
-  return (
-    <main className="driver-welcome">
-      <div className="driver-welcome-media" aria-hidden="true"><Image src="/images/addis-skyline.webp" alt="" fill priority sizes="100vw" className="driver-city" /><div className="driver-welcome-gradient" /></div>
-      <section className="driver-welcome-content">
-        <div className="driver-welcome-top"><Brand driver /><span className="driver-role-badge">DRIVER</span></div>
-        <div className="driver-welcome-copy"><div className="driver-mark" aria-hidden="true">N</div><p className="driver-eyebrow">NEXRIDE · DRIVER</p><h1>Drive. Earn. Grow.</h1><p className="driver-subtitle">Work on your schedule and keep every trip clearly organized.</p></div>
-        <div className="driver-welcome-actions"><Link className="driver-get-started" href="/driver/onboarding">Get started</Link><Link className="driver-sign-in" href="/driver/auth">I already have an account</Link><p className="driver-role-note">Looking for a ride? · <Link href="/rider/sign-in">Rider sign in</Link></p></div>
-      </section>
-    </main>
-  );
+  return <EntryShell role="driver">
+    <span className="driver-auth-role">NEXRIDE · {t("driver")}</span>
+    <h1>{t("entryDriveHeadline")}</h1>
+    <p>{t("entryDriverIntro")}</p>
+    <div className="nr-rider-entry-actions"><Link className="nr-rider-get-started" href="/driver/onboarding">{t("entryGetStarted")}<Icon name="arrow" size={20}/></Link><Link className="nr-rider-welcome-sign-in" href="/driver/auth">{t("signIn")}</Link></div>
+    <div className="nr-auth-role-note"><span><Icon name="user" size={20}/></span><div><strong>{t("entryOneAccount")}</strong><small>{t("entryExistingIdentity")}</small></div></div>
+    <Link className="nr-auth-role-link" href="/rider">{t("entrySwitchRider")}<Icon name="arrow" size={16}/></Link>
+  </EntryShell>;
 }
