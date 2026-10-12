@@ -2,6 +2,7 @@
 
 import { supabase } from "./supabase";
 import { publicConfig } from "./runtime-config";
+import { explicitSignOutRole } from "./nexride-startup";
 import { nexrideApiFetch } from "./nexride-api-auth";
 
 type Role = "rider" | "driver";
@@ -115,8 +116,15 @@ export async function reconcileNativeDriverGpsSession(): Promise<void> {
   const plugin = cap.registerPlugin<NativeDriverLocation>("NexRideDriverLocation");
   const native = await plugin.session().catch(() => ({ accessToken: undefined, refreshToken: undefined }));
   if (!native.accessToken || !native.refreshToken) return;
+  // Explicit sign-out must always win over a still-running Android service.
+  if (typeof window !== "undefined" && explicitSignOutRole(window.localStorage)) {
+    await plugin.stop().catch(() => {});
+    return;
+  }
   const { data } = await supabase.auth.getSession();
-  if (!data.session || data.session.refresh_token === native.refreshToken) return;
+  if (data.session?.refresh_token === native.refreshToken) return;
+  // Recover a WebView that lost its old rotated token while locked. The native
+  // service still holds the confirmed Driver session in volatile memory.
   await supabase.auth.setSession({
     access_token: native.accessToken, refresh_token: native.refreshToken,
   });
