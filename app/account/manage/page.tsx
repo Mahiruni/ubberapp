@@ -18,6 +18,7 @@ import { Brand, LanguageContext, PasswordField } from "../../../components/nexri
 import { useOperationalTranslation } from "../../../components/nexride/operational-i18n";
 import "./manage.css";
 import { identityActivityLabel } from "../../../lib/nexride-identity-events";
+import { AppLockSettings } from "../../../components/nexride/app-lock-settings";
 
 type Profile = {
   id: string; role: string; full_name: string | null;
@@ -443,6 +444,7 @@ export default function NexRideManageAccountPage() {
           </section>
 
           <section id="account-security" className="nex-manage-card">
+            <AppLockSettings />
             <div className="nex-manage-section"><h2>{say("Security & sessions","ደህንነት እና መግቢያ")}</h2><p>{say("Make changes only after signing in. Explicit sign-out remains effective.","የመለያዎን ደህንነት ያስተዳድሩ።")}</p></div>
             <form className="nex-manage-form" onSubmit={e=>void changeEmail(e)}>
               <label>{say("New email address","አዲስ ኢሜይል")}

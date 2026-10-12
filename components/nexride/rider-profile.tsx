@@ -13,6 +13,7 @@ import { Button, Dialog, Icon, InputField, useTranslation, type IconName } from 
 import { AppearanceSelector } from "./appearance-selector";
 import { PermissionSettings } from "./permission-settings";
 import { NativeReliabilitySettings } from "./native-reliability-settings";
+import { AppLockSettings } from "./app-lock-settings";
 import { NexRideFeedbackSettings } from './feedback-settings';
 import './rider-avatar-upload.css';
 import { AppVersion } from './app-version';
@@ -71,7 +72,7 @@ export function RiderSettings({language,setLanguage}: Pick<Props,'language'|'set
       }}/>
     </label>
     <NexRideFeedbackSettings role="rider" language={language}/>
-    <PermissionSettings/><NativeReliabilitySettings role="rider"/>
+    <PermissionSettings/><AppLockSettings/><NativeReliabilitySettings role="rider"/>
     <a className="nr-settings-security-link" href="/account/manage#account-security"><Icon name="shield" size={20}/><span>{t("entryAccountSecurity")}</span><Icon name="chevron" size={17}/></a>
     <nav className="nr-settings-legal" aria-label={say("Help & legal", "እገዛ እና ሕጋዊ መረጃ")}><a href="/support?role=rider">{say("Help & support", "እገዛ እና ድጋፍ")}</a><a href="/explore/terms">{t("entryTerms")}</a><a href="/explore/privacy">{t("entryPrivacy")}</a><a href="/explore/about">{say("About NexRide", "ስለ NexRide")}</a><a href="/account/manage#account-deletion">{say("Account deletion", "መለያ መሰረዝ")}</a></nav><AppVersion/>
     <p className="nr-muted">{say('System notifications are available when this device supports them and you allow permission. SMS and email alerts are not connected yet. Safety and trip status remain visible in the app.','የስርዓት ማሳወቂያዎች መሣሪያው ሲደግፍና ፈቃድ ሲሰጡ ይገኛሉ። የSMS እና ኢሜይል ማሳወቂያዎች ገና አልተገናኙም።')}</p>

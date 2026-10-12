@@ -9,6 +9,9 @@ name: Build NexRide Android APKs
       - "native/android/**"
       - "scripts/setup-android-reliability.mjs"
       - "scripts/setup-android-splash.mjs"
+      - "scripts/setup-android-app-lock.mjs"
+      - "lib/nexride-app-lock.ts"
+      - "components/nexride/app-lock-settings.tsx"
       - "lib/nexride-live-trip.ts"
       - "components/nexride/trip-experience.tsx"
       - "app/driver/navigation/page.tsx"
@@ -21,6 +24,9 @@ name: Build NexRide Android APKs
       - "scripts/generate-brand-assets.mjs"
       - "scripts/sync-android-icons.mjs"
       - "scripts/setup-android-splash.mjs"
+      - "scripts/setup-android-app-lock.mjs"
+      - "lib/nexride-app-lock.ts"
+      - "components/nexride/app-lock-settings.tsx"
       - "package.json"
       - "components/nexride/native-navigation-bridge.tsx"
       - "lib/nexride-native-navigation.ts"
@@ -148,6 +154,9 @@ jobs:
             grep -q 'nexride_driver_requests_v2' android/app/src/main/java/com/nexride/driver/NexRideDriverAlertChannels.java
           fi
 
+      - name: Install native App Lock gate and security tests
+        run: node scripts/setup-android-app-lock.mjs "${{ matrix.role }}"
+
       - name: Harden Android manifest
         shell: bash
         run: |
@@ -209,7 +218,7 @@ jobs:
 
       - name: Build debug APK
         working-directory: android
-        run: ./gradlew assembleDebug
+        run: ./gradlew testDebugUnitTest assembleDebug
 
       - name: Verify Firebase is compiled into the APK
         shell: bash
