@@ -1,10 +1,10 @@
 /**
- * NexRide Driver route-aware spoken guidance.
+ * NexRide Driver route-aware on-screen guidance.
  *
  * Mapbox returns each maneuver's start coordinate, while step.distanceMeters
  * describes the FOLLOWING leg. Measure distance along the received route
  * geometry instead of reading the first step or that leg length.
- * Pure functions allow deterministic GPS/voice regression tests.
+ * Pure functions allow deterministic route-position regression tests.
  */
 export type NavPoint = { lat: number; lng: number };
 export type NavStep = {
@@ -20,8 +20,6 @@ export type RouteManeuver = {
   distanceMeters: number;
   offRouteMeters: number;
 };
-export type VoiceBand = "advance" | "near" | "now";
-export type NavigationLanguage = "en" | "am";
 type RouteMeasure = { distanceMeters: number; progressMeters: number };
 
 const rad = Math.PI / 180;
@@ -74,7 +72,7 @@ export function nextNexRideManeuver(
     if(!projected || projected.distanceMeters>120)continue;
     if(i===0 && (step.type==="depart" || step.type==="notification") && firstDistance<200)continue;
     const ahead=projected.progressMeters-progress.progressMeters;
-    // A maneuver behind the vehicle is no longer a valid spoken command.
+    // Do not display a maneuver already behind the vehicle.
     if(ahead < -20)continue;
     const type=String(step.type||"turn").toLowerCase();
     const modifier=String(step.modifier||"").toLowerCase();
@@ -84,51 +82,4 @@ export function nextNexRideManeuver(
       offRouteMeters:Math.round(progress.distanceMeters) };
   }
   return null;
-}
-
-/** Traffic-safe cues at most three times per physical maneuver. */
-export function nexrideVoiceBand(distanceMeters:number):VoiceBand|null {
-  if(!Number.isFinite(distanceMeters)||distanceMeters<0)return null;
-  if(distanceMeters<=35)return "now";
-  if(distanceMeters<=115)return "near";
-  if(distanceMeters<=350)return "advance";
-  return null;
-}
-
-export function validVoiceFix(
-  fix:{accuracy:number|null;timestamp:number}|null,
-  gpsState:string, now=Date.now(),
-):boolean {
-  return gpsState==="fresh" && !!fix &&
-    Number.isFinite(fix.timestamp) && fix.timestamp<=now+5000 &&
-    now-fix.timestamp<=15000 &&
-    (fix.accuracy===null || (Number.isFinite(fix.accuracy) && fix.accuracy<=55));
-}
-
-function direction(step:NavStep, language:NavigationLanguage):string {
-  const type=(step.type||"").toLowerCase(),mod=(step.modifier||"").toLowerCase();
-  if(language==="am"){
-    if(type==="arrive")return "መድረሻዎ ከፊት ነው";
-    if(type==="roundabout"||type==="rotary"||type==="roundabout turn")return "በክብ መንገዱ ይቀጥሉ";
-    if(type==="merge")return "ወደ መንገዱ ይቀላቀሉ";
-    if(mod.includes("u-turn"))return "ዩ ተርን ያድርጉ";
-    if(type==="fork"||type==="on ramp"||type==="off ramp"){
-      if(mod.includes("left"))return "በግራ በኩል ይቀጥሉ";
-      if(mod.includes("right"))return "በቀኝ በኩል ይቀጥሉ";
-    }
-    if(mod.includes("left"))return "ወደ ግራ ይታጠፉ";
-    if(mod.includes("right"))return "ወደ ቀኝ ይታጠፉ";
-    return "ቀጥታ ይቀጥሉ";
-  }
-  const instruction=step.instruction.trim();
-  return instruction || "Continue on the route";
-}
-
-export function nexrideSpokenManeuver(m:RouteManeuver,band:VoiceBand,language:NavigationLanguage) {
-  const cue=direction(m.step,language);
-  if(band==="now")return language==="am" ? "አሁን " + cue : "Now, " + cue;
-  const rounded=band==="near" ? Math.max(20,Math.round(m.distanceMeters/10)*10) :
-    Math.max(100,Math.round(m.distanceMeters/50)*50);
-  if(language==="am")return `ከ${rounded} ሜትር በኋላ ${cue}`;
-  return `In ${rounded} meters, ${cue}`;
 }
