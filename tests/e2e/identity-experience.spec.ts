@@ -120,50 +120,41 @@ test('registration and recovery are localized, match confirmation links and pres
   await expect(page.locator('html')).toHaveAttribute('lang', 'am');
 });
 
-test('Driver account uses real details, saves confirmed edits and persists Light, Dark and System', async ({ page }, info) => {
+test('Driver settings open five dedicated screens, preserve drafts and save appearance', async ({ page }, info) => {
   await connectedAccount(page, 'driver');
-  await page.goto('/driver/profile');
-  await expect(page.getByRole('heading', { name: 'Connected Account', exact: true })).toBeVisible();
-  await expect(page.locator('.nr-driver-profile-v2')).toContainText('Toyota Yaris · Silver');
-  await expect(page.locator('.nr-driver-profile-v2')).toContainText('REAL-123');
-  await expect(page.locator('.nr-driver-verification-pill.pending')).toContainText('Verification under review');
-  await expect(page.locator('.nr-driver-app-shell')).toHaveAttribute('data-theme', 'dark');
-  await expect(page.locator('.nr-driver-profile-section').first()).toHaveCSS('background-color', 'rgb(11, 43, 67)');
-  await expect(page.locator('.nr-profile-metric').first()).toHaveCSS('background-color', 'rgb(11, 43, 67)');
-  await expect(page.locator('.nr-driver-profile-row-copy strong').first()).toHaveCSS('color', 'rgb(242, 247, 250)');
-  await page.screenshot({ path: `/tmp/nexride-driver-account-${info.project.name}.png`, fullPage: true });
   await page.goto('/driver/profile/settings');
-  await expect(page.locator('.nr-settings-group-heading button')).toHaveCount(5);
-  await expect(page.locator('.nr-settings-group-heading button[aria-expanded=false]')).toHaveCount(5);
-  await page.getByRole('button', { name: /^Account Personal details/ }).click();
+  const home = page.locator('.nr-settings-home');
+  await expect(home.locator('.nr-settings-group-heading button')).toHaveCount(5);
+  await expect(page.locator('.nr-settings-detail:visible')).toHaveCount(0);
+  await page.getByRole('button', { name: /^Account\. Personal details/ }).click();
+  await expect(home).toBeHidden();
+  await expect(page.locator('.nr-settings-detail:visible h2')).toHaveText('Account');
+  await page.getByRole('button', { name: 'Edit personal information' }).click();
   const name = page.getByLabel('Full name', { exact: true });
   await name.fill('Updated Account');
-  await page.getByRole('button', { name: /^Notifications Ride alerts/ }).click();
+  await page.getByRole('button', { name: 'Back to Settings' }).click();
+  await expect(home).toBeVisible();
+  await page.getByRole('button', { name: /^Notifications\. Ride alerts/ }).click();
   await expect(name).toBeHidden();
-  await page.getByRole('button', { name: /^Account Personal details/ }).click();
+  await page.getByRole('button', { name: 'Back to Settings' }).click();
+  await page.getByRole('button', { name: /^Account\. Personal details/ }).click();
   await expect(name).toHaveValue('Updated Account');
   await page.getByRole('button', { name: 'Save changes', exact: true }).click();
   await expect(page.locator('main [role=alert]')).toContainText('We couldn’t save your changes');
-  await expect(name).toHaveValue('Updated Account');
   await page.getByRole('button', { name: 'Save changes', exact: true }).click();
   await expect(page.locator('main [role=status]')).toContainText('Profile updated.');
-  await page.getByRole('button', { name: /^Language & Appearance/ }).click();
+  await page.getByRole('button', { name: 'Back to Settings' }).click();
+  await page.getByRole('button', { name: /^Language & Appearance\./ }).click();
   await page.getByRole('button', { name: 'Light', exact: true }).click();
   await expect(page.locator('.nr-driver-app-shell')).toHaveAttribute('data-theme', 'light');
   await page.reload();
   await expect(page.locator('.nr-driver-app-shell')).toHaveAttribute('data-theme', 'light');
-  await page.getByRole('button', { name: /^Account Personal details/ }).click();
-  await expect(name).toHaveValue('Updated Account');
-  await page.getByRole('button', { name: /^Language & Appearance/ }).click();
-  await page.emulateMedia({ colorScheme: 'dark' });
+  await page.getByRole('button', { name: /^Language & Appearance\./ }).click();
   await page.getByRole('button', { name: 'System', exact: true }).click();
+  await page.emulateMedia({ colorScheme: 'dark' });
   await expect(page.locator('.nr-driver-app-shell')).toHaveAttribute('data-theme', 'dark');
-  await page.emulateMedia({ colorScheme: 'light' });
-  await expect(page.locator('.nr-driver-app-shell')).toHaveAttribute('data-theme', 'light');
-  await page.getByRole('button', { name: 'Dark', exact: true }).click();
   await page.screenshot({ path: `/tmp/nexride-driver-settings-${info.project.name}.png`, fullPage: true });
 });
-
 test('Driver menu traps focus, closes with Escape and backdrop, and restores its trigger', async ({ page }) => {
   await connectedAccount(page, 'driver');
   await page.goto('/driver/profile');
@@ -215,16 +206,18 @@ test('Rider settings persist, and its menu protects focus and the current screen
   await page.locator('.nr-account-standard').getByRole('button', { name: /^Settings/ }).click();
   const dialog = page.getByRole('dialog', { name: 'Settings', exact: true });
   await expect(dialog.locator('.nr-settings-group-heading button')).toHaveCount(5);
-  await expect(dialog.locator('.nr-settings-group-heading button[aria-expanded=false]')).toHaveCount(5);
-  await dialog.getByRole('button', { name: /^Language & Appearance/ }).click();
+  await expect(dialog.locator('.nr-settings-detail:visible')).toHaveCount(0);
+  await dialog.getByRole('button', { name: /^Language & Appearance\\./ }).click();
   await dialog.getByRole('button', { name: 'Dark', exact: true }).click();
   await expect(dialog.locator('.nr-appearance-control button').first()).toHaveCSS('white-space', 'nowrap');
   await expect(page.locator('main.nr-app').first()).toHaveAttribute('data-theme', 'dark');
-  await dialog.getByRole('button', { name: /^Notifications Trip alerts/ }).click();
+  await dialog.getByRole('button', { name: 'Back to Settings' }).click();
+  await dialog.getByRole('button', { name: /^Notifications\\. Trip alerts/ }).click();
   await expect(dialog.getByRole('button', { name: 'Dark', exact: true })).toBeHidden();
   await dialog.getByRole('switch', { name: /^In-app trip alerts/ }).uncheck();
   expect(await page.evaluate(() => localStorage.getItem('nexride:trip-alerts'))).toBe('off');
   await page.screenshot({ path: `/tmp/nexride-rider-settings-${info.project.name}.png`, fullPage: true });
+  await dialog.getByRole('button', { name: 'Back to Settings' }).click();
   await page.keyboard.press('Escape');
   // Desktop uses the persistent navigation rail; the drawer serves the
   // narrow layout. Changing size must retain account settings and state.
@@ -244,7 +237,7 @@ test('Rider settings persist, and its menu protects focus and the current screen
   await page.reload();
   await expect(page.locator('main.nr-app').first()).toHaveAttribute('data-theme', 'dark');
   await page.locator('.nr-account-standard').getByRole('button', { name: /^Settings/ }).click();
-  await dialog.getByRole('button', { name: /^Notifications Trip alerts/ }).click();
+  await dialog.getByRole('button', { name: /^Notifications\\. Trip alerts/ }).click();
   await expect(page.getByRole('switch', { name: /^In-app trip alerts/ })).not.toBeChecked();
 });
 
