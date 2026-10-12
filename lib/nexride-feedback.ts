@@ -39,9 +39,6 @@ export type NexRideFeedbackPreferences = {
   messages: boolean;
   tripUpdates: boolean;
   haptics: boolean;
-  navigationVoice: boolean;
-  navigationLanguage: "en" | "am";
-  navigationVolume?: number;
 };
 
 export const NEXRIDE_FEEDBACK_KEY = "nexride:feedback:v1";
@@ -53,9 +50,6 @@ const defaults: NexRideFeedbackPreferences = {
   messages: true,
   tripUpdates: true,
   haptics: true,
-  navigationVoice: false,
-  navigationLanguage: "en",
-  navigationVolume: .9,
 };
 
 type Note = readonly [frequency: number, duration: number, gain: number, delay?: number];
@@ -101,7 +95,6 @@ function soundState(blocked: boolean) {
   if (typeof window !== "undefined") window.dispatchEvent(new Event(RIDE_REQUEST_SOUND_STATE_EVENT));
 }
 const seen = new Map<string, number>();
-let spokenKey = "";
 
 function getContext() {
   if (typeof window === "undefined") return null;
@@ -124,17 +117,19 @@ export function readNexRideFeedbackPreferences(): NexRideFeedbackPreferences {
     const raw = window.localStorage.getItem(NEXRIDE_FEEDBACK_KEY);
     if (!raw) return defaults;
     const parsed = JSON.parse(raw) as Partial<NexRideFeedbackPreferences>;
-    return {
+    const cleaned: NexRideFeedbackPreferences = {
       sounds: parsed.sounds !== false,
       rideRequests: parsed.rideRequests !== false,
       messages: parsed.messages !== false,
       tripUpdates: parsed.tripUpdates !== false,
       haptics: parsed.haptics !== false,
-      navigationVoice: parsed.navigationVoice === true,
-      navigationLanguage: parsed.navigationLanguage === "am" ? "am" : "en",
-      navigationVolume: typeof parsed.navigationVolume === "number" && Number.isFinite(parsed.navigationVolume)
-        ? Math.min(1, Math.max(.2, parsed.navigationVolume)) : .9,
     };
+    // Upgrade devices that previously stored spoken-navigation controls.
+    // Only the five supported sound and haptic preferences are retained.
+    if (Object.keys(parsed).some((key) => !(key in cleaned))) {
+      window.localStorage.setItem(NEXRIDE_FEEDBACK_KEY, JSON.stringify(cleaned));
+    }
+    return cleaned;
   } catch {
     return defaults;
   }
@@ -389,66 +384,4 @@ export function emitNexRideFeedback(input: {
   }
   if (event !== "ride_request") hapticFor(event);
   if (title && body) void showSystemNotification(title, body, dedupeKey, url);
-}
-
-function amharicNavigationCue(text: string) {
-  const clean = text.trim();
-  const lower = clean.toLowerCase();
-  if (lower.includes("navigate to pickup")) return "ወደ መነሻ ቦታ ይሂዱ";
-  if (lower.includes("navigate to destination")) return "ወደ መድረሻ ይሂዱ";
-  if (lower.includes("arrived") || lower.includes("destination is on")) return "መድረሻዎ ላይ ደርሰዋል";
-  if (lower.includes("u-turn") || lower.includes("u turn")) return "ዩ ተርን ያድርጉ";
-  if (lower.includes("keep left")) return "ወደ ግራ ይቆዩ";
-  if (lower.includes("keep right")) return "ወደ ቀኝ ይቆዩ";
-  if (lower.includes("turn left")) return "ወደ ግራ ይታጠፉ";
-  if (lower.includes("turn right")) return "ወደ ቀኝ ይታጠፉ";
-  if (lower.includes("slight left")) return "ትንሽ ወደ ግራ ይዙ";
-  if (lower.includes("slight right")) return "ትንሽ ወደ ቀኝ ይዙ";
-  if (lower.includes("continue") || lower.includes("straight")) return "ቀጥታ ይቀጥሉ";
-  if (lower.includes("roundabout")) return "ወደ ክብ መንገዱ ይግቡ እና የመንገድ ምልክቶችን ይከተሉ";
-  return "የአሰሳ መመሪያ። " + clean;
-}
-
-export type NexRideVoiceResult = "spoken" | "disabled" | "unsupported" | "language_unavailable";
-
-/** Browser/Android Text-to-Speech is best-effort and runs on-device.
- * A missing Amharic voice is not silently replaced with an English voice.
- * Calling code may surface a concise 'install Amharic TTS' hint.
- */
-export function speakNexRideNavigation(
-  text: string, language?: "en" | "am", options?: { force?: boolean },
-): NexRideVoiceResult {
-  if (typeof window === "undefined" || !("speechSynthesis" in window) ||
-      typeof SpeechSynthesisUtterance === "undefined") return "unsupported";
-  const preferences = readNexRideFeedbackPreferences();
-  if (!preferences.navigationVoice) return "disabled";
-  const raw = text.trim();
-  if (!raw) return "unsupported";
-  const lang = language || preferences.navigationLanguage;
-  const clean = lang === "am" && !/[\\u1200-\\u137f]/.test(raw) ? amharicNavigationCue(raw) : raw;
-  const key = lang + ":" + clean;
-  if (key === spokenKey && !options?.force) return "spoken";
-  try {
-    const voices = window.speechSynthesis.getVoices();
-    const selected = voices.find(voice => voice.lang.toLowerCase().startsWith(lang === "am" ? "am" : "en"));
-    if (lang === "am" && voices.length > 0 && !selected) return "language_unavailable";
-    const utterance = new SpeechSynthesisUtterance(clean);
-    utterance.lang = lang === "am" ? "am-ET" : "en-US";
-    if (selected) utterance.voice = selected;
-    utterance.rate = 1;
-    utterance.pitch = 1;
-    utterance.volume = preferences.navigationVolume ?? .9;
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(utterance);
-    spokenKey = key;
-    return "spoken";
-  } catch {
-    return "unsupported";
-  }
-}
-
-export function stopNexRideNavigationVoice() {
-  if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
-  try { window.speechSynthesis.cancel(); } catch {}
-  spokenKey = "";
 }
