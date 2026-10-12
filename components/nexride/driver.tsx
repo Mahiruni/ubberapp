@@ -130,11 +130,25 @@ export function DriverWorkspace({
   const [locationPermission, setLocationPermission] = useState<LocationPermission>("checking");
   const [alertPermission, setAlertPermission] = useState<NotificationPermission | "unsupported">("unsupported");
   const [gpsConfirmedAt, setGpsConfirmedAt] = useState(0);
+  const [nativeGpsFix, setNativeGpsFix] = useState<{
+    timestamp: number; accuracy: number; confirmed: boolean;
+  } | null>(null);
   const [presenceClock, setPresenceClock] = useState(Date.now());
   useEffect(() => {
     const update = (event: Event) => {
-      const detail = (event as CustomEvent<{ status?: string; gpsStatus?: string }>).detail;
-      setGpsConfirmedAt(detail?.status === "synced" && detail.gpsStatus === "ready" ? Date.now() : 0);
+      const detail = (event as CustomEvent<{
+        source?: string; status?: string; gpsStatus?: string;
+        at?: number; fixAt?: number; accuracy?: number;
+      }>).detail;
+      const confirmed = detail?.status === "synced" && detail.gpsStatus === "ready";
+      setGpsConfirmedAt(confirmed ? (detail.at || Date.now()) : 0);
+      if (detail?.source === "native") {
+        setNativeGpsFix(
+          confirmed && typeof detail.fixAt === "number" && typeof detail.accuracy === "number"
+            ? { timestamp: detail.fixAt, accuracy: detail.accuracy, confirmed: true }
+            : null,
+        );
+      }
     };
     window.addEventListener("nexride:driver-gps-sync", update);
     const timer = window.setInterval(() => setPresenceClock(Date.now()), 10_000);
@@ -655,16 +669,24 @@ export function DriverWorkspace({
     );
   }
 
-  const gpsHealth = driverGpsHealth(mapLocation.position ? {
-    accuracy: mapLocation.position.accuracy,
-    timestamp: mapLocation.position.timestamp,
-  } : null);
+  // A real Android foreground-service acknowledgement can remain fresh after
+  // the WebView map's last browser GPS reading has aged out during screen lock.
+  const nativeGpsHealth = nativeGpsFix
+    ? driverGpsHealth(nativeGpsFix, presenceClock)
+    : "waiting";
+  const gpsHealth = nativeGpsHealth === "ready" ? nativeGpsHealth
+    : driverGpsHealth(mapLocation.position ? {
+        accuracy: mapLocation.position.accuracy,
+        timestamp: mapLocation.position.timestamp,
+      } : null, presenceClock);
   const gpsHealthMessage = !state.online
     ? say("Offline", "ከመስመር ውጭ")
     : mapLocation.status === "denied"
       ? say("Location permission blocked", "የቦታ ፈቃድ ተከልክሏል")
       : gpsHealth === "ready" && gpsConfirmedAt > 0 && presenceClock - gpsConfirmedAt <= 60_000
-        ? say("GPS verified · ready for requests", "ጂፒኤስ ተረጋግጧል · ለጉዞ ጥያቄዎች ዝግጁ")
+        ? nativeGpsHealth === "ready"
+          ? say("Background GPS verified · ready for requests", "የጀርባ ጂፒኤስ ተረጋግጧል · ለጉዞ ዝግጁ")
+          : say("GPS verified · ready for requests", "ጂፒኤስ ተረጋግጧል · ለጉዞ ጥያቄዎች ዝግጁ")
         : gpsHealth === "ready"
           ? say("Confirming GPS with NexRide", "ጂፒኤስን ከኔክስራይድ ጋር በማረጋገጥ ላይ")
         : gpsHealth === "inaccurate"
