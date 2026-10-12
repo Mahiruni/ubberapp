@@ -11,7 +11,10 @@ import com.getcapacitor.annotation.CapacitorPlugin;
 public class NexRideAppLockPlugin extends Plugin {
     private NexRideAppLock controller() { return ((MainActivity) getActivity()).nexRideAppLock; }
     @PluginMethod public void status(PluginCall call) {
-        getActivity().runOnUiThread(() -> call.resolve(JSObject.fromJSONObject(controller().status())));
+        getActivity().runOnUiThread(() -> {
+            try { call.resolve(JSObject.fromJSONObject(controller().status())); }
+            catch (org.json.JSONException e) { call.reject("app_lock_status_unavailable"); }
+        });
     }
     @PluginMethod public void openSettings(PluginCall call) {
         String token = call.getString("accessToken", "");
