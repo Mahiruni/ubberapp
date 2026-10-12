@@ -129,7 +129,7 @@ export function TripExperience({ screen, tripId, userId, preview, navigate, setP
   };
 
   useEffect(() => {
-    let stopped = false, pending = false, revision = 0, connected = false;
+    let stopped = false, pending = false, refreshQueued = false, revision = 0, connected = false;
     let failures = 0, pollTimer: number | null = null, reconnectTimer: number | null = null;
     let channel: ReturnType<typeof supabase.channel> | null = null;
     ready.current = false;
@@ -162,7 +162,9 @@ export function TripExperience({ screen, tripId, userId, preview, navigate, setP
     };
 
     const refresh = async () => {
-      if (stopped || pending || !tripId || !userId) return;
+      if (stopped || !tripId || !userId) return;
+      // Preserve reconnect/realtime updates that arrive during an older request.
+      if (pending) { refreshQueued = true; return; }
       if (!navigator.onLine) {
         announce(false, latest.current ? 'You’re offline · showing the last confirmed trip update' : 'You’re offline · trip updates will resume automatically');
         schedulePoll();
@@ -230,7 +232,10 @@ export function TripExperience({ screen, tripId, userId, preview, navigate, setP
         if (!stopped) announce(false, 'Reconnecting… showing the latest saved trip details');
       } finally {
         pending = false;
-        schedulePoll();
+        if (refreshQueued && !stopped && navigator.onLine) {
+          refreshQueued = false;
+          void refresh();
+        } else schedulePoll();
       }
     };
 

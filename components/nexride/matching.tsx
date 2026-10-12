@@ -114,6 +114,9 @@ export function DriverMatching({ model, changeCategory, previewAssigned, home }:
     </footer>
     {confirmVersion !== null && <Dialog title={t('matchingCancelConfirm')} onClose={() => setConfirmVersion(null)}>
       <p className="nr-cancel-dialog-note">{t('matchingCancelWarning')}</p>
+      {terms?.reason && <p className="nr-cancel-dialog-note">{terms.reason}</p>}
+      {terms?.fee != null && terms.fee > 0 && <p className="nr-cancel-dialog-note"><strong>{t('matchingCancelFee')}: {terms.fee} ETB</strong></p>
+      }
       <div className="nr-cancel-dialog-actions">
         <Button variant="secondary" onClick={() => setConfirmVersion(null)}>{t('matchingKeep')}</Button>
         <Button variant="danger" onClick={() => { const version = confirmVersion; setConfirmVersion(null); void completeCancel(version < 0 ? undefined : version); }}>{t('matchingConfirmCancel')}</Button>

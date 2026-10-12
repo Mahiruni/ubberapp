@@ -22,7 +22,7 @@ jobs:
     timeout-minutes: 15
     env:
       NEXT_PUBLIC_APP_ENV: test
-      NEXT_PUBLIC_MAPBOX_TOKEN: replace_me
+      NEXT_PUBLIC_MAPBOX_TOKEN: pk.eyJ1IjoibmV4cmlkZS1lMmUiLCJhIjoiZml4dHVyZSJ9.fixture
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

@@ -6,6 +6,7 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   workers: process.env.CI ? 2 : undefined,
+  timeout: process.env.CI ? 60_000 : 30_000,
   reporter: [
     ["html", { outputFolder: "playwright-report", open: "never" }],
     ["list"],
@@ -33,7 +34,9 @@ export default defineConfig({
               executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH,
               args: [
                 "--no-sandbox",
-                "--disable-gpu",
+                "--use-gl=angle",
+                "--use-angle=swiftshader",
+                "--enable-unsafe-swiftshader",
                 "--disable-dev-shm-usage",
               ],
             }
@@ -49,7 +52,9 @@ export default defineConfig({
               executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH,
               args: [
                 "--no-sandbox",
-                "--disable-gpu",
+                "--use-gl=angle",
+                "--use-angle=swiftshader",
+                "--enable-unsafe-swiftshader",
                 "--disable-dev-shm-usage",
               ],
             }
@@ -57,6 +62,25 @@ export default defineConfig({
       },
     },
     { name: "webkit", use: { ...devices["Desktop Safari"] } },
-    { name: "firefox", use: { ...devices["Desktop Firefox"] } },
+    {
+      name: "firefox",
+      use: {
+        ...devices["Desktop Firefox"],
+        launchOptions: {
+          firefoxUserPrefs: {
+            "webgl.disabled": false,
+            "webgl.force-enabled": true,
+            "webgl.enable-webgl2": true,
+            "webgl.enable-software-renderer": true,
+            "gfx.webrender.software": true,
+          },
+          env: {
+            ...process.env,
+            LIBGL_ALWAYS_SOFTWARE: "1",
+            MOZ_WEBRENDER: "1",
+          },
+        },
+      },
+    },
   ],
 });

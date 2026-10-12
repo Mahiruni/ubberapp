@@ -35,6 +35,7 @@ async function authenticate(page: Page) {
 
 async function backend(page: Page) {
   let status = "accepted";
+  let heldRead: { started: boolean; wait: Promise<void> } | null = null;
   let portraitPath = ""; let signedRevision = 0;
   let driverId: string | null = driver;
   let payment = "pending";
@@ -49,7 +50,7 @@ async function backend(page: Page) {
   );
   await page.route("**/auth/v1/user", (route) => route.fulfill({ json: user }));
   await page.route("**/api/rider/trips/*/driver", route => route.fulfill({ json: { status: 'ready', driver: { id: driverId, name: driverId === driver ? 'Connected Driver' : 'Replacement Driver', photo: null, phone: '+251900000001', rating: 4.8, tripCount: 7, vehicle: { model: 'Toyota Yaris', color: 'Silver', plate: 'REAL-123' }, verification: null } } }));
-  await page.route("**/rest/v1/**", (route) => {
+  await page.route("**/rest/v1/**", async (route) => {
     const url = new URL(route.request().url());
     const table = url.pathname.split("/").pop();
     const objectResponse =
@@ -83,6 +84,11 @@ async function backend(page: Page) {
         estimated_trip_duration_minutes: 14,
         estimated_trip_distance_km: 5.2,
       };
+      const gate = heldRead;
+      if (gate && !gate.started && url.searchParams.get("id") === `eq.${id}`) {
+        gate.started = true;
+        await gate.wait;
+      }
       return one(row);
     }
 
@@ -156,6 +162,12 @@ async function backend(page: Page) {
   await page.routeWebSocket("**/realtime/v1/**", (ws) => ws.close());
 
   return {
+    holdNextRead() {
+      let release!: () => void;
+      const gate = {started:false,wait:new Promise<void>(resolve => {release=resolve;})};
+      heldRead = gate;
+      return {started:()=>gate.started,release};
+    },
     photo(path: string) { portraitPath=path; },
     change(next: string) {
       status = next;
@@ -253,4 +265,24 @@ test('authorized assigned portrait refreshes and deletion restores fallback duri
   api.photo(`${driver}/replacement.jpg`); await page.evaluate(() => window.dispatchEvent(new Event('focus'))); await expect(photo).toHaveAttribute('src',/replacement[.]jpg/);
   api.photo(''); await page.evaluate(() => window.dispatchEvent(new Event('focus'))); await expect(photo).toHaveCount(0); await expect(page.locator('.nr-identity-portrait')).toHaveText('CD');
   await expect(page.getByRole('heading',{name:'Your driver is on the way'})).toBeVisible();
+});
+
+
+test("a reconnect during an older trip read immediately fetches the completed trip", async ({page}) => {
+  const api = await backend(page);
+  await authenticate(page);
+  await page.getByRole("button",{name:"Resume your trip"}).click();
+  await expect(page.locator(".nr-accepted-driver-card").getByRole("heading",{name:"Connected Driver"})).toBeVisible();
+  // Freeze polling: reconnection must recover immediately, without waiting for its timer.
+  await page.clock.install();
+  await page.clock.pauseAt(new Date(Date.now() + 60_000));
+  const pending = api.holdNextRead();
+  try {
+    await page.evaluate(()=>window.dispatchEvent(new Event("online")));
+    await expect.poll(pending.started).toBe(true);
+    api.change("completed");
+    await page.evaluate(()=>window.dispatchEvent(new Event("online")));
+    pending.release();
+    await expect(page.frameLocator('iframe[title="NexRide trip receipt and rating"]').getByRole("heading",{name:"You’ve arrived",exact:true})).toBeVisible();
+  } finally {pending.release();}
 });

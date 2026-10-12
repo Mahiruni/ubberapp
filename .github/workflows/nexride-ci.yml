@@ -19,8 +19,8 @@ jobs:
       NEXT_PUBLIC_APP_URL: http://localhost:3000
       NEXT_PUBLIC_SUPABASE_URL: https://eyyvvwecpyctttiueban.supabase.co
       NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_kXFOrtwKkKmrqCtYTTuzdg__CjjABBf
-      # Keep routing in its explicit provider-unavailable fallback during deterministic CI.
-      NEXT_PUBLIC_MAPBOX_TOKEN: replace_me
+      # Syntactically valid dummy token; browser map requests use local fixtures.
+      NEXT_PUBLIC_MAPBOX_TOKEN: pk.eyJ1IjoibmV4cmlkZS1lMmUiLCJhIjoiZml4dHVyZSJ9.fixture
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -36,14 +36,43 @@ jobs:
         run: npx tsc --noEmit --pretty false
       - name: Production build
         run: npm run build
+
+  browser:
+    needs: qa
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [chromium, mobile, webkit, firefox]
+    env:
+      NEXT_PUBLIC_APP_NAME: NexRide
+      NEXT_PUBLIC_APP_ENV: test
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      NEXT_PUBLIC_SUPABASE_URL: https://eyyvvwecpyctttiueban.supabase.co
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_kXFOrtwKkKmrqCtYTTuzdg__CjjABBf
+      # Syntactically valid dummy token; browser map requests use local fixtures.
+      NEXT_PUBLIC_MAPBOX_TOKEN: pk.eyJ1IjoibmV4cmlkZS1lMmUiLCJhIjoiZml4dHVyZSJ9.fixture
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Production build
+        run: npm run build
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium webkit firefox
-      - name: E2E tests
-        run: npm run test:e2e
+      - name: E2E tests — ${{ matrix.project }}
+        run: npm run test:e2e -- --project=${{ matrix.project }} --workers=2
+        env:
+          PLAYWRIGHT_SERVER_COMMAND: npm run start -- --hostname 127.0.0.1
       - name: Upload Playwright report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: nexride-playwright-report
+          name: nexride-playwright-${{ matrix.project }}
           path: playwright-report/
           if-no-files-found: ignore

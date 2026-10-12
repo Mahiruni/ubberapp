@@ -298,6 +298,12 @@
   white-space: nowrap;
   box-shadow: 0 3px 12px #041c3010;
 }
+
+@media (max-width: 800px) {
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-use-map-center {
+    bottom: calc(clamp(220px, var(--nr-flow-sheet-height, 46dvh), calc(var(--nr-viewport-height, 100dvh) - 72px)) + 16px);
+  }
+}
 @media (max-width: 800px) {
   .rider-search-view {
     height: var(--nr-viewport-height, 100dvh);

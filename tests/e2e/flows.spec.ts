@@ -1,6 +1,8 @@
+import { mapFixture, chooseJourney } from "./helpers/mobility";
 import { test, expect } from "@playwright/test";
 
 test.beforeEach(async ({ page }) => {
+  await mapFixture(page);
   await page.addInitScript(() =>
     localStorage.setItem("nexride:preview-enabled", "true"),
   );
@@ -10,16 +12,8 @@ test("rider can complete an explicitly labeled preview and save a rating", async
   page,
 }) => {
   await page.goto("/");
-  await expect(page.locator(".nr-map-preview-chip")).toBeVisible();
-  await page
-    .getByRole("button", { name: /Bole International Airport/ })
-    .click();
-  await page.getByLabel("Pickup location", { exact: true }).fill("Bole Atlas");
-  await page
-    .locator(".nr-place-suggestion")
-    .filter({ hasText: "Bole Atlas" })
-    .first()
-    .click();
+  if (page.viewportSize()!.width > 800) await expect(page.locator(".nr-map-preview-chip")).toBeVisible();
+  await chooseJourney(page);
   await page
     .getByRole("button", { name: "Preview ride options", exact: true })
     .click();
@@ -38,15 +32,15 @@ test("rider can complete an explicitly labeled preview and save a rating", async
   await assigned.getByRole('button', {name:'Chat',exact:true}).click();
   await expect(assigned.getByRole('dialog')).toContainText('not delivered');
   await assigned.getByRole('button', {name:'Close dialog'}).click();
-  await page.getByRole('button', {name:'Start preview trip',exact:true}).click();
+  await page.getByRole('button', {name:'Start trip',exact:true}).click();
   const active = page.frameLocator('iframe[title="NexRide active trip"]');
   await expect(active.getByRole('heading', {name:'On trip',exact:true})).toBeVisible();
-  await page.getByRole('button', {name:'Complete preview trip',exact:true}).click();
+  await page.getByRole('button', {name:'Complete trip',exact:true}).click();
   const receipt = page.frameLocator('iframe[title="NexRide trip receipt and rating"]');
-  await expect(receipt.getByRole('heading', {name:'Trip completed!',exact:true})).toBeVisible();
+  await expect(receipt.getByRole('heading', {name:'You’ve arrived',exact:true})).toBeVisible();
   await receipt.getByRole('radio', {name:/5 star/}).check();
-  await receipt.getByRole('button', {name:'Submit',exact:true}).click();
-  await expect(receipt.getByText('Thank you for your feedback.',{exact:true})).toBeVisible();
+  await receipt.getByRole('button', {name:'Submit rating',exact:true}).click();
+  await expect(receipt.getByText('Thanks for your feedback.',{exact:true})).toBeVisible();
   await page.reload();
   const trip = await page.evaluate(
     () => JSON.parse(localStorage.getItem("nexride-preview-v2")!).trip,
@@ -59,20 +53,16 @@ test("driver mode never simulates availability without an authenticated eligible
 }) => {
   await page.goto("/");
   await page
-    .getByRole("button", { name: "Profile", exact: true })
+    .getByRole("button", { name: "Account", exact: true })
     .first()
     .click();
-  await page.getByRole("button", { name: "Switch to driver" }).click();
+  await page.getByRole("button", { name: /Drive with NexRide/ }).click();
   await expect(page.locator(".nr-app")).toHaveAttribute("data-mode", "driver");
-  await expect(
-    page.getByText("Your driver session could not be restored.", { exact: true }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("button", { name: "Go Online", exact: true }),
-  ).toBeDisabled();
-  await expect(
-    page.getByRole("button", { name: /Preview going online/i }),
-  ).toHaveCount(0);
+  await expect(page).toHaveURL(/\/driver$/);
+  await expect(page.getByRole("heading", {name:"Drive. Earn. Grow."})).toBeVisible();
+  await expect(page.getByRole("link", {name:"Sign in",exact:true})).toHaveAttribute("href","/driver/auth");
+  await expect(page.getByRole("button", {name:/Go Online|Preview going online/i})).toHaveCount(0);
+
 });
 
 test("Amharic, profile edits, keyboard dialogs, and local storage migration work", async ({
@@ -96,23 +86,25 @@ test("Amharic, profile edits, keyboard dialogs, and local storage migration work
     .poll(() => page.evaluate(() => localStorage.getItem("nexride-state")))
     .toBeNull();
   await page
-    .getByRole("button", { name: "Profile", exact: true })
+    .getByRole("button", { name: "Account", exact: true })
     .first()
     .click();
   await page
-    .getByRole("button", { name: "Edit profile", exact: true })
+    .getByRole("button", { name: "Edit", exact: true })
     .click();
   await page.getByLabel("Full name", { exact: true }).fill("NexRide Test");
   await page.getByRole("button", { name: "Save details" }).click();
   await expect(
     page.getByRole("heading", { name: "NexRide Test" }),
   ).toBeVisible();
-  await page.getByRole("button", { name: "አማርኛ", exact: true }).last().click();
+  await page.locator(".nr-account-section-list").getByRole("button", { name: /^Settings/ }).click();
+  await page.getByRole("dialog").getByRole("button", { name: "አማርኛ", exact: true }).click();
+  await page.keyboard.press("Escape");
   await expect(page.locator("html")).toHaveAttribute("lang", "am");
   await expect(
-    page.getByRole("heading", { name: "መለያ", exact: true }),
+    page.getByRole("heading", { name: "የእርስዎ መለያ", exact: true }),
   ).toBeVisible();
-  await page.getByRole("button", { name: "ቅንብሮች", exact: true }).last().click();
+  await page.locator(".nr-account-section-list").getByRole("button", { name: /^ቅንብሮች/ }).click();
   await expect(page.getByRole("dialog")).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog")).not.toBeVisible();
@@ -153,11 +145,9 @@ test("small screens keep map, navigation and sheets within the viewport", async 
     .first()
     .click();
   await expect(
-    page.getByLabel("Pickup location", { exact: true }),
+    page.getByLabel("Pickup", { exact: true }),
   ).toBeVisible();
-  await expect(
-    page.getByRole("button", { name: "Continue to ride options" }),
-  ).toBeDisabled();
+  await expect(page.locator(".nr-destination-panel footer button:not([disabled])")).toHaveCount(0);
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= window.innerWidth,

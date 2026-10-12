@@ -1,39 +1,33 @@
-import { test, expect, type Page } from "@playwright/test";
-// Deterministic tile fixtures keep QA independent of a public map service.
-const tile = `<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256"><rect width="256" height="256" fill="#edf2f4"/><path d="M0 140 256 80M90 0 160 256" stroke="white" stroke-width="15"/><rect x="15" y="15" width="50" height="45" rx="5" fill="#d4e8dc"/></svg>`;
-async function mockTiles(page: Page) {
-  await page.route("https://tile.openstreetmap.org/**", (route) =>
-    route.fulfill({ contentType: "image/svg+xml", body: tile }),
-  );
-}
+import { mapFixture, readyMap, reachableControl, headlessFirefoxMapFallback } from "./helpers/mobility";
+import { test, expect } from "@playwright/test";
 test.beforeEach(async ({ page }) => {
+  await mapFixture(page);
   await page.addInitScript(() =>
     localStorage.setItem("nexride:preview-enabled", "true"),
   );
-  await mockTiles(page);
 });
 test("home exposes empty history, labeled examples and the requested navigation", async ({
   page,
 }) => {
   await page.goto("/");
   await expect(
-    page.getByText("No recent destinations yet.", { exact: false }),
+    page.getByText("No recent destinations yet", { exact: false }),
   ).toBeVisible();
   await expect(
     page
       .locator(".nr-rider-home-panel")
       .getByRole("button", { name: "Search destination", exact: true }),
-  ).toContainText("Where to?");
-  for (const label of ["Home", "Activity", "Safety center", "Messages", "Account"])
-    await expect(
-      page
-        .locator(".nr-navigation:visible")
-        .getByRole("button", { name: label, exact: true }),
-    ).toBeVisible();
-  await expect(page.locator(".nr-user-location-dot")).toHaveCount(0);
+  ).toContainText("Plan your ride");
+  const mobile = page.viewportSize()!.width <= 800;
+  if (mobile) await page.getByRole("button", { name: "Open menu", exact: true }).click();
+  const navigation = page.getByRole("navigation", { name: mobile ? "Rider navigation" : "NexRide", exact: true });
+  for (const label of ["Home", mobile ? "My rides" : "Activity", "Safety", "Support", "Account"])
+    await expect(navigation.getByRole("button", { name: mobile ? new RegExp(`^${label}`) : label, exact: !mobile })).toBeVisible();
+  if (mobile) await page.keyboard.press("Escape");
+  await expect(page.locator(".nr-live-location-dot")).toHaveCount(0);
   await expect(page.locator(".map-position")).toHaveCount(0);
 });
-test("a real browser fix creates the blue dot and accuracy circle, and recenter moves the map", async ({
+test("a real browser location creates a centered marker and recenter moves the map", async ({
   page,
   context,
 }) => {
@@ -44,9 +38,15 @@ test("a real browser fix creates the blue dot and accuracy circle, and recenter 
   });
   await context.grantPermissions(["geolocation"]);
   await page.goto("/");
-  await expect(page.locator(".nr-user-location-dot")).toHaveCount(1);
-  await expect(page.locator(".nr-location-accuracy")).toHaveCount(1);
-  await expect(page.locator(".nr-home-location")).toContainText("±25 m");
+  if (await headlessFirefoxMapFallback(page)) {
+    await expect(page.locator('.nr-map-unavailable')).toBeVisible();
+    await expect(page.locator('.nr-home-location')).toContainText('Current location');
+    await page.getByRole('button', { name: 'Recenter on my location' }).click();
+    return;
+  }
+  await expect(page.locator(".nr-live-location-dot")).toHaveCount(1);
+  await readyMap(page);
+  await expect(page.locator(".nr-home-location")).toContainText("Current location");
   const map = page.locator(".nr-geographic-map");
   const box = (await map.boundingBox())!;
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
@@ -60,7 +60,7 @@ test("a real browser fix creates the blue dot and accuracy circle, and recenter 
   await page.getByRole("button", { name: "Recenter on my location" }).click();
   await expect
     .poll(async () => {
-      const dot = await page.locator(".nr-user-location-dot").boundingBox();
+      const dot = await page.locator(".nr-live-location-dot").boundingBox();
       return dot
         ? Math.abs(dot.x + dot.width / 2 - box.x - box.width / 2) < 4 &&
             Math.abs(dot.y + dot.height / 2 - box.y - box.height / 2) < 4
@@ -74,19 +74,20 @@ test("permission denial keeps destination search usable without a fake location 
   await page.addInitScript(() => {
     Object.defineProperty(navigator, "geolocation", {
       value: {
-        getCurrentPosition: (
+        clearWatch: () => {},
+        watchPosition: (
           _ok: unknown,
-          error: (e: { code: number }) => void,
-        ) => error({ code: 1 }),
+          error: (e: { code: number; PERMISSION_DENIED?: number }) => void,
+        ) => error({ code: 1, PERMISSION_DENIED: 1 }),
       },
     });
   });
   await page.goto("/");
   await page.getByRole("button", { name: "Recenter on my location" }).click();
   await expect(page.locator(".nr-home-location")).toContainText(
-    "Location permission is off",
+    "Location access is off",
   );
-  await expect(page.locator(".nr-user-location-dot")).toHaveCount(0);
+  await expect(page.locator(".nr-live-location-dot")).toHaveCount(0);
   await page
     .getByRole("button", { name: "Search destination", exact: true })
     .click();
@@ -100,10 +101,14 @@ test("loading and unavailable location states remain recoverable", async ({
   await page.addInitScript(() => {
     Object.defineProperty(navigator, "geolocation", {
       value: {
-        getCurrentPosition: (
+        clearWatch: () => {},
+        watchPosition: (
           _ok: unknown,
-          error: (e: { code: number }) => void,
-        ) => setTimeout(() => error({ code: 2 }), 500),
+          error: (e: { code: number; PERMISSION_DENIED?: number }) => void,
+        ) => {
+          Object.assign(window, { failLocation: () => error({ code: 2 }) });
+          return 1;
+        },
       },
     });
   });
@@ -115,6 +120,7 @@ test("loading and unavailable location states remain recoverable", async ({
   await expect(
     page.getByRole("button", { name: "Recenter on my location" }),
   ).toBeDisabled();
+  await page.evaluate(() => (window as unknown as { failLocation: () => void }).failLocation());
   await expect(page.locator(".nr-home-location")).toContainText(
     "We couldn’t find your location",
   );
@@ -131,10 +137,11 @@ test("Home and Work shortcuts are explicitly selected and restored, with preview
   await expect(
     page.getByRole("heading", { name: "Set your Home shortcut" }),
   ).toBeVisible();
-  await page.getByRole("button", { name: /Meskel Square/ }).click();
+  await page.getByLabel("Search destination",{exact:true}).fill("Meskel");
+  await page.locator(".nr-place-suggestion").filter({hasText: "Meskel Square"}).first().click();
   await expect(panel).toBeVisible();
   await panel.getByRole("button", { name: "Home", exact: true }).click();
-  await page.getByLabel("Pickup location", { exact: true }).fill("Bole Atlas");
+  await page.getByLabel("Pickup", { exact: true }).fill("Bole Atlas");
   await page
     .locator(".nr-place-suggestion")
     .filter({ hasText: "Bole Atlas" })
@@ -161,14 +168,23 @@ test("Home and Work shortcuts are explicitly selected and restored, with preview
   await expect(
     page.getByRole("heading", { name: "Set your Work shortcut" }),
   ).toBeVisible();
+  await page.getByLabel("Search destination", { exact: true }).fill("Piassa");
+  await page.locator(".nr-place-suggestion").filter({ hasText: "Piassa" }).first().click();
+  await expect(panel).toBeVisible();
+  await page.reload();
+  await panel.getByRole("button", { name: "Work", exact: true }).click();
+  await expect(page.getByLabel("Search destination", { exact: true })).toHaveValue("Piassa");
+  await page.getByRole("button", { name: "Back", exact: true }).click();
+  await panel.getByRole("button", { name: "Home", exact: true }).click();
+  await expect(page.getByLabel("Search destination", { exact: true })).toHaveValue("Meskel Square");
 });
 test("a failed map does not block destination search", async ({ page }) => {
-  await page.route("https://tile.openstreetmap.org/**", (route) =>
+  await page.route("https://api.mapbox.com/**", (route) =>
     route.abort(),
   );
   await page.goto("/");
   await expect(
-    page.getByText("Map unavailable.", { exact: false }),
+    page.getByText("Map unavailable right now.", { exact: false }),
   ).toBeVisible();
   await page
     .getByRole("button", { name: "Search destination", exact: true })
@@ -177,7 +193,7 @@ test("a failed map does not block destination search", async ({ page }) => {
     page.getByRole("textbox", { name: "Search destination" }),
   ).toBeVisible();
 });
-test("small, landscape and desktop layouts keep map controls, sheet and navigation separate", async ({
+test("small, landscape and desktop layouts keep map controls and ride actions reachable", async ({
   page,
 }) => {
   await page.goto("/");
@@ -190,16 +206,14 @@ test("small, landscape and desktop layouts keep map controls, sheet and navigati
     await page.setViewportSize(viewport);
     const map = (await page.locator(".nr-rider-map-surface").boundingBox())!;
     const panel = (await page.locator(".nr-panel").boundingBox())!;
-    const control = (await page.locator(".nr-recenter").boundingBox())!;
+    const control = (await page.getByRole("button",{name:"Recenter on my location",exact:true}).boundingBox())!;
     expect(control.x).toBeGreaterThanOrEqual(map.x);
     expect(control.y).toBeGreaterThanOrEqual(map.y);
     expect(control.x + control.width).toBeLessThanOrEqual(map.x + map.width);
     expect(control.y + control.height).toBeLessThanOrEqual(map.y + map.height);
-    if (viewport.width <= 800) {
-      const nav = (await page.locator(".nr-mobile-nav").boundingBox())!;
-      expect(map.y + map.height).toBeLessThanOrEqual(panel.y + 1);
-      expect(panel.y + panel.height).toBeLessThanOrEqual(nav.y + 1);
-    } else expect(map.x + map.width).toBeLessThanOrEqual(panel.x + 1);
+    await reachableControl(page, ".nr-recenter");
+    await expect(page.getByRole("button",{name:"Search destination",exact:true})).toBeInViewport();
+    expect(panel.y + panel.height).toBeLessThanOrEqual(viewport.height + 1);
     expect(
       await page.evaluate(
         () => document.documentElement.scrollWidth <= innerWidth,

@@ -57,7 +57,11 @@ export function RiderWorkspace({
   matching,
   onTripSource,
   onTripSnapshot,
+  savingShortcut,
+  setSavingShortcut,
 }: {
+  savingShortcut: "home" | "work" | null;
+  setSavingShortcut: (shortcut: "home" | "work" | null) => void;
   onTripSnapshot?: (snapshot: TripSnapshot | null) => void;
   screen: RiderScreen;
   navigate: (s: RiderScreen) => void;
@@ -77,9 +81,6 @@ export function RiderWorkspace({
   const language = useContext(LanguageContext);
   const { pickup, destination } = journey;
   const [homePlaces, setHomePlaces] = useState<HomePlaces>(emptyHomePlaces);
-  const [savingShortcut, setSavingShortcut] = useState<"home" | "work" | null>(
-    null,
-  );
   useEffect(() => {
     try {
       setHomePlaces(restoreHomePlaces(localStorage.getItem(HOME_PLACES_KEY)));

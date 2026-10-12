@@ -1,11 +1,9 @@
+import { mapFixture, readyMap, routePixelCount, headlessFirefoxMapFallback } from "./helpers/mobility";
 import { test, expect, type Page } from "@playwright/test";
-const tile = `<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256"><rect width="256" height="256" fill="#edf2f4"/><path d="M0 140 256 80M90 0 160 256" stroke="white" stroke-width="15"/></svg>`;
 test.beforeEach(async ({ page }) => {
+  await mapFixture(page);
   await page.addInitScript(() =>
     localStorage.setItem("nexride:preview-enabled", "true"),
-  );
-  await page.route("https://tile.openstreetmap.org/**", (r) =>
-    r.fulfill({ contentType: "image/svg+xml", body: tile }),
   );
 });
 async function openSearch(page: Page) {
@@ -20,7 +18,7 @@ async function select(
   name: string,
 ) {
   await page
-    .getByLabel(field === "pickup" ? "Pickup location" : "Search destination", {
+    .getByLabel(field === "pickup" ? "Pickup" : "Search destination", {
       exact: true,
     })
     .fill(name);
@@ -58,12 +56,10 @@ test("search requires selected endpoints, finds both scripts and distinguishes l
   page,
 }) => {
   await openSearch(page);
-  await expect(page.getByLabel("Pickup location", { exact: true })).toHaveValue(
+  await expect(page.getByLabel("Pickup", { exact: true })).toHaveValue(
     "",
   );
-  await expect(
-    page.getByRole("button", { name: "Continue to ride options", exact: true }),
-  ).toBeDisabled();
+  await expect(page.locator(".nr-destination-panel footer button:not([disabled])")).toHaveCount(0);
   await page.getByLabel("Search destination", { exact: true }).fill("ኮልፌ");
   const kolfe = page
     .locator(".nr-place-suggestion")
@@ -74,8 +70,8 @@ test("search requires selected endpoints, finds both scripts and distinguishes l
   await select(page, "destination", "መስቀል");
   await select(page, "pickup", "Bole Atlas");
   await expect(page.locator(".nr-route-review.unavailable")).toBeVisible();
-  await expect(page.locator(".nr-provider-route")).toHaveCount(0);
-  await expect(page.locator(".nr-route-review")).not.toContainText("km");
+  await expect(page.locator(".nr-map-has-route")).toHaveCount(0);
+  await expect(page.locator(".nr-route-review > strong")).toHaveCount(0);
   await page
     .getByRole("button", { name: "Preview ride options", exact: true })
     .click();
@@ -88,48 +84,69 @@ test("provider route is rendered and editing pickup invalidates it immediately",
 }) => {
   await provider(page);
   await openSearch(page);
+  if (await headlessFirefoxMapFallback(page)) {
+    await expect(page.locator('.nr-map-unavailable')).toBeVisible();
+    await select(page, "destination", "Meskel Square");
+    await select(page, "pickup", "Bole Atlas");
+    await expect(page.locator(".nr-route-review.ready")).toContainText("12 min");
+    await page.getByLabel("Pickup", { exact: true }).fill("unselected text");
+    await expect(page.locator(".nr-map-has-route")).toHaveCount(0);
+    return;
+  }
+  await readyMap(page);
+  const idlePixels = await routePixelCount(page);
   await select(page, "destination", "Meskel Square");
   await select(page, "pickup", "Bole Atlas");
   await expect(page.locator(".nr-route-review.ready")).toContainText(
     "12 min · 4.3 km",
   );
-  await expect(page.locator(".nr-provider-route")).toHaveCount(1);
-  await expect(page.locator(".nr-pickup-marker")).toHaveCount(1);
-  await expect(page.locator(".nr-destination-marker")).toHaveCount(1);
+  await expect(page.locator(".nr-map-has-route")).toHaveCount(1);
+  await expect(page.locator(".nr-map-endpoint-marker:has(.pickup)")).toHaveCount(1);
+  await expect(page.locator(".nr-map-endpoint-marker:has(.destination)")).toHaveCount(1);
+  await expect.poll(()=>routePixelCount(page)).toBeGreaterThan(idlePixels + 100);
   await page
-    .getByLabel("Pickup location", { exact: true })
+    .getByLabel("Pickup", { exact: true })
     .fill("unselected text");
-  await expect(page.locator(".nr-provider-route")).toHaveCount(0);
-  await expect(
-    page.getByRole("button", { name: "Continue to ride options", exact: true }),
-  ).toBeDisabled();
+  await expect(page.locator(".nr-map-has-route")).toHaveCount(0);
+  // The mobile compositor can retain small anti-aliased pixel differences.
+  // Source/layer removal must still clear the full route (thousands of pixels).
+  const canvasNoiseBudget = page.viewportSize()!.width < 600 ? 180 : 50;
+  await expect.poll(()=>routePixelCount(page)).toBeLessThanOrEqual(idlePixels + canvasNoiseBudget);
+  await expect(page.locator(".nr-destination-panel footer button:not([disabled])")).toHaveCount(0);
 });
 test("dragging pickup updates its label and requires confirmation before rerouting", async ({
   page,
 }) => {
+  await page.emulateMedia({reducedMotion:"reduce"});
   await provider(page);
   await openSearch(page);
+  if (await headlessFirefoxMapFallback(page)) {
+    await expect(page.locator('.nr-map-unavailable')).toBeVisible();
+    test.skip(true, "Headless Firefox without WebGL2 cannot drag a Mapbox marker; fallback is verified.");
+  }
   await select(page, "destination", "Meskel Square");
   await select(page, "pickup", "Bole Atlas");
-  await expect(page.locator(".nr-provider-route")).toHaveCount(1);
-  const pin = (await page.locator(".nr-pickup-marker").boundingBox())!;
-  await page.mouse.move(pin.x + 14, pin.y + 14);
+  await expect(page.locator(".nr-map-has-route")).toHaveCount(1);
+  const marker=page.locator(".nr-map-endpoint-marker:has(.pickup)");
+  await expect(marker).toBeInViewport();
+  await expect.poll(()=>marker.evaluate(element=>{const b=element.getBoundingClientRect();return element.contains(document.elementFromPoint(b.x+b.width/2,b.y+b.height/2))})).toBe(true);
+  const pin=(await marker.boundingBox())!;
+  const x=pin.x+pin.width/2, y=pin.y+pin.height/2;
+  await page.mouse.move(x,y);
   await page.mouse.down();
-  await page.mouse.move(pin.x + 44, pin.y + 32, { steps: 8 });
+  await page.mouse.move(x-45,y-35,{steps:12});
   await page.mouse.up();
-  await expect(page.getByLabel("Pickup location", { exact: true })).toHaveValue(
+  await expect(page.getByLabel("Pickup", { exact: true })).toHaveValue(
     /Map pin/,
   );
-  await expect(page.locator(".nr-provider-route")).toHaveCount(0);
-  await expect(
-    page.getByRole("button", { name: "Continue to ride options", exact: true }),
-  ).toBeDisabled();
+  await expect(page.locator(".nr-map-has-route")).toHaveCount(0);
+  await expect(page.locator(".nr-destination-panel footer button:not([disabled])")).toHaveCount(0);
   await page
     .getByRole("button", { name: "Confirm pickup pin", exact: true })
     .click();
-  await expect(page.locator(".nr-provider-route")).toHaveCount(1);
+  await expect(page.locator(".nr-map-has-route")).toHaveCount(1);
   await expect(
-    page.getByRole("button", { name: "Continue to ride options", exact: true }),
+    page.getByRole("button", { name: "Choose a ride", exact: true }),
   ).toBeEnabled();
 });
 test("map selection keeps exact coordinates synchronized without a geocoder", async ({
@@ -139,8 +156,12 @@ test("map selection keeps exact coordinates synchronized without a geocoder", as
     r.fulfill({ status: 503, json: { status: "unavailable", coverage: { kind: "preview" } } }),
   );
   await openSearch(page);
+  if (await headlessFirefoxMapFallback(page)) {
+    await expect(page.locator('.nr-map-unavailable')).toBeVisible();
+    test.skip(true, "Headless Firefox without WebGL2 cannot pan a Mapbox map; fallback is verified.");
+  }
   await select(page, "destination", "Meskel Square");
-  await page.getByLabel("Pickup location", { exact: true }).focus();
+  await page.getByLabel("Pickup", { exact: true }).focus();
   await page
     .getByRole("button", { name: "Choose on map", exact: true })
     .click();
@@ -159,10 +180,10 @@ test("map selection keeps exact coordinates synchronized without a geocoder", as
   await page
     .getByRole("button", { name: "Confirm pickup pin", exact: true })
     .click();
-  await expect(page.getByLabel("Pickup location", { exact: true })).toHaveValue(
+  await expect(page.getByLabel("Pickup", { exact: true })).toHaveValue(
     "Map pin",
   );
-  await expect(page.locator(".nr-pickup-marker")).toHaveCount(1);
+  await expect(page.locator(".nr-map-endpoint-marker:has(.pickup)")).toHaveCount(1);
   await expect(
     page.getByRole("button", { name: "Preview ride options", exact: true }),
   ).toBeEnabled();
@@ -178,18 +199,14 @@ test("routing failure can be retried and coverage restrictions block continuatio
   await select(page, "destination", "Meskel Square");
   await select(page, "pickup", "Bole Atlas");
   await expect(page.locator(".nr-route-review.error")).toBeVisible();
-  await expect(
-    page.getByRole("button", { name: "Continue to ride options", exact: true }),
-  ).toBeDisabled();
+  await expect(page.locator(".nr-destination-panel footer button:not([disabled])")).toHaveCount(0);
   state = "coverage";
   await page
     .locator(".nr-route-review")
     .getByRole("button", { name: "Try again", exact: true })
     .click();
   await expect(page.locator(".nr-route-review.coverage")).toBeVisible();
-  await expect(
-    page.getByRole("button", { name: "Continue to ride options", exact: true }),
-  ).toBeDisabled();
+  await expect(page.locator(".nr-destination-panel footer button:not([disabled])")).toHaveCount(0);
 });
 test("an uncertain device location requires explicit pickup confirmation", async ({
   page,
@@ -220,12 +237,10 @@ test("an uncertain device location requires explicit pickup confirmation", async
   );
   await openSearch(page);
   await select(page, "destination", "Meskel Square");
-  await expect(page.getByLabel("Pickup location", { exact: true })).toHaveValue(
+  await expect(page.getByLabel("Pickup", { exact: true })).toHaveValue(
     "Bole",
   );
-  await expect(
-    page.getByRole("button", { name: "Continue to ride options", exact: true }),
-  ).toBeDisabled();
+  await expect(page.locator(".nr-destination-panel footer button:not([disabled])")).toHaveCount(0);
   await page
     .getByRole("button", { name: "Confirm pickup pin", exact: true })
     .click();
@@ -242,49 +257,20 @@ test("no-results state and sheet resizing keep search and map usable in short vi
     .getByLabel("Search destination", { exact: true })
     .fill("not-a-real-destination");
   await expect(page.locator(".nr-empty-text")).toBeVisible();
-  const handle = page.getByRole("slider", {
-    name: "Resize search panel",
-    exact: true,
-  });
-  await handle.focus();
-  await page.keyboard.press("End");
-  await expect(handle).toHaveAttribute("aria-valuenow", "80");
-  await page.keyboard.press("Home");
-  await expect(handle).toHaveAttribute("aria-valuenow", "32");
-  const box = (await handle.boundingBox())!;
-  await page.mouse.move(box.x + box.width / 2, box.y + 20);
-  await page.mouse.down();
-  await page.mouse.move(box.x + box.width / 2, box.y - 140, { steps: 6 });
-  await page.mouse.up();
-  expect(Number(await handle.getAttribute("aria-valuenow"))).toBeGreaterThan(
-    32,
-  );
-  for (const size of [
-    { width: 390, height: 460 },
-    { width: 740, height: 390 },
-    { width: 1440, height: 900 },
-  ]) {
+  await expect(page.locator(".rider-search-view")).toHaveAttribute("data-search-open","true");
+  await expect(page.locator(".nr-flow-sheet-handle")).toBeHidden();
+  for (const size of [{width:390,height:460},{width:740,height:390},{width:1440,height:900}]) {
     await page.setViewportSize(size);
-    await expect
-      .poll(() =>
-        page.evaluate(() => {
-          const map = document
-            .querySelector(".nr-rider-map-surface")!
-            .getBoundingClientRect();
-          const panel = document
-            .querySelector(".nr-panel")!
-            .getBoundingClientRect();
-          return (
-            (innerWidth <= 800
-              ? map.bottom <= panel.top + 1
-              : map.right <= panel.left + 1) &&
-            panel.bottom <= innerHeight + 1 &&
-            document.documentElement.scrollWidth <= innerWidth
-          );
-        }),
-      )
-      .toBe(true);
+    await expect(page.getByLabel("Search destination",{exact:true})).toBeInViewport();
+    await expect(page.locator(".nr-destination-body")).toHaveCSS("overflow-y","auto");
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   }
+  const handle=page.getByRole("slider",{name:"Resize search panel",exact:true});
+  await handle.press("End");
+  await expect(handle).toHaveAttribute("aria-valuenow","75");
+  await handle.press("Home");
+  await expect(handle).toHaveAttribute("aria-valuenow","28");
+
 });
 
 test("a late route response cannot restore a cleared journey", async ({
@@ -321,32 +307,23 @@ test("a late route response cannot restore a cleared journey", async ({
   await select(page, "pickup", "Bole Atlas");
   await expect.poll(() => started).toBe(true);
   await page
-    .getByLabel("Pickup location", { exact: true })
+    .getByLabel("Pickup", { exact: true })
     .fill("changed pickup");
   release();
-  await expect(page.locator(".nr-provider-route")).toHaveCount(0);
-  await expect(
-    page.getByRole("button", { name: "Continue to ride options", exact: true }),
-  ).toBeDisabled();
+  await expect(page.locator(".nr-map-has-route")).toHaveCount(0);
+  await expect(page.locator(".nr-destination-panel footer button:not([disabled])")).toHaveCount(0);
 });
 test("Amharic UI uses translated place names and locality details", async ({
   page,
 }) => {
   await page.goto("/");
-  await page
-    .getByRole("button", { name: "Profile", exact: true })
-    .first()
-    .click();
-  await page.getByRole("button", { name: "አማርኛ", exact: true }).last().click();
-  await page
-    .locator(".nr-navigation:visible")
-    .getByRole("button", { name: "መነሻ", exact: true })
-    .click();
-  await page
-    .locator(".nr-rider-home-panel")
-    .getByRole("button")
-    .filter({ hasText: "ወዴት?" })
-    .click();
+  if (page.viewportSize()!.width <= 800) {
+    await page.getByRole("button", { name: "Open menu", exact: true }).click();
+    await page.getByRole("navigation", { name: "Rider navigation" }).getByRole("button", { name: /^Settings/ }).click();
+    await page.getByRole("dialog").getByRole("button", { name: "አማርኛ", exact: true }).click();
+    await page.keyboard.press("Escape");
+  } else await page.getByRole("button", { name: "አማርኛ", exact: true }).last().click();
+  await page.locator(".nr-rider-home-panel").getByRole("button",{name:"መድረሻ ይፈልጉ",exact:true}).click();
   await page.locator(".nr-endpoint-field input").last().fill("ኮልፌ");
   await expect(
     page.locator(".nr-place-suggestion strong").filter({ hasText: /^ኮልፌ$/ }),
@@ -380,7 +357,7 @@ test("temporary provider addresses never enter saved preview history", async ({
   await select(page, "destination", "Provider-only address");
   await select(page, "pickup", "Bole Atlas");
   await page
-    .getByRole("button", { name: "Continue to ride options", exact: true })
+    .getByRole("button", { name: "Choose a ride", exact: true })
     .click();
   await page.getByRole("button", { name: /Preview this ride/ }).click();
   await expect

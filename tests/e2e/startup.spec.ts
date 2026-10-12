@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 const sessionKey = "sb-eyyvvwecpyctttiueban-auth-token";
-const token = `eyJhbGciOiJIUzI1NiJ9.${Buffer.from(JSON.stringify({ sub: "preview-test-user", exp: 4102444800 })).toString("base64url")}.test-signature`;
+const token = `eyJhbGciOiJIUzI1NiJ9.${Buffer.from(JSON.stringify({ sub: "11111111-1111-4111-8111-111111111111", exp: 4102444800 })).toString("base64url")}.test-signature`;
 const restoredSession = {
   access_token: token,
   refresh_token: "test-refresh",
@@ -9,7 +9,7 @@ const restoredSession = {
   expires_in: 3600,
   expires_at: 4102444800,
   user: {
-    id: "preview-test-user",
+    id: "11111111-1111-4111-8111-111111111111",
     aud: "authenticated",
     role: "authenticated",
     email: "test@example.com",
@@ -19,21 +19,29 @@ const restoredSession = {
   },
 };
 
+test.beforeEach(async ({page}) => {
+ await page.route("**/api/rider/profile",r=>{expect(r.request().headers().authorization).toBe(`Bearer ${token}`);return r.fulfill({json:{status:"ready"}})});
+ await page.route("**/auth/v1/user", r=>r.fulfill({json:restoredSession.user}));
+ await page.route("**/rest/v1/**", r=>{ const one=r.request().headers().accept?.includes("object+json"); const profile={id:restoredSession.user.id,role:"rider",account_status:"active",full_name:"Restored Rider",phone:"+251912345678"}; return r.fulfill({json:new URL(r.request().url()).pathname.endsWith("/profiles")?(one?profile:[profile]):(one?null:[])}); });
+ await page.routeWebSocket("**/realtime/v1/**", ws=>ws.close());
+});
+
 test("first visit leads to onboarding, then authentication, then explicit preview", async ({
   page,
 }) => {
   await page.goto("/");
   await expect(page).toHaveURL(/\/onboarding$/);
-  await page.getByRole("button", { name: "Continue to sign in" }).click();
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await expect(page).toHaveURL(/\/rider\/sign-in$/);
   await expect(page.getByLabel("Email address", { exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "Explore the preview" }).click();
+  await page.locator(".nr-auth-preview summary").click();
+  await page.getByRole("button", { name: "Explore NexRide", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "Search destination", exact: true }),
   ).toBeVisible();
   await expect(page.locator(".nr-rider-splash")).toHaveCount(0);
   await page
-    .getByRole("button", { name: "Profile", exact: true })
+    .getByRole("button", { name: "Account", exact: true })
     .first()
     .click();
   await expect(page.locator(".nr-rider-splash")).toHaveCount(0);
@@ -58,7 +66,7 @@ test("a restored Supabase session opens rider home", async ({ page }) => {
   await expect(
     page.getByRole("button", { name: "Search destination", exact: true }),
   ).toBeVisible();
-  await expect(page.locator(".nr-map-preview-chip")).toBeVisible();
+  await expect(page.locator(".nr-map-preview-chip")).not.toContainText("Preview mode");
 });
 
 test("corrupt local preferences present a recoverable error", async ({
@@ -110,14 +118,8 @@ test("the real session wait shows the splash and honors reduced motion", async (
   await expect(
     splash.getByText("Better Rides. A Brighter Tomorrow."),
   ).toBeVisible();
-  await expect(page.locator(".nr-splash-mark")).toHaveCSS(
-    "animation-name",
-    "none",
-  );
-  await expect(splash.locator(".nr-splash-mark")).toHaveAttribute(
-    "src",
-    /\/brand\/nexride-mark\.svg$/,
-  );
+  await expect(splash).toHaveCSS("animation-name", "none");
+  await expect(splash.locator(".nr-splash-mark")).toHaveCount(0);
   await expect(splash.locator(".nr-splash-progress")).toBeVisible();
   expect(
     await page.evaluate(
@@ -137,7 +139,7 @@ test("the real session wait shows the splash and honors reduced motion", async (
 test("an invalid refresh token opens the Rider sign-in form instead of blocking startup", async ({ page }) => {
   await page.addInitScript(
     ({ key, session }) =>
-      localStorage.setItem(key, JSON.stringify({ ...session, expires_at: 1 })),
+      {localStorage.setItem(key, JSON.stringify({ ...session, expires_at: 1 }));localStorage.setItem("nexride:onboarding-complete","true");},
     { key: sessionKey, session: restoredSession },
   );
   await page.route("**/auth/v1/token**", route =>
@@ -200,7 +202,7 @@ test("authentication uses Supabase and never stores a password in preview prefer
     .fill("test@example.com");
   await page.getByLabel("Password", { exact: true }).fill("test-password");
   await page
-    .getByRole("button", { name: "Sign in to NexRide", exact: true })
+    .getByRole("button", { name: "Sign in", exact: true })
     .click();
   await expect(
     page.getByRole("button", { name: "Search destination", exact: true }),

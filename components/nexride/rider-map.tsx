@@ -178,7 +178,6 @@ const segmentCollection = (route: RouteResult | undefined) => ({
 });
 
 function syncRoutes(map: MapboxMap, journey: Journey | undefined) {
-  if (!map.isStyleLoaded()) return;
   const state = journey?.routeState;
   const routes =
     state?.status === "ready"
@@ -193,6 +192,34 @@ function syncRoutes(map: MapboxMap, journey: Journey | undefined) {
   const selectedRoute = routes[selectedIndex];
   const routesData = routeCollection(routes, selectedIndex);
   const segmentsData = segmentCollection(selectedRoute);
+
+  // Once an endpoint is edited the old visual layers must disappear, not just
+  // the React route class. Explicit layer removal avoids stale GPU frames
+  // on Safari while the asynchronous GeoJSON source update is settling.
+  if (!routes.length && map.isStyleLoaded()) {
+    for (const layer of [
+      "nexride-route-hitbox",
+      "nexride-route-congestion",
+      "nexride-route-lines",
+      "nexride-route-casing",
+    ]) {
+      if (map.getLayer(layer)) map.removeLayer(layer);
+    }
+    for (const source of ["nexride-route-segments", "nexride-routes"]) {
+      if (map.getSource(source)) map.removeSource(source);
+    }
+    map.triggerRepaint();
+    return;
+  }
+
+  // Style/source loading is not an obstacle to invalidating an existing route.
+  // Clear stale line pixels immediately when a Rider edits either endpoint.
+  if (!map.isStyleLoaded()) {
+    (map.getSource("nexride-routes") as GeoJSONSource | undefined)?.setData(routesData);
+    (map.getSource("nexride-route-segments") as GeoJSONSource | undefined)?.setData(segmentsData);
+    map.triggerRepaint();
+    return;
+  }
 
   const routeSource = map.getSource("nexride-routes") as
     | GeoJSONSource
@@ -1050,7 +1077,9 @@ export function RiderMap({
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!mounted || !map || !map.isStyleLoaded()) return;
+    // DOM location markers do not depend on the style sources being settled.
+    // Adding the accuracy/traffic sources during load can briefly unset that flag.
+    if (!mounted || !map) return;
     syncAccuracy(map, position, status);
     syncDriverRadar(map, position, showDriverRadar && !gpsStale && driverGpsQuality(position, status, Date.now()) === "live");
 
@@ -1428,16 +1457,25 @@ export function RiderMap({
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!mounted || !map || !map.isStyleLoaded()) return;
-    syncRoutes(map, journey);
-
-    if (
-      !manualView.current &&
-      pickup?.confirmed &&
-      destination?.confirmed
-    ) {
-      fitJourney(map, journey, rideLabel);
+    if (!mounted || !map) return;
+    const sync = () => {
+      if (!map.isStyleLoaded()) return;
+      syncRoutes(map, journey);
+      if (!manualView.current && pickup?.confirmed && destination?.confirmed)
+        fitJourney(map, journey, rideLabel);
+    };
+    // Route changes can arrive while traffic/style sources are still loading.
+    // Apply the latest route once they settle instead of dropping that update.
+    syncRoutes(map, journey); // Even while loading, invalidate stale existing routes.
+    if (map.isStyleLoaded()) sync();
+    else {
+      map.on("idle", sync);
+      map.on("styledata", sync);
     }
+    return () => {
+      map.off("idle", sync);
+      map.off("styledata", sync);
+    };
   }, [
     geometry,
     pickup?.lat,
