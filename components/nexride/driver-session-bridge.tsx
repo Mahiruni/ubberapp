@@ -8,7 +8,10 @@ import { explicitSignOutRole } from "../../lib/nexride-startup";
 import { emitNexRideFeedback } from "../../lib/nexride-feedback";
 import { eligibleDriverOffer, shouldOpenDriverOffer } from "../../lib/nexride-driver-presence";
 import { gpsFixUsable, DRIVER_GPS_HEARTBEAT_MS, DRIVER_GPS_SYNC_MIN_INTERVAL_MS } from "../../lib/nexride-driver-gps";
-import { startNativeDriverGps, stopNativeDriverGps } from "../../lib/nexride-native-reliability";
+import {
+  nativeDriverGpsStatus, reconcileNativeDriverGpsSession,
+  startNativeDriverGps, stopNativeDriverGps,
+} from "../../lib/nexride-native-reliability";
 
 export const DRIVER_AVAILABILITY_CHANGED = "nexride:driver-availability-changed";
 
@@ -41,6 +44,25 @@ export function DriverSessionBridge() {
     let gpsWatch: number | null = null;
     let nativeGpsActive = false;
     let lastNativeAttempt = 0;
+    const publishNativeGpsStatus = async () => {
+      const snapshot = await nativeDriverGpsStatus().catch(() => null);
+      if (!mounted || !snapshot) return;
+      nativeGpsActive = snapshot.running;
+      const now = Date.now();
+      const ready = activeOnline && snapshot.running &&
+        snapshot.lastServerAckAt > 0 && now - snapshot.lastServerAckAt <= 60_000 &&
+        snapshot.lastGpsFixAt > 0 && now - snapshot.lastGpsFixAt <= 60_000 &&
+        typeof snapshot.accuracyMeters === "number" &&
+        snapshot.accuracyMeters <= 150;
+      window.dispatchEvent(new CustomEvent("nexride:driver-gps-sync", {
+        detail: {
+          source: "native", status: ready ? "synced" : "error",
+          gpsStatus: ready ? "ready" : "stale", at: snapshot.lastServerAckAt,
+          fixAt: snapshot.lastGpsFixAt, accuracy: snapshot.accuracyMeters,
+          running: snapshot.running, reason: snapshot.error,
+        },
+      }));
+    };
     const syncNativeGps = () => {
       if (!mounted || !driverId) return;
       if (!activeOnline) {
@@ -49,6 +71,9 @@ export function DriverSessionBridge() {
         void stopNativeDriverGps();
         return;
       }
+      // Android 12+ disallows starting a location foreground service from the
+      // background. It must begin during the visible Online interaction.
+      if (document.visibilityState !== "visible") return;
       if (Date.now() - lastNativeAttempt < 20000) return;
       lastNativeAttempt = Date.now();
       void startNativeDriverGps().then(started => {
@@ -57,6 +82,7 @@ export function DriverSessionBridge() {
           return;
         }
         nativeGpsActive = started;
+        void publishNativeGpsStatus();
         if (started && gpsWatch !== null) {
           navigator.geolocation?.clearWatch(gpsWatch);
           gpsWatch = null;
@@ -189,15 +215,27 @@ export function DriverSessionBridge() {
 
     const onResume = () => {
       if (!mounted) return;
-      void reconcileAvailability().then(() => {
-        if (!mounted) return;
-        if (!activeOnline) { stopGps(); void stopNativeDriverGps(); return; }
-        startGps();
+      void (async () => {
         if (document.visibilityState === "visible") {
-          navigator.geolocation?.getCurrentPosition(sendGps, () => {},
-            { enableHighAccuracy: true, maximumAge: 10_000, timeout: 12_000 });
+          // Native foreground GPS can rotate credentials while JS is paused.
+          await reconcileNativeDriverGpsSession().catch(() => {});
         }
-      }).catch(() => {});
+        await reconcileAvailability();
+        if (!mounted) return;
+        if (!activeOnline) {
+          stopGps();
+          void stopNativeDriverGps();
+          void publishNativeGpsStatus();
+          return;
+        }
+        await publishNativeGpsStatus();
+        if (!mounted) return;
+        startGps();
+        if (document.visibilityState === "visible" && !nativeGpsActive) {
+          navigator.geolocation?.getCurrentPosition(sendGps, () => {},
+            { enableHighAccuracy: true, maximumAge: 5_000, timeout: 12_000 });
+        }
+      })().catch(() => {});
     };
     const onVisibility = () => {
       if (document.visibilityState === "visible") onResume();
@@ -282,8 +320,9 @@ export function DriverSessionBridge() {
     // Browsers/Android can pause this timer in the background; resume already
     // obtains a fresh fix, and the server remains authoritative.
     const gpsHeartbeat = window.setInterval(() => {
-      if (!mounted || !activeOnline || !navigator.onLine ||
-          document.visibilityState !== "visible" || gpsUploadInFlight) return;
+      if (!mounted || document.visibilityState !== "visible") return;
+      void publishNativeGpsStatus();
+      if (!activeOnline || nativeGpsActive || !navigator.onLine || gpsUploadInFlight) return;
       navigator.geolocation?.getCurrentPosition(sendGps, () => {}, {
         enableHighAccuracy: true, maximumAge: 5_000, timeout: 12_000,
       });
