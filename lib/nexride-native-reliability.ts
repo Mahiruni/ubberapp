@@ -113,7 +113,7 @@ export async function reconcileNativeDriverGpsSession(): Promise<void> {
   const cap = await nativeCapacitor();
   if (!cap || await getNexRideNativeAppRole() !== "driver") return;
   const plugin = cap.registerPlugin<NativeDriverLocation>("NexRideDriverLocation");
-  const native = await plugin.session().catch(() => ({}));
+  const native = await plugin.session().catch(() => ({ accessToken: undefined, refreshToken: undefined }));
   if (!native.accessToken || !native.refreshToken) return;
   const { data } = await supabase.auth.getSession();
   if (!data.session || data.session.refresh_token === native.refreshToken) return;
