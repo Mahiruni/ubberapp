@@ -139,9 +139,10 @@ public final class NexRideDriverLocationService extends Service implements Locat
   }
 
   @Override public void onLocationChanged(Location fix){
-    if(!running || !fix.hasAccuracy() || !Float.isFinite(fix.getAccuracy()) ||
+    if(!running || !fix.hasAccuracy() || (Float.isNaN(fix.getAccuracy()) || Float.isInfinite(fix.getAccuracy())) ||
        fix.getAccuracy()<0 || fix.getAccuracy()>150 ||
-       !Double.isFinite(fix.getLatitude()) || !Double.isFinite(fix.getLongitude()) ||
+       Double.isNaN(fix.getLatitude()) || Double.isInfinite(fix.getLatitude()) ||
+       Double.isNaN(fix.getLongitude()) || Double.isInfinite(fix.getLongitude()) ||
        Math.abs(fix.getLatitude())>90 || Math.abs(fix.getLongitude())>180){
       lastError="gps_not_accurate"; return;
     }
