@@ -117,13 +117,19 @@ export function readNexRideFeedbackPreferences(): NexRideFeedbackPreferences {
     const raw = window.localStorage.getItem(NEXRIDE_FEEDBACK_KEY);
     if (!raw) return defaults;
     const parsed = JSON.parse(raw) as Partial<NexRideFeedbackPreferences>;
-    return {
+    const cleaned: NexRideFeedbackPreferences = {
       sounds: parsed.sounds !== false,
       rideRequests: parsed.rideRequests !== false,
       messages: parsed.messages !== false,
       tripUpdates: parsed.tripUpdates !== false,
       haptics: parsed.haptics !== false,
     };
+    // Upgrade devices that previously stored spoken-navigation controls.
+    // Only the five supported sound and haptic preferences are retained.
+    if (Object.keys(parsed).some((key) => !(key in cleaned))) {
+      window.localStorage.setItem(NEXRIDE_FEEDBACK_KEY, JSON.stringify(cleaned));
+    }
+    return cleaned;
   } catch {
     return defaults;
   }
