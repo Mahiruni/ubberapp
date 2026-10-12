@@ -806,6 +806,7 @@ function AppWorkspace({
       )}
       {panel && (
         <Dialog
+          navigation={panel === "settings"}
           title={
             panel === "unavailable"
               ? serviceTitle

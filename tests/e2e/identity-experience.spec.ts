@@ -341,7 +341,7 @@ for (const role of ['rider', 'driver'] as const) for (const language of ['en', '
         await page.evaluate(() => document.fonts.ready);
         expect(await settings.evaluate(node => node.scrollWidth <= node.clientWidth + 1)).toBe(true);
         const path = `test-results/settings-visual/${role}-${language}-${theme}-${width}-${screen}.png`;
-        await page.screenshot({ path, fullPage: true, animations: 'disabled' });
+        await page.screenshot({ path, fullPage: role === 'driver', animations: 'disabled' });
         await info.attach(`${role}-${language}-${theme}-${width}-${screen}`, { path, contentType: 'image/png' });
       };
       await shot('home');

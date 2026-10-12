@@ -321,7 +321,7 @@ export function RiderProfile(props:Props) {
       <AppVersion />
     </footer>
 
-    {panel&&<Dialog title={
+    {panel&&<Dialog navigation={panel==='settings'} title={
       panel==='edit'?say('Edit profile','መገለጫ አርትዕ')
       :panel==='settings'?t('settings')
       :panel==='privacy'?say('Privacy & your data','ግላዊነት እና ውሂብዎ')

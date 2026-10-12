@@ -18,6 +18,13 @@ export function SettingsGroups({ groups }: { groups: SettingsGroup[] }) {
   const activeId = useRef<string | null>(null);
   activeId.current = open;
   const heading = useRef<HTMLHeadingElement>(null);
+  const back = () => {
+    if (window.history.state?.nexrideSettingsDetail) window.history.back();
+    else {
+      window.history.replaceState(window.history.state, '', window.location.pathname + window.location.search);
+      setOpen(null);
+    }
+  };
   useEffect(() => {
     const restore = () => {
       const id = window.location.hash.replace('#settings-', '');
@@ -28,7 +35,7 @@ export function SettingsGroups({ groups }: { groups: SettingsGroup[] }) {
     restore(); window.addEventListener('popstate', restore);
     const unregister = registerNexRideBackHandler(() => {
       if (!activeId.current) return false;
-      window.history.back(); return true;
+      back(); return true;
     }, 100);
     return () => {
       unregister(); window.removeEventListener('popstate', restore);
@@ -45,7 +52,7 @@ export function SettingsGroups({ groups }: { groups: SettingsGroup[] }) {
       <p className="nr-settings-intro">{language === 'am' ? 'ለእርስዎ የተመቸ NexRide።' : 'Make NexRide feel like you.'}</p>
       <nav aria-label={language === 'am' ? 'ቅንብሮች' : 'Settings categories'}>
         {groups.map(group => <button className="nr-settings-category" type="button" key={group.id} data-category={group.id}
-          onClick={() => { setVisited(value => ({ ...value, [group.id]: true })); setOpen(group.id); window.history.pushState(window.history.state, '', `#settings-${group.id}`); }}>
+          onClick={() => { setVisited(value => ({ ...value, [group.id]: true })); setOpen(group.id); window.history.pushState({ ...window.history.state, nexrideSettingsDetail: true }, '', `#settings-${group.id}`); }}>
           <Icon name={group.icon} size={23}/>
           <span className="nr-settings-group-label"><strong>{group.title}</strong><small>{group.summary}</small></span>
           <Icon name="chevron" size={18}/>
@@ -53,7 +60,7 @@ export function SettingsGroups({ groups }: { groups: SettingsGroup[] }) {
       </nav>
     </div>
     {active && <header className="nr-settings-detail-head">
-      <button type="button" className="nr-settings-back" onClick={() => window.history.back()} aria-label={language === 'am' ? 'ወደ ቅንብሮች ተመለስ' : 'Back to Settings'}><span><Icon name="arrow" size={21}/></span>{language === 'am' ? 'ቅንብሮች' : 'Settings'}</button>
+      <button type="button" className="nr-settings-back" onClick={back} aria-label={language === 'am' ? 'ወደ ቅንብሮች ተመለስ' : 'Back to Settings'}><span><Icon name="arrow" size={21}/></span>{language === 'am' ? 'ቅንብሮች' : 'Settings'}</button>
       <h2 ref={heading} tabIndex={-1} id={`${scope}-title`}>{active.title}</h2><p>{active.summary}</p>
     </header>}
     {groups.map(group => <section key={group.id} className="nr-settings-group-content" role="region" aria-label={group.title} hidden={open !== group.id}>

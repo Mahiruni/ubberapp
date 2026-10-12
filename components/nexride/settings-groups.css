@@ -59,3 +59,36 @@
 
 .nr-settings-groups .nr-lock-summary button{color:var(--nr-navy)}
 .nr-settings-groups .nr-settings-done{color:var(--nr-id-emerald-text)}
+
+.nr-settings-groups .nr-notification-section{font-size:15px!important;margin:28px 0 4px!important;color:var(--nr-text-secondary);font-weight:600!important}
+.nr-settings-groups .nr-feedback-heading{margin-bottom:10px}
+.nr-settings-groups .nr-feedback-notifications{margin-top:12px}
+.nr-settings-groups .nr-feedback-test,.nr-settings-groups .nr-feedback-notifications button{font-size:14px;min-height:44px}
+.nr-settings-groups .nr-settings-block:has(.nr-appearance-control),.nr-settings-groups .nr-settings-block:has(.nr-segmented){display:flex;flex-direction:column;align-items:stretch}
+.nr-settings-groups :is(.nr-segmented,.nr-driver-language-selector){width:100%;display:flex;gap:4px;flex-wrap:wrap}
+.nr-settings-groups :is(.nr-segmented,.nr-driver-language-selector)>button{flex:1;min-height:48px;font-size:14px!important}
+.nr-settings-groups .nr-profile-panel-head:has(+.nr-settings-editor){display:none}
+.nr-dialog:has(.nr-settings-groups){border-radius:0!important;padding-top:env(safe-area-inset-top)}
+@media(min-width:640px){.nr-dialog:has(.nr-settings-groups){border-radius:28px!important}}
+
+.nr-dialog-head[data-navigation=true]{flex-direction:row-reverse;justify-content:flex-end;gap:12px}
+.nr-dialog-head[data-navigation=true]>h2{flex:1}
+/* Scope above legacy route selectors: settings own their mobile geometry. */
+.nr-app.nr-app .nr-dialog:has(.nr-settings-groups){position:fixed!important;inset:0!important;margin:0 auto!important;width:100vw!important;max-width:560px!important;height:100dvh!important;max-height:100dvh!important;padding:env(safe-area-inset-top) 0 0!important;border:0!important;border-radius:0!important;overflow-x:hidden;overflow-y:auto}
+.nr-app.nr-app .nr-dialog:has(.nr-settings-groups) .nr-dialog-head{padding:20px 24px 12px!important;border:0!important}
+.nr-app.nr-app .nr-dialog:has(.nr-settings-groups) .nr-dialog-head h2{font-size:32px!important;line-height:1.2!important}
+.nr-app.nr-app .nr-dialog:has(.nr-settings-groups[data-detail=true]) .nr-dialog-head{display:none!important}
+.nr-app.nr-app .nr-dialog:has(.nr-settings-groups) .nr-account-settings{padding:12px 24px 24px!important}
+.nr-app.nr-app .nr-settings-groups :is(.nr-profile-panel,.nr-settings-block){background:transparent!important;border-radius:0!important;box-shadow:none!important}
+.nr-app.nr-app .nr-settings-groups .nr-settings-block{padding:20px 0!important}
+.nr-app.nr-app .nr-settings-groups .nr-settings-block:has(.nr-appearance-control),.nr-app.nr-app .nr-settings-groups .nr-settings-block:has(.nr-segmented){display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:16px!important}
+.nr-app.nr-app .nr-settings-groups .nr-segmented{width:100%!important;max-width:none!important}
+.nr-app.nr-app .nr-settings-groups .nr-segmented>button{min-width:0!important;flex:1!important;white-space:nowrap!important;padding:12px 8px!important;font-size:14px!important;min-height:48px!important}
+.nr-driver-app-shell .nr-driver-profile-subwrap:has(.nr-settings-groups[data-detail=false])>.nr-profile-subhead{display:block!important}
+.nr-driver-app-shell .nr-driver-profile-subwrap:has(.nr-settings-groups)>.nr-profile-subhead .nr-settings-back{display:none}
+.nr-app.nr-app .nr-settings-groups .nr-settings-security-link{color:var(--nr-text)!important;background:transparent!important}
+.nr-app.nr-app .nr-settings-groups a[href*="account-deletion"]{color:var(--nr-text-secondary)!important}
+.nr-app.nr-app .nr-settings-groups .nr-doc-actions{display:flex;flex-direction:column;gap:0}
+.nr-app.nr-app .nr-settings-groups .nr-doc-actions>button{justify-content:flex-start;padding:18px 0;font-size:15px!important;min-height:60px;border:0;border-bottom:1px solid var(--nr-border);border-radius:0!important;background:transparent!important;box-shadow:none!important}
+.nr-app.nr-app .nr-settings-groups .nr-permission-settings .nr-button{background:var(--nr-surface-raised)!important;box-shadow:none!important;border:1px solid var(--nr-border)!important;font-size:14px!important;color:var(--nr-text)!important}
+@media(min-width:640px){.nr-app.nr-app .nr-dialog:has(.nr-settings-groups){inset:3dvh 0!important;height:94dvh!important;max-height:94dvh!important;border-radius:28px!important}}

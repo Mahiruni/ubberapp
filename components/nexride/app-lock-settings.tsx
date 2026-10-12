@@ -1,5 +1,6 @@
 "use client";
 
+import "./settings-groups.css";
 import { useContext, useEffect, useState } from "react";
 import { LanguageContext } from "./ui";
 import { getAppLockStatus, openAppLockSettings, lockNexRideNow, type AppLockStatus } from "../../lib/nexride-app-lock";

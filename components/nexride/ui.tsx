@@ -225,10 +225,12 @@ export function Navigation({
 }
 export function Dialog({
   title,
+  navigation = false,
   children,
   onClose,
 }: {
   title: string;
+  navigation?: boolean;
   children: ReactNode;
   onClose: () => void;
 }) {
@@ -261,14 +263,14 @@ export function Dialog({
         if (e.target === e.currentTarget) close();
       }}
     >
-      <div className="nr-dialog-head flex items-center justify-between gap-4 border-b border-[var(--nr-border)] px-5 py-4">
+      <div data-navigation={navigation} className="nr-dialog-head flex items-center justify-between gap-4 border-b border-[var(--nr-border)] px-5 py-4">
         <h2 id="nr-dialog-title">{title}</h2>
         <button
           className="nr-icon-button"
           onClick={close}
-          aria-label={t("close")}
+          aria-label={t(navigation ? "back" : "close")}
         >
-          <Icon name="close" />
+          <span style={navigation ? { display: "flex", transform: "rotate(180deg)" } : undefined}><Icon name={navigation ? "arrow" : "close"} /></span>
         </button>
       </div>
       {children}
