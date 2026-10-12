@@ -1,13 +1,26 @@
 "use client";
 
 import { supabase } from "./supabase";
+import { publicConfig } from "./runtime-config";
+import { explicitSignOutRole } from "./nexride-startup";
 import { nexrideApiFetch } from "./nexride-api-auth";
 
 type Role = "rider" | "driver";
+export type NativeDriverGpsSnapshot = {
+  running: boolean;
+  lastServerAckAt: number;
+  lastGpsFixAt: number;
+  accuracyMeters: number | null;
+  error: string;
+};
 type NativeDriverLocation = {
-  start(options: { accessToken: string }): Promise<{ status: string }>;
+  start(options: {
+    accessToken: string; refreshToken: string;
+    authUrl: string; publishableKey: string;
+  }): Promise<{ status: string }>;
   stop(): Promise<void>;
-  status(): Promise<{ running: boolean }>;
+  status(): Promise<NativeDriverGpsSnapshot>;
+  session(): Promise<{ accessToken?: string; refreshToken?: string }>;
 };
 
 const storageKey = "nexride.native.installation.id";
@@ -88,26 +101,53 @@ export async function unregisterNexRidePushDevice(role: Role) {
   if (!result.ok) throw new Error("device_unregistration_failed");
 }
 
-export async function nativeDriverGpsStatus() {
+export async function nativeDriverGpsStatus(): Promise<NativeDriverGpsSnapshot | null> {
   const cap = await nativeCapacitor();
-  if (!cap) return null;
-  const plugin = cap.registerPlugin<NativeDriverLocation>("NexRideDriverLocation");
-  return plugin.status();
+  if (!cap || await getNexRideNativeAppRole() !== "driver") return null;
+  return cap.registerPlugin<NativeDriverLocation>("NexRideDriverLocation").status().catch(() => null);
 }
+
+/** Reconcile on foreground return: Android may have rotated the Supabase token
+ * while the WebView was suspended. Never persist another token store natively.
+ */
+export async function reconcileNativeDriverGpsSession(): Promise<void> {
+  const cap = await nativeCapacitor();
+  if (!cap || await getNexRideNativeAppRole() !== "driver") return;
+  const plugin = cap.registerPlugin<NativeDriverLocation>("NexRideDriverLocation");
+  const native = await plugin.session().catch(() => ({ accessToken: undefined, refreshToken: undefined }));
+  if (!native.accessToken || !native.refreshToken) return;
+  // Explicit sign-out must always win over a still-running Android service.
+  if (typeof window !== "undefined" && explicitSignOutRole(window.localStorage)) {
+    await plugin.stop().catch(() => {});
+    return;
+  }
+  // Synchronize *before* reading the WebView's old persisted session:
+  // getSession() may otherwise attempt a stale refresh while the screen was
+  // locked and invalidate the now-rotated native refresh token.
+  await supabase.auth.setSession({
+    access_token: native.accessToken, refresh_token: native.refreshToken,
+  });
+}
+
 export async function startNativeDriverGps(): Promise<boolean> {
   const cap = await nativeCapacitor();
-  if (!cap) return false;
+  if (!cap || await getNexRideNativeAppRole() !== "driver") return false;
   const { data } = await supabase.auth.getSession();
-  if (!data.session) return false;
+  if (!data.session?.refresh_token) return false;
   const plugin = cap.registerPlugin<NativeDriverLocation>("NexRideDriverLocation");
   try {
-    const result = await plugin.start({ accessToken: data.session.access_token });
+    const result = await plugin.start({
+      accessToken: data.session.access_token,
+      refreshToken: data.session.refresh_token,
+      authUrl: publicConfig.supabaseUrl,
+      publishableKey: publicConfig.supabaseKey,
+    });
     return result.status === "started";
   } catch { return false; }
 }
 export async function stopNativeDriverGps(): Promise<void> {
   const cap = await nativeCapacitor();
-  if (!cap) return;
+  if (!cap || await getNexRideNativeAppRole() !== "driver") return;
   const plugin = cap.registerPlugin<NativeDriverLocation>("NexRideDriverLocation");
   await plugin.stop().catch(() => {});
 }

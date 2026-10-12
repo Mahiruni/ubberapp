@@ -25,6 +25,36 @@ describe("NexRide verified Driver GPS presence", () => {
     expect(driverGpsHealth({ timestamp: now - 1000, accuracy: null }, now)).toBe("inaccurate");
     expect(DRIVER_GPS_HEARTBEAT_MS).toBeLessThan(DRIVER_GPS_MAX_AGE_MS);
   });
+  it("ships an Android foreground location service rather than a suspended WebView timer", () => {
+    const service = readFileSync("native/android/NexRideDriverLocationService.java", "utf8");
+    const plugin = readFileSync("native/android/NexRideDriverLocationPlugin.java", "utf8");
+    const installer = readFileSync("scripts/setup-android-reliability.mjs", "utf8");
+    expect(service).toContain("ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION");
+    expect(service).toContain("START_NOT_STICKY");
+    expect(service).toContain("requestLocationUpdates(LocationManager.GPS_PROVIDER,10_000L,0f");
+    expect(service).toContain("requestLocationUpdates(LocationManager.NETWORK_PROVIDER,15_000L,0f");
+    expect(service).toContain("SystemClock.elapsedRealtime()");
+    expect(service).toContain("refreshSession()");
+    expect(service).toContain("lastServerAckAt=System.currentTimeMillis()");
+    expect(service).toContain("status==401 || status==403 || status==409");
+    expect(service).not.toContain("getSharedPreferences(");
+    expect(plugin).toContain("ACCESS_FINE_LOCATION");
+    expect(plugin).toContain("getLastServerAckAt()");
+    expect(installer).toContain('android:foregroundServiceType="location"');
+    expect(installer).toContain("FOREGROUND_SERVICE_LOCATION");
+  });
+
+  it("keeps native GPS role restricted and preserves signed-out cleanup", () => {
+    const client = readFileSync("lib/nexride-native-reliability.ts", "utf8");
+    const shell = readFileSync("components/nexride/driver-session-bridge.tsx", "utf8");
+    expect(client).toContain('getNexRideNativeAppRole() !== "driver"');
+    expect(client).toContain("reconcileNativeDriverGpsSession");
+    expect(client).toContain("refreshToken: data.session.refresh_token");
+    expect(shell).toContain('document.visibilityState !== "visible"');
+    expect(shell).toContain("snapshot.lastServerAckAt");
+    expect(shell).toContain("stopNativeDriverGps()");
+  });
+
   it("enforces the same timestamp/accuracy limits at dispatch and Rider map boundaries", () => {
     const migration = readFileSync("supabase/migrations/20261011152000_nexride_verified_driver_presence_dispatch.sql", "utf8");
     const nearby = readFileSync("app/api/rider/nearby-drivers/route.ts", "utf8");
