@@ -17,7 +17,7 @@ import { AppLockSettings } from "./app-lock-settings";
 import { NexRideFeedbackSettings } from './feedback-settings';
 import './rider-avatar-upload.css';
 import { AppVersion } from './app-version';
-import { SettingsGroups } from "./settings-groups";
+import { SettingsGroups, SettingsEditor } from "./settings-groups";
 
 type Props = {
   language: Language;
@@ -36,7 +36,7 @@ type Props = {
   isAdmin?: boolean;
 };
 
-export function RiderSettings({language,setLanguage}: Pick<Props,'language'|'setLanguage'|'theme'|'setTheme'>) {
+export function RiderSettings({language,setLanguage,accountEditor}: Pick<Props,'language'|'setLanguage'|'theme'|'setTheme'> & { accountEditor?: ReactNode }) {
   const t=useTranslation();
   const [alerts,setAlerts]=useState(true);
   const [feedback,setFeedback]=useState('');
@@ -47,6 +47,7 @@ export function RiderSettings({language,setLanguage}: Pick<Props,'language'|'set
   return <div className="nr-account-settings nr-account-settings-v2">
     <SettingsGroups groups={[
       { id: "account", icon: "user", title: say("Account", "መለያ"), summary: say("Personal details and verification", "የግል መረጃ እና ማረጋገጫ"), children: <>
+        {accountEditor && <SettingsEditor title={say("Personal information", "የግል መረጃ")} summary={say("Name and contact details", "ስም እና የመገናኛ መረጃ")}>{accountEditor}</SettingsEditor>}
         <a className="nr-settings-security-link" href="/account/manage"><Icon name="user" size={20}/><span>{say("Manage account & verification", "መለያ እና ማረጋገጫ አስተዳድር")}</span><Icon name="chevron" size={17}/></a>
         <a className="nr-settings-security-link" href="/account/manage#account-deletion"><span>{say("Account deletion", "መለያ መሰረዝ")}</span><Icon name="chevron" size={17}/></a>
       </> },
@@ -217,6 +218,26 @@ export function RiderProfile(props:Props) {
     }
   };
 
+  const profileEditor = <form className="nr-profile-form nr-profile-form-v2" onSubmit={e=>{e.preventDefault();void save()}} aria-busy={busy}>
+        <div className="nr-edit-profile-intro">
+          <div className="nr-edit-avatar">{account?.avatar&&!photoFailed?<Image src={account.avatar} width={50} height={50} alt="" unoptimized onError={()=>setPhotoFailed(true)}/>:initials}</div>
+          <div><strong>{say('Keep your account details current','የመለያ ዝርዝሮችዎን ወቅታዊ ያድርጉ')}</strong><small>{account?say('These details are used across your NexRide rides.','እነዚህ ዝርዝሮች በNexRide ጉዞዎችዎ ላይ ይጠቀማሉ።'):t('localAccount')}</small></div>
+        </div>
+        <fieldset disabled={busy}>
+          <InputField label={t('name')} required autoComplete="name" maxLength={80} value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/>
+          <InputField label={t('phone')} type="tel" autoComplete="tel" maxLength={25} value={form.phone} readOnly={!!account} onChange={e=>{if(!account)setForm({...form,phone:e.target.value})}}/>
+          <InputField label={t('email')} type="email" readOnly={!!account} autoComplete="email" maxLength={254} value={form.email} onChange={e=>setForm({...form,email:e.target.value})}/>
+        </fieldset>
+        {account&&<>
+          <p className="nr-muted">{say('Verified email and phone changes require account ownership confirmation.','ኢሜይልን እና ስልክን ለመቀየር የባለቤትነት ማረጋገጫ ያስፈልጋል።')}</p>
+          <button type="button" className="nr-account-edit" onClick={()=>window.location.assign("/account/manage")}>
+            {say('Verify or change email and phone in Manage Account →','ኢሜይልና ስልክን በመለያ አስተዳደር ይቀይሩ →')}
+          </button>
+        </>}
+        {error&&<p className="nr-account-error" role="alert">{error}</p>}
+        <Button type="submit" disabled={busy} loading={busy}>{busy?say('Saving…','በማስቀመጥ ላይ…'):t('save')}</Button>
+      </form>;
+
   return <section className="nr-account nr-account-v2 nr-account-standard" aria-labelledby="nr-account-title">
     <header className="nr-account-top nr-account-standard-top">
       <div>
@@ -300,32 +321,14 @@ export function RiderProfile(props:Props) {
       <AppVersion />
     </footer>
 
-    {panel&&<Dialog title={
+    {panel&&<Dialog navigation={panel==='settings'} title={
       panel==='edit'?say('Edit profile','መገለጫ አርትዕ')
       :panel==='settings'?t('settings')
       :panel==='privacy'?say('Privacy & your data','ግላዊነት እና ውሂብዎ')
       :say('Sign out of NexRide?','ከNexRide ይውጡ?')
     } onClose={()=>{if(!busy)setPanel(null)}}>
-      {panel==='edit'?<form className="nr-profile-form nr-profile-form-v2" onSubmit={e=>{e.preventDefault();void save()}} aria-busy={busy}>
-        <div className="nr-edit-profile-intro">
-          <div className="nr-edit-avatar">{account?.avatar&&!photoFailed?<Image src={account.avatar} width={50} height={50} alt="" unoptimized onError={()=>setPhotoFailed(true)}/>:initials}</div>
-          <div><strong>{say('Keep your account details current','የመለያ ዝርዝሮችዎን ወቅታዊ ያድርጉ')}</strong><small>{account?say('These details are used across your NexRide rides.','እነዚህ ዝርዝሮች በNexRide ጉዞዎችዎ ላይ ይጠቀማሉ።'):t('localAccount')}</small></div>
-        </div>
-        <fieldset disabled={busy}>
-          <InputField label={t('name')} required autoComplete="name" maxLength={80} value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/>
-          <InputField label={t('phone')} type="tel" autoComplete="tel" maxLength={25} value={form.phone} readOnly={!!account} onChange={e=>{if(!account)setForm({...form,phone:e.target.value})}}/>
-          <InputField label={t('email')} type="email" readOnly={!!account} autoComplete="email" maxLength={254} value={form.email} onChange={e=>setForm({...form,email:e.target.value})}/>
-        </fieldset>
-        {account&&<>
-          <p className="nr-muted">{say('Verified email and phone changes require account ownership confirmation.','ኢሜይልን እና ስልክን ለመቀየር የባለቤትነት ማረጋገጫ ያስፈልጋል።')}</p>
-          <button type="button" className="nr-account-edit" onClick={()=>window.location.assign("/account/manage")}>
-            {say('Verify or change email and phone in Manage Account →','ኢሜይልና ስልክን በመለያ አስተዳደር ይቀይሩ →')}
-          </button>
-        </>}
-        {error&&<p className="nr-account-error" role="alert">{error}</p>}
-        <Button type="submit" disabled={busy} loading={busy}>{busy?say('Saving…','በማስቀመጥ ላይ…'):t('save')}</Button>
-      </form>
-      :panel==='settings'?<RiderSettings {...props}/>
+      {panel==='edit'?profileEditor
+      :panel==='settings'?<RiderSettings {...props} accountEditor={profileEditor}/>
       :panel==='privacy'?<div className="nr-account-info nr-privacy-copy">
         <div className="nr-privacy-icon"><Icon name="shield" size={22}/></div>
         <h3>{say('Your data, clearly explained','ስለ ውሂብዎ ግልጽ መረጃ')}</h3>

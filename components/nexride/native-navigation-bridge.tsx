@@ -11,6 +11,8 @@ function closeTopOverlay(): boolean {
   const modal = [...document.querySelectorAll<HTMLDialogElement>("dialog[open]")]
     .filter(node => node.getClientRects().length).at(-1);
   if (modal) {
+    const detailBack = modal.querySelector<HTMLButtonElement>(".nr-settings-detail-head .nr-settings-back");
+    if (detailBack) { detailBack.click(); return true; }
     // Click its existing React close control so the dialog's state is cleared.
     modal.querySelector<HTMLButtonElement>(".nr-dialog-head button")?.click();
     return true;

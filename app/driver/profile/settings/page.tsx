@@ -6,7 +6,7 @@ import { NexRideFeedbackSettings } from "../../../../components/nexride/feedback
 import { PermissionSettings } from "../../../../components/nexride/permission-settings";
 import { NativeReliabilitySettings } from "../../../../components/nexride/native-reliability-settings";
 import { AppLockSettings } from "../../../../components/nexride/app-lock-settings";
-import { SettingsGroups } from "../../../../components/nexride/settings-groups";
+import { SettingsGroups, SettingsEditor } from "../../../../components/nexride/settings-groups";
 import { AppVersion } from "../../../../components/nexride/app-version";
 import { Icon, LanguageContext, useTranslation } from "../../../../components/nexride/ui";
 import { announceLanguage } from "../../../../components/nexride/language-provider";
@@ -110,21 +110,21 @@ export default function DriverProfileSettingsPage() {
 
   return <main className="nr-app nr-driver-profile-subpage" data-mode="driver">
     <div className="nr-driver-profile-subwrap">
-      <header className="nr-profile-subhead"><div><span className="nr-driver-kicker">NEXRIDE · {t("driver")}</span><h1>{t("settings")}</h1><p>{t("entrySettingsIntro")}</p></div></header>
+      <header className="nr-profile-subhead"><div><button type="button" className="nr-settings-back" onClick={() => router.push("/driver/profile")}><span><Icon name="arrow" size={21}/></span>{say("Back", "ተመለስ")}</button><h1>{t("settings")}</h1></div></header>
       {loading ? <div className="nr-driver-profile-loading" aria-busy="true"><span className="wide"/><span className="panel"/></div> : profile ? <>
         {profile.accountStatus !== "active" && <div className="nr-profile-alert" role="status"><Icon name="info" size={17}/><span>{t("entryEditingLimited")}</span></div>}
         <SettingsGroups groups={[
           { id: "account", icon: "user", title: say("Account", "መለያ"), summary: say("Personal details, documents and vehicle", "የግል መረጃ፣ ሰነዶች እና ተሽከርካሪ"), children: <>
         <section className="nr-profile-panel">
           <div className="nr-profile-panel-head"><div><h2>{t("entryPersonalInfo")}</h2><p>{t("entryPersonalInfoIntro")}</p></div></div>
-          <form className="nr-profile-form" onSubmit={save} aria-busy={busy}>
+          <SettingsEditor title={t("entryPersonalInfo")} summary={name || profile.fullName}><form className="nr-profile-form" onSubmit={save} aria-busy={busy}>
             <label>{t("fullName")}<input value={name} maxLength={100} autoComplete="name" onChange={e => setName(e.target.value)} disabled={profile.accountStatus !== "active"} required/></label>
             <label>{t("phoneNumber")}<input value={phone} type="tel" autoComplete="tel" readOnly aria-describedby="nr-phone-verify-note"/></label>
             <small id="nr-phone-verify-note">{t("entryContactNote")}</small>
             <label>{t("authEmail")}<input value={profile.email || "—"} readOnly aria-describedby="nr-email-note"/></label>
             <small id="nr-email-note">{t("entryEmailNote")}</small>
             <button type="submit" disabled={busy || profile.accountStatus !== "active"}>{t(busy ? "entrySaving" : "entrySaveChanges")}</button>
-          </form>
+          </form></SettingsEditor>
           {feedback && <div className={"nr-profile-alert " + (success ? "success" : "")} role={success ? "status" : "alert"}><Icon name={success ? "check" : "info"} size={17}/><span>{feedback}</span></div>}
 
         </section>

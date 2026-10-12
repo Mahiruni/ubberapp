@@ -1,7 +1,8 @@
 "use client";
 
+import "./settings-groups.css";
 import { useContext, useEffect, useState } from "react";
-import { LanguageContext, Icon } from "./ui";
+import { LanguageContext } from "./ui";
 import { getAppLockStatus, openAppLockSettings, lockNexRideNow, type AppLockStatus } from "../../lib/nexride-app-lock";
 
 export function AppLockSettings() {
@@ -32,21 +33,20 @@ export function AppLockSettings() {
         : say("Update the Android app and try again.", "የAndroid መተግበሪያውን ያዘምኑ እና እንደገና ይሞክሩ።"));
     } finally { setBusy(false); }
   };
+  const lockLabel = !status?.enabled ? say("Off", "ጠፍቷል") :
+    (status.method === "pattern" ? say("Pattern", "ንድፍ") : "PIN") +
+    (status.biometricEnabled ? say(" + biometrics", " + ባዮሜትሪክ") : say(" enabled", " በርቷል"));
   return <section className="nr-permission-settings" aria-label={say("App Lock", "የመተግበሪያ ቁልፍ")}>
-    <div className="nr-settings-block">
-      <div><strong><Icon name="shield" size={20} /> {say("App Lock", "የመተግበሪያ ቁልፍ")}</strong>
-        <small>{say("Protect NexRide on this device.", "NexRideን በዚህ መሣሪያ ይጠብቁ።")}</small>
-        <small>{available ? status?.enabled
-          ? say(`On · ${status.method === "pattern" ? "Pattern" : "PIN"}${status.biometricEnabled ? " + biometrics" : ""}`, "በርቷል · " + (status.method === "pattern" ? "ንድፍ" : "PIN") + (status.biometricEnabled ? " + ባዮሜትሪክ" : ""))
-          : say("Off · PIN, pattern and supported face / fingerprint unlock", "ጠፍቷል · PIN፣ ንድፍ እና የፊት / የጣት አሻራ")
-          : upgrade ? say("Install the latest NexRide Android APK to enable app lock.", "የመተግበሪያ ቁልፍን ለማብራት የቅርብ NexRide Android APK ይጫኑ።")
-          : say("Available in the NexRide Android app. Browser and iOS app locks are not enabled.", "በNexRide Android መተግበሪያ ይገኛል። በአሳሽ እና iOS አልበራም።")}</small>
-      </div>
-      {available && <button type="button" onClick={() => void open()} disabled={busy}
-        style={{ background: "var(--nr-primary, #5145e5)", color: "#fff", border: 0, borderRadius: 14, minHeight: 48, padding: "12px 18px" }}>
-        {busy ? say("Opening…", "በመክፈት ላይ…") : say(status?.enabled ? "Manage" : "Enable", status?.enabled ? "አስተዳድር" : "አብራ")}
-      </button>}
+    <div className="nr-lock-summary">
+      <div><strong>{say("App Lock", "የመተግበሪያ ቁልፍ")}</strong><small>{available ? lockLabel : say("Android app required", "የAndroid መተግበሪያ ያስፈልጋል")}</small></div>
+      {available && <button type="button" onClick={() => void open()} disabled={busy}>{busy ? say("Opening…", "በመክፈት ላይ…") : say(status?.enabled ? "Manage" : "Set up", status?.enabled ? "አስተዳድር" : "አዘጋጅ")}</button>}
     </div>
+    {available && status?.enabled && <dl className="nr-lock-details">
+      <div><dt>{say("Unlock method", "የመክፈቻ ዘዴ")}</dt><dd>{status.method === "pattern" ? say("Pattern", "ንድፍ") : "PIN"}</dd></div>
+      <div><dt>{say("Face / fingerprint", "ፊት / የጣት አሻራ")}</dt><dd>{status.biometricEnabled ? say("Enabled", "በርቷል") : status.biometricAvailable ? say("Available", "ይገኛል") : say("Unavailable", "አይገኝም")}</dd></div>
+      <div><dt>{say("Lock after leaving", "ከወጡ በኋላ ቆልፍ")}</dt><dd>{status.timeout === 0 ? say("Immediately", "ወዲያውኑ") : status.timeout === 30000 ? say("30 seconds", "30 ሰከንድ") : status.timeout === 60000 ? say("1 minute", "1 ደቂቃ") : say("5 minutes", "5 ደቂቃ")}</dd></div>
+    </dl>}
+    {!available && <p className="nr-muted">{upgrade ? say("Install the latest NexRide Android APK to enable app lock.", "የመተግበሪያ ቁልፍን ለማብራት የቅርብ NexRide Android APK ይጫኑ።") : say("PIN, pattern and supported biometrics are available in the Android app. Browser and iOS locks are not enabled.", "PIN፣ ንድፍ እና ባዮሜትሪክ በAndroid መተግበሪያ ይገኛሉ። በአሳሽ እና iOS አልበራም።")}</p>}
     {available && status?.enabled && <button type="button" onClick={() => {
       void lockNexRideNow().catch(() => setMessage(say("Could not lock. Update the app and try again.", "መቆለፍ አልተቻለም። መተግበሪያውን ያዘምኑ።")));
     }}>{say("Lock now", "አሁን ቆልፍ")}</button>}

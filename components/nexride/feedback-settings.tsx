@@ -47,7 +47,7 @@ export function NexRideFeedbackSettings({
       <header className="nr-feedback-heading">
         <span><Icon name="volume" size={19} /></span>
         <div>
-          <strong>{say("Sounds & haptics", "ድምፅ እና ንዝረት")}</strong>
+          <strong>{say("Alerts & feedback", "ማሳወቂያ እና ምላሽ")}</strong>
           <small>{say("Clear feedback for important NexRide events.", "ለአስፈላጊ የNexRide ሁኔታዎች ግልጽ ምላሽ።")}</small>
         </div>
         <button
@@ -59,25 +59,28 @@ export function NexRideFeedbackSettings({
         </button>
       </header>
 
+
+      <h3 className="nr-notification-section">{say("Ride & trip alerts", "የጉዞ ማሳወቂያዎች")}</h3>
       <FeedbackToggle
-        icon="volume"
-        title={say("Notification sounds", "የማሳወቂያ ድምፆች")}
-        detail={say("Play NexRide tones for important events.", "ለአስፈላጊ ሁኔታዎች የNexRide ድምፅ አጫውት።")}
-        checked={preferences.sounds}
-        onChange={(value) => change("sounds", value)}
+        icon="navigation"
+        title={say("Trip update sounds", "የጉዞ ሁኔታ ድምፆች")}
+        detail={say("Driver assigned, arrival, trip start, completion and payment confirmation.", "አሽከርካሪ ሲመደብ፣ ሲደርስ፣ ጉዞ ሲጀምርና ሲጠናቀቅ።")}
+        checked={preferences.tripUpdates}
+        onChange={(value) => change("tripUpdates", value)}
       />
 
       {role === "driver" && (
         <FeedbackToggle
           icon="bell"
           title={say("Incoming ride request alert", "የአዲስ ጉዞ ጥያቄ ማንቂያ")}
-          detail={say("Repeats the incoming ride ringtone for up to 30 seconds. Stops sooner if the offer is accepted, declined, withdrawn or expires.", "የአዲስ ጉዞ ጥሪ ድምፅ እስከ 30 ሰከንድ ይደገማል። ጥያቄው ሲቀበል፣ ሲከለከል ወይም ሲያበቃ ቀድሞ ይቆማል።")}
+          detail={say("Ring for incoming offers, up to 30 seconds. Stops when the offer ends.", "የአዲስ ጉዞ ጥሪ ድምፅ እስከ 30 ሰከንድ ይደገማል። ጥያቄው ሲቀበል፣ ሲከለከል ወይም ሲያበቃ ቀድሞ ይቆማል።")}
           checked={preferences.rideRequests}
           onChange={(value) => change("rideRequests", value)}
           emphasis
         />
       )}
 
+      <h3 className="nr-notification-section">{say("Messages", "መልዕክቶች")}</h3>
       <FeedbackToggle
         icon="chat"
         title={say("Message sounds", "የመልዕክት ድምፆች")}
@@ -86,12 +89,14 @@ export function NexRideFeedbackSettings({
         onChange={(value) => change("messages", value)}
       />
 
+
+      <h3 className="nr-notification-section">{say("Sounds & haptics", "ድምፅ እና ንዝረት")}</h3>
       <FeedbackToggle
-        icon="navigation"
-        title={say("Trip update sounds", "የጉዞ ሁኔታ ድምፆች")}
-        detail={say("Driver assigned, arrival, trip start, completion and payment confirmation.", "አሽከርካሪ ሲመደብ፣ ሲደርስ፣ ጉዞ ሲጀምርና ሲጠናቀቅ።")}
-        checked={preferences.tripUpdates}
-        onChange={(value) => change("tripUpdates", value)}
+        icon="volume"
+        title={say("Notification sounds", "የማሳወቂያ ድምፆች")}
+        detail={say("Play NexRide tones for important events.", "ለአስፈላጊ ሁኔታዎች የNexRide ድምፅ አጫውት።")}
+        checked={preferences.sounds}
+        onChange={(value) => change("sounds", value)}
       />
 
       <FeedbackToggle
@@ -120,6 +125,7 @@ export function NexRideFeedbackSettings({
         </div>
       )}
 
+      <h3 className="nr-notification-section">{say("Device notifications", "የመሣሪያ ማሳወቂያዎች")}</h3>
       <div className="nr-feedback-notifications">
         <span><Icon name="bell" size={18} /></span>
         <div>
