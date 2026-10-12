@@ -55,7 +55,7 @@ public class NexRideDriverLocationPlugin extends Plugin {
     result.put("running",service!=null && service.isActive());
     result.put("lastServerAckAt",service!=null?service.getLastServerAckAt():0);
     result.put("lastGpsFixAt",service!=null?service.getLastGoodFixAt():0);
-    result.put("accuracyMeters",service!=null && Float.isFinite(service.getLastAccuracy())
+    result.put("accuracyMeters",service!=null && !Float.isNaN(service.getLastAccuracy()) && !Float.isInfinite(service.getLastAccuracy())
       ? service.getLastAccuracy():JSONObjectNull());
     result.put("error",service!=null?service.getLastError():"stopped");
     call.resolve(result);
