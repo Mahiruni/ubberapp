@@ -43,7 +43,7 @@ export function AppLockSettings() {
           : say("Available in the NexRide Android app. Browser and iOS app locks are not enabled.", "በNexRide Android መተግበሪያ ይገኛል። በአሳሽ እና iOS አልበራም።")}</small>
       </div>
       {available && <button type="button" onClick={() => void open()} disabled={busy}
-        style={{ background: "var(--nr-primary, #5145e5)", color: "#fff", border: 0, borderRadius: 14, minHeight: 48, padding: "12px 18px" }}>
+        className="nr-settings-edit-button">
         {busy ? say("Opening…", "በመክፈት ላይ…") : say(status?.enabled ? "Manage" : "Enable", status?.enabled ? "አስተዳድር" : "አብራ")}
       </button>}
     </div>

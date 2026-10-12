@@ -24,6 +24,7 @@ export default function DriverProfileSettingsPage() {
   const say = (en: string, am: string) => language === "am" ? am : en;
   const [profile, setProfile] = useState<DriverProfileData | null>(null);
   const [name, setName] = useState("");
+  const [editing, setEditing] = useState(false);
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -110,21 +111,27 @@ export default function DriverProfileSettingsPage() {
 
   return <main className="nr-app nr-driver-profile-subpage" data-mode="driver">
     <div className="nr-driver-profile-subwrap">
-      <header className="nr-profile-subhead"><div><span className="nr-driver-kicker">NEXRIDE · {t("driver")}</span><h1>{t("settings")}</h1><p>{t("entrySettingsIntro")}</p></div></header>
+      <header className="nr-profile-subhead"><div><button className="nr-settings-back" type="button" onClick={() => router.push("/driver/profile")}><Icon name="back" size={19}/>{t("back")}</button><span className="nr-driver-kicker">NEXRIDE · {t("driver")}</span><h1>{t("settings")}</h1><p>{t("entrySettingsIntro")}</p></div></header>
       {loading ? <div className="nr-driver-profile-loading" aria-busy="true"><span className="wide"/><span className="panel"/></div> : profile ? <>
         {profile.accountStatus !== "active" && <div className="nr-profile-alert" role="status"><Icon name="info" size={17}/><span>{t("entryEditingLimited")}</span></div>}
-        <SettingsGroups groups={[
+        <SettingsGroups homeLabel={t("settings")} backLabel={say("Back to Settings", "ወደ ቅንብሮች ተመለስ")} groups={[
           { id: "account", icon: "user", title: say("Account", "መለያ"), summary: say("Personal details, documents and vehicle", "የግል መረጃ፣ ሰነዶች እና ተሽከርካሪ"), children: <>
         <section className="nr-profile-panel">
           <div className="nr-profile-panel-head"><div><h2>{t("entryPersonalInfo")}</h2><p>{t("entryPersonalInfoIntro")}</p></div></div>
-          <form className="nr-profile-form" onSubmit={save} aria-busy={busy}>
+          <div className="nr-settings-account-overview">
+            <div><strong>{t("fullName")}</strong><span>{profile.fullName}</span></div>
+            <div><strong>{t("phoneNumber")}</strong><span>{phone || "—"}</span></div>
+            <div><strong>{t("authEmail")}</strong><span>{profile.email || "—"}</span></div>
+            <button type="button" className="nr-settings-edit-button" onClick={() => setEditing(value => !value)}>{editing ? say("Hide editor", "አርታዒውን ዝጋ") : say("Edit personal information", "የግል መረጃን አርትዕ")}</button>
+          </div>
+          {editing && <form className="nr-profile-form" onSubmit={save} aria-busy={busy}>
             <label>{t("fullName")}<input value={name} maxLength={100} autoComplete="name" onChange={e => setName(e.target.value)} disabled={profile.accountStatus !== "active"} required/></label>
             <label>{t("phoneNumber")}<input value={phone} type="tel" autoComplete="tel" readOnly aria-describedby="nr-phone-verify-note"/></label>
             <small id="nr-phone-verify-note">{t("entryContactNote")}</small>
             <label>{t("authEmail")}<input value={profile.email || "—"} readOnly aria-describedby="nr-email-note"/></label>
             <small id="nr-email-note">{t("entryEmailNote")}</small>
             <button type="submit" disabled={busy || profile.accountStatus !== "active"}>{t(busy ? "entrySaving" : "entrySaveChanges")}</button>
-          </form>
+          </form>}
           {feedback && <div className={"nr-profile-alert " + (success ? "success" : "")} role={success ? "status" : "alert"}><Icon name={success ? "check" : "info"} size={17}/><span>{feedback}</span></div>}
 
         </section>
