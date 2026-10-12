@@ -7,7 +7,7 @@ const requestId = '55555555-5555-4555-8555-555555555555';
 
 async function connectedDriver(page: Page, trip: 'pending' | 'accepted' | 'in_trip', theme: 'dark' | 'light') {
   const user = { id: driverId, aud: 'authenticated', role: 'authenticated', email: 'driver@example.test',
-    app_metadata: {}, user_metadata: { role: 'driver', full_name: 'NexRide Driver' }, created_at: '2026-01-01T00:00:00Z' };
+    app_metadata: {}, user_metadata: { role: 'driver', full_name: 'NexRide Driver', driver_onboarding_complete: true }, created_at: '2026-01-01T00:00:00Z' };
   const token = `eyJhbGciOiJIUzI1NiJ9.${Buffer.from(JSON.stringify({ sub: driverId, exp: 4102444800 })).toString('base64url')}.test`;
   const session = { access_token: token, refresh_token: 'test', expires_at: 4102444800, expires_in: 3600, token_type: 'bearer', user };
   await page.addInitScript(({ session, theme }) => {
@@ -115,4 +115,41 @@ test('active Driver trip Complete trip stays flush with compact safe-area footer
   const footerBox = (await footer.boundingBox())!;
   expect(footerBox.y + footerBox.height - (lastButton.y + lastButton.height)).toBeLessThan(30);
   await expect(complete).toBeInViewport();
+});
+
+test('Driver home shortcuts retain their original slots after returning from a ride call', async ({ page }) => {
+  await connectedDriver(page, 'pending', 'light');
+  await page.setViewportSize({ width: 390, height: 844 });
+
+  // Avoid reopening a mocked incoming offer immediately after returning home.
+  await page.route('**/rest/v1/ride_request_offers**', async route => {
+    const url = new URL(route.request().url());
+    if (url.searchParams.has('id')) return route.fallback();
+    const single = route.request().headers().accept?.includes('object+json');
+    return route.fulfill({ json: single ? null : [] });
+  });
+
+  await page.goto(`/driver/request?offer=${offerId}`);
+  await expect(page.locator('.nr-driver-request-page .nr-request-sheet')).toBeVisible();
+  await page.getByRole('button', { name: 'Back', exact: true }).click();
+  await expect(page).toHaveURL(/\/driver\/home(?:\?.*)?$/);
+
+  const shortcuts = page.locator('.nr-driver-home-quick-actions');
+  await expect(shortcuts).toBeVisible();
+  await expect(shortcuts).toHaveCSS('display', 'grid');
+  for (const [index, label] of ['Activity', 'Earnings', 'Settings'].entries()) {
+    await expect(shortcuts.locator('button').nth(index)).toContainText(label);
+  }
+
+  const boxes = await shortcuts.locator('button').evaluateAll(nodes => nodes.map(node => {
+    const { x, y, width, height } = node.getBoundingClientRect();
+    return { x, y, width, height };
+  }));
+  expect(boxes).toHaveLength(3);
+  expect(boxes[0].x).toBeLessThan(boxes[1].x);
+  expect(boxes[1].x).toBeLessThan(boxes[2].x);
+  expect(Math.abs(boxes[0].y - boxes[1].y)).toBeLessThan(2);
+  expect(Math.abs(boxes[1].y - boxes[2].y)).toBeLessThan(2);
+  expect(boxes.every(box => box.width < 160 && box.height >= 44)).toBe(true);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
