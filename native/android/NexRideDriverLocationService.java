@@ -38,6 +38,7 @@ public final class NexRideDriverLocationService extends Service implements Locat
   private static final String CHANNEL="nexride_driver_tracking";
   private static final int NOTIFICATION_ID=2401;
   private static final String AVAILABILITY_URL="https://ubberapp.vercel.app/api/driver/availability";
+  private static volatile NexRideDriverLocationService active;
   private final ExecutorService network=Executors.newSingleThreadExecutor();
   private final AtomicBoolean uploading=new AtomicBoolean(false);
   private LocationManager manager;
@@ -47,7 +48,11 @@ public final class NexRideDriverLocationService extends Service implements Locat
   private volatile boolean running=false;
   private long lastAttemptElapsed=0;
 
+  public static boolean isRunning(){ return active!=null && active.running; }
+  public static NexRideDriverLocationService current(){ return active; }
   public boolean isActive(){ return running; }
+  public String getAccessToken(){ return bearer; }
+  public String getRefreshToken(){ return refresh; }
   public long getLastServerAckAt(){ return lastServerAckAt; }
   public long getLastGoodFixAt(){ return lastGoodFixAt; }
   public float getLastAccuracy(){ return lastAccuracy; }
@@ -55,6 +60,7 @@ public final class NexRideDriverLocationService extends Service implements Locat
 
   @Override public void onCreate(){
     super.onCreate();
+    active=this;
     manager=(LocationManager)getSystemService(LOCATION_SERVICE);
     if(Build.VERSION.SDK_INT>=26){
       NotificationChannel channel=new NotificationChannel(CHANNEL,"Driver location sharing",NotificationManager.IMPORTANCE_LOW);
@@ -199,8 +205,13 @@ public final class NexRideDriverLocationService extends Service implements Locat
       try(OutputStream out=connection.getOutputStream()){out.write(body);}
       if(connection.getResponseCode()!=200)return false;
       try(InputStream input=connection.getInputStream()){
-        byte[] response=input.readNBytes(32_768);
-        JSONObject session=new JSONObject(new String(response,StandardCharsets.UTF_8));
+        java.io.ByteArrayOutputStream bytes=new java.io.ByteArrayOutputStream();
+        byte[] chunk=new byte[4096]; int count;
+        while((count=input.read(chunk))!=-1){
+          if(bytes.size()+count>32_768)return false;
+          bytes.write(chunk,0,count);
+        }
+        JSONObject session=new JSONObject(new String(bytes.toByteArray(),StandardCharsets.UTF_8));
         String nextBearer=session.optString("access_token","");
         String nextRefresh=session.optString("refresh_token","");
         if(nextBearer.length()<20 || nextRefresh.length()<20)return false;
@@ -223,6 +234,7 @@ public final class NexRideDriverLocationService extends Service implements Locat
   @Override public IBinder onBind(Intent intent){return null;}
   @Override public void onDestroy(){
     running=false; bearer="";refresh="";authUrl="";apiKey="";
+    if(active==this) active=null;
     lastServerAckAt=0;lastGoodFixAt=0;lastAccuracy=Float.NaN;
     if(manager!=null)try{manager.removeUpdates(this);}catch(SecurityException ignored){}
     network.shutdownNow();
