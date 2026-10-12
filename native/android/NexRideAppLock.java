@@ -73,6 +73,7 @@ public final class NexRideAppLock {
     private int epoch;
     private String token = "", verifiedOwner = "";
     private BiometricPrompt biometric;
+    private Runnable screenBack;
     private final Runnable countdown = new Runnable() {
         public void run() {
             if (!foreground || !locked || notice == null) return;
@@ -98,6 +99,7 @@ public final class NexRideAppLock {
     public void back() {
         epoch++;
         if (locked) { showLock(); return; }
+        if (screenBack != null && authorized()) { Runnable action = screenBack; screenBack = null; action.run(); return; }
         if (settingsOpen) closeSettings();
     }
     public void pause() {
@@ -226,21 +228,34 @@ public final class NexRideAppLock {
         screen(say("App Lock", "የመተግበሪያ ቁልፍ"));
         text(say("Protect NexRide on this device.", "NexRideን በዚህ መሣሪያ ይጠብቁ።"), 16);
         text(enabled() ? say("Enabled · ", "በርቷል · ") + state.optString("method", "pin").toUpperCase() : say("App lock is off", "የመተግበሪያ ቁልፍ ጠፍቷል"), 16);
-        button(say(enabled() ? "Change PIN" : "Set up six-digit PIN", "ባለ ስድስት አሃዝ PIN አዘጋጅ"), () -> setup("pin"));
-        button(say(enabled() ? "Change pattern" : "Set up pattern lock", "የንድፍ ቁልፍ አዘጋጅ"), () -> setup("pattern"));
+        button(say("Unlock method", "የመክፈቻ ዘዴ") + "  ›", () -> {
+            if (!authorized()) return;
+            screen(say("Unlock method", "የመክፈቻ ዘዴ"));
+            screenBack = this::settings;
+            text(say("Choose the way you unlock NexRide.", "NexRideን የሚከፍቱበትን ዘዴ ይምረጡ።"), 16);
+            button(say("Six-digit PIN", "ባለ ስድስት አሃዝ PIN"), () -> setup("pin"));
+            button(say("Pattern lock", "የንድፍ ቁልፍ"), () -> setup("pattern"));
+            button(say("Back", "ተመለስ"), this::settings);
+        });
         if (enabled()) {
             if (biometricAvailable()) button(state.optBoolean("biometric") ? say("Disable biometric unlock", "የባዮሜትሪክ መክፈቻ አጥፋ") : say("Enable face / fingerprint unlock", "የፊት / የጣት አሻራ መክፈቻ አብራ"), () -> {
                 if (!authorized()) return;
                 if (state.optBoolean("biometric")) { clearBiometric(); save(); settings(); } else biometric(true);
             });
             else text(say("Strong face or fingerprint authentication is not available. Enroll a supported biometric in Android Settings.", "ጠንካራ የፊት ወይም የጣት አሻራ ማረጋገጫ አይገኝም። በAndroid ቅንብሮች ያዘጋጁ።"), 14);
-            text(say("Automatically lock after leaving the app", "መተግበሪያውን ከወጡ በኋላ በራስ ሰር ቆልፍ"), 18);
-            long[] durations = {0, 30_000, 60_000, 300_000};
-            String[] labels = {say("Immediately", "ወዲያውኑ"), say("30 seconds", "30 ሰከንድ"), say("1 minute", "1 ደቂቃ"), say("5 minutes", "5 ደቂቃ")};
-            for (int i = 0; i < durations.length; i++) {
-                final long duration = durations[i];
-                button((state.optLong("timeout") == duration ? "✓ " : "") + labels[i], () -> { if (authorized()) { put(state, "timeout", duration); save(); settings(); } });
-            }
+            button(say("Automatic locking", "በራስ ሰር መቆለፍ") + "  ›", () -> {
+                if (!authorized()) return;
+                screen(say("Automatic locking", "በራስ ሰር መቆለፍ"));
+                screenBack = this::settings;
+                text(say("Lock after leaving NexRide", "NexRideን ከወጡ በኋላ ቆልፍ"), 16);
+                long[] durations = {0, 30_000, 60_000, 300_000};
+                String[] labels = {say("Immediately", "ወዲያውኑ"), say("30 seconds", "30 ሰከንድ"), say("1 minute", "1 ደቂቃ"), say("5 minutes", "5 ደቂቃ")};
+                for (int i = 0; i < durations.length; i++) {
+                    final long duration = durations[i];
+                    button((state.optLong("timeout") == duration ? "✓  " : "") + labels[i], () -> { if (authorized()) { put(state, "timeout", duration); save(); settings(); } });
+                }
+                button(say("Back", "ተመለስ"), this::settings);
+            });
             if ("pattern".equals(state.optString("method"))) {
                 CheckBox trail = check(say("Show pattern trail", "የንድፍ መስመር አሳይ"), state.optBoolean("trail", true));
                 trail.setOnCheckedChangeListener((view, checked) -> { if (authorized()) { put(state, "trail", checked); save(); } });
@@ -516,6 +531,7 @@ public final class NexRideAppLock {
     private boolean dark() { return (activity.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES; }
     private int ink() { return dark() ? Color.WHITE : Color.rgb(32, 27, 72); }
     private void screen(String title) {
+        screenBack = null;
         activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
         android.view.inputmethod.InputMethodManager keyboard = (android.view.inputmethod.InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
         if (activity.getCurrentFocus() != null) keyboard.hideSoftInputFromWindow(activity.getCurrentFocus().getWindowToken(), 0);
@@ -531,7 +547,8 @@ public final class NexRideAppLock {
             panel.setPadding(dp(24), dp(32) + insets.getSystemWindowInsetTop(), dp(24), dp(32) + insets.getSystemWindowInsetBottom()); return insets;
         });
         cover.requestApplyInsets();
-        text("NexRide", 28); TextView heading = text(title, 26); androidx.core.view.ViewCompat.setAccessibilityHeading(heading, true);
+        TextView brand = text("NexRide", 16); brand.setTextColor(Color.rgb(113, 103, 239));
+        TextView heading = text(title, 32); heading.setTypeface(android.graphics.Typeface.DEFAULT, android.graphics.Typeface.BOLD); androidx.core.view.ViewCompat.setAccessibilityHeading(heading, true);
         notice = text("", 14); notice.setAccessibilityLiveRegion(View.ACCESSIBILITY_LIVE_REGION_POLITE);
         cover.requestFocus();
         if (activity.getBridge() != null && activity.getBridge().getWebView() != null) activity.getBridge().getWebView().setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS);
@@ -543,7 +560,8 @@ public final class NexRideAppLock {
     }
     private TextView text(String value, int size) {
         TextView view = new TextView(activity); view.setText(value); view.setTextColor(ink()); view.setTextSize(size);
-        view.setGravity(Gravity.CENTER); view.setPadding(0, dp(8), 0, dp(8));
+        view.setGravity(Gravity.START); view.setPadding(0, dp(10), 0, dp(10));
+        view.setLineSpacing(dp(3), 1f);
         panel.addView(view, new LinearLayout.LayoutParams(-1, -2)); return view;
     }
     private void message(String value) { if (notice != null) notice.setText(value); }
@@ -552,13 +570,18 @@ public final class NexRideAppLock {
         input.setInputType(type); input.setTextColor(ink()); input.setHintTextColor(dark() ? Color.LTGRAY : Color.DKGRAY);
         if (android.os.Build.VERSION.SDK_INT >= 26) input.setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_NO);
         input.setSaveEnabled(false);
-        input.setTextSize(18); input.setPadding(dp(12), dp(12), dp(12), dp(12));
-        panel.addView(input, new LinearLayout.LayoutParams(-1, dp(60))); return input;
+        input.setTextSize(16); input.setPadding(dp(16), dp(14), dp(16), dp(14));
+        GradientDrawable field = new GradientDrawable(); field.setColor(dark() ? Color.rgb(32, 27, 57) : Color.WHITE); field.setCornerRadius(dp(14));
+        field.setStroke(dp(1), dark() ? Color.rgb(67, 60, 90) : Color.rgb(220, 216, 234)); input.setBackground(field);
+        LinearLayout.LayoutParams fieldLayout = new LinearLayout.LayoutParams(-1, -2); fieldLayout.setMargins(0, dp(6), 0, dp(10));
+        input.setMinHeight(dp(56)); panel.addView(input, fieldLayout); return input;
     }
     private Button styledButton(String title) {
         Button button = new Button(activity); button.setText(title); button.setAllCaps(false); button.setTextSize(16);
-        button.setTextColor(Color.WHITE); button.setMinHeight(dp(48));
-        GradientDrawable background = new GradientDrawable(); background.setColor(Color.rgb(81, 69, 229)); background.setCornerRadius(dp(16));
+        button.setTextColor(ink()); button.setMinHeight(dp(56)); button.setGravity(Gravity.CENTER_VERTICAL | Gravity.START);
+        button.setPadding(dp(18), dp(14), dp(18), dp(14));
+        GradientDrawable background = new GradientDrawable(); background.setColor(dark() ? Color.rgb(32, 27, 57) : Color.WHITE); background.setCornerRadius(dp(14));
+        background.setStroke(dp(1), dark() ? Color.rgb(67, 60, 90) : Color.rgb(220, 216, 234));
         button.setBackground(background); return button;
     }
     private Button button(String title, Runnable action) {

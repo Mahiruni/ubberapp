@@ -246,21 +246,26 @@ export function Dialog({
       prior?.focus();
     };
   }, []);
+  const close = () => {
+    if (dialog.current?.querySelector('.nr-settings-groups') && window.location.hash.startsWith('#settings-'))
+      window.history.replaceState(window.history.state, '', window.location.pathname + window.location.search);
+    onClose();
+  };
   return (
     <dialog
       ref={dialog}
       className="nr-dialog m-auto w-[min(92vw,500px)] rounded-[20px] border border-[var(--nr-border)] bg-[var(--nr-surface-raised)] p-0 text-[var(--nr-text)] shadow-[var(--nr-shadow-lg)] backdrop:bg-black/45"
       aria-labelledby="nr-dialog-title"
-      onCancel={(event) => { if (event.target === event.currentTarget) { event.preventDefault(); onClose(); } }}
+      onCancel={(event) => { if (event.target === event.currentTarget) { event.preventDefault(); close(); } }}
       onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
+        if (e.target === e.currentTarget) close();
       }}
     >
       <div className="nr-dialog-head flex items-center justify-between gap-4 border-b border-[var(--nr-border)] px-5 py-4">
         <h2 id="nr-dialog-title">{title}</h2>
         <button
           className="nr-icon-button"
-          onClick={onClose}
+          onClick={close}
           aria-label={t("close")}
         >
           <Icon name="close" />

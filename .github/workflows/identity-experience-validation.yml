@@ -44,3 +44,8 @@ jobs:
         with:
           name: nexride-identity-report
           path: playwright-report/
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: nexride-settings-visual
+          path: test-results/settings-visual/
