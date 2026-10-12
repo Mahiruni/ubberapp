@@ -110,15 +110,23 @@ public final class NexRideDriverLocationService extends Service implements Locat
       if(!running){
         running=true;
         boolean registered=false;
-        if(manager!=null && manager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
-          manager.requestLocationUpdates(LocationManager.GPS_PROVIDER,10_000L,0f,this,Looper.getMainLooper());
-          registered=true;
+        if(manager!=null){
+          // Register even when GPS is temporarily switched off. The same
+          // listeners resume after Android enables the provider again.
+          try {
+            manager.requestLocationUpdates(LocationManager.GPS_PROVIDER,10_000L,0f,this,Looper.getMainLooper());
+            registered=true;
+          }catch(IllegalArgumentException ignored){}
+          try {
+            manager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,15_000L,0f,this,Looper.getMainLooper());
+            registered=true;
+          }catch(IllegalArgumentException ignored){}
         }
-        if(manager!=null && manager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)){
-          manager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,15_000L,0f,this,Looper.getMainLooper());
-          registered=true;
+        if(!registered || (!manager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+          && !manager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))){
+          lastError="location_services_disabled";
+          showNotification("GPS disabled · Enable device Location");
         }
-        if(!registered){ lastError="location_services_disabled"; showNotification("GPS disabled · Enable device Location"); }
       }
     }catch(SecurityException|IllegalStateException|IllegalArgumentException e){
       lastError="foreground_location_unavailable"; stopSelf();
@@ -159,7 +167,16 @@ public final class NexRideDriverLocationService extends Service implements Locat
           .put("accuracy",accuracy).put("fix_timestamp",timestamp);
         byte[] body=new JSONObject().put("location",position).toString().getBytes(StandardCharsets.UTF_8);
         int status=sendLocation(body);
-        if(status==401 && refreshSession())status=sendLocation(body);
+        if(status==401){
+          int renewed=refreshSession();
+          if(renewed==1)status=sendLocation(body);
+          else if(renewed==-1){
+            // A network outage is not evidence that the user went Offline.
+            // Continue the foreground service and retry the next fresh fix.
+            lastError="auth_refresh_unavailable";
+            return;
+          }
+        }
         if(!running)return;
         if(status==200){
           lastServerAckAt=System.currentTimeMillis();
@@ -193,8 +210,9 @@ public final class NexRideDriverLocationService extends Service implements Locat
     }finally{if(connection!=null)connection.disconnect();}
   }
 
-  private boolean refreshSession(){
-    if(refresh.isEmpty() || authUrl.isEmpty() || apiKey.isEmpty())return false;
+  // 1 = renewed, 0 = revoked or invalid, -1 = transient provider/network fault.
+  private int refreshSession(){
+    if(refresh.isEmpty() || authUrl.isEmpty() || apiKey.isEmpty())return 0;
     HttpURLConnection connection=null;
     try{
       connection=(HttpURLConnection)new URL(authUrl+"/auth/v1/token?grant_type=refresh_token").openConnection();
@@ -204,22 +222,24 @@ public final class NexRideDriverLocationService extends Service implements Locat
       connection.setRequestProperty("Content-Type","application/json");
       byte[] body=new JSONObject().put("refresh_token",refresh).toString().getBytes(StandardCharsets.UTF_8);
       try(OutputStream out=connection.getOutputStream()){out.write(body);}
-      if(connection.getResponseCode()!=200)return false;
+      int responseCode=connection.getResponseCode();
+      if(responseCode==429 || responseCode>=500)return -1;
+      if(responseCode!=200)return 0;
       try(InputStream input=connection.getInputStream()){
         java.io.ByteArrayOutputStream bytes=new java.io.ByteArrayOutputStream();
         byte[] chunk=new byte[4096]; int count;
         while((count=input.read(chunk))!=-1){
-          if(bytes.size()+count>32_768)return false;
+          if(bytes.size()+count>32_768)return 0;
           bytes.write(chunk,0,count);
         }
         JSONObject session=new JSONObject(new String(bytes.toByteArray(),StandardCharsets.UTF_8));
         String nextBearer=session.optString("access_token","");
         String nextRefresh=session.optString("refresh_token","");
-        if(nextBearer.length()<20 || nextRefresh.length()<20)return false;
+        if(nextBearer.length()<20 || nextRefresh.length()<20)return 0;
         bearer=nextBearer; refresh=nextRefresh;
-        return true;
+        return 1;
       }
-    }catch(Exception e){return false;}
+    }catch(Exception e){return -1;}
     finally{if(connection!=null)connection.disconnect();}
   }
 
