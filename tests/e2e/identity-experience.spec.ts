@@ -128,7 +128,7 @@ test('Driver settings open five dedicated screens, preserve drafts and save appe
   await expect(page.locator('.nr-settings-detail:visible')).toHaveCount(0);
   await page.getByRole('button', { name: /^Account\. Personal details/ }).click();
   await expect(home).toBeHidden();
-  await expect(page.locator('.nr-settings-detail:visible h2')).toHaveText('Account');
+  await expect(page.locator('.nr-settings-detail:visible .nr-settings-detail-header h2')).toHaveText('Account');
   await page.getByRole('button', { name: 'Edit personal information' }).click();
   const name = page.getByLabel('Full name', { exact: true });
   await name.fill('Updated Account');
@@ -207,12 +207,12 @@ test('Rider settings persist, and its menu protects focus and the current screen
   const dialog = page.getByRole('dialog', { name: 'Settings', exact: true });
   await expect(dialog.locator('.nr-settings-group-heading button')).toHaveCount(5);
   await expect(dialog.locator('.nr-settings-detail:visible')).toHaveCount(0);
-  await dialog.getByRole('button', { name: /^Language & Appearance\\./ }).click();
+  await dialog.getByRole('button', { name: /^Language & Appearance\./ }).click();
   await dialog.getByRole('button', { name: 'Dark', exact: true }).click();
   await expect(dialog.locator('.nr-appearance-control button').first()).toHaveCSS('white-space', 'nowrap');
   await expect(page.locator('main.nr-app').first()).toHaveAttribute('data-theme', 'dark');
   await dialog.getByRole('button', { name: 'Back to Settings' }).click();
-  await dialog.getByRole('button', { name: /^Notifications\\. Trip alerts/ }).click();
+  await dialog.getByRole('button', { name: /^Notifications\. Trip alerts/ }).click();
   await expect(dialog.getByRole('button', { name: 'Dark', exact: true })).toBeHidden();
   await dialog.getByRole('switch', { name: /^In-app trip alerts/ }).uncheck();
   expect(await page.evaluate(() => localStorage.getItem('nexride:trip-alerts'))).toBe('off');
@@ -237,7 +237,7 @@ test('Rider settings persist, and its menu protects focus and the current screen
   await page.reload();
   await expect(page.locator('main.nr-app').first()).toHaveAttribute('data-theme', 'dark');
   await page.locator('.nr-account-standard').getByRole('button', { name: /^Settings/ }).click();
-  await dialog.getByRole('button', { name: /^Notifications\\. Trip alerts/ }).click();
+  await dialog.getByRole('button', { name: /^Notifications\. Trip alerts/ }).click();
   await expect(page.getByRole('switch', { name: /^In-app trip alerts/ })).not.toBeChecked();
 });
 
