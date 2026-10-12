@@ -102,24 +102,6 @@ export function NexRideFeedbackSettings({
         onChange={(value) => change("haptics", value)}
       />
 
-      {role === "driver" && (
-        <div className="nr-feedback-voice">
-          <FeedbackToggle
-            icon="speaker"
-            title={say("Navigation voice", "የአሰሳ ድምፅ")}
-            detail={say("Hands-free route guidance when NexRide has a current instruction.", "NexRide የአሁኑን መመሪያ ሲኖረው የድምፅ አሰሳ።")}
-            checked={preferences.navigationVoice}
-            onChange={(value) => change("navigationVoice", value)}
-          />
-          {preferences.navigationVoice && (
-            <div className="nr-feedback-language" role="group" aria-label={say("Navigation voice language", "የአሰሳ ድምፅ ቋንቋ")}>
-              <button aria-pressed={preferences.navigationLanguage === "en"} onClick={() => change("navigationLanguage", "en")}>English</button>
-              <button aria-pressed={preferences.navigationLanguage === "am"} onClick={() => change("navigationLanguage", "am")}>አማርኛ</button>
-            </div>
-          )}
-        </div>
-      )}
-
       <div className="nr-feedback-notifications">
         <span><Icon name="bell" size={18} /></span>
         <div>
@@ -153,7 +135,7 @@ function FeedbackToggle({
   onChange,
   emphasis = false,
 }: {
-  icon: "volume" | "bell" | "chat" | "navigation" | "vibrate" | "speaker";
+  icon: "volume" | "bell" | "chat" | "navigation" | "vibrate";
   title: string;
   detail: string;
   checked: boolean;
