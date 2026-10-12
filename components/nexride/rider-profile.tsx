@@ -17,6 +17,7 @@ import { AppLockSettings } from "./app-lock-settings";
 import { NexRideFeedbackSettings } from './feedback-settings';
 import './rider-avatar-upload.css';
 import { AppVersion } from './app-version';
+import { SettingsGroups } from "./settings-groups";
 
 type Props = {
   language: Language;
@@ -44,17 +45,16 @@ export function RiderSettings({language,setLanguage}: Pick<Props,'language'|'set
   useEffect(()=>{try{setAlerts(localStorage.getItem(ALERTS_KEY)!=='off')}catch{}},[]);
 
   return <div className="nr-account-settings nr-account-settings-v2">
-    <div className="nr-settings-block"><div><strong>{t("appearance")}</strong><small>{t("appearanceHint")}</small></div><AppearanceSelector role="rider"/></div>
-    <div className="nr-settings-block">
-      <div>
-        <strong>{t('language')}</strong>
-        <small>{say('Choose the language used across NexRide.','በNexRide ውስጥ የሚጠቀሙትን ቋንቋ ይምረጡ።')}</small>
-      </div>
-      <div className="nr-segmented" role="group" aria-label={t('language')}>
-        <button aria-pressed={language==='en'} onClick={()=>setLanguage('en')}>English</button>
-        <button aria-pressed={language==='am'} onClick={()=>setLanguage('am')}>አማርኛ</button>
-      </div>
-    </div>
+    <SettingsGroups groups={[
+      { id: "account", icon: "user", title: say("Account", "መለያ"), summary: say("Personal details and verification", "የግል መረጃ እና ማረጋገጫ"), children: <>
+        <a className="nr-settings-security-link" href="/account/manage"><Icon name="user" size={20}/><span>{say("Manage account & verification", "መለያ እና ማረጋገጫ አስተዳድር")}</span><Icon name="chevron" size={17}/></a>
+        <a className="nr-settings-security-link" href="/account/manage#account-deletion"><span>{say("Account deletion", "መለያ መሰረዝ")}</span><Icon name="chevron" size={17}/></a>
+      </> },
+      { id: "security", icon: "shield", title: say("Security & App Lock", "ደህንነት እና የመተግበሪያ ቁልፍ"), summary: say("App lock, sessions and permissions", "የመተግበሪያ ቁልፍ፣ መግቢያ እና ፈቃዶች"), children: <>
+        <AppLockSettings/><PermissionSettings/>
+    <a className="nr-settings-security-link" href="/account/manage#account-security"><Icon name="shield" size={20}/><span>{t("entryAccountSecurity")}</span><Icon name="chevron" size={17}/></a>
+      </> },
+      { id: "notifications", icon: "bell", title: say("Notifications", "ማሳወቂያዎች"), summary: say("Trip alerts, sounds and haptics", "የጉዞ ማሳወቂያ፣ ድምፅ እና ንዝረት"), children: <>
     <label className="nr-account-toggle">
       <span>
         <strong>{say('In-app trip alerts','የጉዞ ማሳወቂያዎች')}</strong>
@@ -72,11 +72,27 @@ export function RiderSettings({language,setLanguage}: Pick<Props,'language'|'set
       }}/>
     </label>
     <NexRideFeedbackSettings role="rider" language={language}/>
-    <PermissionSettings/><AppLockSettings/><NativeReliabilitySettings role="rider"/>
-    <a className="nr-settings-security-link" href="/account/manage#account-security"><Icon name="shield" size={20}/><span>{t("entryAccountSecurity")}</span><Icon name="chevron" size={17}/></a>
-    <nav className="nr-settings-legal" aria-label={say("Help & legal", "እገዛ እና ሕጋዊ መረጃ")}><a href="/support?role=rider">{say("Help & support", "እገዛ እና ድጋፍ")}</a><a href="/explore/terms">{t("entryTerms")}</a><a href="/explore/privacy">{t("entryPrivacy")}</a><a href="/explore/about">{say("About NexRide", "ስለ NexRide")}</a><a href="/account/manage#account-deletion">{say("Account deletion", "መለያ መሰረዝ")}</a></nav><AppVersion/>
+        <NativeReliabilitySettings role="rider"/>
     <p className="nr-muted">{say('System notifications are available when this device supports them and you allow permission. SMS and email alerts are not connected yet. Safety and trip status remain visible in the app.','የስርዓት ማሳወቂያዎች መሣሪያው ሲደግፍና ፈቃድ ሲሰጡ ይገኛሉ። የSMS እና ኢሜይል ማሳወቂያዎች ገና አልተገናኙም።')}</p>
-    {feedback&&<p className="nr-settings-feedback" role="status">{feedback}</p>}
+        {feedback&&<p className="nr-settings-feedback" role="status">{feedback}</p>}
+      </> },
+      { id: "appearance", icon: "globe", title: say("Language & Appearance", "ቋንቋ እና ገጽታ"), summary: say("English, Amharic and your theme", "እንግሊዝኛ፣ አማርኛ እና ገጽታ"), children: <>
+    <div className="nr-settings-block"><div><strong>{t("appearance")}</strong><small>{t("appearanceHint")}</small></div><AppearanceSelector role="rider"/></div>
+    <div className="nr-settings-block">
+      <div>
+        <strong>{t('language')}</strong>
+        <small>{say('Choose the language used across NexRide.','በNexRide ውስጥ የሚጠቀሙትን ቋንቋ ይምረጡ።')}</small>
+      </div>
+      <div className="nr-segmented" role="group" aria-label={t('language')}>
+        <button aria-pressed={language==='en'} onClick={()=>setLanguage('en')}>English</button>
+        <button aria-pressed={language==='am'} onClick={()=>setLanguage('am')}>አማርኛ</button>
+      </div>
+    </div>
+      </> },
+      { id: "help", icon: "info", title: say("Help & About", "እገዛ እና ስለ እኛ"), summary: say("Support, legal and app information", "ድጋፍ፣ ሕጋዊ መረጃ እና ስለ መተግበሪያው"), children: <>
+    <nav className="nr-settings-legal" aria-label={say("Help & legal", "እገዛ እና ሕጋዊ መረጃ")}><a href="/support?role=rider">{say("Help & support", "እገዛ እና ድጋፍ")}</a><a href="/explore/terms">{t("entryTerms")}</a><a href="/explore/privacy">{t("entryPrivacy")}</a><a href="/explore/about">{say("About NexRide", "ስለ NexRide")}</a></nav><AppVersion/>
+      </> },
+    ]}/>
   </div>;
 }
 
