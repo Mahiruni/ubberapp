@@ -40,7 +40,7 @@ describe("NexRide verified Driver GPS presence", () => {
     expect(service).not.toContain("getSharedPreferences(");
     expect(plugin).toContain("ACCESS_FINE_LOCATION");
     expect(plugin).toContain("getLastServerAckAt()");
-    expect(installer).toContain('android:foregroundServiceType=\\\"location\\\"');
+    expect(installer).toContain('android:foregroundServiceType="location"');
     expect(installer).toContain("FOREGROUND_SERVICE_LOCATION");
   });
 
