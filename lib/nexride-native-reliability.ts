@@ -121,10 +121,9 @@ export async function reconcileNativeDriverGpsSession(): Promise<void> {
     await plugin.stop().catch(() => {});
     return;
   }
-  const { data } = await supabase.auth.getSession();
-  if (data.session?.refresh_token === native.refreshToken) return;
-  // Recover a WebView that lost its old rotated token while locked. The native
-  // service still holds the confirmed Driver session in volatile memory.
+  // Synchronize *before* reading the WebView's old persisted session:
+  // getSession() may otherwise attempt a stale refresh while the screen was
+  // locked and invalidate the now-rotated native refresh token.
   await supabase.auth.setSession({
     access_token: native.accessToken, refresh_token: native.refreshToken,
   });
