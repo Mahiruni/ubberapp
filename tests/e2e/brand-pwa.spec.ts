@@ -20,8 +20,19 @@ test("NexRide serves one coherent PWA and search identity", async ({ page, reque
   const manifestResponse = await request.get("/manifest.webmanifest");
   expect(manifestResponse.ok()).toBeTruthy();
   const manifest = await manifestResponse.json();
-  expect(manifest.name).toBe("NexRide");
-  expect(manifest.short_name).toBe("NexRide");
+  expect(manifest.name).toBe("NexRide Rider");
+  expect(manifest.short_name).toBe("NexRide Rider");
+  expect(manifest.id).toBe("/");
+  const driverManifestResponse = await request.get("/driver.webmanifest");
+  expect(driverManifestResponse.ok()).toBeTruthy();
+  const driverManifest = await driverManifestResponse.json();
+  expect(driverManifest.id).toBe("/driver");
+  expect(driverManifest.name).toBe("NexRide Driver");
+  expect(driverManifest.short_name).toBe("NexRide Driver");
+  expect(driverManifest.display).toBe("standalone");
+  expect(driverManifest.icons).toEqual(
+    expect.arrayContaining([expect.objectContaining({ src: "/icons/driver-icon-512.png", sizes: "512x512" })]),
+  );
   expect(manifest.display).toBe("standalone");
   expect(manifest.icons.map((icon: { sizes: string }) => icon.sizes)).toEqual(
     expect.arrayContaining(["72x72", "96x96", "128x128", "144x144", "152x152", "192x192", "384x384", "512x512"]),
