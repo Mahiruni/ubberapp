@@ -9,6 +9,7 @@ on:
       - "components/nexride/rider-home.tsx"
       - "lib/nexride-sheet-geometry.ts"
       - "tests/e2e/wrapper-motion.spec.ts"
+      - "tests/e2e/driver-wrapper-new-brand.spec.ts"
       - ".github/workflows/wrapper-regression.yml"
   workflow_dispatch:
 permissions:
@@ -32,6 +33,7 @@ jobs:
       - run: npm install --no-audit --no-fund
       - run: npx playwright install --with-deps chromium webkit
       - run: npx playwright test tests/e2e/wrapper-motion.spec.ts --project=chromium --project=mobile --project=webkit --workers=2 --timeout=45000
+      - run: npx playwright test tests/e2e/driver-wrapper-new-brand.spec.ts --grep "Driver home shortcuts retain" --project=chromium --project=mobile --workers=2 --timeout=45000
       - uses: actions/upload-artifact@v4
         if: always()
         with:
