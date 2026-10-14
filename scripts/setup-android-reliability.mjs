@@ -46,6 +46,19 @@ if(!installed){
 }
 if(!source.includes("registerPlugin(NexRideLiveTripPlugin.class);"))
   throw Error("Could not register NexRide Android Live Trip plugin");
+
+// Native release identity is new to the October security release. Old Android
+// binaries do not have this plugin and are retired by the live website.
+const identity = fs.readFileSync("native/android/NexRideReleaseIdentityPlugin.java","utf8")
+  .replaceAll("APP_ROLE",role);
+fs.writeFileSync(path.join(folder,"NexRideReleaseIdentityPlugin.java"),identity);
+if (!source.includes("registerPlugin(NexRideReleaseIdentityPlugin.class);")) {
+  source=source.replace("super.onCreate(savedInstanceState);",
+    "registerPlugin(NexRideReleaseIdentityPlugin.class);\\n    super.onCreate(savedInstanceState);");
+}
+if (!source.includes("registerPlugin(NexRideReleaseIdentityPlugin.class);"))
+  throw new Error("Android release plugin registration failed");
+
 fs.writeFileSync(main,source);
 
 const manifest=path.join(base,"AndroidManifest.xml");
