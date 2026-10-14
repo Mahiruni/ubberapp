@@ -8,6 +8,7 @@ name: Build NexRide Android APKs
       - ".github/workflows/android-apks.yml"
       - "native/android/**"
       - "scripts/setup-android-reliability.mjs"
+      - "scripts/configure-android-release-signing.mjs"
       - "scripts/setup-android-splash.mjs"
       - "scripts/setup-android-app-lock.mjs"
       - "lib/nexride-app-lock.ts"
@@ -38,6 +39,7 @@ name: Build NexRide Android APKs
       - "app/page.tsx"
       - "app/driver/home/page.tsx"
       - "scripts/setup-android-reliability.mjs"
+      - "scripts/configure-android-release-signing.mjs"
       - "native/android/**"
       - "lib/nexride-live-trip.ts"
       - "components/nexride/trip-experience.tsx"
@@ -246,6 +248,31 @@ jobs:
       - name: Build debug APK
         working-directory: android
         run: ./gradlew testDebugUnitTest assembleDebug
+
+      - name: Dry-run release signing with a disposable test-only key
+        shell: bash
+        run: |
+          set -euo pipefail
+          export NEXRIDE_RELEASE_KEYSTORE_PATH="$RUNNER_TEMP/nexride-ci-test-only.jks"
+          export NEXRIDE_RELEASE_STORE_PASSWORD="nexride-ci-test-only-pass"
+          export NEXRIDE_RELEASE_KEY_ALIAS="nexride-ci-test-only"
+          export NEXRIDE_RELEASE_KEY_PASSWORD="nexride-ci-test-only-pass"
+          keytool -genkeypair -noprompt \
+            -keystore "$NEXRIDE_RELEASE_KEYSTORE_PATH" -storetype JKS \
+            -alias "$NEXRIDE_RELEASE_KEY_ALIAS" -keyalg RSA -keysize 2048 \
+            -validity 1 -dname "CN=NexRide CI disposable signing only" \
+            -storepass "$NEXRIDE_RELEASE_STORE_PASSWORD" \
+            -keypass "$NEXRIDE_RELEASE_KEY_PASSWORD"
+          node scripts/configure-android-release-signing.mjs "${{ matrix.role }}"
+          (cd android && ./gradlew --no-daemon assembleRelease)
+          TEST_SIGNED_APK="android/app/build/outputs/apk/release/app-release.apk"
+          test -s "$TEST_SIGNED_APK"
+          APKSIGNER="$(find "$ANDROID_HOME/build-tools" -maxdepth 2 -type f -name apksigner -print | sort -V | tail -1)"
+          test -x "$APKSIGNER"
+          "$APKSIGNER" verify --verbose "$TEST_SIGNED_APK" | grep -q 'Verified using v2 scheme (APK Signature Scheme v2): true'
+          rm -f "$NEXRIDE_RELEASE_KEYSTORE_PATH"
+          # A disposable CI certificate MUST NEVER be distributed as a production APK.
+          rm -rf android/app/build/outputs/apk/release
 
       - name: Verify Firebase is compiled into the APK
         shell: bash
