@@ -16,7 +16,9 @@ type ReleasePlugin = {
  * boundary: backend permissions must independently protect customer data.
  */
 export function NexRideNativeReleaseGuard({ children }: { children: ReactNode }) {
-  const [status, setStatus] = useState<"checking" | "accepted" | "retired">("checking");
+  const [status, setStatus] = useState<"checking" | "accepted" | "retired">(
+    process.env.NEXT_PUBLIC_NEXRIDE_RETIRE_LEGACY_ANDROID === "true" ? "checking" : "accepted",
+  );
 
   useEffect(() => {
     // Rollout switch stays disabled until both production-signed APKs
