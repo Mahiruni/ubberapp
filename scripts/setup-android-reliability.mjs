@@ -54,7 +54,7 @@ const identity = fs.readFileSync("native/android/NexRideReleaseIdentityPlugin.ja
 fs.writeFileSync(path.join(folder,"NexRideReleaseIdentityPlugin.java"),identity);
 if (!source.includes("registerPlugin(NexRideReleaseIdentityPlugin.class);")) {
   source=source.replace("super.onCreate(savedInstanceState);",
-    "registerPlugin(NexRideReleaseIdentityPlugin.class);\\n    super.onCreate(savedInstanceState);");
+    "registerPlugin(NexRideReleaseIdentityPlugin.class);\n    super.onCreate(savedInstanceState);");
 }
 if (!source.includes("registerPlugin(NexRideReleaseIdentityPlugin.class);"))
   throw new Error("Android release plugin registration failed");
