@@ -156,7 +156,7 @@ test("small screens keep map, navigation and sheets within the viewport", async 
     page.getByLabel("Pickup location", { exact: true }),
   ).toBeVisible();
   await expect(
-    page.getByRole("button", { name: "Continue to ride options" }),
+    page.getByRole("button", { name: "Choose a ride" }),
   ).toBeDisabled();
   expect(
     await page.evaluate(
