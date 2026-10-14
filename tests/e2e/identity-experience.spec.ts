@@ -294,7 +294,9 @@ test('entry layouts remain usable on desktop, tablet, short screens and reduced 
   await page.emulateMedia({ reducedMotion: 'reduce' });
   for (const viewport of [{ width: 1280, height: 900 }, { width: 768, height: 1024 }, { width: 320, height: 420 }, { width: 844, height: 390 }]) {
     await page.setViewportSize(viewport);
-    await page.goto('/rider/sign-in');
+    // The layout assertions wait for interactive elements explicitly. Waiting
+    // for every external font/resource to emit window.load can hang mobile CI.
+    await page.goto('/rider/sign-in', { waitUntil: 'domcontentloaded', timeout: 15_000 });
     await expect(page.getByRole('heading', { name: 'Welcome back.', exact: true })).toBeVisible();
     await page.getByLabel('Email address', { exact: true }).fill('person@example.test');
     await page.getByLabel('Password', { exact: true }).fill('private-password');
