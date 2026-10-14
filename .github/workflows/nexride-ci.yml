@@ -83,7 +83,7 @@ jobs:
       - name: Install only the requested browser
         run: npx playwright install --with-deps "${{ matrix.browser }}"
       - name: Run full browser project (bounded time)
-        run: npx playwright test --project="${{ matrix.project }}" --workers=2
+        run: npx playwright test --project="${{ matrix.project }}" --workers=2 --max-failures=5
       - name: Upload browser failure artifacts
         if: always()
         uses: actions/upload-artifact@v4
