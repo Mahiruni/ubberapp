@@ -19,6 +19,12 @@ export function NexRideNativeReleaseGuard({ children }: { children: ReactNode })
   const [status, setStatus] = useState<"checking" | "accepted" | "retired">("checking");
 
   useEffect(() => {
+    // Rollout switch stays disabled until both production-signed APKs
+    // are published and verified. Enable via the production Vercel build env.
+    if (process.env.NEXT_PUBLIC_NEXRIDE_RETIRE_LEGACY_ANDROID !== "true") {
+      setStatus("accepted");
+      return;
+    }
     let active = true;
     let timer: ReturnType<typeof setTimeout> | undefined;
     const settle = (next: "accepted" | "retired") => {
