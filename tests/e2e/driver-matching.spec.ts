@@ -16,7 +16,7 @@ async function openRides(page: Page) {
   await page.getByRole('button', { name: /Bole International Airport/ }).click();
   await page.getByLabel('Pickup location', { exact: true }).fill('Bole Atlas');
   await page.locator('.nr-place-suggestion').first().click();
-  await page.getByRole('button', { name: 'Continue to ride options', exact: true }).click();
+  await page.getByRole('button', { name: 'Choose a ride', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Choose a ride' })).toBeVisible();
 }
 async function liveQuotes(page: Page) {
