@@ -96,3 +96,73 @@
 @media (prefers-reduced-motion:reduce) {
   .nr-app[data-mode="rider"] .nr-ride-selection .nr-ride-card { transition:none; }
 }
+
+/* Phase 2 — Uber-inspired ease of use, original NexRide execution. */
+.nr-app[data-mode="rider"] .nr-rider-home-sheet {
+  background:var(--precision-surface,var(--surface));
+  color:var(--precision-ink,var(--text));
+  border:1px solid var(--precision-stroke,var(--line));
+  box-shadow:var(--precision-elevation,0 -10px 30px rgba(4,28,48,.12));
+}
+.nr-app[data-mode="rider"] .nr-rider-home-intro h2 {
+  font-size:clamp(23px,4.5vw,32px);
+  line-height:1.13;
+  letter-spacing:-.045em;
+  font-weight:800;
+  color:var(--precision-ink,var(--text));
+}
+.nr-app[data-mode="rider"] .nr-wrapper-subtitle,
+.nr-app[data-mode="rider"] .nr-home-location,
+.nr-app[data-mode="rider"] .nr-home-empty-state small {
+  color:var(--precision-subtle,var(--muted));
+}
+.nr-app[data-mode="rider"] .nr-home-search {
+  min-height:58px;
+  width:100%;
+  border-radius:17px;
+  border:1px solid var(--precision-stroke,var(--line));
+  background:color-mix(in srgb,var(--precision-surface,var(--surface)) 93%,var(--precision-ink,var(--text)) 7%);
+  color:var(--precision-ink,var(--text));
+  box-shadow:0 4px 18px rgba(4,28,48,.07);
+  transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease;
+}
+.nr-app[data-mode="rider"] .nr-home-search:active { transform:scale(.985); }
+.nr-app[data-mode="rider"] .nr-home-search:focus-visible,
+.nr-app[data-mode="rider"] .nr-home-shortcuts button:focus-visible,
+.nr-app[data-mode="rider"] .nr-home-sheet-drag-zone:focus-visible {
+  outline:3px solid var(--precision-emerald);
+  outline-offset:2px;
+}
+.nr-app[data-mode="rider"] .nr-home-shortcuts button {
+  min-height:52px;
+  border-radius:15px;
+  border:1px solid var(--precision-stroke,var(--line));
+  background:var(--precision-surface,var(--surface));
+  color:var(--precision-ink,var(--text));
+  transition:transform .2s ease,background-color .2s ease;
+}
+.nr-app[data-mode="rider"] .nr-home-shortcuts button:active { transform:scale(.97); }
+.nr-app[data-mode="rider"] .nr-home-history-heading h2 {
+  font-size:14px;
+  font-weight:750;
+  letter-spacing:-.02em;
+}
+.nr-app[data-mode="rider"] .nr-home-destinations button {
+  min-height:52px;
+  border-radius:12px;
+}
+.nr-app[data-mode="rider"] .nr-home-sheet-drag-zone { min-height:28px; }
+.nr-app[data-mode="rider"] .nr-ride-selection .nr-ride-route-meta {
+  font-variant-numeric:tabular-nums;
+  color:var(--precision-subtle,var(--muted));
+}
+@media(max-width:800px) {
+  .nr-app[data-mode="rider"] .rider-map-flow.rider-home-view {
+    --nr-flow-sheet-height:29dvh;
+  }
+  .nr-app[data-mode="rider"] .nr-rider-home-intro h2 { font-size:24px; }
+  .nr-app[data-mode="rider"] .nr-home-search { min-height:54px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .nr-app[data-mode="rider"] :is(.nr-home-search,.nr-home-shortcuts button) { transition:none; }
+}
