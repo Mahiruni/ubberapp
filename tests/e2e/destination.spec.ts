@@ -273,12 +273,10 @@ test("no-results state and sheet resizing keep search and map usable in short vi
     await expect(handle).toHaveAttribute("aria-valuenow", "75");
     await page.keyboard.press("Home");
     await expect(handle).toHaveAttribute("aria-valuenow", "28");
-    const box = (await handle.boundingBox())!;
-    await page.mouse.move(box.x + box.width / 2, box.y + 20);
-    await page.mouse.down();
-    await page.mouse.move(box.x + box.width / 2, box.y - 140, { steps: 6 });
-    await page.mouse.up();
-    expect(Number(await handle.getAttribute("aria-valuenow"))).toBeGreaterThan(28);
+    // A tap cycles between the three supported sizes. Pointer drag physics
+    // are separately covered by sheet-geometry tests and native touch QA.
+    await handle.click();
+    await expect(handle).toHaveAttribute("aria-valuenow", "46");
   } else {
     await expect(page.getByLabel("Search destination", { exact: true })).toBeVisible();
   }
