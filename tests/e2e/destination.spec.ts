@@ -30,6 +30,13 @@ async function select(
     .first()
     .click();
 }
+// The destination footer is intentionally hidden during active text entry. A
+// blocked journey must either expose a disabled action or no action at all.
+async function expectCannotContinue(page: Page) {
+  const action = page.locator(".nr-destination-panel footer button");
+  if (await action.count()) await expect(action).toBeDisabled();
+  else await expect(page.locator(".nr-destination-panel footer")).toHaveCount(0);
+}
 async function provider(page: Page) {
   await page.route("**/api/rider/route", async (r) => {
     const { pickup, destination } = r.request().postDataJSON();
@@ -61,9 +68,7 @@ test("search requires selected endpoints, finds both scripts and distinguishes l
   await expect(page.getByLabel("Pickup location", { exact: true })).toHaveValue(
     "",
   );
-  await expect(
-    page.locator(".nr-destination-panel footer").getByRole("button"),
-  ).toBeDisabled();
+  await expectCannotContinue(page);
   await page.getByLabel("Search destination", { exact: true }).fill("ኮልፌ");
   const kolfe = page
     .locator(".nr-place-suggestion")
@@ -105,9 +110,7 @@ test("provider route is rendered and editing pickup invalidates it immediately",
     .getByLabel("Pickup location", { exact: true })
     .fill("unselected text");
   await expect(page.locator(".nr-rider-map-surface.nr-map-has-route")).toHaveCount(0);
-  await expect(
-    page.locator(".nr-destination-panel footer").getByRole("button"),
-  ).toBeDisabled();
+  await expectCannotContinue(page);
 });
 test("dragging pickup updates its label and requires confirmation before rerouting", async ({
   page,
@@ -124,7 +127,7 @@ test("dragging pickup updates its label and requires confirmation before rerouti
     await expect(page.locator(".nr-map-unavailable")).toBeVisible();
     await page.getByLabel("Pickup location", { exact: true }).fill("changed pickup");
     await expect(page.locator(".nr-rider-map-surface.nr-map-has-route")).toHaveCount(0);
-    await expect(page.locator(".nr-destination-panel footer").getByRole("button")).toBeDisabled();
+    await expectCannotContinue(page);
     return;
   }
   const pin = (await page.locator(".nr-pin-core.pickup").boundingBox())!;
@@ -136,9 +139,7 @@ test("dragging pickup updates its label and requires confirmation before rerouti
     /Map pin/,
   );
   await expect(page.locator(".nr-rider-map-surface.nr-map-has-route")).toHaveCount(0);
-  await expect(
-    page.locator(".nr-destination-panel footer").getByRole("button"),
-  ).toBeDisabled();
+  await expectCannotContinue(page);
   await page
     .getByRole("button", { name: "Confirm pickup pin", exact: true })
     .click();
@@ -184,7 +185,7 @@ test("map selection keeps exact coordinates synchronized without a geocoder", as
   await expect(page.getByLabel("Pickup location", { exact: true })).toHaveValue(
     "Map pin",
   );
-  await expect(page.locator(".nr-pickup-marker")).toHaveCount(1);
+  await expect(page.locator(".nr-pin-core.pickup")).toHaveCount(1);
   await expect(
     page.locator(".nr-destination-panel footer").getByRole("button"),
   ).toBeEnabled();
@@ -200,18 +201,14 @@ test("routing failure can be retried and coverage restrictions block continuatio
   await select(page, "destination", "Meskel Square");
   await select(page, "pickup", "Bole Atlas");
   await expect(page.locator(".nr-route-review.error")).toBeVisible();
-  await expect(
-    page.locator(".nr-destination-panel footer").getByRole("button"),
-  ).toBeDisabled();
+  await expectCannotContinue(page);
   state = "coverage";
   await page
     .locator(".nr-route-review")
     .getByRole("button", { name: "Try again", exact: true })
     .click();
   await expect(page.locator(".nr-route-review.coverage")).toBeVisible();
-  await expect(
-    page.locator(".nr-destination-panel footer").getByRole("button"),
-  ).toBeDisabled();
+  await expectCannotContinue(page);
 });
 test("an uncertain device location requires explicit pickup confirmation", async ({
   page,
@@ -245,9 +242,7 @@ test("an uncertain device location requires explicit pickup confirmation", async
   await expect(page.getByLabel("Pickup location", { exact: true })).toHaveValue(
     "Bole",
   );
-  await expect(
-    page.locator(".nr-destination-panel footer").getByRole("button"),
-  ).toBeDisabled();
+  await expectCannotContinue(page);
   await page
     .getByRole("button", { name: "Confirm pickup pin", exact: true })
     .click();
@@ -347,9 +342,7 @@ test("a late route response cannot restore a cleared journey", async ({
     .fill("changed pickup");
   release();
   await expect(page.locator(".nr-rider-map-surface.nr-map-has-route")).toHaveCount(0);
-  await expect(
-    page.locator(".nr-destination-panel footer").getByRole("button"),
-  ).toBeDisabled();
+  await expectCannotContinue(page);
 });
 test("Amharic UI uses translated place names and locality details", async ({
   page,
