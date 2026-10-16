@@ -285,3 +285,17 @@ html, body { margin: 0; padding: 0; }
 .driver-page select{background:#1a1d22;color:#fff;border-color:var(--dl)}
 .driver-page .earn-progress{background:#282c33}.driver-page .earn-progress span{background:var(--blue)}
 @media(max-width:650px){.driver-page{padding:0 0 86px;border-radius:0;min-height:100dvh}.driver-page .driver-head,.driver-page .driver-nav{display:none}.driver-page .driver-map-hero{margin:0;border-radius:0 0 22px 22px;min-height:calc(100dvh - 76px);height:calc(100dvh - 76px)}.driver-page .driver-map-hero .live-map{filter:brightness(.62) saturate(.7) contrast(1.08)}.driver-page .driver-go-wrap{bottom:18px}.driver-page .driver-go-online{height:62px;border-radius:19px}.driver-page .driver-demand-card{bottom:94px}.driver-page .driver-map-location{top:78px}.driver-page .driver-mobile-tabs{bottom:8px}}
+
+
+/* NexRide Midnight Edition — unified Rider/Driver color refresh.
+   Semantic success, warning and error indicators retain their meanings. */
+:root{--nr-midnight:#05070c;--nr-midnight-surface:#141a27;--nr-midnight-raised:#222b3b;--nr-electric-blue:#3478f6;--nr-midnight-white:#fff;--nr-midnight-muted:#c5ced8}
+.driver-page{--db:var(--nr-midnight);--ds:var(--nr-midnight-surface);--ds2:var(--nr-midnight-raised);--dt:#fff;--dm:var(--nr-midnight-muted);--blue:var(--nr-electric-blue)}
+.driver-page .driver-toggle.online,.driver-page .driver-go-online,.driver-page .primary,.driver-page .accept-driver{background:var(--nr-electric-blue)!important;border-color:var(--nr-electric-blue)!important;color:#fff!important}
+.driver-page .driver-mobile-tabs button.active,.driver-page .driver-nav button.active{color:#8cb6ff}
+.driver-page .driver-mobile-tabs button.active{background:#1b2a47}
+.driver-page .driver-map-top,.driver-page .driver-demand-card{background:rgba(20,26,39,.94);border-color:#303c50}
+.driver-page .driver-map-tools>button,.driver-page .request-facts>div,.driver-page .request-row{background:var(--nr-midnight-raised);border-color:#303c50}
+.driver-page .driver-head,.driver-page .driver-request-panel,.driver-page .driver-earn-card,.driver-page .preference-card{background:var(--nr-midnight-surface);color:#fff}
+.driver-page .driver-head p,.driver-page .demand-copy>span:last-child{color:var(--nr-midnight-muted)}
+@media(prefers-reduced-motion:reduce){.driver-page .driver-go-online{transition:none}}
