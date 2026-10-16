@@ -179,10 +179,13 @@ test('Amharic matching uses the shared translations and keeps Ethiopian place la
   const t = (key: Parameters<typeof translate>[1]) => translate('am', key);
   await page.addInitScript(() => localStorage.setItem('nexride:language', 'am'));
   await page.goto('/');
-  await page.locator('.nr-home-destinations button').first().click();
+  await page.locator('.nr-rider-home-panel')
+    .getByRole('button', { name: t('destination'), exact: true }).click();
+  await page.locator('.nr-endpoint-field input').last().fill('Bole Airport');
+  await page.locator('.nr-place-suggestion').first().click();
   await page.getByLabel(t('editPickup'), { exact: true }).fill('Bole Atlas');
   await page.locator('.nr-place-suggestion').first().click();
-  await page.getByRole('button', { name: t('continueRideOptions'), exact: true }).click();
+  await page.locator('.nr-destination-panel footer').getByRole('button').click();
   await page.getByRole('button', { name: t('previewRide'), exact: true }).click();
   await expect(page.getByRole('heading', { name: t('finding'), exact: true })).toBeVisible();
   await expect(page.getByText(t('matchingNote'), { exact: true })).toBeVisible();
