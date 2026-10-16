@@ -6,21 +6,30 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 concurrency:
   group: nexride-ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# Browser coverage is split into four independently bounded jobs. The previous
+# two-worker development-server run multiplexed ~332 browser cases in one job
+# and could remain in progress for hours without identifying the stalled suite.
+env:
+  NEXT_PUBLIC_APP_NAME: NexRide
+  NEXT_PUBLIC_APP_ENV: test
+  NEXT_PUBLIC_APP_URL: http://localhost:3000
+  NEXT_PUBLIC_SUPABASE_URL: https://eyyvvwecpyctttiueban.supabase.co
+  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_kXFOrtwKkKmrqCtYTTuzdg__CjjABBf
+  NEXT_PUBLIC_MAPBOX_TOKEN: replace_me
+  NEXT_TELEMETRY_DISABLED: '1'
+
 jobs:
   qa:
+    name: Unit tests, TypeScript, and production build
     runs-on: ubuntu-latest
-    env:
-      NEXT_PUBLIC_APP_NAME: NexRide
-      NEXT_PUBLIC_APP_ENV: test
-      NEXT_PUBLIC_APP_URL: http://localhost:3000
-      NEXT_PUBLIC_SUPABASE_URL: https://eyyvvwecpyctttiueban.supabase.co
-      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_kXFOrtwKkKmrqCtYTTuzdg__CjjABBf
-      # Keep routing in its explicit provider-unavailable fallback during deterministic CI.
-      NEXT_PUBLIC_MAPBOX_TOKEN: replace_me
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -28,6 +37,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 24
+          cache: npm
       - name: Install dependencies
         run: npm install --no-audit --no-fund
       - name: Unit tests
@@ -36,14 +46,51 @@ jobs:
         run: npx tsc --noEmit --pretty false
       - name: Production build
         run: npm run build
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium webkit firefox
-      - name: E2E tests
-        run: npm run test:e2e
-      - name: Upload Playwright report
+
+  browser-e2e:
+    name: Browser E2E (${{ matrix.project }})
+    needs: qa
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - project: chromium
+            browser: chromium
+          - project: mobile
+            browser: chromium
+          - project: firefox
+            browser: firefox
+          - project: webkit
+            browser: webkit
+    env:
+      # E2E tests must exercise the production-compiled app, not the Next.js
+      # development server (which bottlenecked full-suite browser execution).
+      PLAYWRIGHT_SERVER_COMMAND: npm run start -- --hostname 127.0.0.1
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Production build
+        run: npm run build
+      - name: Install only the requested browser
+        run: npx playwright install --with-deps "${{ matrix.browser }}"
+      - name: Run full browser project (bounded time)
+        run: npx playwright test --project="${{ matrix.project }}" --workers=2 --max-failures=5
+      - name: Upload browser failure artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: nexride-playwright-report
-          path: playwright-report/
+          name: nexride-e2e-${{ matrix.project }}-${{ github.run_attempt }}
+          path: |
+            playwright-report/
+            test-results/
           if-no-files-found: ignore
+          retention-days: 14

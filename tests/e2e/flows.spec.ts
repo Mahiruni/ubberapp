@@ -10,10 +10,10 @@ test("rider can complete an explicitly labeled preview and save a rating", async
   page,
 }) => {
   await page.goto("/");
-  await expect(page.locator(".nr-map-preview-chip")).toBeVisible();
-  await page
-    .getByRole("button", { name: /Bole International Airport/ })
-    .click();
+  await expect(page.locator(".nr-rider-home-panel")).toBeVisible();
+  await page.getByRole("button", { name: "Search destination", exact: true }).click();
+  await page.getByLabel("Search destination", { exact: true }).fill("Bole Airport");
+  await page.locator(".nr-place-suggestion").filter({ hasText: "Bole International Airport" }).first().click();
   await page.getByLabel("Pickup location", { exact: true }).fill("Bole Atlas");
   await page
     .locator(".nr-place-suggestion")
@@ -156,7 +156,7 @@ test("small screens keep map, navigation and sheets within the viewport", async 
     page.getByLabel("Pickup location", { exact: true }),
   ).toBeVisible();
   await expect(
-    page.getByRole("button", { name: "Continue to ride options" }),
+    page.getByRole("button", { name: "Choose a ride" }),
   ).toBeDisabled();
   expect(
     await page.evaluate(

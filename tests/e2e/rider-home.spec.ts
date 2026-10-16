@@ -17,14 +17,14 @@ test("home exposes empty history, labeled examples and the requested navigation"
 }) => {
   await page.goto("/");
   await expect(
-    page.getByText("No recent destinations yet.", { exact: false }),
+    page.getByText("No recent destinations yet", { exact: false }),
   ).toBeVisible();
   await expect(
     page
       .locator(".nr-rider-home-panel")
       .getByRole("button", { name: "Search destination", exact: true }),
-  ).toContainText("Where to?");
-  for (const label of ["Home", "Activity", "Safety center", "Messages", "Account"])
+  ).toContainText("Plan your ride");
+  for (const label of ["Home", "Activity", "Safety center", "Support", "Account"])
     await expect(
       page
         .locator(".nr-navigation:visible")

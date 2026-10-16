@@ -8,9 +8,12 @@ name: Build NexRide Android APKs
       - ".github/workflows/android-apks.yml"
       - "native/android/**"
       - "scripts/setup-android-reliability.mjs"
+      - "scripts/configure-android-release-signing.mjs"
       - "scripts/setup-android-splash.mjs"
       - "scripts/setup-android-app-lock.mjs"
       - "lib/nexride-app-lock.ts"
+      - "lib/nexride-release-policy*.ts"
+      - "components/nexride/native-release-guard.tsx"
       - "components/nexride/app-lock-settings.tsx"
       - "lib/nexride-live-trip.ts"
       - "components/nexride/trip-experience.tsx"
@@ -26,6 +29,8 @@ name: Build NexRide Android APKs
       - "scripts/setup-android-splash.mjs"
       - "scripts/setup-android-app-lock.mjs"
       - "lib/nexride-app-lock.ts"
+      - "lib/nexride-release-policy*.ts"
+      - "components/nexride/native-release-guard.tsx"
       - "components/nexride/app-lock-settings.tsx"
       - "package.json"
       - "components/nexride/native-navigation-bridge.tsx"
@@ -34,6 +39,7 @@ name: Build NexRide Android APKs
       - "app/page.tsx"
       - "app/driver/home/page.tsx"
       - "scripts/setup-android-reliability.mjs"
+      - "scripts/configure-android-release-signing.mjs"
       - "native/android/**"
       - "lib/nexride-live-trip.ts"
       - "components/nexride/trip-experience.tsx"
@@ -78,6 +84,9 @@ jobs:
         # Some legacy package-lock entries predate Mapbox additions. Let npm
         # resolve the tracked package.json rather than abort on npm ci drift.
         run: npm install --no-audit --no-fund
+
+      - name: Test retirement and release compatibility rules
+        run: npx vitest run lib/nexride-release-policy.test.ts
 
       - name: Install Capacitor build tooling
         run: npm install --no-save @capacitor/core@8 @capacitor/cli@8 @capacitor/android@8 @capacitor/app@8 @capacitor/push-notifications@8 @capacitor/share@8 @capacitor/splash-screen@8.0.2
@@ -157,6 +166,25 @@ jobs:
       - name: Install native App Lock gate and security tests
         run: node scripts/setup-android-app-lock.mjs "${{ matrix.role }}"
 
+      - name: Stamp new NexRide Android security release
+        run: |
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          path = Path("android/app/build.gradle")
+          source = path.read_text()
+          source, count = re.subn(r"\bversionCode\s+\d+\b", "versionCode 20261014", source, count=1)
+          if count != 1:
+              raise SystemExit("Missing Gradle versionCode")
+          source, count = re.subn(r"\bversionName\s+\S+", 'versionName "2.0.0"', source, count=1)
+          if count != 1:
+              raise SystemExit("Missing Gradle versionName")
+          path.write_text(source)
+          PY
+          grep -q 'versionCode 20261014' android/app/build.gradle
+          grep -q 'registerPlugin(NexRideReleaseIdentityPlugin.class)' android/app/src/main/java/com/nexride/${{ matrix.role }}/MainActivity.java
+          grep -q 'nexride-2026-10-14-02' android/app/src/main/java/com/nexride/${{ matrix.role }}/NexRideReleaseIdentityPlugin.java
+
       - name: Harden Android manifest
         shell: bash
         run: |
@@ -210,6 +238,7 @@ jobs:
           test -s android/app/src/main/res/drawable-nodpi/nexride_splash_wordmark.png
           grep -q 'POST_PROMOTED_NOTIFICATIONS' android/app/src/main/AndroidManifest.xml
           grep -q 'registerPlugin(NexRideLiveTripPlugin.class)' android/app/src/main/java/com/nexride/${{ matrix.role }}/MainActivity.java
+          grep -q 'registerPlugin(NexRideReleaseIdentityPlugin.class)' android/app/src/main/java/com/nexride/${{ matrix.role }}/MainActivity.java
           if [ "${{ matrix.role }}" = "driver" ]; then
             grep -q 'foregroundServiceType="location"' android/app/src/main/AndroidManifest.xml
             grep -q 'registerPlugin(NexRideDriverLocationPlugin.class)' android/app/src/main/java/com/nexride/driver/MainActivity.java
@@ -219,6 +248,31 @@ jobs:
       - name: Build debug APK
         working-directory: android
         run: ./gradlew testDebugUnitTest assembleDebug
+
+      - name: Dry-run release signing with a disposable test-only key
+        shell: bash
+        run: |
+          set -euo pipefail
+          export NEXRIDE_RELEASE_KEYSTORE_PATH="$RUNNER_TEMP/nexride-ci-test-only.jks"
+          export NEXRIDE_RELEASE_STORE_PASSWORD="nexride-ci-test-only-pass"
+          export NEXRIDE_RELEASE_KEY_ALIAS="nexride-ci-test-only"
+          export NEXRIDE_RELEASE_KEY_PASSWORD="nexride-ci-test-only-pass"
+          keytool -genkeypair -noprompt \
+            -keystore "$NEXRIDE_RELEASE_KEYSTORE_PATH" -storetype JKS \
+            -alias "$NEXRIDE_RELEASE_KEY_ALIAS" -keyalg RSA -keysize 2048 \
+            -validity 1 -dname "CN=NexRide CI disposable signing only" \
+            -storepass "$NEXRIDE_RELEASE_STORE_PASSWORD" \
+            -keypass "$NEXRIDE_RELEASE_KEY_PASSWORD"
+          node scripts/configure-android-release-signing.mjs "${{ matrix.role }}"
+          (cd android && ./gradlew --no-daemon assembleRelease)
+          TEST_SIGNED_APK="android/app/build/outputs/apk/release/app-release.apk"
+          test -s "$TEST_SIGNED_APK"
+          APKSIGNER="$(find "$ANDROID_HOME/build-tools" -maxdepth 2 -type f -name apksigner -print | sort -V | tail -1)"
+          test -x "$APKSIGNER"
+          "$APKSIGNER" verify --verbose "$TEST_SIGNED_APK" | grep -q 'Verified using v2 scheme (APK Signature Scheme v2): true'
+          rm -f "$NEXRIDE_RELEASE_KEYSTORE_PATH"
+          # A disposable CI certificate MUST NEVER be distributed as a production APK.
+          rm -rf android/app/build/outputs/apk/release
 
       - name: Verify Firebase is compiled into the APK
         shell: bash
@@ -247,13 +301,13 @@ jobs:
         shell: bash
         run: |
           mkdir -p dist
-          cp android/app/build/outputs/apk/debug/app-debug.apk "dist/NexRide-${{ matrix.role }}-debug.apk"
+          cp android/app/build/outputs/apk/debug/app-debug.apk "dist/NexRide-${{ matrix.role }}-v20261014-debug.apk"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: NexRide-${{ matrix.role }}-APK
-          path: dist/NexRide-${{ matrix.role }}-debug.apk
+          path: dist/NexRide-${{ matrix.role }}-v20261014-debug.apk
           if-no-files-found: error
           retention-days: 14
 

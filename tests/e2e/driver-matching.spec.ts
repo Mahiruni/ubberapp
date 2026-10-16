@@ -13,10 +13,12 @@ test.beforeEach(async ({ page }) => {
 });
 async function openRides(page: Page) {
   await page.goto('/');
-  await page.getByRole('button', { name: /Bole International Airport/ }).click();
+  await page.getByRole('button', { name: 'Search destination', exact: true }).click();
+  await page.getByLabel('Search destination', { exact: true }).fill('Bole Airport');
+  await page.locator('.nr-place-suggestion').filter({ hasText: 'Bole International Airport' }).first().click();
   await page.getByLabel('Pickup location', { exact: true }).fill('Bole Atlas');
-  await page.locator('.nr-place-suggestion').first().click();
-  await page.getByRole('button', { name: 'Continue to ride options', exact: true }).click();
+  await page.locator('.nr-place-suggestion').filter({ hasText: 'Bole Atlas' }).first().click();
+  await page.getByRole('button', { name: 'Choose a ride', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Choose a ride' })).toBeVisible();
 }
 async function liveQuotes(page: Page) {

@@ -243,7 +243,7 @@ export const messages = {
   requestReceived: ["Ride requested", "ጉዞው ተጠይቋል"],
   requestReceivedNote: ["Your request was received. We’ll update you when the ride status changes.", "ጥያቄዎ ደርሷል። የጉዞው ሁኔታ ሲቀየር እናሳውቅዎታለን።"],
   destinationSearch: ["Plan your ride", "ጉዞዎን ያቅዱ"],
-  editPickup: ["Pickup", "መነሻ"],
+  editPickup: ["Pickup location", "መነሻ"],
   selectPickup: ["Where from?", "ከየት?"],
   clearPickup: ["Clear pickup", "መነሻውን አጽዳ"],
   clearDestination: ["Clear destination", "መድረሻውን አጽዳ"],

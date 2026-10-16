@@ -62,7 +62,7 @@ test("search requires selected endpoints, finds both scripts and distinguishes l
     "",
   );
   await expect(
-    page.getByRole("button", { name: "Continue to ride options", exact: true }),
+    page.getByRole("button", { name: "Choose a ride", exact: true }),
   ).toBeDisabled();
   await page.getByLabel("Search destination", { exact: true }).fill("ኮልፌ");
   const kolfe = page
@@ -101,7 +101,7 @@ test("provider route is rendered and editing pickup invalidates it immediately",
     .fill("unselected text");
   await expect(page.locator(".nr-provider-route")).toHaveCount(0);
   await expect(
-    page.getByRole("button", { name: "Continue to ride options", exact: true }),
+    page.getByRole("button", { name: "Choose a ride", exact: true }),
   ).toBeDisabled();
 });
 test("dragging pickup updates its label and requires confirmation before rerouting", async ({
@@ -122,14 +122,14 @@ test("dragging pickup updates its label and requires confirmation before rerouti
   );
   await expect(page.locator(".nr-provider-route")).toHaveCount(0);
   await expect(
-    page.getByRole("button", { name: "Continue to ride options", exact: true }),
+    page.getByRole("button", { name: "Choose a ride", exact: true }),
   ).toBeDisabled();
   await page
     .getByRole("button", { name: "Confirm pickup pin", exact: true })
     .click();
   await expect(page.locator(".nr-provider-route")).toHaveCount(1);
   await expect(
-    page.getByRole("button", { name: "Continue to ride options", exact: true }),
+    page.getByRole("button", { name: "Choose a ride", exact: true }),
   ).toBeEnabled();
 });
 test("map selection keeps exact coordinates synchronized without a geocoder", async ({
@@ -179,7 +179,7 @@ test("routing failure can be retried and coverage restrictions block continuatio
   await select(page, "pickup", "Bole Atlas");
   await expect(page.locator(".nr-route-review.error")).toBeVisible();
   await expect(
-    page.getByRole("button", { name: "Continue to ride options", exact: true }),
+    page.getByRole("button", { name: "Choose a ride", exact: true }),
   ).toBeDisabled();
   state = "coverage";
   await page
@@ -188,7 +188,7 @@ test("routing failure can be retried and coverage restrictions block continuatio
     .click();
   await expect(page.locator(".nr-route-review.coverage")).toBeVisible();
   await expect(
-    page.getByRole("button", { name: "Continue to ride options", exact: true }),
+    page.getByRole("button", { name: "Choose a ride", exact: true }),
   ).toBeDisabled();
 });
 test("an uncertain device location requires explicit pickup confirmation", async ({
@@ -224,7 +224,7 @@ test("an uncertain device location requires explicit pickup confirmation", async
     "Bole",
   );
   await expect(
-    page.getByRole("button", { name: "Continue to ride options", exact: true }),
+    page.getByRole("button", { name: "Choose a ride", exact: true }),
   ).toBeDisabled();
   await page
     .getByRole("button", { name: "Confirm pickup pin", exact: true })
@@ -326,7 +326,7 @@ test("a late route response cannot restore a cleared journey", async ({
   release();
   await expect(page.locator(".nr-provider-route")).toHaveCount(0);
   await expect(
-    page.getByRole("button", { name: "Continue to ride options", exact: true }),
+    page.getByRole("button", { name: "Choose a ride", exact: true }),
   ).toBeDisabled();
 });
 test("Amharic UI uses translated place names and locality details", async ({
@@ -380,7 +380,7 @@ test("temporary provider addresses never enter saved preview history", async ({
   await select(page, "destination", "Provider-only address");
   await select(page, "pickup", "Bole Atlas");
   await page
-    .getByRole("button", { name: "Continue to ride options", exact: true })
+    .getByRole("button", { name: "Choose a ride", exact: true })
     .click();
   await page.getByRole("button", { name: /Preview this ride/ }).click();
   await expect
