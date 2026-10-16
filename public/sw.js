@@ -1,4 +1,4 @@
-const VERSION = "nexride-phase2-offline-recovery-v1";
+const VERSION = "nexride-midnight-release-20261016-v1";
 const CORE_CACHE = VERSION + "-core";
 const RUNTIME_CACHE = VERSION + "-runtime";
 const CORE_ASSETS = [
