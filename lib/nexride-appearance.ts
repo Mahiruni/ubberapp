@@ -10,7 +10,8 @@ export function resolveAppearance(preference: AppearancePreference, systemDark: 
   return preference === 'system' ? systemDark ? 'dark' : 'light' : preference;
 }
 export function useAppearance(role: 'rider' | 'driver') {
-  const fallback = role === 'driver' ? 'dark' : 'light';
+  // Midnight Edition is the default for new Rider and Driver installs; saved user preferences still win.
+  const fallback: AppearancePreference = 'dark';
   const [preference, setState] = useState<AppearancePreference>(fallback);
   const [systemDark, setSystemDark] = useState(false);
   const [error, setError] = useState(false);
