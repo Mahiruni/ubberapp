@@ -221,7 +221,8 @@ function DriverHamburgerMenu({
   };
 
   const driveItems = NAV_ITEMS.filter((item) => ["home", "requests", "earnings"].includes(item.id));
-  const accountItems = NAV_ITEMS.filter((item) => ["messages", "account"].includes(item.id));
+  const accountItems = NAV_ITEMS.filter((item) => item.id === "account");
+  const supportItems = NAV_ITEMS.filter((item) => item.id === "messages");
 
   const menuRows = (items: typeof NAV_ITEMS) =>
     items.map((item) => {
@@ -281,15 +282,17 @@ function DriverHamburgerMenu({
               </button>
             </div>
 
-            <div className="nr-driver-menu-section-label">{language === "am" ? "ማሽከርከር" : "DRIVE"}</div>
+            <div className="nr-driver-menu-section-label">{language === "am" ? "ዋና" : "MAIN"}</div>
             <nav className="nr-driver-menu-nav" aria-label={language === "am" ? "የመንዳት አሰሳ" : "Drive navigation"}>
               {menuRows(driveItems)}
             </nav>
 
-            <div className="nr-driver-menu-section-label">{language === "am" ? "መለያ" : "ACCOUNT"}</div>
+            <div className="nr-driver-menu-section-label">{language === "am" ? "መለያ እና ምርጫዎች" : "ACCOUNT & PREFERENCES"}</div>
             <nav className="nr-driver-menu-nav" aria-label={language === "am" ? "የመለያ አሰሳ" : "Account navigation"}>
               {menuRows(accountItems)}
             </nav>
+            <div className="nr-driver-menu-section-label">{language === "am" ? "ደህንነት እና ድጋፍ" : "SAFETY & SUPPORT"}</div>
+            <nav className="nr-driver-menu-nav" aria-label={language === "am" ? "ድጋፍ" : "Support navigation"}>{menuRows(supportItems)}</nav>
             <div className="nr-driver-menu-utilities">
               <Link href="/driver/profile/vehicle" className="nr-driver-menu-utility" onClick={() => setOpen(false)}><Icon name="navigation" size={20}/><span>{language === "am" ? "ተሽከርካሪ" : "Vehicle"}</span><Icon name="chevron" size={16}/></Link>
               <Link href="/driver/profile/documents" className="nr-driver-menu-utility" onClick={() => setOpen(false)}><Icon name="shield" size={20}/><span>{language === "am" ? "ሰነዶች እና ማረጋገጫ" : "Documents & verification"}</span><Icon name="chevron" size={16}/></Link>
