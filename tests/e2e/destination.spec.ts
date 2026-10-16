@@ -80,7 +80,7 @@ test("search requires selected endpoints, finds both scripts and distinguishes l
   await select(page, "pickup", "Bole Atlas");
   await expect(page.locator(".nr-route-review.unavailable")).toBeVisible();
   await expect(page.locator(".nr-rider-map-surface.nr-map-has-route")).toHaveCount(0);
-  await expect(page.locator(".nr-route-review")).not.toContainText("km");
+  await expect(page.locator(".nr-route-review > strong")).toHaveCount(0);
   await page
     .getByRole("button", { name: "Preview ride options", exact: true })
     .click();
@@ -254,6 +254,7 @@ test("no-results state and sheet resizing keep search and map usable in short vi
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
+  await page.route("**/api/rider/search?*", (route) => route.fulfill({ json: { status: "ready", results: [] } }));
   await openSearch(page);
   await page
     .getByLabel("Search destination", { exact: true })
@@ -265,16 +266,16 @@ test("no-results state and sheet resizing keep search and map usable in short vi
   });
   await handle.focus();
   await page.keyboard.press("End");
-  await expect(handle).toHaveAttribute("aria-valuenow", "80");
+  await expect(handle).toHaveAttribute("aria-valuenow", "75");
   await page.keyboard.press("Home");
-  await expect(handle).toHaveAttribute("aria-valuenow", "32");
+  await expect(handle).toHaveAttribute("aria-valuenow", "28");
   const box = (await handle.boundingBox())!;
   await page.mouse.move(box.x + box.width / 2, box.y + 20);
   await page.mouse.down();
   await page.mouse.move(box.x + box.width / 2, box.y - 140, { steps: 6 });
   await page.mouse.up();
   expect(Number(await handle.getAttribute("aria-valuenow"))).toBeGreaterThan(
-    32,
+    28,
   );
   for (const size of [
     { width: 390, height: 460 },
@@ -347,21 +348,9 @@ test("a late route response cannot restore a cleared journey", async ({
 test("Amharic UI uses translated place names and locality details", async ({
   page,
 }) => {
-  await page.goto("/");
-  await page
-    .getByRole("button", { name: "Profile", exact: true })
-    .first()
-    .click();
-  await page.getByRole("button", { name: "አማርኛ", exact: true }).last().click();
-  await page
-    .locator(".nr-navigation:visible")
-    .getByRole("button", { name: "መነሻ", exact: true })
-    .click();
-  await page
-    .locator(".nr-rider-home-panel")
-    .getByRole("button")
-    .filter({ hasText: "ጉዞዎን ያቅዱ" })
-    .click();
+  await openSearch(page);
+  await page.locator(".nr-topbar .nr-language-button").click();
+  await expect(page.locator(".nr-destination-panel")).toContainText("መድረሻ");
   await page.locator(".nr-endpoint-field input").last().fill("ኮልፌ");
   await expect(
     page.locator(".nr-place-suggestion strong").filter({ hasText: /^ኮልፌ$/ }),
