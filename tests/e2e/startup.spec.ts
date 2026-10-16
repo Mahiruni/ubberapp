@@ -103,6 +103,8 @@ test("the real session wait shows the splash and honors reduced motion", async (
   await page.goto("/", { waitUntil: "domcontentloaded" });
   const splash = page.locator(".nr-rider-splash");
   await expect(splash).toBeVisible();
+  await expect(splash).toHaveCSS("background-color", "rgb(0, 0, 0)");
+  await expect(splash.locator(".nr-splash-wordmark")).toHaveCSS("color", "rgb(255, 255, 255)");
   await expect(splash).toHaveAttribute("aria-busy", "true");
   await expect(
     splash.getByRole("heading", { name: "NexRide", exact: true }),
