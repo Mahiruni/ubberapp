@@ -345,7 +345,7 @@ test("Amharic UI uses translated place names and locality details", async ({
   await page
     .locator(".nr-rider-home-panel")
     .getByRole("button")
-    .filter({ hasText: "ወዴት?" })
+    .filter({ hasText: "ጉዞዎን ያቅዱ" })
     .click();
   await page.locator(".nr-endpoint-field input").last().fill("ኮልፌ");
   await expect(
