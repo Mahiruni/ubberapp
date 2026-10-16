@@ -37,7 +37,7 @@ test('preview waits for an explicit action, preserves map/summary, and provides 
   await openRides(page);
   await page.getByRole('button', { name: /Preview this ride/ }).click();
   await expect(page.getByRole('heading', { name: 'Finding your driver…' })).toBeVisible();
-  await expect(page.getByText('We’ll let you know as soon as a driver accepts.')).toBeVisible();
+  await expect(page.getByText('We’ll let you know as soon as a driver accepts.', { exact: true })).toBeVisible();
   await expect(page.locator('.nr-match-summary')).toContainText('Bole Atlas');
   await expect(page.locator('.nr-match-summary')).toContainText('Economy');
   await expect(page.locator('.nr-rider-map-surface')).toHaveAttribute('data-map-status', /ready|unavailable/);
@@ -63,6 +63,7 @@ test('preview waits for an explicit action, preserves map/summary, and provides 
   await expect(page.getByRole('button', { name: 'Cancel ride', exact: true })).toBeDisabled();
   await page.getByRole('button', { name: 'Refresh status', exact: true }).click();
   await page.getByRole('button', { name: 'Cancel ride', exact: true }).click();
+  await page.getByRole('button', { name: 'Yes, Cancel Ride' }).click();
   await expect(page.getByRole('heading', { name: 'Ride request cancelled' })).toBeVisible();
   await expect(page.getByRole('dialog')).not.toBeVisible();
   await page.getByRole('button', { name: 'Change ride', exact: true }).click();
@@ -90,7 +91,8 @@ test('a request receipt does not assign a driver; reconnection reads the same bo
   await expect(page.getByRole('heading', { name: 'Finding your driver…' })).toBeVisible();
   await expect(page.locator('.nr-confirmed-driver')).toHaveCount(0);
   broken = true; await reconnect(page);
-  await expect(page.getByRole('heading', { name: 'Ride status unavailable' })).toBeVisible();
+  // An online server read failure is a sync problem, not device-offline mode.
+  await expect(page.getByRole('heading', { name: 'Can’t refresh ride status' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Cancel ride', exact: true })).toBeDisabled();
   broken = false; current = state('delayed', 2);
   await page.getByRole('button', { name: 'Refresh status', exact: true }).click();
@@ -146,6 +148,7 @@ test('driver acceptance during cancellation wins the race without inventing canc
   });
   await submit(page);
   await page.getByRole('button', { name: 'Cancel ride', exact: true }).click();
+  await page.getByRole('button', { name: 'Yes, Cancel Ride' }).click();
   await expect(page.getByRole('heading', { name: 'Your driver is on the way' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Ride request cancelled' })).not.toBeVisible();
   await expect(page.locator('.nr-confirmed-driver')).toContainText('Actual Driver');
@@ -160,12 +163,13 @@ test('malformed acceptance cannot show a driver and unknown cancellation cannot 
   });
   await submit(page);
   current = state('assigned', 2); await reconnect(page);
-  await expect(page.getByRole('heading', { name: 'Ride status unavailable' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Can’t refresh ride status' })).toBeVisible();
   await expect(page.locator('.nr-confirmed-driver')).toHaveCount(0);
   current = state('searching', 2); await page.getByRole('button', { name: 'Refresh status', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Finding your driver…' })).toBeVisible();
   await page.getByRole('button', { name: 'Cancel ride', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Ride status unavailable' })).toBeVisible();
+  await page.getByRole('button', { name: 'Yes, Cancel Ride' }).click();
+  await expect(page.getByRole('heading', { name: 'Can’t refresh ride status' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Ride request cancelled' })).not.toBeVisible();
   await expect(page.getByRole('button', { name: 'Change ride', exact: true })).not.toBeVisible();
   expect(creates).toBe(1);
