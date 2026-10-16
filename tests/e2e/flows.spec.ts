@@ -11,9 +11,11 @@ test("rider can complete an explicitly labeled preview and save a rating", async
 }) => {
   await page.goto("/");
   await expect(page.locator(".nr-map-preview-chip")).toBeVisible();
-  await page
-    .getByRole("button", { name: /Bole International Airport/ })
-    .click();
+  // Recent destinations are user-specific; begin through the public Rider search.
+  await page.getByRole("button", { name: "Search destination", exact: true }).click();
+  await page.getByLabel("Search destination", { exact: true }).fill("Bole Airport");
+  await page.locator(".nr-place-suggestion")
+    .filter({ hasText: "Bole International Airport" }).first().click();
   await page.getByLabel("Pickup location", { exact: true }).fill("Bole Atlas");
   await page
     .locator(".nr-place-suggestion")
