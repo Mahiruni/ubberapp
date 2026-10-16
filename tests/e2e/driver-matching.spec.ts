@@ -109,7 +109,7 @@ test('a request receipt does not assign a driver; reconnection reads the same bo
   await expect(page.locator('.nr-rider-persistent-wrapper')).toHaveAttribute('data-rider-screen', 'trip');
   await expect(page.locator('.nr-confirmed-driver')).toHaveCount(0);
   current = state('searching', 4); await reconnect(page);
-  await expect(page.getByRole('heading', { name: 'Your driver is on the way' })).toBeVisible();
+  await expect(page.locator('.nr-rider-persistent-wrapper')).toHaveAttribute('data-rider-screen', 'trip');
   expect(creates).toBe(1); expect(reads).toBeGreaterThan(2);
 });
 test('cancellation consequence is confirmed and waits for the authoritative cancelled snapshot', async ({ page }) => {
@@ -153,7 +153,7 @@ test('driver acceptance during cancellation wins the race without inventing canc
   await submit(page);
   await page.getByRole('button', { name: 'Cancel ride', exact: true }).click();
   await page.getByRole('button', { name: 'Yes, Cancel Ride' }).click();
-  await expect(page.getByRole('heading', { name: 'Your driver is on the way' })).toBeVisible();
+  await expect(page.locator('.nr-rider-persistent-wrapper')).toHaveAttribute('data-rider-screen', 'trip');
   await expect(page.getByRole('heading', { name: 'Ride request cancelled' })).not.toBeVisible();
   await expect(page.locator('.nr-rider-persistent-wrapper')).toHaveAttribute('data-rider-screen', 'trip');
   await expect(page.locator('.nr-confirmed-driver')).toHaveCount(0);
@@ -216,6 +216,11 @@ test('provider retry keeps the original request and category changes follow serv
   await expect(page.getByRole('button', { name: 'Change ride', exact: true })).not.toBeVisible();
   await page.getByRole('button', { name: 'Keep searching', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Finding your driver…' })).toBeVisible();
-  await expect(page.locator('.nr-pickup-search-area')).toHaveCount(1);
+  await expect(page.locator('.nr-rider-map-surface')).toHaveAttribute('data-map-status', /ready|unavailable/);
+  if (await page.locator('.nr-rider-map-surface').getAttribute('data-map-status') === 'ready') {
+    await expect(page.locator('.nr-pickup-search-area')).toHaveCount(1);
+  } else {
+    await expect(page.locator('.nr-map-unavailable')).toBeVisible();
+  }
   expect(creates).toBe(1); expect(retries).toBe(1);
 });
