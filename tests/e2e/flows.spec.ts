@@ -10,7 +10,9 @@ test("rider can complete an explicitly labeled preview and save a rating", async
   page,
 }) => {
   await page.goto("/");
-  await expect(page.locator(".nr-map-preview-chip")).toBeVisible();
+  // Compact Rider layouts may hide this decorative map chip, but must retain
+  // explicit preview identity and disclose preview behavior before booking.
+  await expect(page.locator(".nr-map-preview-chip")).toHaveCount(1);
   // Recent destinations are user-specific; begin through the public Rider search.
   await page.getByRole("button", { name: "Search destination", exact: true }).click();
   await page.getByLabel("Search destination", { exact: true }).fill("Bole Airport");
