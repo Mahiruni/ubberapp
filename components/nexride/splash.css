@@ -339,3 +339,58 @@
   outline: 3px solid #4be3a3;
   outline-offset: 3px;
 }
+
+
+/* Startup contract: Android owns its native brand reveal. Next.js session
+   restoration must never show a second NexRide wordmark/introduction. */
+.nr-rider-splash.is-restoring {
+  display: grid;
+  place-items: center;
+  padding: max(24px, env(safe-area-inset-top)) 24px max(24px, env(safe-area-inset-bottom));
+  background: #05070c;
+}
+.nr-splash-restoring {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+}
+.nr-splash-loading-indicator {
+  display: block;
+  width: 24px;
+  height: 24px;
+  border: 2px solid rgba(197, 206, 216, .22);
+  border-top-color: #c5ced8;
+  border-radius: 50%;
+  animation: nr-session-spinner .85s linear infinite;
+}
+.nr-splash-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+.nr-rider-splash.has-error { background: #05070c; }
+.nr-rider-splash.has-error .nr-splash-error {
+  background: #141a27;
+  border-color: #303c50;
+}
+.nr-rider-splash.has-error .nr-splash-error > svg { color: #8cb6ff; }
+.nr-rider-splash.has-error .nr-splash-recovery-links a {
+  border-color: #303c50;
+  color: #fff;
+}
+.nr-rider-splash.has-error :is(button, a):focus-visible {
+  outline-color: #3478f6;
+}
+@keyframes nr-session-spinner {
+  to { transform: rotate(360deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nr-splash-loading-indicator { animation: none; border-top-color: #3478f6; }
+}
