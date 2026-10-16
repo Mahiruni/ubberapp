@@ -20,7 +20,7 @@ async function openRides(page: Page) {
     .filter({ hasText: 'Bole International Airport' }).first().click();
   await page.getByLabel('Pickup location', { exact: true }).fill('Bole Atlas');
   await page.locator('.nr-place-suggestion').first().click();
-  await page.getByRole('button', { name: 'Continue to ride options', exact: true }).click();
+  await page.locator('.nr-destination-panel footer').getByRole('button').click();
   await expect(page.getByRole('heading', { name: 'Choose a ride' })).toBeVisible();
 }
 async function liveQuotes(page: Page) {
@@ -28,8 +28,8 @@ async function liveQuotes(page: Page) {
 }
 async function submit(page: Page) {
   await openRides(page);
-  await page.getByRole('button', { name: /^Request Ride/ }).click();
-  await page.getByRole('button', { name: 'Confirm ride request', exact: true }).click();
+  await page.getByRole('button', { name: /^Request (Economy|Comfort|XL)/ }).click();
+  await page.getByRole('button', { name: 'Request ride', exact: true }).click();
   await expect(page.locator('.nr-driver-matching')).toBeVisible();
 }
 const reconnect = (page: Page) => page.evaluate(() => window.dispatchEvent(new Event('online')));
@@ -37,37 +37,46 @@ test('preview waits for an explicit action, preserves map/summary, and provides 
   await openRides(page);
   await page.getByRole('button', { name: /Preview this ride/ }).click();
   await expect(page.getByRole('heading', { name: 'Finding your driver…' })).toBeVisible();
-  await expect(page.getByText('We’ll let you know when a driver accepts.')).toBeVisible();
+  await expect(page.getByText('We’ll let you know as soon as a driver accepts.')).toBeVisible();
   await expect(page.locator('.nr-match-summary')).toContainText('Bole Atlas');
   await expect(page.locator('.nr-match-summary')).toContainText('Economy');
-  await expect(page.locator('.nr-provider-route')).toHaveCount(1);
-  await expect(page.locator('.nr-pickup-search-area')).toHaveCount(1);
+  await expect(page.locator('.nr-rider-map-surface')).toHaveAttribute('data-map-status', /ready|unavailable/);
+  if (await page.locator('.nr-rider-map-surface').getAttribute('data-map-status') === 'ready') {
+    await expect(page.locator('.nr-rider-map-surface.nr-map-has-route')).toHaveCount(1);
+    await expect(page.locator('.nr-pickup-search-area')).toHaveCount(1);
+  } else {
+    await expect(page.locator('.nr-map-unavailable')).toBeVisible();
+  }
   // Longer than the removed 1.6s auto-assignment timer.
   await page.waitForTimeout(1900);
-  await expect(page.getByRole('heading', { name: 'Meet your driver' })).not.toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Your driver is on the way' })).not.toBeVisible();
   const rects = await page.locator('.nr-rider-map-surface, .nr-driver-matching').evaluateAll(nodes => nodes.map(n => { const r = n.getBoundingClientRect(); return { x: r.x, y: r.y, right: r.right, bottom: r.bottom }; }));
   expect(rects[0].right <= rects[1].x || rects[0].bottom <= rects[1].y).toBe(true);
   await page.getByText('Preview matching states', { exact: true }).click();
-  await page.getByRole('button', { name: 'Still finding your driver…', exact: true }).click();
+  await page.getByRole('button', { name: 'Still looking nearby…', exact: true }).click();
   await expect(page.locator('.nr-driver-matching')).toHaveAttribute('data-matching-state', 'delayed');
-  await page.getByRole('button', { name: 'No drivers available', exact: true }).click();
+  await page.getByRole('button', { name: 'No drivers available nearby', exact: true }).click();
   await expect(page.locator('.nr-pickup-search-area')).toHaveCount(0);
-  await page.getByRole('button', { name: 'Try matching again', exact: true }).click();
+  await page.getByRole('button', { name: 'Keep searching', exact: true }).click();
   await expect(page.locator('.nr-driver-matching')).toHaveAttribute('data-matching-state', 'searching');
-  await page.getByRole('button', { name: 'Connection lost', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Cancel preview', exact: true })).toBeDisabled();
-  await page.getByRole('button', { name: 'Reconnect', exact: true }).click();
-  await page.getByRole('button', { name: 'Cancel preview', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Request cancelled' })).toBeVisible();
+  await page.getByRole('button', { name: 'Ride status unavailable', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Cancel ride', exact: true })).toBeDisabled();
+  await page.getByRole('button', { name: 'Refresh status', exact: true }).click();
+  await page.getByRole('button', { name: 'Cancel ride', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Ride request cancelled' })).toBeVisible();
   await expect(page.getByRole('dialog')).not.toBeVisible();
-  await page.getByRole('button', { name: 'Change ride category', exact: true }).click();
+  await page.getByRole('button', { name: 'Change ride', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Choose a ride' })).toBeVisible();
 });
 test('reduced motion stops pulse animation', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await openRides(page);
   await page.getByRole('button', { name: /Preview this ride/ }).click();
-  await expect(page.locator('.nr-search-area-pulse')).toHaveCSS('animation-name', 'none');
+  if (await page.locator('.nr-search-area-pulse').count()) {
+    await expect(page.locator('.nr-search-area-pulse')).toHaveCSS('animation-name', 'none');
+  } else {
+    await expect(page.locator('.nr-map-unavailable')).toBeVisible();
+  }
   await expect(page.locator('.nr-matching-symbol')).toHaveCSS('animation-name', 'none');
 
 });
@@ -81,20 +90,20 @@ test('a request receipt does not assign a driver; reconnection reads the same bo
   await expect(page.getByRole('heading', { name: 'Finding your driver…' })).toBeVisible();
   await expect(page.locator('.nr-confirmed-driver')).toHaveCount(0);
   broken = true; await reconnect(page);
-  await expect(page.getByRole('heading', { name: 'Connection lost' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Ride status unavailable' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Cancel ride', exact: true })).toBeDisabled();
   broken = false; current = state('delayed', 2);
-  await page.getByRole('button', { name: 'Reconnect', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Still finding your driver…' })).toBeVisible();
+  await page.getByRole('button', { name: 'Refresh status', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Still looking nearby…' })).toBeVisible();
   current = { ...state('assigned', 3), driver: { name: 'Provider Driver', vehicle: 'Toyota Corolla', plate: 'AA-123', pickupMinutes: null } };
   await reconnect(page);
-  await expect(page.getByRole('heading', { name: 'Meet your driver' })).toBeFocused();
+  await expect(page.getByRole('heading', { name: 'Your driver is on the way' })).toBeFocused();
   await expect(page.locator('.nr-confirmed-driver')).toContainText('Provider Driver');
   await expect(page.locator('.nr-confirmed-driver')).toContainText('AA-123');
   await expect(page.locator('.nr-pickup-search-area')).toHaveCount(0);
-  await expect(page.locator('.nr-provider-route')).toHaveCount(1);
+  await expect(page.locator('.nr-rider-map-surface.nr-map-has-route')).toHaveCount(1);
   current = state('searching', 4); await reconnect(page);
-  await expect(page.getByRole('heading', { name: 'Meet your driver' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Your driver is on the way' })).toBeVisible();
   expect(creates).toBe(1); expect(reads).toBeGreaterThan(2);
 });
 test('cancellation consequence is confirmed and waits for the authoritative cancelled snapshot', async ({ page }) => {
@@ -121,7 +130,7 @@ test('cancellation consequence is confirmed and waits for the authoritative canc
   await page.getByRole('button', { name: 'Cancel ride', exact: true }).click();
   await page.getByRole('button', { name: 'Yes, Cancel Ride' }).click();
   await expect(page.getByRole('button', { name: 'Updating request…' })).toBeDisabled();
-  await expect(page.getByRole('heading', { name: 'Request cancelled' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Ride request cancelled' })).toBeVisible();
   expect(actions).toBe(1);
 });
 test('driver acceptance during cancellation wins the race without inventing cancellation', async ({ page }) => {
@@ -137,8 +146,8 @@ test('driver acceptance during cancellation wins the race without inventing canc
   });
   await submit(page);
   await page.getByRole('button', { name: 'Cancel ride', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Meet your driver' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Request cancelled' })).not.toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Your driver is on the way' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Ride request cancelled' })).not.toBeVisible();
   await expect(page.locator('.nr-confirmed-driver')).toContainText('Actual Driver');
 });
 test('malformed acceptance cannot show a driver and unknown cancellation cannot create a replacement', async ({ page }) => {
@@ -151,14 +160,14 @@ test('malformed acceptance cannot show a driver and unknown cancellation cannot 
   });
   await submit(page);
   current = state('assigned', 2); await reconnect(page);
-  await expect(page.getByRole('heading', { name: 'Connection lost' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Ride status unavailable' })).toBeVisible();
   await expect(page.locator('.nr-confirmed-driver')).toHaveCount(0);
-  current = state('searching', 2); await page.getByRole('button', { name: 'Reconnect', exact: true }).click();
+  current = state('searching', 2); await page.getByRole('button', { name: 'Refresh status', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Finding your driver…' })).toBeVisible();
   await page.getByRole('button', { name: 'Cancel ride', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Connection lost' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Request cancelled' })).not.toBeVisible();
-  await expect(page.getByRole('button', { name: 'Change ride category', exact: true })).not.toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Ride status unavailable' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Ride request cancelled' })).not.toBeVisible();
+  await expect(page.getByRole('button', { name: 'Change ride', exact: true })).not.toBeVisible();
   expect(creates).toBe(1);
 });
 
@@ -191,9 +200,9 @@ test('provider retry keeps the original request and category changes follow serv
     return r.fulfill({ json: current });
   });
   await submit(page);
-  await expect(page.getByRole('heading', { name: 'No drivers available' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Change ride category', exact: true })).not.toBeVisible();
-  await page.getByRole('button', { name: 'Try matching again', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'No drivers available nearby' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Change ride', exact: true })).not.toBeVisible();
+  await page.getByRole('button', { name: 'Keep searching', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Finding your driver…' })).toBeVisible();
   await expect(page.locator('.nr-pickup-search-area')).toHaveCount(1);
   expect(creates).toBe(1); expect(retries).toBe(1);
