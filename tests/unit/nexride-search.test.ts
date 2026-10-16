@@ -29,6 +29,11 @@ describe("destination and provider boundaries", () => {
     expect(placeKey(kolfe[0])).not.toBe(placeKey(kolfe[1]));
     expect(locality(kolfe[0], "en")).not.toBe(locality(kolfe[1], "en"));
   });
+  it("does not invent suggested places solely from popularity", () => {
+    expect(searchPreviewPlaces("not-a-real-destination")).toEqual([]);
+    expect(searchPreviewPlaces("unfindable-location-zz")).toEqual([]);
+    expect(searchPreviewPlaces("Meskel").some((place) => place.name === "Meskel Square")).toBe(true);
+  });
   it("labels default coverage as preview and validates configured bounds", () => {
     expect(serviceBounds()).toHaveProperty("kind", "preview");
     expect(serviceBounds("38,8,39,10")).toHaveProperty("kind", "configured");
