@@ -42,10 +42,10 @@ test("rider can complete an explicitly labeled preview and save a rating", async
   await assigned.getByRole('button', {name:'Chat',exact:true}).click();
   await expect(assigned.getByRole('dialog')).toContainText('not delivered');
   await assigned.getByRole('button', {name:'Close dialog'}).click();
-  await page.getByRole('button', {name:'Start preview trip',exact:true}).click();
+  await page.getByRole('button', {name:'Start trip',exact:true}).click();
   const active = page.frameLocator('iframe[title="NexRide active trip"]');
   await expect(active.getByRole('heading', {name:'On trip',exact:true})).toBeVisible();
-  await page.getByRole('button', {name:'Complete preview trip',exact:true}).click();
+  await page.getByRole('button', {name:'Complete trip',exact:true}).click();
   const receipt = page.frameLocator('iframe[title="NexRide trip receipt and rating"]');
   await expect(receipt.getByRole('heading', {name:'Trip completed!',exact:true})).toBeVisible();
   await receipt.getByRole('radio', {name:/5 star/}).check();
@@ -62,18 +62,15 @@ test("driver mode never simulates availability without an authenticated eligible
   page,
 }) => {
   await page.goto("/");
-  await page
-    .getByRole("button", { name: "Profile", exact: true })
-    .first()
-    .click();
-  await page.getByRole("button", { name: "Switch to driver" }).click();
-  await expect(page.locator(".nr-app")).toHaveAttribute("data-mode", "driver");
-  await expect(
-    page.getByText("Your driver session could not be restored.", { exact: true }),
-  ).toBeVisible();
+  await page.getByRole("button", { name: "Open menu", exact: true }).click();
+  await page.getByRole("dialog", { name: "Rider menu" })
+    .getByRole("button", { name: /Drive with NexRide/ }).click();
+  await expect(page).toHaveURL(/\/driver(?:\/|$)/);
+  // Public Driver onboarding must never expose authenticated availability.
+  await expect(page.getByRole("link", { name: "Sign in", exact: true })).toBeVisible();
   await expect(
     page.getByRole("button", { name: "Go Online", exact: true }),
-  ).toBeDisabled();
+  ).toHaveCount(0);
   await expect(
     page.getByRole("button", { name: /Preview going online/i }),
   ).toHaveCount(0);
@@ -99,10 +96,9 @@ test("Amharic, profile edits, keyboard dialogs, and local storage migration work
   await expect
     .poll(() => page.evaluate(() => localStorage.getItem("nexride-state")))
     .toBeNull();
-  await page
-    .getByRole("button", { name: "Profile", exact: true })
-    .first()
-    .click();
+  await page.getByRole("button", { name: "Open menu", exact: true }).click();
+  await page.getByRole("dialog", { name: "Rider menu" })
+    .getByRole("button", { name: /Account.*Your profile/ }).click();
   await page
     .getByRole("button", { name: "Edit profile", exact: true })
     .click();

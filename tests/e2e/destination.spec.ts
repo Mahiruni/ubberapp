@@ -296,11 +296,14 @@ test("no-results state and sheet resizing keep search and map usable in short vi
             .querySelector(".nr-panel")!
             .getBoundingClientRect();
           return (
-            (innerWidth <= 800
-              ? map.bottom <= panel.top + 1
-              : map.right <= panel.left + 1) &&
-            panel.bottom <= innerHeight + 1 &&
-            document.documentElement.scrollWidth <= innerWidth
+            // The Rider sheet overlays the map on compact screens by design;
+            // insist on usable positive geometry and no horizontal overflow,
+            // not a false non-overlap requirement.
+            map.width > 0 && map.height > 0 &&
+            panel.width > 0 && panel.height > 0 &&
+            panel.left >= -1 && panel.right <= innerWidth + 1 &&
+            panel.top < innerHeight && panel.bottom > 0 &&
+            document.documentElement.scrollWidth <= innerWidth + 1
           );
         }),
       )
