@@ -20,7 +20,7 @@ async function select(
   name: string,
 ) {
   await page
-    .getByLabel(field === "pickup" ? "Edit pickup" : "Search destination", {
+    .getByLabel(field === "pickup" ? "Pickup location" : "Search destination", {
       exact: true,
     })
     .fill(name);
@@ -58,7 +58,7 @@ test("search requires selected endpoints, finds both scripts and distinguishes l
   page,
 }) => {
   await openSearch(page);
-  await expect(page.getByLabel("Edit pickup", { exact: true })).toHaveValue(
+  await expect(page.getByLabel("Pickup location", { exact: true })).toHaveValue(
     "",
   );
   await expect(
@@ -97,7 +97,7 @@ test("provider route is rendered and editing pickup invalidates it immediately",
   await expect(page.locator(".nr-pickup-marker")).toHaveCount(1);
   await expect(page.locator(".nr-destination-marker")).toHaveCount(1);
   await page
-    .getByLabel("Edit pickup", { exact: true })
+    .getByLabel("Pickup location", { exact: true })
     .fill("unselected text");
   await expect(page.locator(".nr-provider-route")).toHaveCount(0);
   await expect(
@@ -117,7 +117,7 @@ test("dragging pickup updates its label and requires confirmation before rerouti
   await page.mouse.down();
   await page.mouse.move(pin.x + 44, pin.y + 32, { steps: 8 });
   await page.mouse.up();
-  await expect(page.getByLabel("Edit pickup", { exact: true })).toHaveValue(
+  await expect(page.getByLabel("Pickup location", { exact: true })).toHaveValue(
     /Map pin/,
   );
   await expect(page.locator(".nr-provider-route")).toHaveCount(0);
@@ -140,7 +140,7 @@ test("map selection keeps exact coordinates synchronized without a geocoder", as
   );
   await openSearch(page);
   await select(page, "destination", "Meskel Square");
-  await page.getByLabel("Edit pickup", { exact: true }).focus();
+  await page.getByLabel("Pickup location", { exact: true }).focus();
   await page
     .getByRole("button", { name: "Choose on map", exact: true })
     .click();
@@ -159,7 +159,7 @@ test("map selection keeps exact coordinates synchronized without a geocoder", as
   await page
     .getByRole("button", { name: "Confirm pickup pin", exact: true })
     .click();
-  await expect(page.getByLabel("Edit pickup", { exact: true })).toHaveValue(
+  await expect(page.getByLabel("Pickup location", { exact: true })).toHaveValue(
     "Map pin",
   );
   await expect(page.locator(".nr-pickup-marker")).toHaveCount(1);
@@ -220,7 +220,7 @@ test("an uncertain device location requires explicit pickup confirmation", async
   );
   await openSearch(page);
   await select(page, "destination", "Meskel Square");
-  await expect(page.getByLabel("Edit pickup", { exact: true })).toHaveValue(
+  await expect(page.getByLabel("Pickup location", { exact: true })).toHaveValue(
     "Bole",
   );
   await expect(
@@ -321,7 +321,7 @@ test("a late route response cannot restore a cleared journey", async ({
   await select(page, "pickup", "Bole Atlas");
   await expect.poll(() => started).toBe(true);
   await page
-    .getByLabel("Edit pickup", { exact: true })
+    .getByLabel("Pickup location", { exact: true })
     .fill("changed pickup");
   release();
   await expect(page.locator(".nr-provider-route")).toHaveCount(0);
