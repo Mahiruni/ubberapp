@@ -257,10 +257,10 @@ export function RiderMenu({
         ref={triggerRef}
         type="button"
         className={`nr-rider-hamburger ${className}`}
-        aria-label={say("Open menu", "ምናሌ ክፈት")}
+        aria-label={open ? say("Close menu", "ምናሌ ዝጋ") : say("Open menu", "ምናሌ ክፈት")}
         aria-expanded={open}
         aria-controls="nr-rider-drawer"
-        onClick={() => setOpen(true)}
+        onClick={() => setOpen(value => !value)}
         onKeyDown={onTriggerKeyDown}
       >
         <span className="nr-rider-hamburger-line long" />
@@ -298,19 +298,20 @@ export function RiderMenu({
 
 
             <button type="button" className="nr-menu-person" disabled={locked} onClick={() => navigate("profile")}><span className="nr-menu-person-avatar">{identity.avatar ? <img src={identity.avatar} alt="" onError={() => setIdentity(current => ({...current,avatar:""}))}/> : (identity.name.trim().split(/\s+/).slice(0,2).map(v=>v[0]).join("").toUpperCase() || <Icon name="user"/>)}</span><span className="nr-menu-person-copy"><strong>{identity.name || say("Welcome to NexRide", "እንኳን ወደ NexRide መጡ")}</strong><small>{say("View profile", "መገለጫ ይመልከቱ")}</small></span><Icon name="chevron" size={18}/></button>
-            <div className="nr-rider-drawer-section-label">{say("Your NexRide", "የእርስዎ NexRide")}</div>
+
             <nav
               className="nr-rider-drawer-nav"
               aria-label={say("Rider navigation", "የተሳፋሪ አሰሳ")}
             >
-              {items.map((item) => {
+              {[...items.slice(0, 4), ...items.slice(6), ...items.slice(4, 6)].map((item) => {
                 const selected = active === item.id;
                 const disabled =
                   locked && !["safety", "messages"].includes(item.id);
                 return (
                   <Fragment key={item.id}>
-                  {item.id === "safety" && <div className="nr-rider-drawer-section-label">{say("Help & safety", "እገዛ እና ደህንነት")}</div>}
-                  {item.id === "profile" && <div className="nr-rider-drawer-section-label">{say("Your account", "የእርስዎ መለያ")}</div>}
+                  {item.id === "home" && <div className="nr-rider-drawer-section-label">{say("MAIN", "ዋና")}</div>}
+                  {item.id === "safety" && <div className="nr-rider-drawer-section-label">{say("SAFETY & SUPPORT", "ደህንነት እና ድጋፍ")}</div>}
+                  {item.id === "profile" && <div className="nr-rider-drawer-section-label">{say("ACCOUNT & PREFERENCES", "መለያ እና ምርጫዎች")}</div>}
                   <button
                     type="button"
                     className={selected ? "active" : ""}
