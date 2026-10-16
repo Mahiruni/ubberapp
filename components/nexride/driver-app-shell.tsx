@@ -116,6 +116,7 @@ function DriverHamburgerMenu({
   const closeRef = useRef<HTMLButtonElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLElement>(null);
+  const panelTouchStart = useRef<{x:number;y:number}|null>(null);
   const active = activeOverride || driverNavForPath(pathname);
 
   useEffect(() => {
@@ -265,7 +266,21 @@ function DriverHamburgerMenu({
       {open && createPortal(
         <div className="nr-driver-menu-layer" data-theme={resolvedTheme} role="presentation">
           <button className="nr-driver-menu-backdrop" type="button" aria-label={language === "am" ? "ምናሌን ዝጋ" : "Close menu"} onClick={() => setOpen(false)} />
-          <aside ref={panelRef} id="nr-driver-menu" className="nr-driver-menu-panel" role="dialog" aria-modal="true" aria-labelledby="nr-driver-menu-title">
+          <aside ref={panelRef} id="nr-driver-menu" className="nr-driver-menu-panel"
+            onTouchStart={(event) => {
+              const touch = event.touches[0];
+              panelTouchStart.current = touch ? {x:touch.clientX,y:touch.clientY} : null;
+            }}
+            onTouchEnd={(event) => {
+              const start = panelTouchStart.current;
+              panelTouchStart.current = null;
+              const touch = event.changedTouches[0];
+              if (!start || !touch) return;
+              const dx = touch.clientX - start.x;
+              const dy = touch.clientY - start.y;
+              if (dx < -72 && Math.abs(dx) > Math.abs(dy) * 1.4) setOpen(false);
+            }}
+            role="dialog" aria-modal="true" aria-labelledby="nr-driver-menu-title">
             <div className="nr-driver-menu-head">
               <Link href="/driver/profile" className="nr-driver-menu-identity" onClick={() => setOpen(false)}>
                 <div className="nr-driver-menu-avatar">
