@@ -23,19 +23,19 @@ html { background-color:#000; }
   color-scheme:dark;
   --nr-bg:#000;--nr-bg-secondary:#000;
   --nr-surface:#0a0a0a;--nr-surface-raised:#111;
-  --nr-text:#fff;--nr-text-secondary:#fff;--nr-text-muted:#e0e0e0;
+  --nr-text:#fff;--nr-text-secondary:#fff;--nr-text-muted:#fff;
   --nr-border:#333;--nr-border-strong:#555;
   --nx-paper:#000;--nx-paper-2:#080808;--nx-card:#0a0a0a;--nx-card-solid:#0a0a0a;
-  --nx-text:#fff;--nx-mute:#e0e0e0;--nx-mute-2:#bdbdbd;--nx-line:#333;
+  --nx-text:#fff;--nx-mute:#fff;--nx-mute-2:#fff;--nx-line:#333;
   --bg:#000;--surface:#0a0a0a;--surface-alt:#101010;
-  --text:#fff;--muted:#e0e0e0;--line:#333;
+  --text:#fff;--muted:#fff;--line:#333;
   --nr-id-bg:#000;--nr-id-surface:#0a0a0a;--nr-id-field:#111;
-  --nr-id-text:#fff;--nr-id-muted:#e0e0e0;--nr-id-line:#333;
+  --nr-id-text:#fff;--nr-id-muted:#fff;--nr-id-line:#333;
   --driver-bg:#000;--driver-surface:#0a0a0a;--driver-surface-elevated:#111;
-  --driver-text-primary:#fff;--driver-text-secondary:#e0e0e0;
+  --driver-text-primary:#fff;--driver-text-secondary:#fff;
   --driver-nav-bg:#000;--driver-overlay:#090909;
   --admin-bg:#000;--admin-surface:#0a0a0a;--admin-surface-2:#111;
-  --admin-text:#fff;--admin-muted:#e0e0e0;--admin-line:#333;
+  --admin-text:#fff;--admin-muted:#fff;--admin-line:#333;
   background:#000 !important;color:#fff !important;
 }
 /* The Rider workspace and top-level Driver/Admin layouts must not keep navy
@@ -73,7 +73,7 @@ html { background-color:#000; }
 :is(.nr-app,.nr-driver-app-shell,.nr-entry-redesign,.admin-app)[data-theme="dark"]
   :is(input,textarea)::placeholder{color:#bdbdbd !important;opacity:1}
 :is(.nr-app,.nr-driver-app-shell,.nr-entry-redesign,.admin-app)[data-theme="dark"]
-  :is(p,small,time,.nr-muted,.nr-text-secondary,.nr-splash-status){color:#e0e0e0}
+  :is(p,small,time,.nr-muted,.nr-text-secondary,.nr-splash-status){color:#fff}
 :is(.nr-app,.nr-driver-app-shell,.nr-entry-redesign,.admin-app)[data-theme="dark"]
   :is(button,a,[role="button"]):focus-visible{outline:2px solid #fff !important;outline-offset:3px}
 .nr-entry-redesign[data-theme="dark"] .nr-entry-hero{background-color:#000 !important}
