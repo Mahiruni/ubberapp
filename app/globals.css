@@ -299,3 +299,20 @@ html, body { margin: 0; padding: 0; }
 .driver-page .driver-head,.driver-page .driver-request-panel,.driver-page .driver-earn-card,.driver-page .preference-card{background:var(--nr-midnight-surface);color:#fff}
 .driver-page .driver-head p,.driver-page .demand-copy>span:last-child{color:var(--nr-midnight-muted)}
 @media(prefers-reduced-motion:reduce){.driver-page .driver-go-online{transition:none}}
+
+
+/* NexRide navigation v2: shared Midnight Edition motion and grouping. */
+.nr-rider-drawer-layer,.nr-driver-menu-layer{--nr-nav-bg:#141a27;--nr-nav-fg:#fff;--nr-nav-muted:#c5ced8;--nr-nav-accent:#3478f6}
+.nr-rider-drawer-layer[data-theme="light"],.nr-driver-menu-layer[data-theme="light"]{--nr-nav-bg:#fff;--nr-nav-fg:#102334;--nr-nav-muted:#536578}
+.nr-rider-drawer,.nr-driver-menu-panel{background:var(--nr-nav-bg)!important;color:var(--nr-nav-fg)!important;width:min(88vw,360px);max-height:100dvh;overflow-y:auto;overscroll-behavior:contain;animation:nr-nav-enter 260ms cubic-bezier(.2,.8,.2,1) both;will-change:transform;scrollbar-width:thin}
+.nr-rider-drawer-backdrop,.nr-driver-menu-backdrop{animation:nr-nav-shade 200ms ease-out both}
+.nr-rider-drawer-section-label,.nr-driver-menu-section-label{margin-top:14px!important;padding-top:12px!important;border-top:1px solid rgba(128,145,170,.18);letter-spacing:.11em}
+.nr-rider-drawer-nav button.active,.nr-driver-menu-row[data-active="true"]{background:rgba(52,120,246,.16)!important;color:var(--nr-nav-fg)!important}
+.nr-rider-drawer-nav button:focus-visible,.nr-driver-menu-row:focus-visible,.nr-rider-drawer-close:focus-visible,.nr-driver-menu-close:focus-visible{outline:2px solid var(--nr-nav-accent);outline-offset:2px}
+.nr-rider-drawer-nav,.nr-driver-menu-nav{color:var(--nr-nav-fg)}
+.nr-rider-drawer-nav small,.nr-driver-menu-row-copy small{color:var(--nr-nav-muted)}
+.nr-rider-hamburger,.nr-driver-menu-trigger{min-width:48px;min-height:48px}
+.nr-rider-drawer,.nr-driver-menu-panel{padding-bottom:max(12px,env(safe-area-inset-bottom))}
+@keyframes nr-nav-enter{from{opacity:.65;transform:translate3d(-24px,0,0)}to{opacity:1;transform:translate3d(0,0,0)}}
+@keyframes nr-nav-shade{from{opacity:0}to{opacity:1}}
+@media(prefers-reduced-motion:reduce){.nr-rider-drawer,.nr-driver-menu-panel,.nr-rider-drawer-backdrop,.nr-driver-menu-backdrop{animation:none!important;transition:none!important}}
