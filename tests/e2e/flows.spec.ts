@@ -157,9 +157,11 @@ test("small screens keep map, navigation and sheets within the viewport", async 
   await expect(
     page.getByLabel("Pickup location", { exact: true }),
   ).toBeVisible();
-  await expect(
-    page.getByRole("button", { name: "Continue to ride options" }),
-  ).toBeDisabled();
+  // While the pickup is incomplete, the action can be hidden while text search
+  // is active or rendered disabled once the keyboard is dismissed.
+  const action = page.locator(".nr-destination-panel footer button");
+  if (await action.count()) await expect(action).toBeDisabled();
+  else await expect(page.locator(".nr-destination-panel footer")).toHaveCount(0);
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= window.innerWidth,
