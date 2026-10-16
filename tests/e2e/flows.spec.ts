@@ -47,10 +47,10 @@ test("rider can complete an explicitly labeled preview and save a rating", async
   await expect(active.getByRole('heading', {name:'On trip',exact:true})).toBeVisible();
   await page.getByRole('button', {name:'Complete trip',exact:true}).click();
   const receipt = page.frameLocator('iframe[title="NexRide trip receipt and rating"]');
-  await expect(receipt.getByRole('heading', {name:'Trip completed!',exact:true})).toBeVisible();
+  await expect(receipt.getByRole('heading', {name:'You’ve arrived',exact:true})).toBeVisible();
   await receipt.getByRole('radio', {name:/5 star/}).check();
-  await receipt.getByRole('button', {name:'Submit',exact:true}).click();
-  await expect(receipt.getByText('Thank you for your feedback.',{exact:true})).toBeVisible();
+  await receipt.getByRole('button', {name:'Submit rating',exact:true}).click();
+  await expect(receipt.getByText('Thanks for your feedback.',{exact:true})).toBeVisible();
   await page.reload();
   const trip = await page.evaluate(
     () => JSON.parse(localStorage.getItem("nexride-preview-v2")!).trip,
@@ -62,9 +62,9 @@ test("driver mode never simulates availability without an authenticated eligible
   page,
 }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "Open menu", exact: true }).click();
-  await page.getByRole("dialog", { name: "Rider menu" })
-    .getByRole("button", { name: /Drive with NexRide/ }).click();
+  // Exercise the public Driver entry independently of the authenticated Rider
+  // menu (which has dedicated navigation tests).
+  await page.goto("/driver");
   await expect(page).toHaveURL(/\/driver(?:\/|$)/);
   // Public Driver onboarding must never expose authenticated availability.
   await expect(page.getByRole("link", { name: "Sign in", exact: true })).toBeVisible();
@@ -96,11 +96,10 @@ test("Amharic, profile edits, keyboard dialogs, and local storage migration work
   await expect
     .poll(() => page.evaluate(() => localStorage.getItem("nexride-state")))
     .toBeNull();
-  await page.getByRole("button", { name: "Open menu", exact: true }).click();
-  await page.getByRole("dialog", { name: "Rider menu" })
-    .getByRole("button", { name: /Account.*Your profile/ }).click();
+  // Deep links are part of the Rider Account navigation contract.
+  await page.goto("/?screen=profile");
   await page
-    .getByRole("button", { name: "Edit profile", exact: true })
+    .getByRole("button", { name: "Edit", exact: true })
     .click();
   await page.getByLabel("Full name", { exact: true }).fill("NexRide Test");
   await page.getByRole("button", { name: "Save details" }).click();

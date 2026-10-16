@@ -138,9 +138,9 @@ test("unavailable categories cannot be selected and all charges appear before re
   await page.route("**/api/rider/fares", (r) => r.fulfill({ json: set }));
   await openRides(page);
   await expect(page.getByRole("radio", { name: /Economy/ })).toBeDisabled();
-  await expect(
-    page.getByRole("button", { name: /^Request (Economy|Comfort|XL)$/ }),
-  ).toBeDisabled();
+  // The booking model moves away from an unavailable default Economy offer
+  // to the first genuinely available category instead of offering Economy.
+  await expect(page.getByRole("button", { name: "Request Comfort", exact: true })).toBeEnabled();
   await page.getByRole("radio", { name: /Comfort/ }).click();
   await expect(page.locator(".nr-fare-explanation")).toContainText(
     "Confirmed quote",
@@ -176,7 +176,7 @@ test("changed pricing requires explicit review before a second attempt", async (
     .getByRole("dialog").getByRole("button", { name: "Request ride", exact: true })
     .click();
   await expect(page.locator(".nr-fare-state")).toContainText(
-    "The price has changed",
+    "Fare updated",
   );
   await expect(page.locator(".nr-fare-state")).toContainText("ETB 180");
   await expect(page.locator(".nr-fare-state")).toContainText("ETB 220");
@@ -185,14 +185,14 @@ test("changed pricing requires explicit review before a second attempt", async (
   ).toBeDisabled();
   expect(calls).toBe(1);
   await page
-    .getByRole("button", { name: "Accept updated price", exact: true })
+    .getByRole("button", { name: "Use updated fare", exact: true })
     .click();
   await page.getByRole("button", { name: /^Request (Economy|Comfort|XL)$/ }).click();
   await page
     .getByRole("dialog").getByRole("button", { name: "Request ride", exact: true })
     .click();
   await expect(page.locator(".nr-fare-state")).toContainText(
-    "Ride request couldn’t be completed",
+    "We couldn’t request this ride",
   );
   expect(calls).toBe(2);
 });
@@ -229,7 +229,7 @@ test("pending double taps are deduplicated and retries preserve their idempotenc
   expect(keys).toHaveLength(1);
   release();
   await expect(page.locator(".nr-fare-state")).toContainText(
-    "Ride request couldn’t be completed",
+    "We couldn’t request this ride",
   );
   await page.getByRole("button", { name: /^Request (Economy|Comfort|XL)$/ }).click();
   await page
