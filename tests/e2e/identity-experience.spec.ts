@@ -50,7 +50,7 @@ const noSymbol = async (page: Page) => {
 test('welcome actions fit small phones, preserve role context and use a text wordmark', async ({ page }, info) => {
   await page.setViewportSize({ width: 360, height: 640 });
   for (const [path, heading, action] of [
-    ['/rider', 'Your city. Your ride.', 'Get started'],
+    ['/rider', 'Your city. Your pace. Your NexRide.', 'Book a ride'],
     ['/driver', 'Drive. Earn. Grow.', 'Start driving'],
   ]) {
     await page.goto(path);

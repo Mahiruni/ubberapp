@@ -1,5 +1,6 @@
 'use client';
 import Image from 'next/image';
+import { StandardLink } from './confidence';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { supabase } from '../../lib/supabase';
 import { ALERTS_KEY, readAccount, saveAccount, validateProfile, type RiderAccount } from '../../lib/nexride-account';
@@ -292,6 +293,7 @@ export function RiderProfile(props:Props) {
 
     {notice&&<div className="nr-account-success" role="status"><Icon name="check" size={17}/><span>{notice}</span></div>}
 
+    <StandardLink/>
     <footer className="nr-account-footer nr-account-standard-footer">
       <button className="nr-account-signout-button" onClick={()=>open('signout')}>
         <Icon name="power" size={18}/>{account||loadError?say('Sign out','ውጣ'):say('Exit preview','ከማሳያ ውጣ')}

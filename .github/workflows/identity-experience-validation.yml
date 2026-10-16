@@ -38,7 +38,7 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: npm run build
       - name: Browser validation against the production build
-        run: npx playwright test tests/e2e/identity-experience.spec.ts tests/e2e/driver-portrait.spec.ts tests/e2e/trip-screens.spec.ts --project=chromium --project=mobile --workers=2
+        run: npx playwright test tests/e2e/confidence-experience.spec.ts tests/e2e/identity-experience.spec.ts tests/e2e/driver-portrait.spec.ts tests/e2e/trip-screens.spec.ts --project=chromium --project=mobile --workers=2
       - uses: actions/upload-artifact@v4
         if: always()
         with:

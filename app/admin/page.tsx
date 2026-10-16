@@ -767,6 +767,11 @@ function Overview({
       </div>
 
       <section className="admin-card module-strip">
+        <div><span className="admin-kicker">THE NEXRIDE STANDARD</span><h3>Earn the next ride</h3><p>Recorded service quality, clear expectations, and operational follow-through.</p></div>
+        <div className="quick-actions"><Link href="/admin/quality">Service quality →</Link><Link href="/standard">Service standards →</Link><Link href="/admin/reliability">GPS & Android reliability →</Link></div>
+      </section>
+
+      <section className="admin-card module-strip">
         <div>
           <span className="admin-kicker">OPERATIONS</span>
           <h3>Quick actions</h3>

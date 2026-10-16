@@ -65,6 +65,7 @@ export function RideSelection({
         </button>
       </header>
       <div className="nr-ride-selection-body">
+        <div className="nr-booking-assurance"><Icon name="shield" size={18}/><p>{t("brandMatchingNote")}</p></div>
         <div className="nr-ride-route-line">
           <span className="nr-route-dot" />
           <span>

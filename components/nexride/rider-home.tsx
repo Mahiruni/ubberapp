@@ -1,5 +1,6 @@
 "use client";
 
+import { StandardLink } from "./confidence";
 import { useContext } from "react";
 import { useSheetMotion } from "./use-sheet-motion";
 import { Brand, Icon, LanguageContext, ListRow, useTranslation } from "./ui";
@@ -100,7 +101,7 @@ export function RiderHomePanel({
 
         <div className="nr-rider-home-intro">
           <div>
-            <div className="nr-wrapper-brand"><Brand /><span>{language === "am" ? "የእርስዎ ጉዞ።" : "YOUR WAY FORWARD"}</span></div>
+            <div className="nr-wrapper-brand"><Brand /><span>{t("brandConfidence")}</span></div>
             <h2>
               {language === "am"
                 ? "ወዴት መሄድ ይፈልጋሉ?"
@@ -192,6 +193,7 @@ export function RiderHomePanel({
             </div>
           )}
 
+          <StandardLink/>
           <div className="nr-home-destinations">
             {rows.map((p) => (
               <ListRow
