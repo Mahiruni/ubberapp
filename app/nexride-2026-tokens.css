@@ -1,0 +1,5 @@
+.nr-app { --bg: #fafafc; --surface: #ffffff; --surface-alt: #f5f5fb; --text: #171720; --muted: #696b78; --line: #e9e9f0; --navy: #625cf6; --nr-indigo: #625cf6; --nr-violet: #9276f8; --nr-cyan: #7ddceb; --nr-peach: #ffcfb7; --nr-pink: #f4b6d2; color-scheme: light; }
+.nr-app[data-theme="dark"] { --bg: #090a10; --surface: #171820; --surface-alt: #20212b; --text: #f8f8fc; --muted: #a5a6b2; --line: #30313b; --navy: #8981ff; color-scheme: dark; }
+.nr-app[data-mode="driver"][data-theme="light"] { --bg: #fafafc; --surface: #ffffff; --surface-alt: #f5f5fb; --text: #171720; --muted: #696b78; --line: #e9e9f0; color-scheme: light; }
+.nr-app :is(button,a,input,select,textarea):focus-visible { outline: 3px solid #8981ff; outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) { .nr-app *, .nr-app *::before, .nr-app *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
