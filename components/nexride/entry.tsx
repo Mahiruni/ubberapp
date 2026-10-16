@@ -6,6 +6,7 @@ import { Brand, Icon, LanguageContext, useTranslation } from './ui';
 import { announceLanguage } from './language-provider';
 import { useAppearance } from '../../lib/nexride-appearance';
 import '../../app/auth-experience.css';
+import { StandardLink } from './confidence';
 
 export function EntryShell({ children, authMode, role = 'rider' }: {
   children: ReactNode; authMode?: 'signin' | 'signup' | 'forgot' | 'reset' | 'verify'; role?: 'rider' | 'driver';
@@ -18,7 +19,7 @@ export function EntryShell({ children, authMode, role = 'rider' }: {
         <Image src={role === 'driver' ? '/images/addis-skyline.webp' : '/images/addis-nexride-auth.webp'} alt="" fill priority sizes="(max-width:899px) 100vw, 50vw" className="nr-entry-city"/>
         <div className="nr-entry-hero-wash"/>
         <div className="nr-entry-hero-top"><Brand/><span className="nr-entry-role-tab">{t(role === 'driver' ? 'driver' : 'rider')}</span></div>
-        <div className="nr-entry-hero-copy"><span>{t('entryMadeInAddis')}</span><strong>{t(role === 'driver' ? 'entryDriveHeadline' : 'entryRideHeadline')}</strong><p>{t('brandTagline')}</p><div className="nr-entry-hero-points"><span>{t('entryOneAccount')}</span><span>{t('entryYourCity')}</span></div></div>
+        <div className="nr-entry-hero-copy"><span>{t('entryMadeInAddis')}</span><strong>{t(role === 'driver' ? 'entryDriveHeadline' : 'brandWelcome')}</strong><p>{t('brandTagline')}</p><div className="nr-entry-hero-points"><span>{t('entryOneAccount')}</span><span>{t('entryYourCity')}</span></div></div>
       </aside>
       <div className="nr-entry-content">
         <header className="nr-entry-tools">
@@ -26,7 +27,7 @@ export function EntryShell({ children, authMode, role = 'rider' }: {
           {authMode && <Link href={role === 'driver' ? '/driver' : '/rider'} className="nr-auth-back"><Icon name="back" size={18}/>{t('back')}</Link>}
           <button type="button" className="nr-auth-language-toggle" onClick={() => announceLanguage(language === 'en' ? 'am' : 'en')} aria-label={t('language')}>{language === 'en' ? 'አማርኛ' : 'English'}</button>
         </header>
-        <div className="nr-entry-form-content">{children}</div>
+        <div className="nr-entry-form-content">{children}{!authMode && <StandardLink role={role}/>}</div>
         <footer className="nr-entry-legal"><Link href="/explore/terms">{t('entryTerms')}</Link><span aria-hidden="true">·</span><Link href="/explore/privacy">{t('entryPrivacy')}</Link><span>{t('entryOneAccount')}</span></footer>
       </div>
     </section></div>

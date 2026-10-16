@@ -1,4 +1,5 @@
 "use client";
+import { StandardLink } from "./confidence";
 
 import { useContext, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -776,6 +777,7 @@ export function DriverWorkspace({
               <button type="button" onClick={() => router.push("/driver/earnings")}><Icon name="wallet" size={16} />{say("Earnings", "ገቢ")}</button>
               <button type="button" onClick={() => router.push("/driver/profile/settings")}><Icon name="settings" size={16} />{say("Settings", "ቅንብሮች")}</button>
             </nav>
+            <StandardLink role="driver"/>
           </div>
         </div>
       </section>

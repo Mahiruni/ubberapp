@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { RecommendNexRide } from "../../../../components/nexride/recommend-nexride";
 import { Icon } from "../../../../components/nexride/ui";
 import { useOperationalTranslation } from "../../../../components/nexride/operational-i18n";
 import { RiderMenu, usePersistedRiderTheme } from "../../../../components/nexride/rider-menu";
@@ -199,6 +200,8 @@ export default function RiderReceiptPage() {
                 {ratingError && <div className="nr-support-feedback" role="alert"><Icon name="info" size={16} /><span>{ratingError}</span></div>}
               </section>
             )}
+
+            {ride.status === "completed" && rating && <RecommendNexRide score={rating.score}/>}
 
             <section className="nr-support-card nr-support-channels">
               <a className="nr-support-channel" href={"/support?ride=" + encodeURIComponent(ride.id)}>

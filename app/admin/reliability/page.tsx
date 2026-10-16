@@ -34,7 +34,7 @@ export default function AdminReliabilityPage() {
   useEffect(()=>{void refresh();},[]);
   return <main className="admin-app" style={{display:"block",padding:"clamp(18px,5vw,48px)"}}>
     <div style={{maxWidth:1180,margin:"0 auto"}}>
-      <Link href="/admin" style={{color:"#5145e5",fontWeight:750,fontSize:13}}>← Back to Admin Dashboard</Link>
+      <Link href="/admin" style={{color:"#008650",fontWeight:750,fontSize:13}}>← Back to Admin Dashboard</Link>
       <header style={{margin:"30px 0 24px"}}>
         <p className="admin-kicker">NEXRIDE · OPERATIONS</p>
         <h1 style={{fontSize:"clamp(28px,5vw,42px)",letterSpacing:"-.05em",margin:"8px 0"}}>Android Reliability</h1>
@@ -42,7 +42,7 @@ export default function AdminReliabilityPage() {
       </header>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16,gap:12}}>
         <span role="status" style={{fontSize:12}}>{status}</span>
-        <button type="button" onClick={()=>void refresh()} disabled={loading} style={{minHeight:44,border:"1px solid #5145e5",borderRadius:12,padding:"10px 18px",color:"#5145e5",fontWeight:750}}>
+        <button type="button" onClick={()=>void refresh()} disabled={loading} style={{minHeight:44,border:"1px solid #008650",borderRadius:12,padding:"10px 18px",color:"#008650",fontWeight:750}}>
           {loading?"Refreshing…":"Refresh"}
         </button>
       </div>

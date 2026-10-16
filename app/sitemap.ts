@@ -3,6 +3,8 @@ import { NEXRIDE_SITE_URL } from "../lib/nexride-site";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
+    { url: NEXRIDE_SITE_URL + "/standard", changeFrequency: "monthly", priority: 0.6 },
+    { url: NEXRIDE_SITE_URL + "/explore", changeFrequency: "monthly", priority: 0.8 },
     {
       url: NEXRIDE_SITE_URL,
       lastModified: new Date(),

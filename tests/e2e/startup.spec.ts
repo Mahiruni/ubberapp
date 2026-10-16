@@ -24,9 +24,10 @@ test("first visit leads to onboarding, then authentication, then explicit previe
 }) => {
   await page.goto("/");
   await expect(page).toHaveURL(/\/onboarding$/);
-  await page.getByRole("button", { name: "Continue to sign in" }).click();
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await expect(page).toHaveURL(/\/rider\/sign-in$/);
   await expect(page.getByLabel("Email address", { exact: true })).toBeVisible();
+  await page.locator(".nr-auth-preview summary").click();
   await page.getByRole("button", { name: "Explore the preview" }).click();
   await expect(
     page.getByRole("button", { name: "Search destination", exact: true }),
@@ -103,6 +104,8 @@ test("the real session wait shows the splash and honors reduced motion", async (
   await page.goto("/", { waitUntil: "domcontentloaded" });
   const splash = page.locator(".nr-rider-splash");
   await expect(splash).toBeVisible();
+  await expect(splash).toHaveCSS("background-color", "rgb(0, 0, 0)");
+  await expect(splash.locator(".nr-splash-wordmark")).toHaveCSS("color", "rgb(255, 255, 255)");
   await expect(splash).toHaveAttribute("aria-busy", "true");
   await expect(
     splash.getByRole("heading", { name: "NexRide", exact: true }),
@@ -110,14 +113,8 @@ test("the real session wait shows the splash and honors reduced motion", async (
   await expect(
     splash.getByText("Better Rides. A Brighter Tomorrow."),
   ).toBeVisible();
-  await expect(page.locator(".nr-splash-mark")).toHaveCSS(
-    "animation-name",
-    "none",
-  );
-  await expect(splash.locator(".nr-splash-mark")).toHaveAttribute(
-    "src",
-    /\/brand\/nexride-mark\.svg$/,
-  );
+  // The redesigned launch is text-only; no legacy graphical splash mark.
+  await expect(splash.locator(".nr-splash-mark")).toHaveCount(0);
   await expect(splash.locator(".nr-splash-progress")).toBeVisible();
   expect(
     await page.evaluate(

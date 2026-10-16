@@ -48,13 +48,15 @@ test.beforeEach(async ({ page }) => {
 });
 async function openRides(page: Page) {
   await page.goto("/");
-  await page
-    .getByRole("button", { name: /Bole International Airport/ })
-    .click();
+  // Do not assume a fresh account already has an airport in Recent destinations.
+  await page.getByRole("button", { name: "Search destination", exact: true }).click();
+  await page.getByLabel("Search destination", { exact: true }).fill("Bole Airport");
+  await page.locator(".nr-place-suggestion")
+    .filter({ hasText: "Bole International Airport" }).first().click();
   await page.getByLabel("Pickup location", { exact: true }).fill("Bole Atlas");
   await page.locator(".nr-place-suggestion").first().click();
   await page
-    .getByRole("button", { name: "Continue to ride options", exact: true })
+    .locator(".nr-destination-panel footer").getByRole("button")
     .click();
   await expect(
     page.getByRole("heading", { name: "Choose a ride" }),
@@ -65,19 +67,19 @@ test("three illustrated sample rides keep prices aligned and real booking unavai
 }) => {
   await openRides(page);
   await expect(page.locator(".nr-ride-card")).toHaveCount(3);
-  await expect(page.locator(".nr-vehicle-art")).toHaveCount(3);
+  await expect(page.locator(".nr-ride-vehicle")).toHaveCount(3);
   for (const category of ["Economy", "Comfort", "XL"])
     await expect(
       page.getByRole("radio", { name: new RegExp(category) }),
-    ).toContainText("Pickup estimate unavailable");
+    ).toContainText("Pickup time unavailable");
   await expect(
-    page.getByRole("button", { name: "Request Ride", exact: true }),
+    page.getByRole("button", { name: /^Request (Economy|Comfort|XL)$/ }),
   ).toBeDisabled();
   await expect(page.locator(".nr-ride-selection")).toContainText(
     "Sample calculation, not a live quote",
   );
-  await expect(page.locator(".nr-provider-route")).toHaveCount(1);
-  await expect(page.locator(".nr-map-ride-label")).toContainText("Bole");
+  await expect(page.locator(".nr-rider-map-surface.nr-map-has-route")).toHaveCount(1);
+  await expect(page.locator(".nr-ride-route-line")).toContainText("Bole");
   const prices = await page
     .locator(".nr-ride-price")
     .evaluateAll((nodes) => nodes.map((n) => n.getBoundingClientRect().right));
@@ -136,19 +138,19 @@ test("unavailable categories cannot be selected and all charges appear before re
   await page.route("**/api/rider/fares", (r) => r.fulfill({ json: set }));
   await openRides(page);
   await expect(page.getByRole("radio", { name: /Economy/ })).toBeDisabled();
-  await expect(
-    page.getByRole("button", { name: "Request Ride", exact: true }),
-  ).toBeDisabled();
+  // The booking model moves away from an unavailable default Economy offer
+  // to the first genuinely available category instead of offering Economy.
+  await expect(page.getByRole("button", { name: "Request Comfort", exact: true })).toBeEnabled();
   await page.getByRole("radio", { name: /Comfort/ }).click();
   await expect(page.locator(".nr-fare-explanation")).toContainText(
-    "Confirmed quote",
+    "Confirmed fare",
   );
   await expect(page.locator(".nr-fare-breakdown")).toContainText("Service fee");
   await expect(page.locator(".nr-fare-breakdown .total")).toContainText(
     "ETB 230",
   );
   await expect(
-    page.getByRole("button", { name: "Request Ride", exact: true }),
+    page.getByRole("button", { name: /^Request (Economy|Comfort|XL)$/ }),
   ).toBeEnabled();
 });
 test("changed pricing requires explicit review before a second attempt", async ({
@@ -169,28 +171,28 @@ test("changed pricing requires explicit review before a second attempt", async (
       : r.fulfill({ status: 503, json: { status: "failed" } });
   });
   await openRides(page);
-  await page.getByRole("button", { name: "Request Ride", exact: true }).click();
+  await page.getByRole("button", { name: /^Request (Economy|Comfort|XL)$/ }).click();
   await page
-    .getByRole("button", { name: "Confirm ride request", exact: true })
+    .getByRole("dialog").getByRole("button", { name: "Request ride", exact: true })
     .click();
   await expect(page.locator(".nr-fare-state")).toContainText(
-    "The price has changed",
+    "Fare updated",
   );
   await expect(page.locator(".nr-fare-state")).toContainText("ETB 180");
   await expect(page.locator(".nr-fare-state")).toContainText("ETB 220");
   await expect(
-    page.getByRole("button", { name: "Request Ride", exact: true }),
+    page.getByRole("button", { name: /^Request (Economy|Comfort|XL)$/ }),
   ).toBeDisabled();
   expect(calls).toBe(1);
   await page
-    .getByRole("button", { name: "Accept updated price", exact: true })
+    .getByRole("button", { name: "Use updated fare", exact: true })
     .click();
-  await page.getByRole("button", { name: "Request Ride", exact: true }).click();
+  await page.getByRole("button", { name: /^Request (Economy|Comfort|XL)$/ }).click();
   await page
-    .getByRole("button", { name: "Confirm ride request", exact: true })
+    .getByRole("dialog").getByRole("button", { name: "Request ride", exact: true })
     .click();
   await expect(page.locator(".nr-fare-state")).toContainText(
-    "Ride request couldn’t be completed",
+    "We couldn’t request this ride",
   );
   expect(calls).toBe(2);
 });
@@ -207,15 +209,15 @@ test("pending double taps are deduplicated and retries preserve their idempotenc
     await r.fulfill({ status: 503, json: { status: "failed" } });
   });
   await openRides(page);
-  await page.getByRole("button", { name: "Request Ride", exact: true }).click();
+  await page.getByRole("button", { name: /^Request (Economy|Comfort|XL)$/ }).click();
   await page
-    .getByRole("button", { name: "Confirm ride request", exact: true })
+    .getByRole("dialog").getByRole("button", { name: "Request ride", exact: true })
     .evaluate((button) => {
       (button as HTMLButtonElement).click();
       (button as HTMLButtonElement).click();
     });
   await expect(
-    page.getByRole("button", { name: "Request Ride", exact: true }),
+    page.getByRole("button", { name: /^Request (Economy|Comfort|XL)$/ }),
   ).toBeDisabled();
   await expect(
     page.getByRole("button", { name: "Edit payment method", exact: true }),
@@ -227,11 +229,11 @@ test("pending double taps are deduplicated and retries preserve their idempotenc
   expect(keys).toHaveLength(1);
   release();
   await expect(page.locator(".nr-fare-state")).toContainText(
-    "Ride request couldn’t be completed",
+    "We couldn’t request this ride",
   );
-  await page.getByRole("button", { name: "Request Ride", exact: true }).click();
+  await page.getByRole("button", { name: /^Request (Economy|Comfort|XL)$/ }).click();
   await page
-    .getByRole("button", { name: "Confirm ride request", exact: true })
+    .getByRole("dialog").getByRole("button", { name: "Request ride", exact: true })
     .click();
   await expect.poll(() => keys.length).toBe(2);
   expect(keys[0]).toBe(keys[1]);
@@ -241,12 +243,12 @@ test("disconnected request endpoint returns a recoverable failure without fake m
 }) => {
   await page.route("**/api/rider/fares", (r) => r.fulfill({ json: quote() }));
   await openRides(page);
-  await page.getByRole("button", { name: "Request Ride", exact: true }).click();
+  await page.getByRole("button", { name: /^Request (Economy|Comfort|XL)$/ }).click();
   await page
-    .getByRole("button", { name: "Confirm ride request", exact: true })
+    .getByRole("dialog").getByRole("button", { name: "Request ride", exact: true })
     .click();
   await expect(page.locator(".nr-fare-state")).toContainText(
-    "Booking is not connected",
+    "Live booking is unavailable here right now",
   );
   await expect(
     page.getByRole("heading", { name: "Finding your driver…" }),

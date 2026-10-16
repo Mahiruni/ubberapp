@@ -30,7 +30,7 @@ export function DriverMatching({ model, changeCategory, previewAssigned, home }:
     if (next?.status === 'cancelled') setCancelSuccess(true);
   };
   const cancel = () => {
-    if (busy || reconnecting || terms?.allowed === false) return;
+    if (busy || reconnecting || connectionLost || degraded || terms?.allowed === false) return;
     // All cancellations require a Yes/No decision, even before the first
     // server snapshot arrives. The action handler fetches the current version.
     setConfirmVersion(snapshot?.version ?? -1);
@@ -109,11 +109,13 @@ export function DriverMatching({ model, changeCategory, previewAssigned, home }:
       {!connectionLost && snapshot?.canRetry && <Button disabled={busy} loading={busy} onClick={() => void model.action('retry')}>{t(busy ? 'matchingUpdating' : 'matchingRetry')}</Button>}
       {['cancelled', 'no_drivers'].includes(status) && <Button variant="ghost" disabled={busy} onClick={home}>{t('home')}</Button>}
       {snapshot?.canChangeCategory && <Button variant="secondary" disabled={busy} onClick={changeCategory}>{t('matchingChangeCategory')}</Button>}
-      {!cancelSuccess && status !== 'cancelled' && <Button variant="danger" className="nr-rider-cancel-button" disabled={busy || reconnecting || terms?.allowed === false} onClick={cancel}><Icon name="close" size={17} />{t(busy ? 'matchingUpdating' : 'matchingCancel')}</Button>}
+      {!cancelSuccess && status !== 'cancelled' && <Button variant="danger" className="nr-rider-cancel-button" disabled={busy || reconnecting || connectionLost || degraded || terms?.allowed === false} onClick={cancel}><Icon name="close" size={17} />{t(busy ? 'matchingUpdating' : 'matchingCancel')}</Button>}
       {!preview && !snapshot && <small className="nr-match-terms-note">{t('matchingTermsPending')}</small>}
     </footer>
     {confirmVersion !== null && <Dialog title={t('matchingCancelConfirm')} onClose={() => setConfirmVersion(null)}>
       <p className="nr-cancel-dialog-note">{t('matchingCancelWarning')}</p>
+      {terms?.reason && <p className="nr-cancel-dialog-note">{terms.reason}</p>}
+      {terms?.fee != null && terms.fee > 0 && <p className="nr-cancel-dialog-note"><strong>{t('matchingCancelFee')}: {terms.fee} ETB</strong></p>}
       <div className="nr-cancel-dialog-actions">
         <Button variant="secondary" onClick={() => setConfirmVersion(null)}>{t('matchingKeep')}</Button>
         <Button variant="danger" onClick={() => { const version = confirmVersion; setConfirmVersion(null); void completeCancel(version < 0 ? undefined : version); }}>{t('matchingConfirmCancel')}</Button>

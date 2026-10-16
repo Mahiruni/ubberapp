@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { StandardLink } from "./confidence";
 import { useOperationalTranslation } from "./operational-i18n";
 import { DriverPhotoManager } from "./driver-photo-manager";
 import { useEffect, useState } from "react";
@@ -284,6 +285,7 @@ export function DriverProfileScreen({
         <p>{say("Your verified identity, vehicle, documents, and payout details are available only in authenticated driver areas.")}</p>
       </footer>
 
+      <StandardLink role="driver"/>
       {signOutOpen && (
         <Dialog
           title={say("Sign out of NexRide?")}

@@ -11,8 +11,8 @@
     "fullscreen"
   ],
   "orientation": "any",
-  "background_color": "#041C30",
-  "theme_color": "#041C30",
+  "background_color": "#000000",
+  "theme_color": "#000000",
   "lang": "en",
   "dir": "ltr",
   "categories": [

@@ -280,7 +280,8 @@ export function searchPreviewPlaces(query: string) {
       if (name.startsWith(q) || am.startsWith(q)) score += 60;
       if (aliases.some((alias) => alias.startsWith(q))) score += 50;
       if (text.includes(q)) score += 20;
-      score += Math.min(15, place.popularity || 0);
+      // Popularity only orders relevant matches; it must never fabricate a match.
+      if (score > 0) score += Math.min(15, place.popularity || 0);
       return { place, score };
     })
     .filter((item) => item.score > 0)

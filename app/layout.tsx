@@ -29,6 +29,8 @@ import "@fontsource/inter/latin-600.css";
 import "@fontsource/inter/latin-700.css";
 import "@fontsource/inter/latin-800.css";
 import "./premium-mobility.css";
+import "./confidence-system.css";
+import "./true-black-mode.css";
 
 const description =
   "Book reliable rides across Addis Ababa with NexRide, a rider and driver mobility platform built for Ethiopia.";
@@ -117,8 +119,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#F7FAF9" },
-    { media: "(prefers-color-scheme: dark)", color: "#041C30" },
+    { media: "(prefers-color-scheme: light)", color: "#000000" },
+    { media: "(prefers-color-scheme: dark)", color: "#000000" },
   ],
   colorScheme: "light dark",
 };

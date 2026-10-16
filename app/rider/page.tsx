@@ -152,6 +152,7 @@ function RiderWelcome() {
       </div>
 
       <EntryPhoto />
+      <div className="nr-entry-confidence"><strong>{t("brandConfidence")}</strong></div>
 
       {returningDriver && <div className="nr-auth-role-note" role="status">
         <Icon name="check" size={20} />
@@ -166,7 +167,7 @@ function RiderWelcome() {
             <Icon name="arrow" size={20} />
           </button>
         ) : <Link className="nr-rider-get-started" href="/rider/sign-up">
-          <span>{t("entryGetStarted")}</span>
+          <span>{t("brandBook")}</span>
           <Icon name="arrow" size={20} />
         </Link>}
         <Link className="nr-rider-welcome-sign-in" href={returningDriver ? "/driver/home" : "/rider/sign-in"}>
@@ -182,7 +183,7 @@ function RiderWelcome() {
           <Button variant="ghost" onClick={preview}>{t("explorePreview")}</Button>
         </details>
         <p className="nr-rider-driver-link">
-          <Link href="/driver">{t("driverSignIn")}</Link>
+          <Link href="/driver">{t("brandBecomeDriver")}</Link>
         </p>
       </div>
     </div>
