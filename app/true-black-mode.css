@@ -1,0 +1,87 @@
+/* NexRide — true-black accessibility mode. The chosen theme, not OS preference
+   alone, controls internal screens. Preserve map tiles, status indicators and
+   image content; never turn route or safety data into a blank surface. */
+
+/* Cold-start surface for browser/PWA and both Android web wrappers. */
+html { background-color:#000; }
+.nr-rider-splash.nr-rider-splash {
+  background:#000 !important;
+  background-image:none !important;
+  color:#fff !important;
+}
+.nr-rider-splash :is(.nr-splash-ambient,.nr-splash-city,.nr-splash-blend){display:none !important}
+.nr-rider-splash :is(.nr-splash-wordmark,.nr-splash-tagline,.nr-splash-status,.nr-splash-error h2,.nr-splash-error p,.nr-splash-error svg,.nr-splash-recovery-links a){color:#fff !important}
+.nr-rider-splash .nr-splash-error{background:#090909 !important;border-color:#4d4d4d !important;backdrop-filter:none}
+.nr-rider-splash .nr-splash-progress{background:#333 !important}
+.nr-rider-splash .nr-splash-progress>span{background:#fff !important}
+.nr-rider-splash .nr-splash-recovery-links a{border-color:#707070}
+.nr-rider-splash :is(a,button):focus-visible{outline-color:#fff !important}
+
+/* All roles share an explicit data-theme flag, including the welcome/auth
+   screens and the Admin portal. Tokens cover child panels and dialogs. */
+:is(.nr-app,.nr-driver-app-shell,.nr-entry-redesign,.admin-app)[data-theme="dark"] {
+  color-scheme:dark;
+  --nr-bg:#000;--nr-bg-secondary:#000;
+  --nr-surface:#0a0a0a;--nr-surface-raised:#111;
+  --nr-text:#fff;--nr-text-secondary:#fff;--nr-text-muted:#e0e0e0;
+  --nr-border:#333;--nr-border-strong:#555;
+  --nx-paper:#000;--nx-paper-2:#080808;--nx-card:#0a0a0a;--nx-card-solid:#0a0a0a;
+  --nx-text:#fff;--nx-mute:#e0e0e0;--nx-mute-2:#bdbdbd;--nx-line:#333;
+  --bg:#000;--surface:#0a0a0a;--surface-alt:#101010;
+  --text:#fff;--muted:#e0e0e0;--line:#333;
+  --nr-id-bg:#000;--nr-id-surface:#0a0a0a;--nr-id-field:#111;
+  --nr-id-text:#fff;--nr-id-muted:#e0e0e0;--nr-id-line:#333;
+  --driver-bg:#000;--driver-surface:#0a0a0a;--driver-surface-elevated:#111;
+  --driver-text-primary:#fff;--driver-text-secondary:#e0e0e0;
+  --driver-nav-bg:#000;--driver-overlay:#090909;
+  --admin-bg:#000;--admin-surface:#0a0a0a;--admin-surface-2:#111;
+  --admin-text:#fff;--admin-muted:#e0e0e0;--admin-line:#333;
+  background:#000 !important;color:#fff !important;
+}
+/* The Rider workspace and top-level Driver/Admin layouts must not keep navy
+   or dark gradient backgrounds after the preference changes. */
+:is(.nr-app,.nr-driver-app-shell,.nr-entry-redesign,.admin-app)[data-theme="dark"]
+  :is(.nr-workspace,.nr-main,.nr-stage,.nr-sidebar,.nr-topbar,.nr-entry-page,
+      .nr-driver-page,.nr-driver-global-header,.nr-driver-sidebar,.nr-driver-main,
+      .nr-driver-app-content,.admin-content,.admin-header,.admin-sidebar,
+      .nr-rider-drawer-layer,.nr-driver-menu-layer) {
+  background-color:#000 !important;
+  background-image:none !important;
+  color:#fff;
+}
+/* Input and readable-content contrast, including translucent search sheets. */
+:is(.nr-app,.nr-driver-app-shell,.nr-entry-redesign,.admin-app)[data-theme="dark"]
+  :is(.nr-panel,.nr-sheet,.nr-dialog,.nr-destination-panel,.nr-ride-selection,
+      .nr-matching-body,.nr-driver-operational-card,.nr-driver-sheet,
+      .nr-driver-card,.nr-entry-form,.nr-entry-shell,.admin-card,
+      .admin-panel,.admin-modal,.nr-rider-home-panel) {
+  background-color:#0a0a0a !important;
+  color:#fff !important;
+  border-color:#333 !important;
+}
+:is(.nr-app,.nr-driver-app-shell,.nr-entry-redesign,.admin-app)[data-theme="dark"]
+  :is(h1,h2,h3,h4,h5,h6,label,legend,dt,dd,th,strong,summary,
+      input,textarea,select,.nr-endpoint-field,.nr-standard-link,
+      .nr-topbar-place,.nr-navigation,.nr-driver-global-header-title) {
+  color:#fff !important;
+}
+:is(.nr-app,.nr-driver-app-shell,.nr-entry-redesign,.admin-app)[data-theme="dark"]
+  :is(input,textarea,select){
+  background-color:#111 !important;border-color:#4d4d4d !important;
+  caret-color:#fff;color:#fff !important;
+}
+:is(.nr-app,.nr-driver-app-shell,.nr-entry-redesign,.admin-app)[data-theme="dark"]
+  :is(input,textarea)::placeholder{color:#bdbdbd !important;opacity:1}
+:is(.nr-app,.nr-driver-app-shell,.nr-entry-redesign,.admin-app)[data-theme="dark"]
+  :is(p,small,time,.nr-muted,.nr-text-secondary,.nr-splash-status){color:#e0e0e0}
+:is(.nr-app,.nr-driver-app-shell,.nr-entry-redesign,.admin-app)[data-theme="dark"]
+  :is(button,a,[role="button"]):focus-visible{outline:2px solid #fff !important;outline-offset:3px}
+.nr-entry-redesign[data-theme="dark"] .nr-entry-hero{background-color:#000 !important}
+.nr-entry-redesign[data-theme="dark"] .nr-entry-hero-wash{background:linear-gradient(90deg,#000,rgba(0,0,0,.65)) !important}
+/* An admin monitoring page has a separate lightweight theme host. */
+@media(prefers-color-scheme:dark){
+  .nr-confidence-site{--cs-bg:#000;--cs-surface:#0a0a0a;--cs-text:#fff;--cs-muted:#e0e0e0;--cs-line:#333}
+}
+@media(prefers-reduced-motion:reduce){
+  .nr-rider-splash *{animation:none !important;transition:none !important}
+}
