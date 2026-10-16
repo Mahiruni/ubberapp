@@ -143,7 +143,7 @@ test("unavailable categories cannot be selected and all charges appear before re
   await expect(page.getByRole("button", { name: "Request Comfort", exact: true })).toBeEnabled();
   await page.getByRole("radio", { name: /Comfort/ }).click();
   await expect(page.locator(".nr-fare-explanation")).toContainText(
-    "Confirmed quote",
+    "Confirmed fare",
   );
   await expect(page.locator(".nr-fare-breakdown")).toContainText("Service fee");
   await expect(page.locator(".nr-fare-breakdown .total")).toContainText(
@@ -248,7 +248,7 @@ test("disconnected request endpoint returns a recoverable failure without fake m
     .getByRole("dialog").getByRole("button", { name: "Request ride", exact: true })
     .click();
   await expect(page.locator(".nr-fare-state")).toContainText(
-    "Booking is not connected",
+    "Live booking is unavailable here right now",
   );
   await expect(
     page.getByRole("heading", { name: "Finding your driver…" }),

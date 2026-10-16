@@ -109,7 +109,7 @@ test("Amharic, profile edits, keyboard dialogs, and local storage migration work
   await page.getByRole("button", { name: "አማርኛ", exact: true }).last().click();
   await expect(page.locator("html")).toHaveAttribute("lang", "am");
   await expect(
-    page.getByRole("heading", { name: "መለያ", exact: true }),
+    page.getByRole("heading", { name: "የእርስዎ መለያ", exact: true }),
   ).toBeVisible();
   await page.getByRole("button", { name: "ቅንብሮች", exact: true }).last().click();
   await expect(page.getByRole("dialog")).toBeVisible();
