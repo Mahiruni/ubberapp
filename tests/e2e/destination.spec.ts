@@ -10,8 +10,8 @@ test.beforeEach(async ({ page }) => {
 });
 async function openSearch(page: Page) {
   await page.goto("/");
-  await page
-    .getByRole("button", { name: "Search destination", exact: true })
+  await page.locator(".nr-rider-home-panel")
+    .getByRole("button", { name: /^(Search destination|መድረሻ ይፈልጉ)$/ })
     .click();
 }
 async function select(
@@ -260,6 +260,9 @@ test("no-results state and sheet resizing keep search and map usable in short vi
     .getByLabel("Search destination", { exact: true })
     .fill("not-a-real-destination");
   await expect(page.locator(".nr-empty-text")).toBeVisible();
+  // The handle is intentionally hidden during typing; Escape closes text
+  // search without discarding the query, restoring keyboard resize controls.
+  await page.getByLabel("Search destination", { exact: true }).press("Escape");
   const handle = page.locator(".nr-destination-panel .nr-flow-sheet-handle");
   await expect(handle).toHaveCount(1);
   // Search keyboard mode may hide the resize grip to prioritize suggestions.

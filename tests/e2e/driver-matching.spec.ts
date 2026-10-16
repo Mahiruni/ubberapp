@@ -50,8 +50,11 @@ test('preview waits for an explicit action, preserves map/summary, and provides 
   // Longer than the removed 1.6s auto-assignment timer.
   await page.waitForTimeout(1900);
   await expect(page.getByRole('heading', { name: 'Your driver is on the way' })).not.toBeVisible();
-  const rects = await page.locator('.nr-rider-map-surface, .nr-driver-matching').evaluateAll(nodes => nodes.map(n => { const r = n.getBoundingClientRect(); return { x: r.x, y: r.y, right: r.right, bottom: r.bottom }; }));
-  expect(rects[0].right <= rects[1].x || rects[0].bottom <= rects[1].y).toBe(true);
+  // The mobile sheet intentionally overlays the map, but both must remain
+  // visible and the document must never scroll horizontally.
+  await expect(page.locator('.nr-rider-map-surface')).toBeVisible();
+  await expect(page.locator('.nr-driver-matching')).toBeInViewport();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.getByText('Preview matching states', { exact: true }).click();
   await page.getByRole('button', { name: 'Still looking nearby…', exact: true }).click();
   await expect(page.locator('.nr-driver-matching')).toHaveAttribute('data-matching-state', 'delayed');
@@ -100,10 +103,11 @@ test('a request receipt does not assign a driver; reconnection reads the same bo
   current = { ...state('assigned', 3), driver: { name: 'Provider Driver', vehicle: 'Toyota Corolla', plate: 'AA-123', pickupMinutes: null } };
   await reconnect(page);
   await expect(page.getByRole('heading', { name: 'Your driver is on the way' })).toBeFocused();
-  await expect(page.locator('.nr-confirmed-driver')).toContainText('Provider Driver');
-  await expect(page.locator('.nr-confirmed-driver')).toContainText('AA-123');
-  await expect(page.locator('.nr-pickup-search-area')).toHaveCount(0);
-  await expect(page.locator('.nr-rider-map-surface.nr-map-has-route')).toHaveCount(1);
+  // The real accepted booking leaves Matching and opens the dedicated Trip
+  // experience; driver identity is then loaded from the protected Trip API.
+  // This mock has no Rider session, so the matching card must not persist.
+  await expect(page.locator('.nr-rider-persistent-wrapper')).toHaveAttribute('data-rider-screen', 'trip');
+  await expect(page.locator('.nr-confirmed-driver')).toHaveCount(0);
   current = state('searching', 4); await reconnect(page);
   await expect(page.getByRole('heading', { name: 'Your driver is on the way' })).toBeVisible();
   expect(creates).toBe(1); expect(reads).toBeGreaterThan(2);
@@ -151,7 +155,8 @@ test('driver acceptance during cancellation wins the race without inventing canc
   await page.getByRole('button', { name: 'Yes, Cancel Ride' }).click();
   await expect(page.getByRole('heading', { name: 'Your driver is on the way' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Ride request cancelled' })).not.toBeVisible();
-  await expect(page.locator('.nr-confirmed-driver')).toContainText('Actual Driver');
+  await expect(page.locator('.nr-rider-persistent-wrapper')).toHaveAttribute('data-rider-screen', 'trip');
+  await expect(page.locator('.nr-confirmed-driver')).toHaveCount(0);
 });
 test('malformed acceptance cannot show a driver and unknown cancellation cannot create a replacement', async ({ page }) => {
   await liveQuotes(page);
