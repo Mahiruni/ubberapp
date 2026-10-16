@@ -256,3 +256,84 @@
  .nr-rider-drawer-layer .nr-rider-drawer,
  .nr-driver-menu-layer .nr-driver-menu-panel {animation:none!important;}
 }
+
+/* Standalone Rider/Driver support, history, wallet, chat and safety routes. */
+.nr-app.nr-support-page[data-theme="dark"],
+.nr-app.nr-safety-page[data-theme="dark"] {
+  background:#05070c!important;color:#fff!important;
+}
+.nr-app.nr-support-page[data-theme="dark"] :is(
+ .nr-support-card,.nr-support-state,.nr-support-loading,.nr-help-topic,
+ .nr-help-empty,.nr-history-row,.nr-payment-method,.nr-payment-selected,
+ .nr-chat-context,.nr-support-channel,.nr-support-feedback
+),
+.nr-app.nr-safety-page[data-theme="dark"] :is(
+ .nr-safety-intro,.nr-safety-action,.nr-safety-context,.nr-sos-panel,
+ .nr-share-panel,.nr-help-panel,.nr-report-panel
+) {
+  background:#141a27!important;border-color:#303c50!important;color:#fff!important;
+  box-shadow:none!important;
+}
+.nr-app.nr-support-page[data-theme="dark"] :is(
+ .nr-support-back,.nr-support-icon-btn,.nr-chat-call,
+ .nr-help-search,.nr-payment-method-icon
+),
+.nr-app.nr-safety-page[data-theme="dark"] :is(
+ .nr-safety-back,.nr-safety-shield,.nr-safety-action-icon
+) {background:#222b3b!important;border-color:#303c50!important;color:#fff!important;}
+.nr-app.nr-support-page[data-theme="dark"] :is(
+ .nr-support-head p,.nr-support-head .kicker,.nr-history-copy small,
+ .nr-support-state p,.nr-chat-context small,.nr-chat-empty
+),
+.nr-app.nr-safety-page[data-theme="dark"] :is(
+ .nr-safety-head>div>span,.nr-safety-intro p,.nr-safety-action small,
+ .nr-safety-context p
+) {color:#c5ced8!important;}
+.nr-app.nr-support-page[data-theme="dark"] .nr-chat-bubble:not(.failed) {
+  background:#222b3b;border-color:#303c50;color:#fff;
+}
+.nr-app.nr-support-page[data-theme="dark"] .nr-chat-bubble.mine:not(.failed) {
+  background:#1b2e50;border-color:#3478f6;
+}
+.nr-app.nr-support-page[data-theme="dark"] :is(input,textarea,select) {
+  background:#222b3b!important;color:#fff!important;border-color:#303c50!important;
+}
+.nr-app.nr-support-page[data-theme="dark"] :is(.nr-support-state button,.nr-support-state a):not(:disabled) {
+  background:#3478f6!important;color:#fff!important;
+}
+/* Preserve SOS/danger red, live/approved green, and offline warnings. */
+.nr-app.nr-safety-page[data-theme="dark"] .nr-safety-offline,
+.nr-app.nr-safety-page[data-theme="dark"] .nr-safety-action[data-tone="danger"] .nr-safety-action-icon,
+.nr-app.nr-safety-page[data-theme="dark"] .nr-safety-action[data-tone="success"] .nr-safety-action-icon {
+  isolation:isolate;
+}
+/* Standalone account & security pages, shared by Rider and Driver. */
+.nex-manage[data-theme="dark"] {
+  background:#05070c!important;color:#fff!important;
+  --nex-navy:#fff;--nex-green:#3478f6;
+}
+.nex-manage[data-theme="dark"] .nex-manage-top {
+  background:#141a27!important;border-color:#303c50!important;
+}
+.nex-manage[data-theme="dark"] :is(
+ .nex-manage-card,.nex-manage-detail,.nex-manage-role,.nex-manage-form
+) {border-color:#303c50!important;color:#fff!important;}
+.nex-manage[data-theme="dark"] .nex-manage-card {background:#141a27!important;box-shadow:none!important;}
+.nex-manage[data-theme="dark"] :is(
+ .nex-manage-intro h1,.nex-manage-section h2,.nex-manage-detail strong,
+ .nex-manage-identity h2,.nex-manage-form h3,.nex-manage-brand span
+) {color:#fff!important;}
+.nex-manage[data-theme="dark"] :is(
+ .nex-manage-back,.nex-manage-intro p,.nex-manage-section p,
+ .nex-manage-detail>span,.nex-manage-role small,.nex-manage-identity p,
+ .nex-manage-form label
+) {color:#c5ced8!important;}
+.nex-manage[data-theme="dark"] :is(input,textarea,select) {
+  background:#222b3b!important;color:#fff!important;border-color:#303c50!important;
+}
+.nex-manage[data-theme="dark"] :is(.nex-manage-brand,.nex-manage-eyebrow,.nex-manage-intro>span) {
+  color:#8cb6ff!important;
+}
+.nex-manage[data-theme="dark"] :is(.nex-manage-role button,.nex-manage-form button):not(:disabled) {
+  border-color:#3478f6;background:#3478f6;color:#fff;
+}
