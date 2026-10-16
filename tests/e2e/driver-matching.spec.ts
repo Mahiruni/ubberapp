@@ -114,7 +114,7 @@ test('cancellation consequence is confirmed and waits for the authoritative canc
   await submit(page);
   await expect(page.locator('.nr-match-summary')).toContainText('180 ETB');
   await page.getByRole('button', { name: 'Cancel ride', exact: true }).click();
-  await expect(page.getByRole('dialog')).not.toContainText('Cancellation fee');
+  await expect(page.getByRole('dialog')).toContainText('Cancellation fee: 50 ETB');
   await expect(page.getByRole('dialog')).toContainText('Provider cancellation rule');
   await page.getByRole('button', { name: 'No, Keep Ride' }).click();
   expect(actions).toBe(0);
