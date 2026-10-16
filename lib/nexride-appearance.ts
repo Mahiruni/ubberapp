@@ -6,6 +6,7 @@ export type AppearancePreference = 'light' | 'dark' | 'system';
 export type Appearance = 'light' | 'dark';
 const eventName = 'nexride:appearance-change';
 export function appearanceKey(role: 'rider' | 'driver') { return `nexride.${role}.theme`; }
+const midnightMigrationKey = (role: 'rider' | 'driver') => `nexride.${role}.midnight-v1`;
 export function resolveAppearance(preference: AppearancePreference, systemDark: boolean): Appearance {
   return preference === 'system' ? systemDark ? 'dark' : 'light' : preference;
 }
@@ -19,8 +20,18 @@ export function useAppearance(role: 'rider' | 'driver') {
     const media = window.matchMedia('(prefers-color-scheme: dark)');
     const read = () => {
       try {
-        const saved = localStorage.getItem(appearanceKey(role));
-        setState(saved === 'light' || saved === 'dark' || saved === 'system' ? saved : fallback);
+        const migrated = localStorage.getItem(midnightMigrationKey(role)) === '1';
+        if (!migrated) {
+          // Older Rider installs persisted the former light default. Show
+          // Midnight Edition once to existing users; allow them to switch
+          // back to Light or System from Settings at any time.
+          localStorage.setItem(appearanceKey(role), 'dark');
+          localStorage.setItem(midnightMigrationKey(role), '1');
+          setState('dark');
+        } else {
+          const saved = localStorage.getItem(appearanceKey(role));
+          setState(saved === 'light' || saved === 'dark' || saved === 'system' ? saved : fallback);
+        }
       } catch { /* Device storage is optional until a preference is changed. */ }
       setSystemDark(media.matches);
     };
@@ -33,6 +44,7 @@ export function useAppearance(role: 'rider' | 'driver') {
   const setPreference = useCallback((next: AppearancePreference) => {
     try {
       localStorage.setItem(appearanceKey(role), next);
+      localStorage.setItem(midnightMigrationKey(role), '1');
       setState(next); setError(false);
       window.dispatchEvent(new Event(eventName));
     } catch { setError(true); }
