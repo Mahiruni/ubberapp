@@ -81,6 +81,7 @@ export function RiderMenu({
   const [signOutError, setSignOutError] = useState("");
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const drawerRef = useRef<HTMLElement | null>(null);
+  const drawerTouchStart = useRef<{x:number;y:number}|null>(null);
 
   useEffect(() => setIsAdmin(Boolean(adminOverride)), [adminOverride]);
 
@@ -257,6 +258,7 @@ export function RiderMenu({
         ref={triggerRef}
         type="button"
         className={`nr-rider-hamburger ${className}`}
+        data-open={open ? "true" : "false"}
         aria-label={open ? say("Close menu", "ምናሌ ዝጋ") : say("Open menu", "ምናሌ ክፈት")}
         aria-expanded={open}
         aria-controls="nr-rider-drawer"
@@ -280,6 +282,19 @@ export function RiderMenu({
             ref={drawerRef}
             id="nr-rider-drawer"
             className="nr-rider-drawer"
+            onTouchStart={(event) => {
+              const touch = event.touches[0];
+              drawerTouchStart.current = touch ? {x:touch.clientX,y:touch.clientY} : null;
+            }}
+            onTouchEnd={(event) => {
+              const start = drawerTouchStart.current;
+              drawerTouchStart.current = null;
+              const touch = event.changedTouches[0];
+              if (!start || !touch) return;
+              const dx = touch.clientX - start.x;
+              const dy = touch.clientY - start.y;
+              if (dx < -72 && Math.abs(dx) > Math.abs(dy) * 1.4) setOpen(false);
+            }}
             role="dialog"
             aria-modal="true"
             aria-label={say("Rider menu", "የተሳፋሪ ምናሌ")}
