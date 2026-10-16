@@ -4,6 +4,12 @@ import { Button, Icon, useTranslation } from "./ui";
 import type { StartupError } from "../../lib/nexride-startup";
 import "./splash.css";
 
+/**
+ * Session restoration is not another branded app introduction.
+ * Android already provides the native launch splash. This shared screen is
+ * deliberately a neutral waiting state while the existing session and role
+ * checks finish; full error recovery remains available if restoration fails.
+ */
 export function RiderSplash({
   error,
   onRetry,
@@ -16,17 +22,16 @@ export function RiderSplash({
   animate?: boolean;
 }) {
   const t = useTranslation();
+
   return (
     <section
-      className={`nr-rider-splash ${animate ? "is-opening" : ""}`}
+      className={`nr-rider-splash ${error ? "has-error" : "is-restoring"} ${error && animate ? "is-opening" : ""}`}
       aria-label="NexRide"
       aria-busy={!error}
     >
-      <div className="nr-splash-ambient" aria-hidden="true" />
-      <div className="nr-splash-identity">
-        <h1 className="nr-splash-wordmark">NexRide</h1>
-        <p className="nr-splash-tagline">{t("brandTagline")}</p>
-        {error ? (
+      {error ? (
+        <div className="nr-splash-identity">
+          <h1 className="nr-splash-wordmark">NexRide</h1>
           <div className="nr-splash-error" role="alert">
             <Icon name="info" />
             <h2>{t("startupError")}</h2>
@@ -50,17 +55,13 @@ export function RiderSplash({
               </nav>
             )}
           </div>
-        ) : (
-          <>
-            <div className="nr-splash-progress" aria-hidden="true">
-              <span />
-            </div>
-            <p className="nr-splash-status" role="status" aria-live="polite">
-              {t("startupRestoring")}
-            </p>
-          </>
-        )}
-      </div>
+        </div>
+      ) : (
+        <div className="nr-splash-restoring" role="status" aria-live="polite">
+          <span className="nr-splash-loading-indicator" aria-hidden="true" />
+          <span className="nr-splash-visually-hidden">{t("startupRestoring")}</span>
+        </div>
+      )}
     </section>
   );
 }
