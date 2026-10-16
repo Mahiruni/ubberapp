@@ -1,0 +1,98 @@
+/* NexRide Precision — Phase 2: rider cockpit visual layer.
+   Scope to rider surfaces; preserve booking, map and payment behavior. */
+.nr-app[data-mode="rider"] {
+  --precision-carbon:#0b0c10;
+  --precision-obsidian:#12141a;
+  --precision-emerald:#00c878;
+  --precision-red:#d40000;
+  --precision-gold:#f5c518;
+  --precision-radius:22px;
+}
+.nr-app[data-mode="rider"][data-theme="dark"] {
+  --precision-surface:#12141a;
+  --precision-ink:#f7f9fc;
+  --precision-subtle:#a3aab5;
+  --precision-stroke:rgba(255,255,255,.10);
+  --precision-elevation:0 16px 48px rgba(0,0,0,.36);
+}
+.nr-app[data-mode="rider"][data-theme="light"] {
+  --precision-surface:#fff;
+  --precision-ink:#102334;
+  --precision-subtle:#667587;
+  --precision-stroke:rgba(4,28,48,.11);
+  --precision-elevation:0 16px 48px rgba(4,28,48,.10);
+}
+.nr-app[data-mode="rider"] :is(.nr-ride-selection,.nr-destination-panel,.nr-driver-matching) {
+  color:var(--precision-ink);
+  background:var(--precision-surface);
+  border-color:var(--precision-stroke);
+  box-shadow:var(--precision-elevation);
+}
+.nr-app[data-mode="rider"] :is(.nr-ride-selection,.nr-destination-panel,.nr-driver-matching) h1 {
+  font-weight:800;
+  letter-spacing:-.045em;
+  line-height:1.12;
+  text-wrap:balance;
+}
+.nr-app[data-mode="rider"] .nr-ride-selection .nr-ride-card {
+  border:1px solid var(--precision-stroke);
+  border-radius:18px;
+  background:color-mix(in srgb,var(--precision-surface) 92%,var(--precision-ink) 8%);
+  color:var(--precision-ink);
+  transition:border-color .22s ease,background-color .22s ease,transform .22s ease,box-shadow .22s ease;
+}
+.nr-app[data-mode="rider"] .nr-ride-selection .nr-ride-card.selected {
+  background:color-mix(in srgb,var(--precision-emerald) 10%,var(--precision-surface));
+  border-color:var(--precision-emerald);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--precision-emerald) 30%,transparent);
+}
+.nr-app[data-mode="rider"] .nr-ride-selection .nr-ride-card:active:not(:disabled) { transform:scale(.985); }
+.nr-app[data-mode="rider"] .nr-ride-selection :is(.nr-ride-copy small,.nr-ride-price small,.nr-fare-source,.nr-fare-explanation,.nr-booking-boundary) {
+  color:var(--precision-subtle);
+}
+.nr-app[data-mode="rider"] .nr-ride-selection .nr-ride-price {
+  font-variant-numeric:tabular-nums;
+  font-feature-settings:"tnum" 1;
+}
+.nr-app[data-mode="rider"] .nr-ride-selection :is(.nr-ride-price strong,.nr-request-total) {
+  font-variant-numeric:tabular-nums;
+  letter-spacing:-.025em;
+}
+.nr-app[data-mode="rider"] .nr-ride-selection footer {
+  background:var(--precision-surface);
+  border-color:var(--precision-stroke);
+}
+.nr-app[data-mode="rider"] .nr-ride-selection footer .nr-button:not(:disabled) {
+  background:var(--precision-emerald);
+  color:#041c30;
+  border-radius:15px;
+  font-weight:800;
+  box-shadow:0 8px 22px rgba(0,200,120,.18);
+}
+.nr-app[data-mode="rider"] .nr-ride-selection .nr-ride-payment { color:var(--precision-ink); }
+.nr-app[data-mode="rider"] .nr-ride-selection .nr-ride-payment small { color:var(--precision-subtle); }
+.nr-app[data-mode="rider"] .nr-ride-selection :is(.nr-fare-breakdown,.nr-fare-breakdown .total) {
+  border-color:var(--precision-stroke);
+  color:var(--precision-ink);
+}
+.nr-app[data-mode="rider"] .nr-ride-selection :is(button,a):focus-visible {
+  outline:3px solid var(--precision-emerald);
+  outline-offset:3px;
+}
+@media (max-width:800px) {
+  /* Booking map stays primary in the collapsed state. Existing drag/keyboard logic retains control. */
+  .nr-app[data-mode="rider"] .rider-map-flow.rider-ride-view {
+    --nr-flow-sheet-height:35dvh;
+  }
+  .nr-app[data-mode="rider"] .rider-map-flow.rider-ride-view .nr-stage.with-map {
+    grid-template-rows:minmax(140px,1fr) minmax(0,var(--nr-flow-sheet-height))!important;
+  }
+  .nr-app[data-mode="rider"] .rider-ride-view .nr-ride-selection > header { padding-top:5px; }
+  .nr-app[data-mode="rider"] .nr-ride-selection .nr-ride-card { min-height:76px; }
+}
+@media (max-width:390px) and (max-height:720px) {
+  .nr-app[data-mode="rider"] .rider-map-flow.rider-ride-view { --nr-flow-sheet-height:42dvh; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .nr-app[data-mode="rider"] .nr-ride-selection .nr-ride-card { transition:none; }
+}
