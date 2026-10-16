@@ -67,7 +67,7 @@ export function RiderHomePanel({
   const t = useTranslation();
   const language = useContext(LanguageContext);
   const rows = data.recent.slice(0, 3);
-  const motion = useSheetMotion({ kind: "rider", ratios: HOME_RATIOS, defaultRatio: 0.5 });
+  const motion = useSheetMotion({ kind: "rider", ratios: HOME_RATIOS, defaultRatio: 0.29 });
   const snap = motion.currentRatio <= HOME_RATIOS[0] ? "collapsed" : motion.currentRatio >= HOME_RATIOS[2] ? "expanded" : "medium";
 
   return (
@@ -87,6 +87,7 @@ export function RiderHomePanel({
           ref={motion.handleRef}
           type="button"
           className="nr-home-sheet-drag-zone"
+          aria-controls="nr-rider-home-content"
           aria-label={
             language === "am"
               ? "የመነሻ ፓነሉን አስፋ ወይም አሳንስ"
@@ -113,6 +114,7 @@ export function RiderHomePanel({
 
       <div
         className="nr-home-sheet-scroll"
+        id="nr-rider-home-content"
         onPointerDown={(event) => event.stopPropagation()}
         onPointerMove={(event) => event.stopPropagation()}
         onTouchStart={(event) => event.stopPropagation()}
@@ -120,6 +122,7 @@ export function RiderHomePanel({
         <h1 className="nr-sr-only">{t("where")}</h1>
         <button
           className="nr-home-search"
+          type="button"
           onClick={navigate}
           aria-label={t("destination")}
         >
