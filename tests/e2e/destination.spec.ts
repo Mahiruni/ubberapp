@@ -383,9 +383,7 @@ test("temporary provider addresses never enter saved preview history", async ({
   await openSearch(page);
   await select(page, "destination", "Provider-only address");
   await select(page, "pickup", "Bole Atlas");
-  await page
-    .getByRole("button", { name: "Preview ride options", exact: true })
-    .click();
+  await page.locator(".nr-destination-panel footer").getByRole("button").click();
   await page.getByRole("button", { name: /Preview this ride/ }).click();
   await expect
     .poll(() =>
