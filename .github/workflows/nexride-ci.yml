@@ -39,7 +39,7 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium webkit firefox
       - name: E2E tests
-        run: npm run test:e2e
+        run: npm run test:e2e -- --max-failures=5
       - name: Upload Playwright report
         if: always()
         uses: actions/upload-artifact@v4
