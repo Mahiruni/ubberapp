@@ -1,0 +1,222 @@
+/* NexRide Midnight Edition — actual cross-screen release layer.
+   Intentionally imported after the legacy CSS systems. Scoped to dark mode:
+   maps and semantic warning/success/error colors stay functional. */
+:root {
+  --nr-midnight:#05070c;
+  --nr-midnight-panel:#141a27;
+  --nr-midnight-raised:#222b3b;
+  --nr-midnight-line:#303c50;
+  --nr-midnight-blue:#3478f6;
+  --nr-midnight-white:#ffffff;
+  --nr-midnight-muted:#c5ced8;
+}
+:is(.nr-app,.nr-driver-app-shell,.nr-rider-drawer-layer,.nr-driver-menu-layer,.nex-manage)[data-theme="dark"],
+.nr-driver-app-shell[data-theme="dark"] .nr-app {
+  color-scheme:dark;
+  --bg:#05070c;--surface:#141a27;--surface-alt:#222b3b;
+  --text:#fff;--muted:#c5ced8;--line:#303c50;--navy:#05070c;
+  --nr-bg:#05070c;--nr-bg-secondary:#0c111b;
+  --nr-surface:#141a27;--nr-surface-raised:#222b3b;
+  --nr-text:#fff;--nr-text-secondary:#c5ced8;--nr-text-muted:#c5ced8;
+  --nr-border:#303c50;--nr-border-strong:#465776;
+  --nr-id-bg:#05070c;--nr-id-surface:#141a27;--nr-id-text:#fff;
+  --nr-id-muted:#c5ced8;--nr-id-line:#303c50;--nr-id-field:#222b3b;
+  --nr-id-blue:#3478f6;--nr-id-emerald-text:#8cb6ff;
+  --nr-emerald-soft:#1a2e51;
+  --nr-brand-primary:#3478f6;--nr-brand-primary-strong:#205cce;
+  --nx-em:#3478f6;--nx-em-deep:#8cb6ff;--nx-ink:#fff;
+  --precision-surface:#141a27;--precision-ink:#fff;
+  --precision-subtle:#c5ced8;--precision-stroke:#303c50;
+  --precision-emerald:#3478f6;
+  --driver-bg:#05070c;--driver-surface:#141a27;
+  --driver-surface-elevated:#222b3b;--driver-border:#303c50;
+  --driver-text-primary:#fff;--driver-text-secondary:#c5ced8;
+  --driver-accent:#3478f6;--driver-header-bg:rgba(5,7,12,.96);
+  --driver-nav-bg:rgba(20,26,39,.98);--driver-overlay:rgba(20,26,39,.97);
+}
+
+/* Zero flashes of light backgrounds in dark mode, including long pages. */
+.nr-app[data-theme="dark"],
+.nr-driver-app-shell[data-theme="dark"],
+.nr-driver-app-shell[data-theme="dark"] .nr-driver-shell-content,
+.nr-driver-app-shell[data-theme="dark"] .nr-app,
+.nr-app.nr-identity-entry[data-theme="dark"],
+.nex-manage[data-theme="dark"] {
+  background:#05070c!important;color:#fff!important;
+}
+.nr-app[data-theme="dark"] :is(.nr-workspace,.nr-main,.nr-stage,.nr-sidebar,.nr-panel,.nr-account-standard,.nr-profile-page,.nr-rider-page),
+.nr-driver-app-shell[data-theme="dark"] :is(.nr-driver-page,.nr-driver-profile-subpage,.nr-driver-activity-page,.nr-earnings-report-page) {
+  background-color:#05070c!important;color:#fff!important;
+}
+/* Maps retain real tile colors and marker contrast; only chrome is themed. */
+.nr-app[data-mode="rider"][data-theme="dark"] .nr-rider-map-surface,
+.nr-app[data-mode="rider"][data-theme="dark"] .nr-geographic-map {
+  background:#101924;border-color:#303c50;
+}
+
+/* Rider: map sheet, booking flow, search, trips, payments and profile. */
+.nr-app[data-mode="rider"][data-theme="dark"] :is(
+ .nr-rider-home-sheet,.nr-rider-home-panel,.nr-destination-panel,
+ .nr-ride-selection,.nr-driver-matching,.nr-trip-experience,
+ .nr-trip-frame,.nr-dialog,.nr-sheet,.nr-account-group,.nr-account-hero,
+ .nr-account-row,.nr-account-secondary-actions,.nr-profile-card,
+ .nr-wallet-card,.nr-history-card,.nr-fare-breakdown,.nr-trip-card
+) {
+  background-color:#141a27!important;color:#fff!important;
+  border-color:#303c50!important;
+}
+.nr-app[data-mode="rider"][data-theme="dark"] :is(
+ .nr-home-search,.nr-endpoint-field,.nr-home-location,.nr-home-shortcuts button,
+ .nr-home-destinations button,.nr-place-suggestion,.nr-ride-card,
+ .nr-ride-payment,.nr-input-field,.nr-field-value,.nr-recent-place,
+ .nr-setting-row,.nr-list-row,.nr-profile-input
+) {
+  background-color:#222b3b!important;color:#fff!important;
+  border-color:#303c50!important;
+}
+.nr-app[data-mode="rider"][data-theme="dark"] :is(
+ .nr-rider-home-sheet,.nr-destination-panel,.nr-ride-selection,.nr-driver-matching
+) :is(h1,h2,h3,strong,b) {color:#fff!important;}
+.nr-app[data-mode="rider"][data-theme="dark"] :is(
+ .nr-wrapper-subtitle,.nr-home-empty-state small,.nr-ride-copy small,
+ .nr-ride-price small,.nr-fare-source,.nr-fare-explanation,
+ .nr-booking-boundary,.nr-home-history-heading small,.nr-home-location small
+) {color:#c5ced8!important;}
+.nr-app[data-mode="rider"][data-theme="dark"] :is(
+ .nr-ride-selection,.nr-destination-panel,.nr-driver-matching
+) > footer {background:#141a27!important;border-color:#303c50!important;}
+.nr-app[data-mode="rider"][data-theme="dark"] .nr-ride-card.selected {
+  border-color:#3478f6!important;background:#1b2e50!important;
+  box-shadow:inset 0 0 0 1px rgba(52,120,246,.4)!important;
+}
+.nr-app[data-mode="rider"][data-theme="dark"] :is(.nr-topbar,.nr-mobile-nav,.nr-rider-hamburger-inline) {
+  background-color:rgba(20,26,39,.97)!important;border-color:#303c50!important;
+  color:#fff!important;
+}
+.nr-app[data-mode="rider"][data-theme="dark"] .nr-rider-profile-top {
+  background:#222b3b!important;border-color:#3478f6!important;color:#fff!important;
+}
+.nr-app[data-mode="rider"][data-theme="dark"] :is(.nr-map-profile,.nr-recenter,.nr-map-control,.nr-icon-button) {
+  background:rgba(20,26,39,.96)!important;color:#fff!important;border-color:#303c50!important;
+}
+
+/* Driver: persistent header, dashboard, maps, requests, earnings, profile. */
+.nr-driver-app-shell[data-theme="dark"] .nr-driver-global-header {
+  background:rgba(5,7,12,.96)!important;border-color:#303c50!important;
+}
+.nr-driver-app-shell[data-theme="dark"] :is(
+ .nr-driver-global-header-title strong,.nr-driver-profile-identity h2,
+ .nr-driver-profile-section h2,.nr-earnings-total,.nr-request-summary strong
+) {color:#fff!important;}
+.nr-driver-app-shell[data-theme="dark"] :is(
+ .nr-driver-global-header-title small,.nr-driver-global-header-title>span,
+ .nr-driver-profile-identity p,.nr-earnings-definition,.nr-request-route-copy small
+) {color:#c5ced8!important;}
+.nr-driver-app-shell[data-theme="dark"] :is(
+ .nr-driver-card,.nr-driver-operational-card,.nr-driver-metric-grid .nr-metric,
+ .nr-driver-profile-hero-v2,.nr-driver-profile-section,.nr-driver-profile-quick,
+ .nr-driver-profile-summary-v2 .nr-profile-metric,.nr-profile-panel,
+ .nr-earnings-total-card,.nr-earnings-metric,.nr-report-section,.nr-report-summary-card,
+ .nr-request-sheet,.nr-nav-bottom-card,.nr-driver-sheet,.nr-driver-action-row,
+ .nr-driver-verification-card,.nr-earnings-report-action
+) {background:#141a27!important;border-color:#303c50!important;color:#fff!important;}
+.nr-driver-app-shell[data-theme="dark"] :is(
+ .nr-driver-profile-row,.nr-driver-theme-selector,.nr-driver-language-selector,
+ .nr-request-summary,.nr-driver-profile-quick,.nr-driver-menu-utility,
+ input,textarea,select
+) {border-color:#303c50!important;color:#fff!important;}
+.nr-driver-app-shell[data-theme="dark"] :is(input,textarea,select) {
+  background:#222b3b!important;
+}
+.nr-driver-app-shell[data-theme="dark"] :is(input,textarea)::placeholder {
+  color:#c5ced8!important;
+}
+.nr-driver-app-shell[data-theme="dark"] .nr-driver-sheet :is(button,a) {
+  border-color:#303c50;
+}
+.nr-driver-app-shell[data-theme="dark"] .nr-driver-menu-trigger,
+.nr-driver-app-shell[data-theme="dark"] .nr-driver-global-icon-button {
+  background:#222b3b!important;color:#fff!important;border-color:#303c50!important;
+}
+/* Explicitly replace legacy white map-header overrides. */
+.nr-driver-app-shell[data-theme="dark"][data-request-map="true"] .nr-driver-global-header-side :is(.nr-driver-global-icon-button,.nr-driver-menu-trigger) {
+  background:#141a27!important;border-color:#303c50!important;color:#fff!important;
+}
+.nr-driver-app-shell[data-theme="dark"] .driver-page {
+  --db:#05070c;--ds:#141a27;--ds2:#222b3b;--dt:#fff;--dm:#c5ced8;--blue:#3478f6;
+  background:#05070c!important;color:#fff!important;
+}
+.nr-driver-app-shell[data-theme="dark"] .driver-page :is(
+ .driver-map-top,.driver-demand-card,.driver-map-location,.driver-mobile-tabs
+) {background:rgba(20,26,39,.96)!important;border-color:#303c50!important;color:#fff!important;}
+.nr-driver-app-shell[data-theme="dark"] .driver-page :is(
+ .driver-request-panel,.driver-earn-card,.preference-card,.driver-head,
+ .request-list,.earnings-hero,.earn-breakdown,.payout-card,.bonus-card
+) {background:#141a27!important;border-color:#303c50!important;color:#fff!important;}
+
+/* Entry / authentication for both roles, including loading and recoveries. */
+.nr-entry-redesign.nr-entry-redesign[data-theme="dark"] {
+  --nr-id-bg:#05070c;--nr-id-surface:#141a27;
+  --nr-id-field:#222b3b;--nr-id-line:#303c50;
+  --nr-id-text:#fff;--nr-id-muted:#c5ced8;
+  background:#05070c!important;color:#fff!important;
+}
+.nr-entry-redesign.nr-entry-redesign[data-theme="dark"] :is(.nr-entry-page,.nr-entry-content,.nr-entry-shell,.nr-entry-form-content) {
+  background-color:#141a27!important;color:#fff!important;border-color:#303c50!important;
+}
+.nr-entry-redesign.nr-entry-redesign[data-theme="dark"] :is(input,textarea,select,.nr-field-value,.nr-auth-input,.nr-auth-password-row) {
+  background-color:#222b3b!important;border-color:#303c50!important;color:#fff!important;
+}
+.nr-entry-redesign.nr-entry-redesign[data-theme="dark"] :is(h1,h2,h3,strong,.nr-brand strong) {
+  color:#fff!important;
+}
+.nr-entry-redesign.nr-entry-redesign[data-theme="dark"] :is(p,small,.nr-entry-legal,.nr-entry-hero-copy p) {
+  color:#c5ced8;
+}
+
+/* Portal menus are mounted under body; theme must not depend on .nr-app ancestry. */
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer)[data-theme="dark"] {
+  --nr-nav-bg:#141a27;--nr-nav-fg:#fff;--nr-nav-muted:#c5ced8;--nr-nav-accent:#3478f6;
+}
+.nr-rider-drawer-layer[data-theme="dark"] .nr-rider-drawer,
+.nr-driver-menu-layer[data-theme="dark"] .nr-driver-menu-panel {
+  background:#141a27!important;color:#fff!important;border-color:#303c50!important;
+}
+.nr-rider-drawer-layer[data-theme="dark"] :is(
+ .nr-menu-person,.nr-rider-drawer-nav button,.nr-rider-drawer-footer-card,.nr-rider-drawer-signout
+),
+.nr-driver-menu-layer[data-theme="dark"] :is(
+ .nr-driver-menu-identity,.nr-driver-menu-row,.nr-driver-menu-utility,.nr-driver-menu-footer,.nr-driver-menu-logout
+) {color:#fff!important;border-color:#303c50!important;}
+.nr-rider-drawer-layer[data-theme="dark"] :is(.nr-rider-drawer-footer-card,.nr-menu-person-avatar),
+.nr-driver-menu-layer[data-theme="dark"] :is(.nr-driver-menu-footer,.nr-driver-menu-avatar) {
+  background:#222b3b!important;
+}
+.nr-rider-drawer-layer[data-theme="dark"] .nr-rider-drawer-nav button.active,
+.nr-driver-menu-layer[data-theme="dark"] .nr-driver-menu-row[data-active="true"] {
+  background:#1b2e50!important;border-color:#3478f6!important;color:#fff!important;
+}
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer)[data-theme="dark"] :is(small,.nr-rider-drawer-section-label,.nr-driver-menu-section-label) {
+  color:#c5ced8!important;
+}
+
+/* Primary actions are blue. Semantic online/success/error states remain distinct. */
+.nr-app.nr-app[data-theme="dark"] :is(.nr-button.nr-primary,.nr-rider-get-started,.driver-auth-submit,.nr-home-search-primary),
+.nr-driver-app-shell[data-theme="dark"] :is(.nr-driver-primary:not(.secondary-state),.nr-nav-stage-primary,.driver-go-online,.accept-driver) {
+  background:#3478f6!important;border-color:#3478f6!important;color:#fff!important;
+  box-shadow:none!important;
+}
+.nr-app[data-theme="dark"] :is(.nr-mobile-nav .nr-navigation button.active,.nr-navigation button.active) {
+  background:#1b2e50!important;color:#8cb6ff!important;
+}
+.nr-app[data-theme="dark"] :is(button,a,input,select,textarea):focus-visible,
+.nr-driver-app-shell[data-theme="dark"] :is(button,a,input,select,textarea):focus-visible,
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer)[data-theme="dark"] :focus-visible {
+  outline:3px solid #3478f6!important;outline-offset:3px;
+}
+/* Do not style map tiles/canvas/markers as dark cards; retain natural navigation. */
+@media(prefers-reduced-motion:reduce) {
+ .nr-app[data-theme="dark"] *, .nr-driver-app-shell[data-theme="dark"] * {
+  transition-duration:0.01ms!important;animation-duration:0.01ms!important;
+ }
+}
