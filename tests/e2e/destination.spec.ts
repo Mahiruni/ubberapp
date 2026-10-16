@@ -348,8 +348,10 @@ test("a late route response cannot restore a cleared journey", async ({
 test("Amharic UI uses translated place names and locality details", async ({
   page,
 }) => {
+  // The compact top-bar toggle is intentionally hidden while searching.
+  // Start with a persisted Amharic preference instead of clicking hidden UI.
+  await page.addInitScript(() => localStorage.setItem("nexride:language", "am"));
   await openSearch(page);
-  await page.locator(".nr-topbar .nr-language-button").click();
   await expect(page.locator(".nr-destination-panel")).toContainText("መድረሻ");
   await page.locator(".nr-endpoint-field input").last().fill("ኮልፌ");
   await expect(
