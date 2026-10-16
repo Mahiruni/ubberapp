@@ -62,7 +62,7 @@ test("search requires selected endpoints, finds both scripts and distinguishes l
     "",
   );
   await expect(
-    page.getByRole("button", { name: "Preview ride options", exact: true }),
+    page.locator(".nr-destination-panel footer").getByRole("button"),
   ).toBeDisabled();
   await page.getByLabel("Search destination", { exact: true }).fill("ኮልፌ");
   const kolfe = page
@@ -74,7 +74,7 @@ test("search requires selected endpoints, finds both scripts and distinguishes l
   await select(page, "destination", "መስቀል");
   await select(page, "pickup", "Bole Atlas");
   await expect(page.locator(".nr-route-review.unavailable")).toBeVisible();
-  await expect(page.locator(".nr-provider-route")).toHaveCount(0);
+  await expect(page.locator(".nr-rider-map-surface.nr-map-has-route")).toHaveCount(0);
   await expect(page.locator(".nr-route-review")).not.toContainText("km");
   await page
     .getByRole("button", { name: "Preview ride options", exact: true })
@@ -93,15 +93,20 @@ test("provider route is rendered and editing pickup invalidates it immediately",
   await expect(page.locator(".nr-route-review.ready")).toContainText(
     "12 min · 4.3 km",
   );
-  await expect(page.locator(".nr-provider-route")).toHaveCount(1);
-  await expect(page.locator(".nr-pickup-marker")).toHaveCount(1);
-  await expect(page.locator(".nr-destination-marker")).toHaveCount(1);
+  await expect(page.locator(".nr-rider-map-surface.nr-map-has-route")).toHaveCount(1);
+  await expect(page.locator(".nr-rider-map-surface")).toHaveAttribute("data-map-status", /ready|unavailable/);
+  if (await page.locator(".nr-rider-map-surface").getAttribute("data-map-status") === "ready") {
+    await expect(page.locator(".nr-pin-core.pickup")).toHaveCount(1);
+    await expect(page.locator(".nr-pin-core.destination")).toHaveCount(1);
+  } else {
+    await expect(page.locator(".nr-map-unavailable")).toBeVisible();
+  }
   await page
     .getByLabel("Pickup location", { exact: true })
     .fill("unselected text");
-  await expect(page.locator(".nr-provider-route")).toHaveCount(0);
+  await expect(page.locator(".nr-rider-map-surface.nr-map-has-route")).toHaveCount(0);
   await expect(
-    page.getByRole("button", { name: "Preview ride options", exact: true }),
+    page.locator(".nr-destination-panel footer").getByRole("button"),
   ).toBeDisabled();
 });
 test("dragging pickup updates its label and requires confirmation before rerouting", async ({
@@ -111,8 +116,18 @@ test("dragging pickup updates its label and requires confirmation before rerouti
   await openSearch(page);
   await select(page, "destination", "Meskel Square");
   await select(page, "pickup", "Bole Atlas");
-  await expect(page.locator(".nr-provider-route")).toHaveCount(1);
-  const pin = (await page.locator(".nr-pickup-marker").boundingBox())!;
+  await expect(page.locator(".nr-rider-map-surface.nr-map-has-route")).toHaveCount(1);
+  await expect(page.locator(".nr-rider-map-surface")).toHaveAttribute("data-map-status", /ready|unavailable/);
+  if (await page.locator(".nr-rider-map-surface").getAttribute("data-map-status") === "unavailable") {
+    // CI intentionally has no valid Mapbox key: preserve a usable text search
+    // and prove editing clears a stale route instead of faking drag coordinates.
+    await expect(page.locator(".nr-map-unavailable")).toBeVisible();
+    await page.getByLabel("Pickup location", { exact: true }).fill("changed pickup");
+    await expect(page.locator(".nr-rider-map-surface.nr-map-has-route")).toHaveCount(0);
+    await expect(page.locator(".nr-destination-panel footer").getByRole("button")).toBeDisabled();
+    return;
+  }
+  const pin = (await page.locator(".nr-pin-core.pickup").boundingBox())!;
   await page.mouse.move(pin.x + 14, pin.y + 14);
   await page.mouse.down();
   await page.mouse.move(pin.x + 44, pin.y + 32, { steps: 8 });
@@ -120,16 +135,16 @@ test("dragging pickup updates its label and requires confirmation before rerouti
   await expect(page.getByLabel("Pickup location", { exact: true })).toHaveValue(
     /Map pin/,
   );
-  await expect(page.locator(".nr-provider-route")).toHaveCount(0);
+  await expect(page.locator(".nr-rider-map-surface.nr-map-has-route")).toHaveCount(0);
   await expect(
-    page.getByRole("button", { name: "Preview ride options", exact: true }),
+    page.locator(".nr-destination-panel footer").getByRole("button"),
   ).toBeDisabled();
   await page
     .getByRole("button", { name: "Confirm pickup pin", exact: true })
     .click();
-  await expect(page.locator(".nr-provider-route")).toHaveCount(1);
+  await expect(page.locator(".nr-rider-map-surface.nr-map-has-route")).toHaveCount(1);
   await expect(
-    page.getByRole("button", { name: "Preview ride options", exact: true }),
+    page.locator(".nr-destination-panel footer").getByRole("button"),
   ).toBeEnabled();
 });
 test("map selection keeps exact coordinates synchronized without a geocoder", async ({
@@ -151,6 +166,13 @@ test("map selection keeps exact coordinates synchronized without a geocoder", as
     steps: 8,
   });
   await page.mouse.up();
+  await expect(page.locator(".nr-rider-map-surface")).toHaveAttribute("data-map-status", /ready|unavailable/);
+  if (await page.locator(".nr-rider-map-surface").getAttribute("data-map-status") === "unavailable") {
+    // No map imagery or calibrated center exists; never invent a pickup point.
+    await expect(page.locator(".nr-map-unavailable")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Use map center", exact: true })).toBeDisabled();
+    return;
+  }
   await page
     .getByRole("button", { name: "Use map center", exact: true })
     .click();
@@ -164,7 +186,7 @@ test("map selection keeps exact coordinates synchronized without a geocoder", as
   );
   await expect(page.locator(".nr-pickup-marker")).toHaveCount(1);
   await expect(
-    page.getByRole("button", { name: "Preview ride options", exact: true }),
+    page.locator(".nr-destination-panel footer").getByRole("button"),
   ).toBeEnabled();
 });
 test("routing failure can be retried and coverage restrictions block continuation", async ({
@@ -179,7 +201,7 @@ test("routing failure can be retried and coverage restrictions block continuatio
   await select(page, "pickup", "Bole Atlas");
   await expect(page.locator(".nr-route-review.error")).toBeVisible();
   await expect(
-    page.getByRole("button", { name: "Preview ride options", exact: true }),
+    page.locator(".nr-destination-panel footer").getByRole("button"),
   ).toBeDisabled();
   state = "coverage";
   await page
@@ -188,7 +210,7 @@ test("routing failure can be retried and coverage restrictions block continuatio
     .click();
   await expect(page.locator(".nr-route-review.coverage")).toBeVisible();
   await expect(
-    page.getByRole("button", { name: "Preview ride options", exact: true }),
+    page.locator(".nr-destination-panel footer").getByRole("button"),
   ).toBeDisabled();
 });
 test("an uncertain device location requires explicit pickup confirmation", async ({
@@ -224,13 +246,13 @@ test("an uncertain device location requires explicit pickup confirmation", async
     "Bole",
   );
   await expect(
-    page.getByRole("button", { name: "Preview ride options", exact: true }),
+    page.locator(".nr-destination-panel footer").getByRole("button"),
   ).toBeDisabled();
   await page
     .getByRole("button", { name: "Confirm pickup pin", exact: true })
     .click();
   await expect(
-    page.getByRole("button", { name: "Preview ride options", exact: true }),
+    page.locator(".nr-destination-panel footer").getByRole("button"),
   ).toBeEnabled();
 });
 test("no-results state and sheet resizing keep search and map usable in short viewports", async ({
@@ -324,9 +346,9 @@ test("a late route response cannot restore a cleared journey", async ({
     .getByLabel("Pickup location", { exact: true })
     .fill("changed pickup");
   release();
-  await expect(page.locator(".nr-provider-route")).toHaveCount(0);
+  await expect(page.locator(".nr-rider-map-surface.nr-map-has-route")).toHaveCount(0);
   await expect(
-    page.getByRole("button", { name: "Preview ride options", exact: true }),
+    page.locator(".nr-destination-panel footer").getByRole("button"),
   ).toBeDisabled();
 });
 test("Amharic UI uses translated place names and locality details", async ({
