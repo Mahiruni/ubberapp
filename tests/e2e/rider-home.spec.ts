@@ -23,7 +23,7 @@ test("home exposes empty history, labeled examples and the requested navigation"
     page
       .locator(".nr-rider-home-panel")
       .getByRole("button", { name: "Search destination", exact: true }),
-  ).toContainText("Where to?");
+  ).toContainText("Plan your ride");
   for (const label of ["Home", "Activity", "Safety center", "Messages", "Account"])
     await expect(
       page
