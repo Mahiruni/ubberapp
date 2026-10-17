@@ -344,7 +344,7 @@ test("EliteTrade-inspired Driver groups show management links without hiding log
   await management.click();
   await expect(management).toHaveAttribute("aria-expanded", "true");
   await expect(panel.getByRole("link", { name: "Documents & verification" })).toBeVisible();
-  await expect(panel.getByRole("link", { name: /Account/ }).first()).toHaveAttribute("aria-current", "page");
+  await expect(panel.locator(".nr-driver-menu-nav .nr-driver-menu-row[data-active=true]")).toHaveAttribute("aria-current", "page");
   await expect(panel.getByRole("button", { name: "Log out" })).toBeInViewport();
   await expect(panel.locator(".nr-menu-scroll")).toHaveCSS("overflow-y", "auto");
   await page.keyboard.press("Escape");
