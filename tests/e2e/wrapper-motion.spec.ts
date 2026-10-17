@@ -47,6 +47,8 @@ test("keyboard positioning and reduced motion work without a pointer", async ({ 
 });
 
 test("mouse movement follows the handle without a start jump or release click", async ({ page }) => {
+  await handle(page).press("Home");
+  await handle(page).press("ArrowUp");
   await expect.poll(async () => Math.abs(await height(page) - page.viewportSize()!.height * .5)).toBeLessThan(1);
   const before = await height(page), box = (await handle(page).boundingBox())!;
   const x = box.x + box.width / 2, y = box.y + box.height / 2;

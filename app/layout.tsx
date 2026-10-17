@@ -30,6 +30,7 @@ import "@fontsource/inter/latin-700.css";
 import "@fontsource/inter/latin-800.css";
 import "./premium-mobility.css";
 import "./midnight-edition.css";
+import "./nexride-2026-tokens.css";
 
 const description =
   "Book reliable rides across Addis Ababa with NexRide, a rider and driver mobility platform built for Ethiopia.";
