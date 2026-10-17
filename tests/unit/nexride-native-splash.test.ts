@@ -18,7 +18,7 @@ test.each(["rider", "driver"])("%s native splash preserves runtime theme and fit
   const first = readFileSync(join(res,"values/styles.xml"),"utf8");
   expect(first).toContain(runtime);
   expect(first).toContain('name="postSplashScreenTheme">@style/AppTheme.NoActionBar');
-  expect(first).toContain('name="windowSplashScreenBackground">#000000');
+  expect(first).toContain('name="windowSplashScreenBackground">#625CF6');
   expect(first).not.toContain("setKeepOnScreenCondition");
   const icon = sharp(join(res,"drawable-nodpi/nexride_splash_wordmark.png"));
   const { data, info } = await icon.raw().toBuffer({ resolveWithObject: true });

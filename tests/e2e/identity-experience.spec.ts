@@ -128,8 +128,8 @@ test('Driver account uses real details, saves confirmed edits and persists Light
   await expect(page.locator('.nr-driver-profile-v2')).toContainText('REAL-123');
   await expect(page.locator('.nr-driver-verification-pill.pending')).toContainText('Verification under review');
   await expect(page.locator('.nr-driver-app-shell')).toHaveAttribute('data-theme', 'dark');
-  await expect(page.locator('.nr-driver-profile-section').first()).toHaveCSS('background-color', 'rgb(20, 26, 39)');
-  await expect(page.locator('.nr-profile-metric').first()).toHaveCSS('background-color', 'rgb(11, 43, 67)');
+  await expect(page.locator('.nr-driver-profile-section').first()).toHaveCSS('background-color', 'rgb(68, 53, 121)');
+  await expect(page.locator('.nr-profile-metric').first()).toHaveCSS('background-color', 'rgb(68, 53, 121)');
   await expect(page.locator('.nr-driver-profile-row-copy strong').first()).toHaveCSS('color', 'rgb(242, 247, 250)');
   await page.screenshot({ path: `/tmp/nexride-driver-account-${info.project.name}.png`, fullPage: true });
   await page.goto('/driver/profile/settings');

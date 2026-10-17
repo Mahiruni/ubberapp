@@ -104,7 +104,7 @@ test("session restoration uses an unbranded black waiting state without another 
   const splash = page.locator(".nr-rider-splash");
   await expect(splash).toBeVisible();
   await expect(splash).toHaveAttribute("aria-busy", "true");
-  await expect(splash).toHaveCSS("background-color", "rgb(0, 0, 0)");
+  await expect(splash).toHaveCSS("background-color", "rgb(247, 245, 255)");
   await expect(splash.locator(".nr-splash-restoring")).toBeVisible();
   await expect(splash.locator(".nr-splash-mark")).toHaveCount(0);
   await expect(splash.getByRole("heading", { name: "NexRide", exact: true })).toHaveCount(0);
