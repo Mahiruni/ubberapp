@@ -31,7 +31,8 @@ test.each(["rider", "driver"])("%s native splash preserves runtime theme and fit
         expect([...data.subarray(pixel, pixel+3)]).toEqual([255,255,255]);
       }
   }
-  expect(readFileSync(join(res,"values-v31/nexride-splash.xml"),"utf8")).toContain("windowSplashScreenBrandingImage");
+  expect(readFileSync(join(res,"values-v31/nexride-splash.xml"),"utf8")).not.toContain("windowSplashScreenBrandingImage");
+  expect(readFileSync(join(res,"values-v31/nexride-splash.xml"),"utf8")).toContain("windowSplashScreenBackground");
   execFileSync(process.execPath,["scripts/setup-android-splash.mjs",role,dir]);
   expect(readFileSync(join(res,"values/styles.xml"),"utf8")).toBe(first);
 });
