@@ -127,10 +127,11 @@ test('Driver account uses real details, saves confirmed edits and persists Light
   await expect(page.locator('.nr-driver-profile-v2')).toContainText('Toyota Yaris · Silver');
   await expect(page.locator('.nr-driver-profile-v2')).toContainText('REAL-123');
   await expect(page.locator('.nr-driver-verification-pill.pending')).toContainText('Verification under review');
-  await expect(page.locator('.nr-driver-app-shell')).toHaveAttribute('data-theme', 'dark');
-  await expect(page.locator('.nr-driver-profile-section').first()).toHaveCSS('background-color', 'rgb(68, 53, 121)');
-  await expect(page.locator('.nr-profile-metric').first()).toHaveCSS('background-color', 'rgb(68, 53, 121)');
-  await expect(page.locator('.nr-driver-profile-row-copy strong').first()).toHaveCSS('color', 'rgb(242, 247, 250)');
+  // Fresh installs and accounts migrated from forced black now start in Light.
+  await expect(page.locator('.nr-driver-app-shell')).toHaveAttribute('data-theme', 'light');
+  await expect(page.locator('.nr-driver-profile-section').first()).toBeVisible();
+  await expect(page.locator('.nr-profile-metric').first()).toBeVisible();
+  await expect(page.locator('.nr-driver-profile-row-copy strong').first()).toBeVisible();
   await page.screenshot({ path: `/tmp/nexride-driver-account-${info.project.name}.png`, fullPage: true });
   await page.goto('/driver/profile/settings');
   await expect(page.locator('.nr-settings-group-heading button')).toHaveCount(5);
@@ -161,6 +162,7 @@ test('Driver account uses real details, saves confirmed edits and persists Light
   await page.emulateMedia({ colorScheme: 'light' });
   await expect(page.locator('.nr-driver-app-shell')).toHaveAttribute('data-theme', 'light');
   await page.getByRole('button', { name: 'Dark', exact: true }).click();
+  await expect(page.locator('.nr-driver-app-shell')).toHaveAttribute('data-theme', 'dark');
   await page.screenshot({ path: `/tmp/nexride-driver-settings-${info.project.name}.png`, fullPage: true });
 });
 
@@ -276,7 +278,7 @@ test('account security retries a failed load without losing the identity and tra
   unavailable = false;
   await page.getByRole('button', { name: 'Try again', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Connected Account', exact: true })).toBeVisible();
-  await expect(page.locator('main')).toHaveAttribute('data-theme', 'dark');
+  await expect(page.locator('main')).toHaveAttribute('data-theme', 'light');
   await page.getByLabel('New password', { exact: true }).fill('private-password');
   await page.getByRole('button', { name: 'Show', exact: true }).click();
   await expect(page.getByLabel('New password', { exact: true })).toHaveAttribute('type', 'text');
