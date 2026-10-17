@@ -15,6 +15,25 @@ test.beforeEach(async ({ page }) => {
   await expect.poll(() => height(page)).toBeGreaterThan(100);
 });
 
+
+test("Rider home wrapper opens at 40% of mobile viewport without obscuring the map", async ({ page }) => {
+  for (const viewport of [
+    { width: 390, height: 844 },
+    { width: 360, height: 780 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await page.reload();
+    await expect(handle(page)).toBeVisible();
+    await expect(page.locator(".nr-rider-home-sheet")).toHaveAttribute("data-snap", "medium");
+    await expect.poll(async () => Math.abs(await height(page) - viewport.height * 0.4)).toBeLessThan(2);
+    const map = (await page.locator(".nr-rider-map-surface").boundingBox())!;
+    const sheet = (await panel(page).boundingBox())!;
+    expect(map.y + map.height).toBeLessThanOrEqual(sheet.y + 1);
+    expect(sheet.y + sheet.height).toBeLessThanOrEqual(viewport.height + 1);
+    await expect(page.getByRole("button", { name: "Search destination", exact: true })).toBeInViewport();
+  }
+});
+
 test("brand contrast and essential actions survive narrow screens and orientation changes", async ({ page }) => {
   for (const viewport of [{ width: 1280, height: 900 }, { width: 1280, height: 720 }, { width: 390, height: 844 }, { width: 320, height: 568 }, { width: 740, height: 390 }, { width: 844, height: 390 }]) {
     await page.setViewportSize(viewport);

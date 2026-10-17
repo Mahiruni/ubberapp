@@ -6,6 +6,11 @@
     --nr-flow-sheet-height: 46dvh;
   }
 
+  /* Match the React default before hydration to avoid a visible sheet jump. */
+  .nr-app[data-mode="rider"] .rider-map-flow.rider-home-view {
+    --nr-flow-sheet-height: 40dvh;
+  }
+
   .nr-app[data-mode="rider"] .rider-map-flow.rider-search-view {
     --nr-flow-sheet-height: 46dvh;
   }
