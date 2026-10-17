@@ -67,7 +67,9 @@ export function RiderHomePanel({
   const t = useTranslation();
   const language = useContext(LanguageContext);
   const rows = data.recent.slice(0, 3);
-  const motion = useSheetMotion({ kind: "rider", ratios: HOME_RATIOS, defaultRatio: 0.29 });
+  // Open the Rider home wrapper to 40% of the visible viewport on every fresh entry.
+  // Preserve the existing collapsed/medium/expanded drag and keyboard snap points.
+  const motion = useSheetMotion({ kind: "rider", ratios: HOME_RATIOS, defaultRatio: 0.4 });
   const snap = motion.currentRatio <= HOME_RATIOS[0] ? "collapsed" : motion.currentRatio >= HOME_RATIOS[2] ? "expanded" : "medium";
 
   return (
