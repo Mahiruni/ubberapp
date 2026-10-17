@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import Link from "next/link";
 import { AppVersion } from "./app-version";
 import { MenuGroup } from "./menu-group";
+import { registerNexRideBackHandler } from "../../lib/nexride-native-navigation";
 import {
   createContext,
   useCallback,
@@ -163,6 +164,12 @@ function DriverHamburgerMenu({
       requestAnimationFrame(() => triggerRef.current?.focus());
     };
   }, [open]);
+
+  // The drawer is transient UI: Android Back should close it, not end a trip.
+  useEffect(() => {
+    if (!open) return;
+    return registerNexRideBackHandler(() => { setOpen(false); return true; }, 110);
+  }, [open, setOpen]);
 
   const initials = useMemo(
     () => identity.name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "DR",
