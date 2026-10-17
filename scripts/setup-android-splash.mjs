@@ -32,7 +32,7 @@ writeFileSync(stylePath, styles);
 const legacyDrawable = join(res, "drawable");
 mkdirSync(legacyDrawable, { recursive: true });
 writeFileSync(join(legacyDrawable, "nexride_launch.xml"), `<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-  <item android:drawable="#625CF6" />
+  <item><shape android:shape="rectangle"><solid android:color="#625CF6" /></shape></item>
   <item android:width="288dp" android:height="288dp" android:gravity="center" android:drawable="@drawable/nexride_splash_wordmark" />
 </layer-list>\n`);
 const v31 = join(res,"values-v31");
