@@ -2,10 +2,11 @@
 
 import { createPortal } from "react-dom";
 import { AppVersion } from "./app-version";
+import { MenuGroup } from "./menu-group";
+import { registerNexRideBackHandler } from "../../lib/nexride-native-navigation";
 
 import {
   useContext,
-  Fragment,
   useEffect,
   useRef,
   useState,
@@ -151,6 +152,12 @@ export function RiderMenu({
     };
   }, [open]);
 
+  // Android system Back dismisses the drawer before navigating away.
+  useEffect(() => {
+    if (!open) return;
+    return registerNexRideBackHandler(() => { setOpen(false); return true; }, 110);
+  }, [open]);
+
   const items: {
     id: RiderMenuId;
     label: string;
@@ -220,6 +227,18 @@ export function RiderMenu({
     }
     window.location.assign(hrefs[id]);
   };
+
+  const renderRows = (subset: typeof items) => subset.map(item => {
+    const selected = active === item.id;
+    const disabled = locked && !["safety", "messages"].includes(item.id);
+    return <button key={item.id} type="button" className={selected ? "active" : ""}
+      aria-current={selected ? "page" : undefined} disabled={disabled}
+      onClick={() => navigate(item.id)}>
+      <span className="nr-rider-drawer-icon" data-tone={item.id}><Icon name={item.icon} size={20}/></span>
+      <span><strong>{item.label}</strong><small>{item.detail}</small></span>
+      {selected && <span className="nr-menu-active-dot" aria-hidden="true"/>}
+    </button>;
+  });
 
   const signOut = async () => {
     if (signingOut) return;
@@ -314,73 +333,38 @@ export function RiderMenu({
 
             <button type="button" className="nr-menu-person" disabled={locked} onClick={() => navigate("profile")}><span className="nr-menu-person-avatar">{identity.avatar ? <img src={identity.avatar} alt="" onError={() => setIdentity(current => ({...current,avatar:""}))}/> : (identity.name.trim().split(/\s+/).slice(0,2).map(v=>v[0]).join("").toUpperCase() || <Icon name="user"/>)}</span><span className="nr-menu-person-copy"><strong>{identity.name || say("Welcome to NexRide", "እንኳን ወደ NexRide መጡ")}</strong><small>{say("View profile", "መገለጫ ይመልከቱ")}</small></span><Icon name="chevron" size={18}/></button>
 
-            <nav
-              className="nr-rider-drawer-nav"
-              aria-label={say("Rider navigation", "የተሳፋሪ አሰሳ")}
-            >
-              {[...items.slice(0, 4), ...items.slice(6), ...items.slice(4, 6)].map((item) => {
-                const selected = active === item.id;
-                const disabled =
-                  locked && !["safety", "messages"].includes(item.id);
-                return (
-                  <Fragment key={item.id}>
-                  {item.id === "home" && <div className="nr-rider-drawer-section-label">{say("MAIN", "ዋና")}</div>}
-                  {item.id === "safety" && <div className="nr-rider-drawer-section-label">{say("SAFETY & SUPPORT", "ደህንነት እና ድጋፍ")}</div>}
-                  {item.id === "profile" && <div className="nr-rider-drawer-section-label">{say("ACCOUNT & PREFERENCES", "መለያ እና ምርጫዎች")}</div>}
-                  <button
-                    type="button"
-                    className={selected ? "active" : ""}
-                    aria-current={selected ? "page" : undefined}
-                    disabled={disabled}
-                    onClick={() => navigate(item.id)}
-                  >
-                    <span className="nr-rider-drawer-icon" data-tone={item.id}>
-                      <Icon name={item.icon} size={19} />
-                    </span>
-                    <span>
-                      <strong>{item.label}</strong>
-                      <small>{item.detail}</small>
-                    </span>
-                    <Icon name="chevron" size={16} />
-                  </button>
-                  </Fragment>
-                );
-              })}
-            </nav>
 
-            <div className="nr-rider-drawer-section-label nr-rider-drawer-section-label-secondary">{say("More", "ተጨማሪ")}</div>
-            <div className="nr-rider-drawer-secondary">
-              <button
-                type="button"
-                disabled={locked}
-                onClick={() => {
-                  setOpen(false);
-                  window.location.assign("/driver");
-                }}
-              >
-                <Icon name="navigation" size={19} />
-                <span>
-                  <strong>{say("Drive with NexRide", "በNexRide ያሽከርክሩ")}</strong>
-                  <small>{say("Open Driver", "የአሽከርካሪ ገጽ ይክፈቱ")}</small>
-                </span>
-                <Icon name="chevron" size={16} />
-              </button>
-              {isAdmin && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setOpen(false);
-                    window.location.assign("/admin");
-                  }}
-                >
-                  <Icon name="shield" size={19} />
-                  <span>
-                    <strong>Admin Control Center</strong>
-                    <small>Operations and platform management</small>
-                  </span>
-                  <Icon name="chevron" size={16} />
+            <div className="nr-menu-scroll" data-testid="rider-menu-scroll">
+              <div className="nr-menu-section-label">{say("OVERVIEW", "አጠቃላይ")}</div>
+              <nav className="nr-rider-drawer-nav" aria-label={say("Rider navigation", "የተሳፋሪ አሰሳ")}>
+                {renderRows(items.slice(0,4))}
+              </nav>
+              <MenuGroup label={say("ACCOUNT & PREFERENCES", "መለያ እና ምርጫዎች")}
+                icon="user" initiallyOpen active={active === "profile" || active === "settings"}>
+                <nav className="nr-rider-drawer-nav nr-menu-nested" aria-label={say("Account and preferences", "መለያ እና ምርጫዎች")}>
+                  {renderRows(items.slice(6,8))}
+                </nav>
+              </MenuGroup>
+              <MenuGroup label={say("SAFETY & SUPPORT", "ደህንነት እና ድጋፍ")}
+                icon="shield" active={active === "safety" || active === "messages"}>
+                <nav className="nr-rider-drawer-nav nr-menu-nested" aria-label={say("Safety and support", "ደህንነት እና ድጋፍ")}>
+                  {renderRows(items.slice(4,6))}
+                </nav>
+              </MenuGroup>
+              <div className="nr-menu-section-label">{say("MORE", "ተጨማሪ")}</div>
+              <div className="nr-rider-drawer-secondary">
+                <button type="button" disabled={locked} onClick={() => {setOpen(false);window.location.assign("/driver");}}>
+                  <Icon name="navigation" size={20}/>
+                  <span><strong>{say("Drive with NexRide", "በNexRide ያሽከርክሩ")}</strong>
+                  <small>{say("Open Driver", "የአሽከርካሪ ገጽ ይክፈቱ")}</small></span>
+                  <Icon name="chevron" size={16}/>
                 </button>
-              )}
+                {isAdmin && <button type="button" onClick={() => {setOpen(false);window.location.assign("/admin");}}>
+                  <Icon name="shield" size={20}/>
+                  <span><strong>Admin Control Center</strong><small>Operations and platform management</small></span>
+                  <Icon name="chevron" size={16}/>
+                </button>}
+              </div>
             </div>
 
             <footer className="nr-rider-drawer-footer">

@@ -307,3 +307,47 @@ test('entry layouts remain usable on desktop, tablet, short screens and reduced 
     if (viewport.width === 1280) await page.screenshot({ path: `/tmp/nexride-auth-desktop-${info.project.name}.png`, fullPage: true });
   }
 });
+
+
+test("EliteTrade-inspired Rider menu groups toggle without losing navigation or pinned logout", async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem("nexride:preview-enabled", "true");
+    localStorage.setItem("nexride:onboarding-complete", "true");
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Open menu", exact: true }).click();
+  const menu = page.getByRole("dialog", { name: "Rider menu", exact: true });
+  await expect(menu.getByText("OVERVIEW", { exact: true })).toBeVisible();
+  await expect(menu.getByRole("button", { name: /ACCOUNT & PREFERENCES/ })).toHaveAttribute("aria-expanded", "true");
+  const supportGroup = menu.getByRole("button", { name: /SAFETY & SUPPORT/ });
+  await expect(supportGroup).toHaveAttribute("aria-expanded", "false");
+  await supportGroup.click();
+  await expect(supportGroup).toHaveAttribute("aria-expanded", "true");
+  await expect(menu.getByRole("button", { name: /^Safety/ })).toBeVisible();
+  await expect(menu.getByRole("button", { name: /^Settings/ })).toBeVisible();
+  await expect(menu.getByRole("button", { name: "Log out" })).toBeInViewport();
+  await expect(menu.locator(".nr-menu-scroll")).toHaveCSS("overflow-y", "auto");
+  await page.keyboard.press("Escape");
+  await expect(menu).toHaveCount(0);
+});
+
+test("EliteTrade-inspired Driver groups show management links without hiding logout", async ({ page }) => {
+  await connectedAccount(page, "driver");
+  await page.goto("/driver/profile");
+  const trigger = page.getByRole("button", { name: "Open driver menu", exact: true });
+  await trigger.click();
+  const panel = page.locator(".nr-driver-menu-panel");
+  await expect(panel.getByText("OVERVIEW", { exact: true })).toBeVisible();
+  const management = panel.getByRole("button", { name: /DRIVER MANAGEMENT/ });
+  await expect(management).toHaveAttribute("aria-expanded", "false");
+  await management.click();
+  await expect(management).toHaveAttribute("aria-expanded", "true");
+  await expect(panel.getByRole("link", { name: "Documents & verification" })).toBeVisible();
+  await expect(panel.locator(".nr-driver-menu-nav .nr-driver-menu-row[data-active=true]")).toHaveAttribute("aria-current", "page");
+  await expect(panel.getByRole("button", { name: "Log out" })).toBeInViewport();
+  await expect(panel.locator(".nr-menu-scroll")).toHaveCSS("overflow-y", "auto");
+  await page.keyboard.press("Escape");
+  await expect(panel).toHaveCount(0);
+  await expect(trigger).toBeFocused();
+});

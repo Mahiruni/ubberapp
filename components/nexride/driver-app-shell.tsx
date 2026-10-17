@@ -4,6 +4,8 @@ import { createPortal } from "react-dom";
 
 import Link from "next/link";
 import { AppVersion } from "./app-version";
+import { MenuGroup } from "./menu-group";
+import { registerNexRideBackHandler } from "../../lib/nexride-native-navigation";
 import {
   createContext,
   useCallback,
@@ -163,6 +165,12 @@ function DriverHamburgerMenu({
     };
   }, [open]);
 
+  // The drawer is transient UI: Android Back should close it, not end a trip.
+  useEffect(() => {
+    if (!open) return;
+    return registerNexRideBackHandler(() => { setOpen(false); return true; }, 110);
+  }, [open, setOpen]);
+
   const initials = useMemo(
     () => identity.name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "DR",
     [identity.name],
@@ -297,40 +305,38 @@ function DriverHamburgerMenu({
               </button>
             </div>
 
-            <div className="nr-driver-menu-section-label">{language === "am" ? "ዋና" : "MAIN"}</div>
-            <nav className="nr-driver-menu-nav" aria-label={language === "am" ? "የመንዳት አሰሳ" : "Drive navigation"}>
-              {menuRows(driveItems)}
-            </nav>
 
-            <div className="nr-driver-menu-section-label">{language === "am" ? "መለያ እና ምርጫዎች" : "ACCOUNT & PREFERENCES"}</div>
-            <nav className="nr-driver-menu-nav" aria-label={language === "am" ? "የመለያ አሰሳ" : "Account navigation"}>
-              {menuRows(accountItems)}
-            </nav>
-            <div className="nr-driver-menu-section-label">{language === "am" ? "ደህንነት እና ድጋፍ" : "SAFETY & SUPPORT"}</div>
-            <nav className="nr-driver-menu-nav" aria-label={language === "am" ? "ድጋፍ" : "Support navigation"}>{menuRows(supportItems)}</nav>
-            <div className="nr-driver-menu-utilities">
-              <Link href="/driver/profile/vehicle" className="nr-driver-menu-utility" onClick={() => setOpen(false)}><Icon name="navigation" size={20}/><span>{language === "am" ? "ተሽከርካሪ" : "Vehicle"}</span><Icon name="chevron" size={16}/></Link>
-              <Link href="/driver/profile/documents" className="nr-driver-menu-utility" onClick={() => setOpen(false)}><Icon name="shield" size={20}/><span>{language === "am" ? "ሰነዶች እና ማረጋገጫ" : "Documents & verification"}</span><Icon name="chevron" size={16}/></Link>
-              <Link href="/driver/profile/payouts" className="nr-driver-menu-utility" onClick={() => setOpen(false)}><Icon name="card" size={20}/><span>{language === "am" ? "የክፍያ መረጃ" : "Payout information"}</span><Icon name="chevron" size={16}/></Link>
-              <Link href="/account/manage?role=driver" className="nr-driver-menu-utility" onClick={() => setOpen(false)}><Icon name="user" size={20}/><span>{language === "am" ? "መለያ እና ደህንነት" : "Account & security"}</span><Icon name="chevron" size={16}/></Link>
-              <Link href="/safety?role=driver" className="nr-driver-menu-utility" onClick={() => setOpen(false)}>
-                <Icon name="shield" size={19} /><span>{language === "am" ? "የደህንነት ማዕከል" : "Safety Center"}</span><Icon name="chevron" size={15} />
-              </Link>
-              <Link href="/driver/profile/settings" className="nr-driver-menu-utility" onClick={() => setOpen(false)}>
-                <Icon name="settings" size={19} /><span>{language === "am" ? "ቅንብሮች" : "Settings"}</span><Icon name="chevron" size={15} />
-              </Link>
-            </div>
-
-            <div className="nr-driver-menu-section-label">{language === "am" ? "ምርጫዎች" : "PREFERENCES"}</div>
-            <div className="nr-driver-menu-preferences">
-              <div className="nr-driver-menu-pref-head">
-                <span>{language === "am" ? "ቋንቋ" : "Language"}</span>
-                <small>{language === "am" ? "አማርኛ" : "English"}</small>
-              </div>
-              <div className="nr-driver-menu-language" role="group" aria-label={language === "am" ? "ቋንቋ" : "Language"}>
-                <button type="button" data-active={language === "en" ? "true" : "false"} aria-pressed={language === "en"} onClick={() => announceLanguage("en")}>English</button>
-                <button type="button" data-active={language === "am" ? "true" : "false"} aria-pressed={language === "am"} onClick={() => announceLanguage("am")}>አማርኛ</button>
-              </div>
+            <div className="nr-menu-scroll" data-testid="driver-menu-scroll">
+              <div className="nr-menu-section-label">{language === "am" ? "አጠቃላይ" : "OVERVIEW"}</div>
+              <nav className="nr-driver-menu-nav" aria-label={language === "am" ? "የመንዳት አሰሳ" : "Drive navigation"}>
+                {menuRows(driveItems)}
+              </nav>
+              <MenuGroup label={language === "am" ? "የአሽከርካሪ አስተዳደር" : "DRIVER MANAGEMENT"} icon="navigation">
+                <nav className="nr-driver-menu-nav nr-menu-nested" aria-label={language === "am" ? "የአሽከርካሪ አስተዳደር" : "Driver management"}>
+                  <Link href="/driver/profile/vehicle" className="nr-driver-menu-utility" onClick={() => setOpen(false)}><Icon name="navigation" size={20}/><span>{language === "am" ? "ተሽከርካሪ" : "Vehicle"}</span></Link>
+                  <Link href="/driver/profile/documents" className="nr-driver-menu-utility" onClick={() => setOpen(false)}><Icon name="shield" size={20}/><span>{language === "am" ? "ሰነዶች እና ማረጋገጫ" : "Documents & verification"}</span></Link>
+                  <Link href="/driver/profile/payouts" className="nr-driver-menu-utility" onClick={() => setOpen(false)}><Icon name="card" size={20}/><span>{language === "am" ? "የክፍያ መረጃ" : "Payout information"}</span></Link>
+                </nav>
+              </MenuGroup>
+              <MenuGroup label={language === "am" ? "መለያ እና ድጋፍ" : "ACCOUNT & HELP"} icon="user" initiallyOpen
+                active={active === "account" || active === "messages"}>
+                <nav className="nr-driver-menu-nav nr-menu-nested" aria-label={language === "am" ? "መለያ እና ድጋፍ" : "Account and help"}>
+                  {menuRows(accountItems)}
+                  {menuRows(supportItems)}
+                  <Link href="/account/manage?role=driver" className="nr-driver-menu-utility" onClick={() => setOpen(false)}><Icon name="shield" size={20}/><span>{language === "am" ? "መለያ እና ደህንነት" : "Account & security"}</span></Link>
+                  <Link href="/safety?role=driver" className="nr-driver-menu-utility" onClick={() => setOpen(false)}><Icon name="shield" size={20}/><span>{language === "am" ? "የደህንነት ማዕከል" : "Safety Center"}</span></Link>
+                  <Link href="/driver/profile/settings" className="nr-driver-menu-utility" onClick={() => setOpen(false)}><Icon name="settings" size={20}/><span>{language === "am" ? "ቅንብሮች" : "Settings"}</span></Link>
+                </nav>
+              </MenuGroup>
+              <MenuGroup label={language === "am" ? "ቋንቋ" : "LANGUAGE"} icon="settings">
+                <div className="nr-driver-menu-preferences">
+                  <div className="nr-driver-menu-pref-head"><span>{language === "am" ? "ቋንቋ" : "Language"}</span><small>{language === "am" ? "አማርኛ" : "English"}</small></div>
+                  <div className="nr-driver-menu-language" role="group" aria-label={language === "am" ? "ቋንቋ" : "Language"}>
+                    <button type="button" data-active={language === "en" ? "true" : "false"} aria-pressed={language === "en"} onClick={() => announceLanguage("en")}>English</button>
+                    <button type="button" data-active={language === "am" ? "true" : "false"} aria-pressed={language === "am"} onClick={() => announceLanguage("am")}>አማርኛ</button>
+                  </div>
+                </div>
+              </MenuGroup>
             </div>
 
             <footer className="nr-driver-menu-footer">
