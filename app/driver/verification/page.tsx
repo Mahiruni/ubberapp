@@ -232,7 +232,7 @@ export default function DriverVerificationPage() {
     }
   }
 
-  if (loading) return <main className="driver-onboarding-page" aria-busy="true" />;
+  if (loading) return <main data-nr-startup-pending="true" className="driver-onboarding-page" aria-busy="true" />;
 
   const locked = lockedForDraft(status, editingApproved);
 

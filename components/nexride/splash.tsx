@@ -28,6 +28,7 @@ export function RiderSplash({
       className={`nr-rider-splash ${error ? "has-error" : "is-restoring"} ${error && animate ? "is-opening" : ""}`}
       aria-label="NexRide"
       aria-busy={!error}
+      data-nr-startup-pending={error ? undefined : "true"}
     >
       {error ? (
         <div className="nr-splash-identity">

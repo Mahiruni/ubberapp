@@ -79,7 +79,7 @@ test("corrupt local preferences present a recoverable error", async ({
   await expect(page).toHaveURL(/\/onboarding$/);
 });
 
-test("the real session wait shows the splash and honors reduced motion", async ({
+test("session restoration uses an unbranded black waiting state without another intro", async ({
   page,
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
@@ -104,21 +104,10 @@ test("the real session wait shows the splash and honors reduced motion", async (
   const splash = page.locator(".nr-rider-splash");
   await expect(splash).toBeVisible();
   await expect(splash).toHaveAttribute("aria-busy", "true");
-  await expect(
-    splash.getByRole("heading", { name: "NexRide", exact: true }),
-  ).toBeVisible();
-  await expect(
-    splash.getByText("Better Rides. A Brighter Tomorrow."),
-  ).toBeVisible();
-  await expect(page.locator(".nr-splash-mark")).toHaveCSS(
-    "animation-name",
-    "none",
-  );
-  await expect(splash.locator(".nr-splash-mark")).toHaveAttribute(
-    "src",
-    /\/brand\/nexride-mark\.svg$/,
-  );
-  await expect(splash.locator(".nr-splash-progress")).toBeVisible();
+  await expect(splash).toHaveCSS("background-color", "rgb(0, 0, 0)");
+  await expect(splash.locator(".nr-splash-restoring")).toBeVisible();
+  await expect(splash.locator(".nr-splash-mark")).toHaveCount(0);
+  await expect(splash.getByRole("heading", { name: "NexRide", exact: true })).toHaveCount(0);
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,
