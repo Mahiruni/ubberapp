@@ -1,5 +1,4 @@
 'use client';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useContext, type ReactNode } from 'react';
 import { Brand, Icon, LanguageContext, useTranslation } from './ui';
@@ -15,7 +14,6 @@ export function EntryShell({ children, authMode, role = 'rider' }: {
   return <main className="nr-app nr-identity-entry nr-entry-redesign" data-mode={role} data-theme={appearance.resolvedTheme} data-auth-mode={authMode || 'welcome'}>
     <div className="nr-entry-page"><section className="nr-entry-shell">
       <aside className="nr-entry-hero" aria-hidden="true">
-        <Image src={role === 'driver' ? '/images/addis-skyline.webp' : '/images/addis-nexride-auth.webp'} alt="" fill priority sizes="(max-width:899px) 100vw, 50vw" className="nr-entry-city"/>
         <div className="nr-entry-hero-wash"/>
         <div className="nr-entry-hero-top"><Brand/><span className="nr-entry-role-tab">{t(role === 'driver' ? 'driver' : 'rider')}</span></div>
         <div className="nr-entry-hero-copy"><span>{t('entryMadeInAddis')}</span><strong>{t(role === 'driver' ? 'entryDriveHeadline' : 'entryRideHeadline')}</strong><p>{t('brandTagline')}</p><div className="nr-entry-hero-points"><span>{t('entryOneAccount')}</span><span>{t('entryYourCity')}</span></div></div>
@@ -33,10 +31,3 @@ export function EntryShell({ children, authMode, role = 'rider' }: {
   </main>;
 }
 
-export function EntryPhoto({ role = 'rider' }: { role?: 'rider' | 'driver' }) {
-  const t = useTranslation();
-  return <figure className="nr-welcome-art">
-    <Image src={role === 'driver' ? '/images/addis-skyline.webp' : '/images/addis-nexride-auth.webp'} alt="" fill priority sizes="(max-width:899px) 440px, 480px" quality={85}/>
-    <figcaption><span aria-hidden="true"/><span>{t('entryMadeInAddis')}</span></figcaption>
-  </figure>;
-}

@@ -76,3 +76,28 @@ test("Rider planning opens with Pickup focused and Plan your ride text", async (
   await expect(pickup).toHaveAttribute("placeholder", "Plan your ride");
   await expect(destination).not.toBeFocused();
 });
+
+test("Rider and Driver welcome homepages have no city photographs", async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem("nexride:explicit-signout", "rider"));
+  for (const [route, destination] of [
+    ["/rider", "/rider/sign-up"],
+    ["/driver", "/driver/onboarding"],
+  ]) {
+    await page.goto(route);
+    await expect(page.locator(".nr-entry-hero")).toBeAttached();
+    await expect(page.locator(".nr-entry-city, .nr-welcome-art")).toHaveCount(0);
+    await expect(page.locator('img[src*="addis-nexride-auth"], img[src*="addis-skyline"]')).toHaveCount(0);
+    await expect(page.locator(`a[href="${destination}"]`)).toBeVisible();
+  }
+});
+
+test("Rider map home contains no city-photo promotion card", async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem("nexride:preview-enabled", "true");
+    localStorage.setItem("nexride:onboarding-complete", "true");
+  });
+  await page.goto("/");
+  await expect(page.getByRole("button", { name: "Search destination", exact: true })).toBeVisible();
+  await expect(page.locator(".nr-map-city")).toHaveCount(0);
+  await expect(page.locator('img[src*="addis-skyline"]')).toHaveCount(0);
+});

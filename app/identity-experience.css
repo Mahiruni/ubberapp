@@ -118,23 +118,21 @@
   position: relative;
   min-height: 100%;
   overflow: hidden !important;
-  background: #041c30 !important;
+  /* Aurora brand art direction: no city photos or near-black image overlay. */
+  background:
+    radial-gradient(circle at 22% 16%, rgba(125,220,235,.24), transparent 35%),
+    radial-gradient(circle at 88% 82%, rgba(255,207,183,.18), transparent 34%),
+    linear-gradient(145deg, #302560 0%, #5146b4 53%, #625cf6 100%) !important;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   padding: 38px !important;
 }
 
-.nr-entry-city {
-  object-fit: cover !important;
-  object-position: 48% 50%;
-  opacity: .65;
-}
-
 .nr-entry-redesign .nr-entry-hero-wash {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg,#041c30a8,#041c3020 30%,#041c30e8 82%),linear-gradient(110deg,#041c3080,transparent) !important;
+  background: linear-gradient(180deg,rgba(48,37,96,.05),rgba(48,37,96,.1) 60%,rgba(48,37,96,.28)) !important;
   z-index: 1;
 }
 
