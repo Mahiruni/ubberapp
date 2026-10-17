@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { RiderSplash } from "../../components/nexride/splash";
-import { EntryShell, EntryPhoto } from "../../components/nexride/entry";
+import { EntryShell } from "../../components/nexride/entry";
 import { Button, Icon, StatusBanner, useTranslation } from "../../components/nexride/ui";
 import {
   clearExplicitSignOut,
@@ -150,8 +150,6 @@ function RiderWelcome() {
         <h1>{t("entryWelcomeTitle")}</h1>
         <p>{t("entryWelcomeIntro")}</p>
       </div>
-
-      <EntryPhoto />
 
       {returningDriver && <div className="nr-auth-role-note" role="status">
         <Icon name="check" size={20} />

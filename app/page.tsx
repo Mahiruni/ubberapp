@@ -614,18 +614,6 @@ function AppWorkspace({
               topLabel={mode === "driver" ? t("driver") : undefined}
             />
           )}
-          <div className="nr-map-city">
-            <Image
-              src="/images/addis-skyline.webp"
-              alt={t("city")}
-              fill
-              sizes="320px"
-            />
-            <div>
-              <span>{t("city")}</span>
-              <strong>{t("brandTagline")}</strong>
-            </div>
-          </div>
           <div className="nr-map-wordmark">
             <Brand driver={mode === "driver"} />
             <p>{t("brandMessage")}</p>
