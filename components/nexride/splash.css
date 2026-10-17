@@ -347,7 +347,7 @@
   display: grid;
   place-items: center;
   padding: max(24px, env(safe-area-inset-top)) 24px max(24px, env(safe-area-inset-bottom));
-  background: #05070c;
+  background: #000000;
 }
 .nr-splash-restoring {
   display: grid;
