@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { EntryPhoto, EntryShell } from "../../components/nexride/entry";
+import { EntryShell } from "../../components/nexride/entry";
 import {
   Button,
   StatusBanner,
