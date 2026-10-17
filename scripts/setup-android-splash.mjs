@@ -17,8 +17,6 @@ mkdirSync(drawable, { recursive: true });
 // Android masks the icon to a circle. The text fits inside its safe central area.
 await sharp(Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="864" height="864" viewBox="0 0 288 288"><text x="144" y="151" text-anchor="middle" font-family="sans-serif" font-size="34" font-weight="bold" letter-spacing="-1.3" fill="white">NexRide</text></svg>`))
   .png().toFile(join(drawable,"nexride_splash_wordmark.png"));
-await sharp(Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="960" height="240" viewBox="0 0 320 80"><text x="160" y="32" text-anchor="middle" font-family="sans-serif" font-size="14" fill="white">Better Rides. A Brighter Tomorrow.</text><text x="160" y="55" text-anchor="middle" font-family="sans-serif" font-size="11" fill="white">NexRide ${role === "driver" ? "Driver" : "Rider"}</text></svg>`))
-  .png().toFile(join(drawable,"nexride_splash_tagline.png"));
 styles = styles.replace(/<style name="AppTheme.NoActionBarLaunch"[^>]*>[\s\S]*?<\/style>/,
   `<style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">#000000</item>
@@ -45,7 +43,6 @@ writeFileSync(join(v31,"nexride-splash.xml"), `<?xml version="1.0" encoding="utf
         <item name="windowSplashScreenBackground">#000000</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/nexride_splash_wordmark</item>
         <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
-        <item name="android:windowSplashScreenBrandingImage">@drawable/nexride_splash_tagline</item>
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:windowLightNavigationBar">false</item>
         <item name="android:statusBarColor">#000000</item>
