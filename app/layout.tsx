@@ -30,7 +30,7 @@ import "@fontsource/inter/latin-600.css";
 import "@fontsource/inter/latin-700.css";
 import "@fontsource/inter/latin-800.css";
 import "./premium-mobility.css";
-import "./midnight-edition.css";
+import "./aurora-theme.css";
 import "./nexride-2026-tokens.css";
 
 const description =
@@ -121,7 +121,7 @@ export const viewport: Viewport = {
   viewportFit: "cover",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#F7FAF9" },
-    { media: "(prefers-color-scheme: dark)", color: "#041C30" },
+    { media: "(prefers-color-scheme: dark)", color: "#625CF6" },
   ],
   colorScheme: "light dark",
 };

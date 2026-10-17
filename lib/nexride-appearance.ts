@@ -6,13 +6,13 @@ export type AppearancePreference = 'light' | 'dark' | 'system';
 export type Appearance = 'light' | 'dark';
 const eventName = 'nexride:appearance-change';
 export function appearanceKey(role: 'rider' | 'driver') { return `nexride.${role}.theme`; }
-const midnightMigrationKey = (role: 'rider' | 'driver') => `nexride.${role}.midnight-v1`;
+const lightMigrationKey = (role: 'rider' | 'driver') => `nexride.${role}.aurora-light-v1`;
 export function resolveAppearance(preference: AppearancePreference, systemDark: boolean): Appearance {
   return preference === 'system' ? systemDark ? 'dark' : 'light' : preference;
 }
 export function useAppearance(role: 'rider' | 'driver') {
-  // Midnight Edition is the default for new Rider and Driver installs; saved user preferences still win.
-  const fallback: AppearancePreference = 'dark';
+  // Start Rider and Driver in the light Aurora palette; dark is opt-in violet, never black.
+  const fallback: AppearancePreference = 'light';
   const [preference, setState] = useState<AppearancePreference>(fallback);
   const [systemDark, setSystemDark] = useState(false);
   const [error, setError] = useState(false);
@@ -20,14 +20,13 @@ export function useAppearance(role: 'rider' | 'driver') {
     const media = window.matchMedia('(prefers-color-scheme: dark)');
     const read = () => {
       try {
-        const migrated = localStorage.getItem(midnightMigrationKey(role)) === '1';
+        const migrated = localStorage.getItem(lightMigrationKey(role)) === '1';
         if (!migrated) {
-          // Older Rider installs persisted the former light default. Show
-          // Midnight Edition once to existing users; allow them to switch
-          // back to Light or System from Settings at any time.
-          localStorage.setItem(appearanceKey(role), 'dark');
-          localStorage.setItem(midnightMigrationKey(role), '1');
-          setState('dark');
+          // One-time removal of the previously forced black default, including
+          // persisted Midnight settings. Future explicit preferences remain intact.
+          localStorage.setItem(appearanceKey(role), 'light');
+          localStorage.setItem(lightMigrationKey(role), '1');
+          setState('light');
         } else {
           const saved = localStorage.getItem(appearanceKey(role));
           setState(saved === 'light' || saved === 'dark' || saved === 'system' ? saved : fallback);
@@ -44,7 +43,7 @@ export function useAppearance(role: 'rider' | 'driver') {
   const setPreference = useCallback((next: AppearancePreference) => {
     try {
       localStorage.setItem(appearanceKey(role), next);
-      localStorage.setItem(midnightMigrationKey(role), '1');
+      localStorage.setItem(lightMigrationKey(role), '1');
       setState(next); setError(false);
       window.dispatchEvent(new Event(eventName));
     } catch { setError(true); }
