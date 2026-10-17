@@ -3,6 +3,7 @@
 import { createPortal } from "react-dom";
 import { AppVersion } from "./app-version";
 import { MenuGroup } from "./menu-group";
+import { registerNexRideBackHandler } from "../../lib/nexride-native-navigation";
 
 import {
   useContext,
@@ -149,6 +150,12 @@ export function RiderMenu({
       document.body.style.overflow = previousOverflow;
       requestAnimationFrame(() => triggerRef.current?.focus());
     };
+  }, [open]);
+
+  // Android system Back dismisses the drawer before navigating away.
+  useEffect(() => {
+    if (!open) return;
+    return registerNexRideBackHandler(() => { setOpen(false); return true; }, 110);
   }, [open]);
 
   const items: {
