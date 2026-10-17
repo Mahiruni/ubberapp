@@ -1,4 +1,4 @@
-/** Brand Android's supported launch theme without holding startup on a timer.
+/** One black/white Android launch screen, released when web content is ready.
  * Run after cap sync: node scripts/setup-android-splash.mjs rider|driver [android-dir]
  */
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -15,32 +15,41 @@ if (!styles.includes('name="AppTheme.NoActionBarLaunch"')) throw Error("Capacito
 const drawable = join(res, "drawable-nodpi");
 mkdirSync(drawable, { recursive: true });
 // Android masks the icon to a circle. The text fits inside its safe central area.
-await sharp(Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="864" height="864" viewBox="0 0 288 288"><text x="144" y="151" text-anchor="middle" font-family="sans-serif" font-size="34" font-weight="bold" letter-spacing="-1.3" fill="white">NexRide</text><rect x="127" y="171" width="34" height="4" rx="2" fill="#00C878"/></svg>`))
+await sharp(Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="864" height="864" viewBox="0 0 288 288"><text x="144" y="151" text-anchor="middle" font-family="sans-serif" font-size="34" font-weight="bold" letter-spacing="-1.3" fill="white">NexRide</text></svg>`))
   .png().toFile(join(drawable,"nexride_splash_wordmark.png"));
-await sharp(Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="960" height="240" viewBox="0 0 320 80"><text x="160" y="32" text-anchor="middle" font-family="sans-serif" font-size="14" fill="white">Better Rides. A Brighter Tomorrow.</text><text x="160" y="55" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#B2C4D1">NexRide ${role === "driver" ? "Driver" : "Rider"}</text></svg>`))
+await sharp(Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="960" height="240" viewBox="0 0 320 80"><text x="160" y="32" text-anchor="middle" font-family="sans-serif" font-size="14" fill="white">Better Rides. A Brighter Tomorrow.</text><text x="160" y="55" text-anchor="middle" font-family="sans-serif" font-size="11" fill="white">NexRide ${role === "driver" ? "Driver" : "Rider"}</text></svg>`))
   .png().toFile(join(drawable,"nexride_splash_tagline.png"));
 styles = styles.replace(/<style name="AppTheme.NoActionBarLaunch"[^>]*>[\s\S]*?<\/style>/,
   `<style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">#041C30</item>
+        <item name="windowSplashScreenBackground">#000000</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/nexride_splash_wordmark</item>
         <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
         <item name="android:windowLightStatusBar">false</item>
-        <item name="android:statusBarColor">#041C30</item>
-        <item name="android:navigationBarColor">#041C30</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:statusBarColor">#000000</item>
+        <item name="android:navigationBarColor">#000000</item>
     </style>`);
 writeFileSync(stylePath, styles);
+// Same art if a device needs Capacitor's legacy fallback path.
+const legacyDrawable = join(res, "drawable");
+mkdirSync(legacyDrawable, { recursive: true });
+writeFileSync(join(legacyDrawable, "nexride_launch.xml"), `<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+  <item android:drawable="@android:color/black" />
+  <item android:width="288dp" android:height="288dp" android:gravity="center" android:drawable="@drawable/nexride_splash_wordmark" />
+</layer-list>\n`);
 const v31 = join(res,"values-v31");
 mkdirSync(v31,{recursive:true});
 writeFileSync(join(v31,"nexride-splash.xml"), `<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">#041C30</item>
+        <item name="windowSplashScreenBackground">#000000</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/nexride_splash_wordmark</item>
         <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
         <item name="android:windowSplashScreenBrandingImage">@drawable/nexride_splash_tagline</item>
         <item name="android:windowLightStatusBar">false</item>
-        <item name="android:statusBarColor">#041C30</item>
-        <item name="android:navigationBarColor">#041C30</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:statusBarColor">#000000</item>
+        <item name="android:navigationBarColor">#000000</item>
     </style>
 </resources>\n`);
-console.log(`Configured native navy NexRide ${role} launch theme.`);
+console.log(`Configured single native black/white NexRide ${role} launch theme.`);

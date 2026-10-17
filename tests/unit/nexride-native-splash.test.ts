@@ -18,14 +18,18 @@ test.each(["rider", "driver"])("%s native splash preserves runtime theme and fit
   const first = readFileSync(join(res,"values/styles.xml"),"utf8");
   expect(first).toContain(runtime);
   expect(first).toContain('name="postSplashScreenTheme">@style/AppTheme.NoActionBar');
-  expect(first).toContain('name="windowSplashScreenBackground">#041C30');
+  expect(first).toContain('name="windowSplashScreenBackground">#000000');
   expect(first).not.toContain("setKeepOnScreenCondition");
   const icon = sharp(join(res,"drawable-nodpi/nexride_splash_wordmark.png"));
   const { data, info } = await icon.raw().toBuffer({ resolveWithObject: true });
   // A 288dp icon has a 192dp safe circle. Every visible pixel must fit it.
   for (let y=0;y<info.height;y++) for (let x=0;x<info.width;x++) {
     if (data[(y*info.width+x)*info.channels+3] > 0)
-      expect(Math.hypot(x-info.width/2,y-info.height/2)).toBeLessThan(info.width/3);
+      {
+        expect(Math.hypot(x-info.width/2,y-info.height/2)).toBeLessThan(info.width/3);
+        const pixel = (y*info.width+x)*info.channels;
+        expect([...data.subarray(pixel, pixel+3)]).toEqual([255,255,255]);
+      }
   }
   expect(readFileSync(join(res,"values-v31/nexride-splash.xml"),"utf8")).toContain("windowSplashScreenBrandingImage");
   execFileSync(process.execPath,["scripts/setup-android-splash.mjs",role,dir]);

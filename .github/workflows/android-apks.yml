@@ -90,6 +90,8 @@ jobs:
           grep -q 'notification_channel_unavailable' node_modules/@capacitor/push-notifications/android/src/main/java/com/capacitorjs/plugins/pushnotifications/PushNotificationsPlugin.java
 
       - name: Configure native shell
+        # 12s is a failure ceiling, not a minimum: the web readiness bridge hides
+        # the single native splash as soon as welcome/home/error content is ready.
         shell: bash
         run: |
           if [ "${{ matrix.role }}" = "rider" ]; then
@@ -118,9 +120,10 @@ jobs:
             "plugins": {
               "SplashScreen": {
                 "launchAutoHide": true,
-                "launchShowDuration": 0,
+                "launchShowDuration": 12000,
                 "launchFadeOutDuration": 160,
-                "backgroundColor": "#041C30",
+                "backgroundColor": "#000000",
+                "androidSplashResourceName": "nexride_launch",
                 "showSpinner": false
               }
             }

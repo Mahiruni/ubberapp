@@ -78,7 +78,7 @@ export default function DriverHomePage() {
     return () => { active = false; };
   }, [router]);
 
-  if (checking) return <main className="nr-app nr-driver-shell"><div className="nr-driver-page"><div className="nr-driver-card nr-driver-loading"><span className="nr-driver-skeleton wide" /><span className="nr-driver-skeleton" /><span className="nr-driver-skeleton" /></div></div></main>;
+  if (checking) return <main data-nr-startup-pending="true" className="nr-app nr-driver-shell"><div className="nr-driver-page"><div className="nr-driver-card nr-driver-loading"><span className="nr-driver-skeleton wide" /><span className="nr-driver-skeleton" /><span className="nr-driver-skeleton" /></div></div></main>;
 
   const navigate = (next: DriverScreen) => {
     if (next === "home") setScreen("home");

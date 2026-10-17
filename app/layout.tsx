@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { NexRideNativeLaunchBridge } from "../components/nexride/native-launch-bridge";
 import { ServiceWorkerRegistration } from "../components/nexride/service-worker";
 import { NexRideFeedbackBootstrap } from "../components/nexride/feedback-bootstrap";
 import { NexRideNativeNavigationBridge } from "../components/nexride/native-navigation-bridge";
@@ -171,6 +172,7 @@ export default function RootLayout({
         />
       </head>
       <body>
+        <NexRideNativeLaunchBridge />
         <NexRideLanguageProvider><NexRideResilienceProvider>{children}</NexRideResilienceProvider></NexRideLanguageProvider>
         <NexRideNativeNavigationBridge />
         <NexRideNativePushBootstrap />
