@@ -104,6 +104,14 @@ function DriverHamburgerMenu({
   const language = useContext(LanguageContext);
   const [standaloneOpen, setStandaloneOpen] = useState(false);
   const open = controlledOpen ?? standaloneOpen;
+  const [visible, setVisible] = useState(false);
+  // Keep mounted during the closing animation; all actual actions remain immediate.
+  useEffect(() => {
+    if (open) { setVisible(true); return; }
+    if (!visible) return;
+    const timeout = window.setTimeout(() => setVisible(false), 220);
+    return () => window.clearTimeout(timeout);
+  }, [open, visible]);
   // In the Driver app shell, menu visibility also controls the map wrappers.
   // Standalone menus continue to manage their own state.
   const setOpen = useCallback((value: boolean | ((previous: boolean) => boolean)) => {
@@ -271,8 +279,8 @@ function DriverHamburgerMenu({
         <span aria-hidden="true" />
       </button>
 
-      {open && createPortal(
-        <div className="nr-driver-menu-layer" data-theme={resolvedTheme} role="presentation">
+      {visible && createPortal(
+        <div className="nr-driver-menu-layer" data-theme={resolvedTheme} data-closing={!open ? "true" : undefined} role="presentation">
           <button className="nr-driver-menu-backdrop" type="button" aria-label={language === "am" ? "ምናሌን ዝጋ" : "Close menu"} onClick={() => setOpen(false)} />
           <aside ref={panelRef} id="nr-driver-menu" className="nr-driver-menu-panel"
             onTouchStart={(event) => {
