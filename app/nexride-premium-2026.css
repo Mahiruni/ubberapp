@@ -230,3 +230,21 @@
     animation-duration:.01ms!important;transition-duration:.01ms!important;
   }
 }
+
+/* Exit transition: panel stays in the portal until the close motion finishes. */
+@keyframes nr-premium-drawer-out {
+  from { transform:translateX(0); opacity:1; }
+  to { transform:translateX(-30px); opacity:0; }
+}
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer)[data-closing="true"] :is(.nr-rider-drawer,.nr-driver-menu-panel) {
+  animation:nr-premium-drawer-out 220ms cubic-bezier(.4,0,1,1) both!important;
+  pointer-events:none!important;
+}
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer)[data-closing="true"] :is(.nr-rider-drawer-backdrop,.nr-driver-menu-backdrop){
+  opacity:0;transition:opacity 220ms ease!important;pointer-events:none!important;
+}
+@media(prefers-reduced-motion:reduce){
+  :is(.nr-rider-drawer-layer,.nr-driver-menu-layer)[data-closing="true"] :is(.nr-rider-drawer,.nr-driver-menu-panel){
+    animation:none!important;
+  }
+}
