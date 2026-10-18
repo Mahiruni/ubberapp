@@ -290,3 +290,14 @@
     box-shadow:0 16px 45px rgba(32,37,56,.1);
   }
 }
+
+/* Preserve access to Rider Home actions below the fixed four-tab navigation. */
+@media(max-width:800px){
+  .nr-app[data-mode="rider"] .rider-home-view .nr-home-sheet-scroll{
+    padding-bottom:calc(98px + env(safe-area-inset-bottom,0px))!important;
+    scroll-padding-bottom:calc(96px + env(safe-area-inset-bottom,0px));
+  }
+  .nr-app[data-mode="rider"] .rider-home-view .nr-home-sheet-scroll :is(button,a){
+    scroll-margin-bottom:90px;
+  }
+}
