@@ -780,8 +780,8 @@ function AppWorkspace({
           </div>
         )}
 
-        {mode === "driver" && (
-          <div className="nr-mobile-nav" aria-label="Primary driver navigation">
+        {(mode === "driver" || (mode === "rider" && (riderHome || profileView) && !requestPending && !matching.active)) && (
+          <div className="nr-mobile-nav" aria-label={mode === "rider" ? "Primary rider navigation" : "Primary driver navigation"}>
             <Navigation items={navItems} active={screen} onNavigate={navigate} />
           </div>
         )}
