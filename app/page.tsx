@@ -338,15 +338,13 @@ function AppWorkspace({
       ? [
           { id: "home", label: t("home"), icon: "home" },
           { id: "trips", label: t("activity"), icon: "clock" },
-          { id: "safety", label: t("safety"), icon: "shield" },
-          { id: "messages", label: t("messages"), icon: "chat" },
+          { id: "wallet", label: t("wallet"), icon: "wallet" },
           { id: "profile", label: t("account"), icon: "user" },
         ]
       : [
           { id: "home", label: t("home"), icon: "home" },
-          { id: "request", label: t("requests"), icon: "navigation" },
-          { id: "earnings", label: t("earnings"), icon: "money" },
-          { id: "messages", label: t("messages"), icon: "chat" },
+          { id: "earnings", label: t("earnings"), icon: "wallet" },
+          { id: "map", label: t("map"), icon: "navigation" },
           { id: "profile", label: t("account"), icon: "user" },
         ];
   const navigate = (id: string) => {
