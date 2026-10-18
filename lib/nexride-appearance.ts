@@ -8,7 +8,9 @@ const eventName = 'nexride:appearance-change';
 export function appearanceKey(role: 'rider' | 'driver') { return `nexride.${role}.theme`; }
 const lightMigrationKey = (role: 'rider' | 'driver') => `nexride.${role}.aurora-light-v1`;
 export function resolveAppearance(preference: AppearancePreference, systemDark: boolean): Appearance {
-  return preference === 'system' ? systemDark ? 'dark' : 'light' : preference;
+  // The rejected internal dark interface is retired; retain API compatibility.
+  void preference; void systemDark;
+  return 'light';
 }
 export function useAppearance(role: 'rider' | 'driver') {
   // Start Rider and Driver in the light Aurora palette; dark is opt-in violet, never black.
@@ -29,7 +31,8 @@ export function useAppearance(role: 'rider' | 'driver') {
           setState('light');
         } else {
           const saved = localStorage.getItem(appearanceKey(role));
-          setState(saved === 'light' || saved === 'dark' || saved === 'system' ? saved : fallback);
+          setState('light');
+          if (saved !== 'light') localStorage.setItem(appearanceKey(role), 'light');
         }
       } catch { /* Device storage is optional until a preference is changed. */ }
       setSystemDark(media.matches);
@@ -40,13 +43,15 @@ export function useAppearance(role: 'rider' | 'driver') {
     window.addEventListener('storage', read);
     return () => { media.removeEventListener('change', read); window.removeEventListener(eventName, read); window.removeEventListener('storage', read); };
   }, [role, fallback]);
-  const setPreference = useCallback((next: AppearancePreference) => {
+  const setPreference = useCallback((_next: AppearancePreference) => {
     try {
-      localStorage.setItem(appearanceKey(role), next);
+      // Old dark/system selections migrate to the approved light-only system.
+      localStorage.setItem(appearanceKey(role), 'light');
       localStorage.setItem(lightMigrationKey(role), '1');
-      setState(next); setError(false);
+      setState('light'); setError(false);
       window.dispatchEvent(new Event(eventName));
     } catch { setError(true); }
   }, [role]);
+  void setSystemDark;
   return { preference, resolvedTheme: resolveAppearance(preference, systemDark), setPreference, error };
 }

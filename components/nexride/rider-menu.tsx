@@ -75,6 +75,14 @@ export function RiderMenu({
   const language = useContext(LanguageContext);
   const say = (en: string, am: string) => (language === "am" ? am : en);
   const [open, setOpen] = useState(false);
+  const [visible, setVisible] = useState(false);
+  // Keep mounted during the closing animation; all actual actions remain immediate.
+  useEffect(() => {
+    if (open) { setVisible(true); return; }
+    if (!visible) return;
+    const timeout = window.setTimeout(() => setVisible(false), 220);
+    return () => window.clearTimeout(timeout);
+  }, [open, visible]);
   const [isAdmin, setIsAdmin] = useState(Boolean(adminOverride));
   const [identity, setIdentity] = useState({name:"", avatar:""});
   const [hasSession, setHasSession] = useState(false);
@@ -289,8 +297,8 @@ export function RiderMenu({
         <span className="nr-rider-hamburger-line short" />
       </button>
 
-      {open && createPortal(
-        <div className="nr-rider-drawer-layer" data-theme={resolvedTheme}>
+      {visible && createPortal(
+        <div className="nr-rider-drawer-layer" data-theme={resolvedTheme} data-closing={!open ? "true" : undefined}>
           <button
             className="nr-rider-drawer-backdrop"
             type="button"

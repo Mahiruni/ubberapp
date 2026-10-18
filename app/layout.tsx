@@ -33,6 +33,7 @@ import "./premium-mobility.css";
 import "./aurora-theme.css";
 import "./nexride-2026-tokens.css";
 import "./elite-inspired-menus.css";
+import "./nexride-premium-2026.css";
 
 const description =
   "Book reliable rides across Addis Ababa with NexRide, a rider and driver mobility platform built for Ethiopia.";
@@ -77,7 +78,7 @@ export const metadata: Metadata = {
       {
         rel: "mask-icon",
         url: "/safari-pinned-tab.svg",
-        color: "#00C878",
+        color: "#6654DC",
       },
     ],
   },
@@ -121,10 +122,10 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#F7FAF9" },
-    { media: "(prefers-color-scheme: dark)", color: "#625CF6" },
+    { media: "(prefers-color-scheme: light)", color: "#F9F8FD" },
+    { media: "(prefers-color-scheme: dark)", color: "#F9F8FD" },
   ],
-  colorScheme: "light dark",
+  colorScheme: "light",
 };
 
 const structuredData = [

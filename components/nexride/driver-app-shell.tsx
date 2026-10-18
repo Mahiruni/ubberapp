@@ -104,6 +104,14 @@ function DriverHamburgerMenu({
   const language = useContext(LanguageContext);
   const [standaloneOpen, setStandaloneOpen] = useState(false);
   const open = controlledOpen ?? standaloneOpen;
+  const [visible, setVisible] = useState(false);
+  // Keep mounted during the closing animation; all actual actions remain immediate.
+  useEffect(() => {
+    if (open) { setVisible(true); return; }
+    if (!visible) return;
+    const timeout = window.setTimeout(() => setVisible(false), 220);
+    return () => window.clearTimeout(timeout);
+  }, [open, visible]);
   // In the Driver app shell, menu visibility also controls the map wrappers.
   // Standalone menus continue to manage their own state.
   const setOpen = useCallback((value: boolean | ((previous: boolean) => boolean)) => {
@@ -271,8 +279,8 @@ function DriverHamburgerMenu({
         <span aria-hidden="true" />
       </button>
 
-      {open && createPortal(
-        <div className="nr-driver-menu-layer" data-theme={resolvedTheme} role="presentation">
+      {visible && createPortal(
+        <div className="nr-driver-menu-layer" data-theme={resolvedTheme} data-closing={!open ? "true" : undefined} role="presentation">
           <button className="nr-driver-menu-backdrop" type="button" aria-label={language === "am" ? "ምናሌን ዝጋ" : "Close menu"} onClick={() => setOpen(false)} />
           <aside ref={panelRef} id="nr-driver-menu" className="nr-driver-menu-panel"
             onTouchStart={(event) => {
@@ -487,6 +495,27 @@ function DriverHeader({
   );
 }
 
+function DriverPrimaryTabs({ pathname }: { pathname: string }) {
+  const language = useContext(LanguageContext);
+  const [mapActive, setMapActive] = useState(false);
+  useEffect(() => {
+    setMapActive(pathname === "/driver/home" && new URLSearchParams(window.location.search).get("screen") === "map");
+  }, [pathname]);
+
+  const tabs: Array<{ id: string; href: string; icon: IconName; en: string; am: string; active: boolean }> = [
+    { id: "home", href: "/driver/home", icon: "home", en: "Home", am: "መነሻ", active: pathname === "/driver/home" && !mapActive },
+    { id: "earnings", href: "/driver/earnings", icon: "wallet", en: "Earnings", am: "ገቢ", active: pathname.startsWith("/driver/earnings") },
+    { id: "map", href: "/driver/home?screen=map", icon: "navigation", en: "Map", am: "ካርታ", active: mapActive },
+    { id: "profile", href: "/driver/profile", icon: "user", en: "Profile", am: "መገለጫ", active: pathname.startsWith("/driver/profile") },
+  ];
+  return <nav className="nr-driver-premium-tabs" aria-label={language === "am" ? "የአሽከርካሪ ዋና አሰሳ" : "Driver primary navigation"}>
+    {tabs.map(tab => <a key={tab.id} href={tab.href} aria-current={tab.active ? "page" : undefined} data-active={tab.active ? "true" : "false"}>
+      <Icon name={tab.icon} size={21}/>
+      <span>{language === "am" ? tab.am : tab.en}</span>
+    </a>)}
+  </nav>;
+}
+
 function DriverShellChrome({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -516,6 +545,7 @@ function DriverShellChrome({ children }: { children: ReactNode }) {
       <DriverSessionBridge />
       <DriverCancellationNotice pathname={pathname} />
       <div className="nr-driver-shell-content" data-trip-focus={tripFocus ? "true" : "false"}>{children}</div>
+      {!tripFocus && <DriverPrimaryTabs pathname={pathname} />}
     </div>
   );
 }

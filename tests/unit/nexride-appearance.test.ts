@@ -15,11 +15,11 @@ describe('persisted appearance and supporting brand colors', () => {
     expect(appearanceKey('rider')).toBe('nexride.rider.theme');
     expect(appearanceKey('driver')).toBe('nexride.driver.theme');
   });
-  it('resolves System appearance without overriding explicit choices', () => {
-    expect(resolveAppearance('system', true)).toBe('dark');
+  it('retires the internal dark theme for every stored or system preference', () => {
+    expect(resolveAppearance('system', true)).toBe('light');
     expect(resolveAppearance('system', false)).toBe('light');
     expect(resolveAppearance('light', true)).toBe('light');
-    expect(resolveAppearance('dark', false)).toBe('dark');
+    expect(resolveAppearance('dark', false)).toBe('light');
   });
   it('shared semantic text tokens meet AA on light surfaces', () => {
     const css = readFileSync(new URL('../../app/identity-experience.css', import.meta.url), 'utf8');

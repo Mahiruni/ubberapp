@@ -1,0 +1,303 @@
+/* NexRide Unified Premium 2026: one original brand system for Rider, Driver and Admin.
+   Presentation only. Mapbox, dispatch, profiles, payments and Supabase are untouched. */
+:root {
+  --nr-premium-primary: #6654dc;
+  --nr-premium-pressed: #5141bc;
+  --nr-premium-lavender: #ede9ff;
+  --nr-premium-canvas: #f9f8fd;
+  --nr-premium-white: #fff;
+  --nr-premium-ink: #202538;
+  --nr-premium-secondary: #6b7182;
+  --nr-premium-border: #e8e6f0;
+  --nr-premium-success: #22a783;
+  --nr-premium-danger: #d64a61;
+  --nr-premium-motion: cubic-bezier(.22,1,.36,1);
+}
+:is(.nr-app,.nr-driver-app-shell,.nr-entry-redesign,.nex-manage) {
+  font-family: var(--nr-font-latin,Inter,system-ui,sans-serif);
+  color-scheme: light;
+  -webkit-tap-highlight-color: transparent;
+}
+:is(.nr-app,.nr-app[data-theme="dark"],.nr-driver-app-shell,.nr-driver-app-shell[data-theme="dark"],.nr-entry-redesign,.nr-entry-redesign[data-theme="dark"],.nex-manage,.nex-manage[data-theme="dark"]) {
+  --bg: var(--nr-premium-canvas);
+  --surface: #fff;
+  --surface-alt: #f3f0fd;
+  --text: var(--nr-premium-ink);
+  --muted: var(--nr-premium-secondary);
+  --line: var(--nr-premium-border);
+  --navy: var(--nr-premium-primary);
+  --nr-indigo: var(--nr-premium-primary);
+  --nr-violet: #8572e9;
+  --nr-bg: var(--nr-premium-canvas);
+  --nr-bg-secondary: #f3f0fd;
+  --nr-surface: #fff;
+  --nr-surface-raised: #fff;
+  --nr-text: var(--nr-premium-ink);
+  --nr-text-secondary: var(--nr-premium-secondary);
+  --nr-text-muted: var(--nr-premium-secondary);
+  --nr-border: var(--nr-premium-border);
+  --nr-id-bg: var(--nr-premium-canvas);
+  --nr-id-surface: #fff;
+  --nr-id-text: var(--nr-premium-ink);
+  --nr-id-muted: var(--nr-premium-secondary);
+  --nr-id-line: var(--nr-premium-border);
+  --nr-id-field: #fff;
+  --nr-id-blue: var(--nr-premium-primary);
+  color-scheme: light !important;
+}
+.nr-driver-app-shell,.nr-driver-app-shell[data-theme="dark"] {
+  --driver-bg: var(--nr-premium-canvas);
+  --driver-surface: #fff;
+  --driver-surface-elevated: #f3f0fd;
+  --driver-border: var(--nr-premium-border);
+  --driver-text-primary: var(--nr-premium-ink);
+  --driver-text-secondary: var(--nr-premium-secondary);
+  --driver-accent: var(--nr-premium-primary);
+  --driver-header-bg: rgba(255,255,255,.96);
+  --driver-nav-bg: rgba(255,255,255,.97);
+  --driver-overlay: rgba(255,255,255,.97);
+  --driver-shadow: 0 12px 30px rgba(49,39,112,.07);
+  color:var(--nr-premium-ink);
+  background:var(--nr-premium-canvas);
+  color-scheme:light !important;
+}
+.nr-driver-app-shell :is(.nr-driver-page,.nr-driver-profile-subpage,.nr-driver-activity-page,.nr-earnings-report-page,.nr-driver-shell-content) {
+  background-color:var(--nr-premium-canvas);
+  color:var(--nr-premium-ink);
+}
+.nr-driver-app-shell :is(.nr-driver-request-page,.nr-driver-navigation-page){
+  --trip-brand:var(--nr-premium-primary);
+  --trip-brand-strong:var(--nr-premium-ink);
+  --trip-primary:var(--nr-premium-primary);
+  --trip-ink:var(--nr-premium-ink);
+  --trip-surface:#fff;
+  --trip-elevated:#f3f0fd;
+  --trip-subtle:var(--nr-premium-canvas);
+  --trip-border:var(--nr-premium-border);
+  --trip-text:var(--nr-premium-ink);
+  --trip-muted:var(--nr-premium-secondary);
+  --trip-action-text:#fff;
+  --trip-handle:#b0a8d8;
+  background:var(--nr-premium-canvas);
+  color-scheme:light !important;
+}
+.nr-driver-app-shell :is(.nr-driver-request-page,.nr-driver-navigation-page) :is(.nr-driver-request-map,.nr-nav-map){
+  background:var(--nr-premium-canvas)!important;
+}
+/* Brand CTAs have a shared 56dp minimum height and actual disabled/loading semantics. */
+.nr-app .nr-button.nr-primary,
+.nr-entry-redesign .nr-rider-get-started,
+.nr-driver-app-shell :is(.nr-driver-primary:not(.secondary-state),.nr-nav-stage-primary,.driver-go-online,.accept-driver),
+.nr-app :is(.nr-rider-request-button,.nr-request-ride-button) {
+  background:var(--nr-premium-primary)!important;
+  border-color:var(--nr-premium-primary)!important;
+  color:#fff!important;
+  border-radius:999px!important;
+  min-height:52px;
+  box-shadow:0 5px 14px rgba(102,84,220,.12);
+  font-weight:700;
+  letter-spacing:-.01em;
+  transition:background-color 180ms ease,box-shadow 180ms ease,transform 160ms var(--nr-premium-motion);
+}
+.nr-app .nr-button.nr-primary:not(:disabled):hover,
+.nr-entry-redesign .nr-rider-get-started:hover,
+.nr-driver-app-shell :is(.nr-driver-primary:not(.secondary-state),.nr-nav-stage-primary,.driver-go-online,.accept-driver):not(:disabled):hover {
+  background:var(--nr-premium-pressed)!important;
+  border-color:var(--nr-premium-pressed)!important;
+}
+.nr-app .nr-button.nr-secondary,
+.nr-app .nr-button.nr-ghost,
+.nr-driver-app-shell :is(.nr-driver-primary.secondary-state,.nr-nav-stage-secondary){
+  border-radius:999px!important;
+  background:#f3f0fd!important;
+  border-color:var(--nr-premium-border)!important;
+  color:var(--nr-premium-ink)!important;
+}
+.nr-app :is(button,a,input,select,textarea):focus-visible,
+.nr-driver-app-shell :is(button,a,input,select,textarea):focus-visible,
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer) :is(button,a):focus-visible {
+  outline:3px solid var(--nr-premium-primary)!important;
+  outline-offset:3px!important;
+}
+:is(.nr-app,.nr-driver-app-shell,.nr-entry-redesign) :is(input,textarea,select){
+  accent-color:var(--nr-premium-primary);
+}
+:is(.nr-app,.nr-driver-app-shell) :is(.nr-sheet,.nr-driver-card,.nr-driver-operational-card,.nr-earnings-total-card,.nr-profile-panel,.nr-rider-home-sheet) {
+  border-color:var(--nr-premium-border);
+}
+:is(.nr-app,.nr-driver-app-shell) :is(h1,h2,h3){
+  letter-spacing:-.035em;
+  text-wrap:balance;
+}
+:is(.nr-app,.nr-driver-app-shell) :is(.nr-earnings-total,.nr-earnings-value,.nr-fare-value){
+  font-variant-numeric:tabular-nums;
+}
+.nr-appearance-control .nr-light-appearance-label{
+  display:inline-flex;align-items:center;gap:8px;min-height:42px;
+  padding:8px 14px;background:var(--nr-premium-lavender);
+  border-radius:999px;color:var(--nr-premium-ink);
+  font-weight:650;font-size:14px;
+}
+/* Rider panel retains the desired 40% map-visible home state. */
+@media(max-width:800px){
+  .nr-app[data-mode="rider"] .rider-map-flow.rider-home-view{
+    --nr-flow-sheet-height:40dvh;
+  }
+  .nr-app .nr-mobile-nav{
+    background:rgba(255,255,255,.97);
+    border-top:1px solid var(--nr-premium-border);
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
+  }
+  .nr-app .nr-mobile-nav .nr-navigation{
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:4px;padding:5px 4px max(6px,env(safe-area-inset-bottom));
+  }
+  .nr-app .nr-mobile-nav .nr-navigation button{
+    min-width:0;min-height:48px;
+    border-radius:16px;color:var(--nr-premium-secondary);
+    font-size:11px;line-height:1.2;
+  }
+  .nr-app .nr-mobile-nav .nr-navigation button.active{
+    color:var(--nr-premium-primary);
+    background:var(--nr-premium-lavender);
+  }
+}
+/* Rider and Driver drawers share one geometry, hierarchy, motion and accessible focus state. */
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer){
+  --ed-bg:#fff;--ed-ink:var(--nr-premium-ink);
+  --ed-muted:var(--nr-premium-secondary);
+  --ed-line:var(--nr-premium-border);
+  --ed-panel:#f5f3fd;--ed-accent:var(--nr-premium-primary);
+  --ed-active:var(--nr-premium-lavender);
+  --ed-danger:var(--nr-premium-danger);
+}
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer)[data-theme="dark"]{
+  --ed-bg:#fff;--ed-ink:var(--nr-premium-ink);
+  --ed-muted:var(--nr-premium-secondary);
+  --ed-line:var(--nr-premium-border);
+  --ed-panel:#f5f3fd;--ed-accent:var(--nr-premium-primary);
+  --ed-active:var(--nr-premium-lavender);
+  --ed-danger:var(--nr-premium-danger);
+  color-scheme:light;
+}
+.nr-driver-menu-layer{justify-content:flex-start!important}
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer) :is(.nr-rider-drawer,.nr-driver-menu-panel){
+  width:min(360px,calc(100vw - 24px))!important;
+  border-radius:0 26px 26px 0!important;
+  background:#fff!important;
+  color:var(--nr-premium-ink)!important;
+  box-shadow:20px 0 55px rgba(32,37,56,.18)!important;
+  animation:nr-premium-drawer-in 280ms var(--nr-premium-motion) both!important;
+}
+@keyframes nr-premium-drawer-in{
+  from{transform:translateX(-24px);opacity:.75}
+  to{transform:none;opacity:1}
+}
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer) :is(.nr-rider-drawer-nav strong,.nr-driver-menu-row-copy strong,.nr-rider-drawer-secondary strong){
+  font-size:14px!important;font-weight:650!important;
+}
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer) :is(.nr-rider-drawer-nav small,.nr-driver-menu-row-copy small,.nr-rider-drawer-secondary small,.nr-menu-person small,.nr-driver-menu-identity small){
+  font-size:11px!important;line-height:1.4!important;
+}
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer) .nr-menu-section-label{
+  font-size:11px!important;letter-spacing:.08em!important;
+  padding-block:12px 8px!important;
+}
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer) :is(.nr-rider-drawer-nav>button,.nr-driver-menu-row,.nr-driver-menu-utility,.nr-menu-group-toggle){
+  min-height:52px!important;border-radius:15px!important;
+}
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer) :is(.nr-rider-drawer-nav button.active,.nr-driver-menu-row[data-active="true"]){
+  background:var(--nr-premium-lavender)!important;color:var(--nr-premium-primary)!important;
+}
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer) :is(.nr-rider-drawer-backdrop,.nr-driver-menu-backdrop){
+  background:rgba(28,23,53,.38)!important;
+  backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);
+}
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer) .nr-menu-scroll{
+  overscroll-behavior:contain;scrollbar-gutter:stable;
+}
+.nr-rider-hamburger,.nr-driver-menu-trigger{
+  touch-action:manipulation;
+}
+@media(prefers-reduced-motion:reduce){
+  :is(.nr-rider-drawer-layer,.nr-driver-menu-layer) :is(.nr-rider-drawer,.nr-driver-menu-panel){
+    animation:none!important;
+  }
+  :is(.nr-app,.nr-driver-app-shell,.nr-rider-drawer-layer,.nr-driver-menu-layer) *,
+  :is(.nr-app,.nr-driver-app-shell,.nr-rider-drawer-layer,.nr-driver-menu-layer) *::before,
+  :is(.nr-app,.nr-driver-app-shell,.nr-rider-drawer-layer,.nr-driver-menu-layer) *::after{
+    animation-duration:.01ms!important;transition-duration:.01ms!important;
+  }
+}
+
+/* Exit transition: panel stays in the portal until the close motion finishes. */
+@keyframes nr-premium-drawer-out {
+  from { transform:translateX(0); opacity:1; }
+  to { transform:translateX(-30px); opacity:0; }
+}
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer)[data-closing="true"] :is(.nr-rider-drawer,.nr-driver-menu-panel) {
+  animation:nr-premium-drawer-out 220ms cubic-bezier(.4,0,1,1) both!important;
+  pointer-events:none!important;
+}
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer)[data-closing="true"] :is(.nr-rider-drawer-backdrop,.nr-driver-menu-backdrop){
+  opacity:0;transition:opacity 220ms ease!important;pointer-events:none!important;
+}
+@media(prefers-reduced-motion:reduce){
+  :is(.nr-rider-drawer-layer,.nr-driver-menu-layer)[data-closing="true"] :is(.nr-rider-drawer,.nr-driver-menu-panel){
+    animation:none!important;
+  }
+}
+
+/* Four dedicated Driver destinations; operational trip screens retain full map focus. */
+.nr-driver-app-shell .nr-driver-shell-content[data-trip-focus="false"]{
+  padding-bottom:calc(80px + env(safe-area-inset-bottom,0px));
+}
+.nr-driver-premium-tabs{
+  position:fixed;z-index:75;left:0;right:0;bottom:0;
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+  align-items:stretch;gap:3px;
+  min-height:64px;
+  padding:6px max(12px,env(safe-area-inset-left,0px))
+    calc(7px + env(safe-area-inset-bottom,0px))
+    max(12px,env(safe-area-inset-right,0px));
+  border-top:1px solid var(--nr-premium-border);
+  background:rgba(255,255,255,.97);
+  -webkit-backdrop-filter:blur(16px);
+  backdrop-filter:blur(16px);
+}
+.nr-driver-premium-tabs>a{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:4px;min-width:0;min-height:48px;
+  border-radius:15px;color:var(--nr-premium-secondary);
+  text-decoration:none;text-align:center;
+  font-size:11px;font-weight:650;
+  transition:background-color 170ms ease,color 170ms ease;
+}
+.nr-driver-premium-tabs>a[data-active="true"]{
+  background:var(--nr-premium-lavender);color:var(--nr-premium-primary);
+}
+.nr-driver-premium-tabs>a:focus-visible{
+  outline:3px solid var(--nr-premium-primary);
+  outline-offset:-3px;
+}
+@media(min-width:900px){
+  .nr-driver-premium-tabs{
+    width:min(520px,calc(100vw - 48px));
+    left:50%;right:auto;transform:translateX(-50%);
+    bottom:14px;border:1px solid var(--nr-premium-border);
+    border-radius:22px;padding:6px;
+    box-shadow:0 16px 45px rgba(32,37,56,.1);
+  }
+}
+
+/* Preserve access to Rider Home actions below the fixed four-tab navigation. */
+@media(max-width:800px){
+  .nr-app[data-mode="rider"] .rider-home-view .nr-home-sheet-scroll{
+    padding-bottom:calc(98px + env(safe-area-inset-bottom,0px))!important;
+    scroll-padding-bottom:calc(96px + env(safe-area-inset-bottom,0px));
+  }
+  .nr-app[data-mode="rider"] .rider-home-view .nr-home-sheet-scroll :is(button,a){
+    scroll-margin-bottom:90px;
+  }
+}
