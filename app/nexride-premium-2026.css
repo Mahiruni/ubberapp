@@ -248,3 +248,45 @@
     animation:none!important;
   }
 }
+
+/* Four dedicated Driver destinations; operational trip screens retain full map focus. */
+.nr-driver-app-shell .nr-driver-shell-content[data-trip-focus="false"]{
+  padding-bottom:calc(80px + env(safe-area-inset-bottom,0px));
+}
+.nr-driver-premium-tabs{
+  position:fixed;z-index:75;left:0;right:0;bottom:0;
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+  align-items:stretch;gap:3px;
+  min-height:64px;
+  padding:6px max(12px,env(safe-area-inset-left,0px))
+    calc(7px + env(safe-area-inset-bottom,0px))
+    max(12px,env(safe-area-inset-right,0px));
+  border-top:1px solid var(--nr-premium-border);
+  background:rgba(255,255,255,.97);
+  -webkit-backdrop-filter:blur(16px);
+  backdrop-filter:blur(16px);
+}
+.nr-driver-premium-tabs>a{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:4px;min-width:0;min-height:48px;
+  border-radius:15px;color:var(--nr-premium-secondary);
+  text-decoration:none;text-align:center;
+  font-size:11px;font-weight:650;
+  transition:background-color 170ms ease,color 170ms ease;
+}
+.nr-driver-premium-tabs>a[data-active="true"]{
+  background:var(--nr-premium-lavender);color:var(--nr-premium-primary);
+}
+.nr-driver-premium-tabs>a:focus-visible{
+  outline:3px solid var(--nr-premium-primary);
+  outline-offset:-3px;
+}
+@media(min-width:900px){
+  .nr-driver-premium-tabs{
+    width:min(520px,calc(100vw - 48px));
+    left:50%;right:auto;transform:translateX(-50%);
+    bottom:14px;border:1px solid var(--nr-premium-border);
+    border-radius:22px;padding:6px;
+    box-shadow:0 16px 45px rgba(32,37,56,.1);
+  }
+}
