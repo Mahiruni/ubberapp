@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { EntryShell } from "../../components/nexride/entry";
+
 import { RiderSplash } from "../../components/nexride/splash";
-import { Icon, useTranslation } from "../../components/nexride/ui";
+import { useTranslation } from "../../components/nexride/ui";
 import { supabase } from "../../lib/supabase";
 import { enterDriver, explicitSignOutRole, StartupError } from "../../lib/nexride-startup";
 import { driverResumeDestination } from "../../lib/nexride-driver-verification";
@@ -46,12 +46,17 @@ export default function DriverWelcome() {
 
   if (checking) return <RiderSplash error={startupError} onRetry={() => setAttempt(value => value + 1)}/>;
 
-  return <EntryShell role="driver">
-    <span className="driver-auth-role">BILOO · {t("driver")}</span>
-    <h1>{t("entryDriveHeadline")}</h1>
-    <p>{t("entryDriverIntro")}</p>
-    <div className="nr-rider-entry-actions"><Link className="nr-rider-get-started" href="/driver/onboarding">{t("entryStartDriving")}<Icon name="arrow" size={20}/></Link><Link className="nr-rider-welcome-sign-in" href="/driver/auth">{t("signIn")}</Link></div>
-    <div className="nr-auth-role-note"><span><Icon name="user" size={20}/></span><div><strong>{t("entryOneAccount")}</strong><small>{t("entryExistingIdentity")}</small></div></div>
-    <Link className="nr-auth-role-link" href="/rider">{t("entrySwitchRider")}<Icon name="arrow" size={16}/></Link>
-  </EntryShell>;
+  return <main className="biloo-driver-campaign" aria-label="Biloo Driver welcome">
+    <div className="biloo-driver-photo" role="img" aria-label="Biloo Driver Addis Ababa campaign photography"/>
+    <section className="biloo-driver-panel">
+      <img className="biloo-driver-logo" src="/brand/biloo-mark.svg" alt="Biloo official logo" />
+      <h1>Biloo <span>Driver</span></h1>
+      <p>Drive with Biloo. Earn more. Drive with confidence.</p>
+      <div className="biloo-driver-actions">
+        <Link href="/driver/auth" className="biloo-driver-signin">{t("signIn")} <span aria-hidden="true">→</span></Link>
+        <Link href="/driver/onboarding" className="biloo-driver-register">{t("register")} <span aria-hidden="true">→</span></Link>
+      </div>
+      <div className="biloo-driver-secondary"><Link href="/rider">Switch to Rider</Link></div>
+    </section>
+  </main>;
 }
