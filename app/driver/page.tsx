@@ -54,7 +54,7 @@ export default function DriverWelcome() {
       <p>Drive with Biloo. Earn more. Drive with confidence.</p>
       <div className="biloo-driver-actions">
         <Link href="/driver/auth" className="biloo-driver-signin">{t("signIn")} <span aria-hidden="true">→</span></Link>
-        <Link href="/driver/onboarding" className="biloo-driver-register">{t("register")} <span aria-hidden="true">→</span></Link>
+        <Link href="/driver/onboarding" className="biloo-driver-register">{t("createAccount")} <span aria-hidden="true">→</span></Link>
       </div>
       <div className="biloo-driver-secondary"><Link href="/rider">Switch to Rider</Link></div>
     </section>
