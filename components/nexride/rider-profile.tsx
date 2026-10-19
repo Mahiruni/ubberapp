@@ -6,7 +6,7 @@ import { ALERTS_KEY, readAccount, saveAccount, validateProfile, type RiderAccoun
 import { RiderPhotoEditor } from './rider-photo-editor';
 import { photoSizeLabel } from '../../lib/nexride-photo-processing';
 import { PREVIEW_ENABLED_KEY, PREVIEW_STORAGE_KEY, retryStartup } from '../../lib/nexride-startup';
-import { signOutBiloo } from '../../lib/nexride-sign-out';
+import { signOutNexRide } from '../../lib/nexride-sign-out';
 import type { Language } from '../../lib/nexride-i18n';
 import type { PreviewProfile } from '../../lib/nexride-preview';
 import { Button, Dialog, Icon, InputField, useTranslation, type IconName } from './ui';

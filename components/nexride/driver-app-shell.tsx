@@ -27,7 +27,7 @@ import { nexrideApiFetch } from "../../lib/nexride-api-auth";
 import { DriverCancellationNotice } from "./driver-cancellation-notice";
 import { DriverSessionBridge } from "./driver-session-bridge";
 import { explicitSignOutRole } from "../../lib/nexride-startup";
-import { signOutBiloo } from "../../lib/nexride-sign-out";
+import { signOutNexRide } from "../../lib/nexride-sign-out";
 
 export type DriverThemePreference = "system" | "light" | "dark";
 export type DriverResolvedTheme = "light" | "dark";

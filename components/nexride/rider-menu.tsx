@@ -17,7 +17,7 @@ import {
   PREVIEW_STORAGE_KEY,
   retryStartup,
 } from "../../lib/nexride-startup";
-import { signOutBiloo } from "../../lib/nexride-sign-out";
+import { signOutNexRide } from "../../lib/nexride-sign-out";
 import { resolveSessionRole } from "../../lib/nexride-account-role";
 import { useAppearance } from "../../lib/nexride-appearance";
 import { readAccount } from "../../lib/nexride-account";

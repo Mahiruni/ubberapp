@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Dialog, Icon, useTranslation, type IconName } from "./ui";
 import { supabase } from "../../lib/supabase";
-import { signOutBiloo } from "../../lib/nexride-sign-out";
+import { signOutNexRide } from "../../lib/nexride-sign-out";
 import { nexrideApiFetch } from "../../lib/nexride-api-auth";
 import {
   initialsFor,
