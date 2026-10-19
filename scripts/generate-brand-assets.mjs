@@ -23,6 +23,10 @@ async function iconImage(source, size) {
   return sharp(source).resize(size, size, { fit: "fill", kernel: "lanczos3" })
     .png({ compressionLevel: 9 }).toBuffer();
 }
+// Produce the customer-email mark and preserve the legacy asset URL for existing templates.
+for (const name of ["biloo-email-mark.png", "nexride-email-mark.png"]) {
+  writeFileSync(join(publicDir, "brand", name), await iconImage(roles.rider, 128));
+}
 async function paddedIcon(source, size, coverage = 0.75, transparent = false) {
   const inner = Math.round(size * coverage);
   const resized = await sharp(source).resize(inner, inner, { fit: "fill" }).png().toBuffer();

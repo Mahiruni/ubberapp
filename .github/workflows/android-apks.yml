@@ -21,6 +21,8 @@ name: Build Biloo Android APKs
       - ".github/workflows/android-apks.yml"
       - "public/brand/biloo-rider.svg"
       - "public/brand/biloo-driver.svg"
+      - "components/nexride/ui.tsx"
+      - "app/identity-experience.css"
       - "scripts/generate-brand-assets.mjs"
       - "scripts/sync-android-icons.mjs"
       - "scripts/setup-android-splash.mjs"
