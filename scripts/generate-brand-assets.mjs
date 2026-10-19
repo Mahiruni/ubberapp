@@ -1,5 +1,5 @@
 /**
- * NexRide role-specific icon pipeline.
+ * Biloo role-specific icon pipeline.
  * The assets below are the actual approved Rider / Driver artworks.
  * Generate PNG and ICO sizes on install/build for Chrome, Android and iOS.
  * Never overwrite the Driver icon with the Rider mark.
@@ -14,8 +14,8 @@ const publicDir = join(root, "public");
 const iconsDir = join(publicDir, "icons");
 mkdirSync(iconsDir, { recursive: true });
 const roles = {
-  rider: join(iconsDir, "nexride-rider.webp"),
-  driver: join(iconsDir, "nexride-driver.webp"),
+  rider: join(publicDir, "brand", "biloo-rider.svg"),
+  driver: join(publicDir, "brand", "biloo-driver.svg"),
 };
 const sizes = [16, 32, 36, 48, 72, 96, 128, 144, 152, 180, 192, 384, 512];
 
@@ -23,12 +23,12 @@ async function iconImage(source, size) {
   return sharp(source).resize(size, size, { fit: "fill", kernel: "lanczos3" })
     .png({ compressionLevel: 9 }).toBuffer();
 }
-async function paddedIcon(source, size, coverage = 0.75) {
+async function paddedIcon(source, size, coverage = 0.75, transparent = false) {
   const inner = Math.round(size * coverage);
   const resized = await sharp(source).resize(inner, inner, { fit: "fill" }).png().toBuffer();
   return sharp({
     create: { width: size, height: size, channels: 4,
-      background: { r: 4, g: 28, b: 48, alpha: 1 } },
+      background: { r: 255, g: 255, b: 255, alpha: transparent ? 0 : 1 } },
   }).composite([{ input: resized, left: Math.floor((size - inner) / 2),
     top: Math.floor((size - inner) / 2) }]).png({ compressionLevel: 9 }).toBuffer();
 }
@@ -65,7 +65,7 @@ for (const [role, source] of Object.entries(roles)) {
   // symbol inside the adaptive-icon safe area to prevent launcher clipping.
   for (const size of [108, 162, 216, 324, 432]) {
     writeFileSync(join(iconsDir, role + "-adaptive-" + size + ".png"),
-      await paddedIcon(source, size, 0.65));
+      await paddedIcon(source, size, 0.65, true));
   }
   const faviconImages = [];
   for (const size of [16, 32, 48]) {
@@ -82,6 +82,6 @@ for (const [role, source] of Object.entries(roles)) {
     await iconImage(source, 180));
   const embedded = readFileSync(source).toString("base64");
   writeFileSync(join(publicDir, driver ? "driver-favicon.svg" : "favicon.svg"),
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><image width="192" height="192" href="data:image/webp;base64,${embedded}"/></svg>\n`);
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><image width="192" height="192" href="data:image/svg+xml;base64,${embedded}"/></svg>\n`);
 }
-console.log("Generated matching NexRide Rider / Driver icons, favicons, adaptive Android and PWA assets.");
+console.log("Generated matching Biloo Rider / Driver icons, favicons, adaptive Android and PWA assets.");

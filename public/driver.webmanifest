@@ -1,8 +1,8 @@
 {
   "id": "/driver",
-  "name": "NexRide Driver",
-  "short_name": "NexRide Driver",
-  "description": "Drive, earn and grow with NexRide Driver in Addis Ababa.",
+  "name": "Biloo Driver",
+  "short_name": "Biloo Driver",
+  "description": "Drive, earn and grow with Biloo Driver in Addis Ababa.",
   "start_url": "/driver",
   "scope": "/",
   "display": "standalone",

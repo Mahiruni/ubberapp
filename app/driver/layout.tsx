@@ -3,13 +3,13 @@ import { NexRideLanguageProvider } from "../../components/nexride/language-provi
 import { DriverAppShell } from "../../components/nexride/driver-app-shell";
 
 export const metadata: Metadata = {
-  title: "Drive with NexRide",
-  description: "NexRide Driver — Drive. Earn. Grow. Use your own Driver app icon.",
-  applicationName: "NexRide Driver",
+  title: "Drive with Biloo",
+  description: "Biloo Driver — Drive. Earn. Grow. Use your own Driver app icon.",
+  applicationName: "Biloo Driver",
   manifest: "/driver.webmanifest",
   appleWebApp: {
     capable: true,
-    title: "NexRide Driver",
+    title: "Biloo Driver",
     statusBarStyle: "black-translucent",
   },
   icons: {

@@ -9,7 +9,7 @@ import { fileURLToPath } from "node:url";
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const role = process.argv[2];
 if (!["rider", "driver"].includes(role)) {
-  throw new Error("Expected NexRide role: rider or driver");
+  throw new Error("Expected Biloo role: rider or driver");
 }
 const res = join(root, "android", "app", "src", "main", "res");
 const iconDir = join(root, "public", "icons");
@@ -41,10 +41,10 @@ const colors = existsSync(join(values, "ic_launcher_background.xml"))
 let xml = existsSync(colors) ? readFileSync(colors, "utf8") : "<resources></resources>";
 if (/<color name="ic_launcher_background">[^<]*<\/color>/.test(xml)) {
   xml = xml.replace(/<color name="ic_launcher_background">[^<]*<\/color>/,
-    '<color name="ic_launcher_background">#041C30</color>');
+    '<color name="ic_launcher_background">#FFFFFF</color>');
 } else {
   xml = xml.replace("</resources>",
-    '    <color name="ic_launcher_background">#041C30</color>\n</resources>');
+    '    <color name="ic_launcher_background">#FFFFFF</color>\n</resources>');
 }
 writeFileSync(colors, xml);
 console.log("Android launcher updated for " + role + " with separate icon and adaptive foreground.");

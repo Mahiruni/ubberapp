@@ -35,20 +35,20 @@ import "./nexride-2026-tokens.css";
 import "./elite-inspired-menus.css";
 
 const description =
-  "Book reliable rides across Addis Ababa with NexRide, a rider and driver mobility platform built for Ethiopia.";
+  "Book reliable rides across Addis Ababa with Biloo, a rider and driver mobility platform built for Ethiopia.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(NEXRIDE_SITE_URL),
   title: {
-    default: "NexRide — Ride Across Addis Ababa",
-    template: "%s | NexRide",
+    default: "Biloo — Ride Across Addis Ababa",
+    template: "%s | Biloo",
   },
   description,
-  applicationName: "NexRide Rider",
+  applicationName: "Biloo Rider",
   category: "transportation",
   keywords: [
-    "NexRide",
-    "NexRide Ethiopia",
+    "Biloo",
+    "Biloo Ethiopia",
     "ride app Ethiopia",
     "taxi app Addis Ababa",
     "ride-hailing Addis Ababa",
@@ -58,7 +58,7 @@ export const metadata: Metadata = {
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
-    title: "NexRide Rider",
+    title: "Biloo Rider",
     statusBarStyle: "black-translucent",
   },
   formatDetection: { telephone: false },
@@ -77,7 +77,7 @@ export const metadata: Metadata = {
       {
         rel: "mask-icon",
         url: "/safari-pinned-tab.svg",
-        color: "#00C878",
+        color: "#F9C449",
       },
     ],
   },
@@ -85,21 +85,21 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_ET",
     url: "/",
-    siteName: "NexRide",
-    title: "NexRide — Ride Across Addis Ababa",
+    siteName: "Biloo",
+    title: "Biloo — Ride Across Addis Ababa",
     description,
     images: [
       {
         url: "/opengraph-image",
         width: 1200,
         height: 630,
-        alt: "NexRide — Better Rides. A Brighter Tomorrow.",
+        alt: "Biloo — Better Rides. A Brighter Tomorrow.",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "NexRide — Ride Across Addis Ababa",
+    title: "Biloo — Ride Across Addis Ababa",
     description,
     images: ["/opengraph-image"],
   },
@@ -122,7 +122,7 @@ export const viewport: Viewport = {
   viewportFit: "cover",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#F7FAF9" },
-    { media: "(prefers-color-scheme: dark)", color: "#625CF6" },
+    { media: "(prefers-color-scheme: dark)", color: "#08295F" },
   ],
   colorScheme: "light dark",
 };
@@ -132,7 +132,7 @@ const structuredData = [
     "@context": "https://schema.org",
     "@type": "Organization",
     "@id": NEXRIDE_SITE_URL + "/#organization",
-    name: "NexRide",
+    name: "Biloo",
     url: NEXRIDE_SITE_URL,
     logo: NEXRIDE_SITE_URL + "/icons/icon-512.png",
   },
@@ -140,7 +140,7 @@ const structuredData = [
     "@context": "https://schema.org",
     "@type": "WebSite",
     "@id": NEXRIDE_SITE_URL + "/#website",
-    name: "NexRide",
+    name: "Biloo",
     url: NEXRIDE_SITE_URL,
     publisher: { "@id": NEXRIDE_SITE_URL + "/#organization" },
   },
@@ -148,7 +148,7 @@ const structuredData = [
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
     "@id": NEXRIDE_SITE_URL + "/#app",
-    name: "NexRide",
+    name: "Biloo",
     url: NEXRIDE_SITE_URL,
     applicationCategory: "TravelApplication",
     operatingSystem: "Web",

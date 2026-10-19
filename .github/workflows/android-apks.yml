@@ -1,4 +1,4 @@
-name: Build NexRide Android APKs
+name: Build Biloo Android APKs
 
 'on':
   workflow_dispatch:
@@ -19,8 +19,8 @@ name: Build NexRide Android APKs
     branches: [main]
     paths:
       - ".github/workflows/android-apks.yml"
-      - "public/icons/nexride-rider.webp"
-      - "public/icons/nexride-driver.webp"
+      - "public/brand/biloo-rider.svg"
+      - "public/brand/biloo-driver.svg"
       - "scripts/generate-brand-assets.mjs"
       - "scripts/sync-android-icons.mjs"
       - "scripts/setup-android-splash.mjs"
@@ -96,11 +96,11 @@ jobs:
         run: |
           if [ "${{ matrix.role }}" = "rider" ]; then
             APP_ID="com.nexride.rider"
-            APP_NAME="NexRide Rider"
+            APP_NAME="Biloo Rider"
             START_PATH="/rider"
           else
             APP_ID="com.nexride.driver"
-            APP_NAME="NexRide Driver"
+            APP_NAME="Biloo Driver"
             START_PATH="/driver"
           fi
 
@@ -244,25 +244,25 @@ jobs:
               exit 1
             fi
           done
-          echo "Firebase application ID and FCM sender resources are compiled in NexRide ${{ matrix.role }} APK."
+          echo "Firebase application ID and FCM sender resources are compiled in Biloo ${{ matrix.role }} APK."
 
       - name: Stage APK
         shell: bash
         run: |
           mkdir -p dist
-          cp android/app/build/outputs/apk/debug/app-debug.apk "dist/NexRide-${{ matrix.role }}-debug.apk"
+          cp android/app/build/outputs/apk/debug/app-debug.apk "dist/Biloo-${{ matrix.role }}-debug.apk"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: NexRide-${{ matrix.role }}-APK
-          path: dist/NexRide-${{ matrix.role }}-debug.apk
+          name: Biloo-${{ matrix.role }}-APK
+          path: dist/Biloo-${{ matrix.role }}-debug.apk
           if-no-files-found: error
           retention-days: 14
 
       - name: Upload Android project for release hardening
         uses: actions/upload-artifact@v4
         with:
-          name: NexRide-${{ matrix.role }}-Android-project
+          name: Biloo-${{ matrix.role }}-Android-project
           path: android/
           retention-days: 7
