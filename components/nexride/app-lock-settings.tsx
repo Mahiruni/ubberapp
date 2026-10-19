@@ -28,19 +28,19 @@ export function AppLockSettings() {
     try { await openAppLockSettings(language); }
     catch (error) {
       setMessage(error instanceof Error && error.message === "sign_in_required"
-        ? say("Sign in to your NexRide account first.", "መጀመሪያ ወደ NexRide መለያዎ ይግቡ።")
+        ? say("Sign in to your Biloo account first.", "መጀመሪያ ወደ Biloo መለያዎ ይግቡ።")
         : say("Update the Android app and try again.", "የAndroid መተግበሪያውን ያዘምኑ እና እንደገና ይሞክሩ።"));
     } finally { setBusy(false); }
   };
   return <section className="nr-permission-settings" aria-label={say("App Lock", "የመተግበሪያ ቁልፍ")}>
     <div className="nr-settings-block">
       <div><strong><Icon name="shield" size={20} /> {say("App Lock", "የመተግበሪያ ቁልፍ")}</strong>
-        <small>{say("Protect NexRide on this device.", "NexRideን በዚህ መሣሪያ ይጠብቁ።")}</small>
+        <small>{say("Protect Biloo on this device.", "Bilooን በዚህ መሣሪያ ይጠብቁ።")}</small>
         <small>{available ? status?.enabled
           ? say(`On · ${status.method === "pattern" ? "Pattern" : "PIN"}${status.biometricEnabled ? " + biometrics" : ""}`, "በርቷል · " + (status.method === "pattern" ? "ንድፍ" : "PIN") + (status.biometricEnabled ? " + ባዮሜትሪክ" : ""))
           : say("Off · PIN, pattern and supported face / fingerprint unlock", "ጠፍቷል · PIN፣ ንድፍ እና የፊት / የጣት አሻራ")
-          : upgrade ? say("Install the latest NexRide Android APK to enable app lock.", "የመተግበሪያ ቁልፍን ለማብራት የቅርብ NexRide Android APK ይጫኑ።")
-          : say("Available in the NexRide Android app. Browser and iOS app locks are not enabled.", "በNexRide Android መተግበሪያ ይገኛል። በአሳሽ እና iOS አልበራም።")}</small>
+          : upgrade ? say("Install the latest Biloo Android APK to enable app lock.", "የመተግበሪያ ቁልፍን ለማብራት የቅርብ Biloo Android APK ይጫኑ።")
+          : say("Available in the Biloo Android app. Browser and iOS app locks are not enabled.", "በBiloo Android መተግበሪያ ይገኛል። በአሳሽ እና iOS አልበራም።")}</small>
       </div>
       {available && <button type="button" onClick={() => void open()} disabled={busy}
         style={{ background: "var(--nr-primary, #5145e5)", color: "#fff", border: 0, borderRadius: 14, minHeight: 48, padding: "12px 18px" }}>

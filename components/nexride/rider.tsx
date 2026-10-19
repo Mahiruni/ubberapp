@@ -111,7 +111,7 @@ export function RiderWorkspace({
       event: "driver_assigned",
       id: matching.request.requestId,
       title: "Driver assigned",
-      body: "Your NexRide driver is on the way.",
+      body: "Your Biloo driver is on the way.",
       url: "/",
     });
     matching.clear();

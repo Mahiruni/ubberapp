@@ -27,7 +27,7 @@ import { nexrideApiFetch } from "../../lib/nexride-api-auth";
 import { DriverCancellationNotice } from "./driver-cancellation-notice";
 import { DriverSessionBridge } from "./driver-session-bridge";
 import { explicitSignOutRole } from "../../lib/nexride-startup";
-import { signOutNexRide } from "../../lib/nexride-sign-out";
+import { signOutBiloo } from "../../lib/nexride-sign-out";
 
 export type DriverThemePreference = "system" | "light" | "dark";
 export type DriverResolvedTheme = "light" | "dark";
@@ -196,7 +196,7 @@ function DriverHamburgerMenu({
           .maybeSingle();
 
         if (activeRide.error) {
-          setSignOutError(language === "am" ? "ንቁ ጉዞዎን ማረጋገጥ አልተቻለም። እንደገና ይሞክሩ።" : "NexRide could not verify your active-trip status. Try again.");
+          setSignOutError(language === "am" ? "ንቁ ጉዞዎን ማረጋገጥ አልተቻለም። እንደገና ይሞክሩ።" : "Biloo could not verify your active-trip status. Try again.");
           setSigningOut(false);
           return;
         }
@@ -212,7 +212,7 @@ function DriverHamburgerMenu({
           body: JSON.stringify({ online: false }),
         });
         if (!offlineResponse.ok && offlineResponse.status !== 409) {
-          setSignOutError(language === "am" ? "ከመውጣትዎ በፊት የአሽከርካሪ ሁኔታዎን ከመስመር ውጭ ማድረግ አልተቻለም።" : "NexRide could not take your Driver account offline. Try again.");
+          setSignOutError(language === "am" ? "ከመውጣትዎ በፊት የአሽከርካሪ ሁኔታዎን ከመስመር ውጭ ማድረግ አልተቻለም።" : "Biloo could not take your Driver account offline. Try again.");
           setSigningOut(false);
           return;
         }
@@ -295,7 +295,7 @@ function DriverHamburgerMenu({
                   {portrait.url ? <img src={portrait.url} alt="" onError={() => void portrait.refresh()} /> : <span>{initials}</span>}
                 </div>
                 <div>
-                  <small>{language === "am" ? "NEXRIDE · አሽከርካሪ" : "NEXRIDE · DRIVER"}</small>
+                  <small>{language === "am" ? "BILOO · አሽከርካሪ" : "BILOO · DRIVER"}</small>
                   <strong id="nr-driver-menu-title">{identity.name}</strong>
                   <span className="nr-menu-view-profile">{language === "am" ? "መገለጫ ይመልከቱ" : "View profile"} <Icon name="arrow" size={14}/></span>
                 </div>
@@ -342,7 +342,7 @@ function DriverHamburgerMenu({
             <footer className="nr-driver-menu-footer">
               <div className="nr-driver-menu-footer-brand">
                                 <div>
-                  <strong>NexRide</strong>
+                  <strong>Biloo</strong>
                   <small>{language === "am" ? "የተሻለ ጉዞ። ብሩህ ነገ።" : "Better Rides. A Brighter Tomorrow."}</small>
                   <AppVersion />
                 </div>
@@ -384,7 +384,7 @@ function titleForPath(pathname: string, language: "en" | "am") {
   if (pathname.startsWith("/driver/profile/payouts")) return say("Payouts", "ክፍያዎች");
   if (pathname.startsWith("/driver/profile/settings")) return say("Settings", "ቅንብሮች");
   if (pathname.startsWith("/driver/profile")) return say("Account", "መለያ");
-  return language === "am" ? "NexRide አሽከርካሪ" : "NexRide Driver";
+  return language === "am" ? "Biloo አሽከርካሪ" : "Biloo Driver";
 }
 
 function backTargetForPath(pathname: string) {
@@ -467,12 +467,12 @@ function DriverHeader({
         <div className="nr-driver-global-header-title">
           {home ? (
             <>
-              <strong>NexRide</strong>
+              <strong>Biloo</strong>
               <span>{language === "am" ? "አሽከርካሪ" : "Driver"}</span>
             </>
           ) : (
             <>
-              <small>{language === "am" ? "NEXRIDE · አሽከርካሪ" : "NEXRIDE · DRIVER"}</small>
+              <small>{language === "am" ? "BILOO · አሽከርካሪ" : "BILOO · DRIVER"}</small>
               <strong>{title}</strong>
             </>
           )}

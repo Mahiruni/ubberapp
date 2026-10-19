@@ -36,7 +36,7 @@ export default function AdminReliabilityPage() {
     <div style={{maxWidth:1180,margin:"0 auto"}}>
       <Link href="/admin" style={{color:"#5145e5",fontWeight:750,fontSize:13}}>← Back to Admin Dashboard</Link>
       <header style={{margin:"30px 0 24px"}}>
-        <p className="admin-kicker">NEXRIDE · OPERATIONS</p>
+        <p className="admin-kicker">BILOO · OPERATIONS</p>
         <h1 style={{fontSize:"clamp(28px,5vw,42px)",letterSpacing:"-.05em",margin:"8px 0"}}>Android Reliability</h1>
         <p style={{fontSize:14,color:"#667587",maxWidth:640,lineHeight:1.6}}>Monitor real Driver GPS eligibility, the Rider matching queue, and native push handoffs. No location coordinates or FCM tokens are exposed.</p>
       </header>

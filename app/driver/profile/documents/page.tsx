@@ -100,7 +100,7 @@ export default function DriverDocumentsPage() {
       popup.location.href = data.signedUrl;
     } else {
       setMessageTone("info");
-      setMessage("Your browser blocked the document window. Allow pop-ups for NexRide and try again.");
+      setMessage("Your browser blocked the document window. Allow pop-ups for Biloo and try again.");
     }
     setBusy(null);
   }
@@ -214,7 +214,7 @@ export default function DriverDocumentsPage() {
             <Icon name="back" />
           </button>
           <div>
-            <span className="nr-driver-kicker">NexRide · {say("Driver account")}</span>
+            <span className="nr-driver-kicker">Biloo · {say("Driver account")}</span>
             <h1>{say("Documents")}</h1>
             <p>{say("Private documents used to verify your driver account.")}</p>
           </div>

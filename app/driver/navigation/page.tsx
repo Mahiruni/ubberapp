@@ -393,7 +393,7 @@ export default function DriverNavigationPage() {
         setGpsState("lost");
         setGpsMessage(error.code === error.PERMISSION_DENIED
           ? "Location permission is blocked. Enable it to keep the vehicle marker current."
-          : "GPS signal is unavailable. NexRide is keeping the trip stage unchanged until location returns.");
+          : "GPS signal is unavailable. Biloo is keeping the trip stage unchanged until location returns.");
       },
       { enableHighAccuracy: true, maximumAge: 5000, timeout: 12000 },
     );
@@ -514,7 +514,7 @@ export default function DriverNavigationPage() {
         if (!response.ok || body?.status !== "ready") {
           if (response.status === 503 || body?.status === "provider_unavailable") {
             routeBackoffUntilRef.current = Date.now() + 60000;
-            setNativeRouteNotice(op("NexRide route guidance is temporarily unavailable. Your trip controls remain available."));
+            setNativeRouteNotice(op("Biloo route guidance is temporarily unavailable. Your trip controls remain available."));
           } else if (response.status !== 409) {
             setNativeRouteNotice(op("Road guidance could not refresh. The last route will remain visible."));
           }
@@ -668,7 +668,7 @@ export default function DriverNavigationPage() {
   async function transition(next: "arrived_pickup" | "in_trip" | "completed") {
     if (!trip || !driverId || busy) return;
     if (!safeToUpdate || !navigator.onLine) {
-      setMessage("Trip actions are paused until NexRide confirms the latest stage online.");
+      setMessage("Trip actions are paused until Biloo confirms the latest stage online.");
       return;
     }
     const valid =
@@ -849,7 +849,7 @@ export default function DriverNavigationPage() {
             </span>
           ))}
         </div>
-        <div className="nr-nav-trip-meta"><span>NexRide · {trip.rideCategory}</span><span>{stage.badge}</span></div>
+        <div className="nr-nav-trip-meta"><span>Biloo · {trip.rideCategory}</span><span>{stage.badge}</span></div>
         <div className="nr-nav-current-destination">
           <small>{stage.target === "pickup" ? op("PICKUP") : op("DESTINATION")}</small>
           <h1>{stage.destination}</h1>

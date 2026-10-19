@@ -71,7 +71,7 @@ export default function RiderReceiptPage() {
             event: "payment_success",
             id: nextRide.id,
             title: "Payment confirmed",
-            body: "Your NexRide payment was successfully verified.",
+            body: "Your Biloo payment was successfully verified.",
             url: `/rider/trips/receipt?ride=${encodeURIComponent(nextRide.id)}`,
           });
         }
@@ -124,7 +124,7 @@ export default function RiderReceiptPage() {
             <Icon name="back" />
           </button>
           <div>
-            <span className="kicker">NEXRIDE · TRIP</span>
+            <span className="kicker">BILOO · TRIP</span>
             <h1>{op("Trip details")}</h1>
             <p>{ride ? new Date(rideDate(ride)).toLocaleString("en-ET", { dateStyle: "medium", timeStyle: "short" }) : "Receipt"}</p>
           </div>

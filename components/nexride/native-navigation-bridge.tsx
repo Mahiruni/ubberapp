@@ -73,11 +73,11 @@ export function NexRideNativeNavigationBridge() {
             exitAt.current = 0;
             // Minimizing preserves Supabase sessions and never changes trip status.
             void App.minimizeApp().catch(() => {
-              showNotice("Use your device Home control to leave NexRide.");
+              showNotice("Use your device Home control to leave Biloo.");
             });
           } else {
             exitAt.current = now;
-            showNotice("Press Back again to minimize NexRide");
+            showNotice("Press Back again to minimize Biloo");
           }
         });
         if (disposed) await subscription.remove();

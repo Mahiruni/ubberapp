@@ -75,7 +75,7 @@ export function DriverSessionBridge() {
           id: offer.id,
           expiresAt: offer.expires_at,
           title: "New ride request",
-          body: "A NexRide rider is waiting for your decision.",
+          body: "A Biloo rider is waiting for your decision.",
           url: "/driver/request?offer=" + encodeURIComponent(offer.id),
         });
         // Browser notifications are best-effort while minimized. They require
@@ -83,8 +83,8 @@ export function DriverSessionBridge() {
         if (document.visibilityState === "hidden" && typeof Notification !== "undefined" &&
           Notification.permission === "granted" && "serviceWorker" in navigator) {
           void navigator.serviceWorker?.ready.then(reg =>
-            reg.showNotification("New NexRide ride request", {
-              body: "Open NexRide to accept, decline or pass this ride.",
+            reg.showNotification("New Biloo ride request", {
+              body: "Open Biloo to accept, decline or pass this ride.",
               tag: "nexride-offer-" + offer.id,
               icon: "/icons/icon-192.png",
               data: { url: "/driver/request?offer=" + encodeURIComponent(offer.id) },

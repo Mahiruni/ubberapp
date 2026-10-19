@@ -450,7 +450,7 @@ function RiderAuth({ mode, entryRole }: { mode: RiderAuthMode; entryRole: "rider
   if (mode === "signin" && checkingSession) {
     return (
       <>
-        <span className="nr-rider-entry-kicker">NEXRIDE · {t("rider")}</span>
+        <span className="nr-rider-entry-kicker">BILOO · {t("rider")}</span>
         <h1>{t("entrySignInHeadline")}</h1>
         <p>{t("startupRestoring")}</p>
         {notice && <p className="nr-auth-notice" role="status">{notice}</p>}
@@ -474,7 +474,7 @@ function RiderAuth({ mode, entryRole }: { mode: RiderAuthMode; entryRole: "rider
   if (mode === "signup") {
     return (
       <>
-        <span className="nr-rider-entry-kicker">NEXRIDE · {t("rider")}</span>
+        <span className="nr-rider-entry-kicker">BILOO · {t("rider")}</span>
         <h1>{t("entrySignupHeadline")}</h1>
         <p>{t("entrySignupIntro")}</p>
         <ol className="nr-signup-steps" aria-label={t("createAccount")}>
@@ -557,7 +557,7 @@ function RiderAuth({ mode, entryRole }: { mode: RiderAuthMode; entryRole: "rider
   if (mode === "forgot") {
     return (
       <>
-        <span className="nr-rider-entry-kicker">NEXRIDE · {t(entryRole)}</span>
+        <span className="nr-rider-entry-kicker">BILOO · {t(entryRole)}</span>
         {nav}
         <h1>{t("resetPassword")}</h1>
         <p>{t("resetPasswordIntro")}</p>
@@ -579,7 +579,7 @@ function RiderAuth({ mode, entryRole }: { mode: RiderAuthMode; entryRole: "rider
   if (mode === "reset") {
     return (
       <>
-        <span className="nr-rider-entry-kicker">NEXRIDE · {t(entryRole)}</span>
+        <span className="nr-rider-entry-kicker">BILOO · {t(entryRole)}</span>
         <h1>{t("chooseNewPassword")}</h1>
         <p>{t("resetPasswordIntro")}</p>
         <form className="nr-profile-form" onSubmit={updatePassword} aria-busy={busy}>
@@ -600,7 +600,7 @@ function RiderAuth({ mode, entryRole }: { mode: RiderAuthMode; entryRole: "rider
 
   return (
     <>
-      <span className="nr-rider-entry-kicker">NEXRIDE · {t("rider")}</span>
+      <span className="nr-rider-entry-kicker">BILOO · {t("rider")}</span>
       <h1>{t("entrySignInHeadline")}</h1>
       <p>{t("entrySignInIntro")}</p>
       <form className="nr-profile-form" onSubmit={signIn} aria-busy={busy}>

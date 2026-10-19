@@ -444,7 +444,7 @@ function AppWorkspace({
           <Icon name="pin" size={16} />
           {t("city")}
         </span>
-        <div className="nr-mode-control" role="group" aria-label="NexRide">
+        <div className="nr-mode-control" role="group" aria-label="Biloo">
           <button
             className={mode === "rider" ? "selected" : ""}
             onClick={() => switchMode("rider")}
@@ -474,7 +474,7 @@ function AppWorkspace({
           </button>
           <button onClick={() => window.location.assign("/discover")}>
             <Icon name="star" />
-            Discover NexRide
+            Discover Biloo
           </button>
           {isAdmin && (
             <button onClick={() => window.location.assign("/admin")}>
@@ -845,7 +845,7 @@ function AppWorkspace({
                 />
                 <ListRow
                   icon="star"
-                  title="Discover NexRide"
+                  title="Discover Biloo"
                   onClick={() => window.location.assign("/discover")}
                 />
                 {isAdmin && (

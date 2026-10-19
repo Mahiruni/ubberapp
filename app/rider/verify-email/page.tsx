@@ -92,7 +92,7 @@ export default function EmailVerification() {
     finally { setBusy(false); }
   }
   return <EntryShell role={returnRole} authMode="verify">
-    <span className="nr-rider-entry-kicker">NEXRIDE · {t(returnRole === "driver" ? "driver" : "rider")}</span>
+    <span className="nr-rider-entry-kicker">BILOO · {t(returnRole === "driver" ? "driver" : "rider")}</span>
     <h1>{t(verified ? "chooseNewPassword" : purpose === "recovery" ? "resetPassword" : "entryVerificationTitle")}</h1>
     <p>{t(verified ? "resetPasswordIntro" : purpose === "recovery" ? "entryRecoveryIntro" : "entryVerificationIntro")}</p>
     {!verified ? <>

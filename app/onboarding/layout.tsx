@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Get started",
-  description: "Set up NexRide and continue to rider sign in.",
+  description: "Set up Biloo and continue to rider sign in.",
   robots: { index: false, follow: false },
 };
 

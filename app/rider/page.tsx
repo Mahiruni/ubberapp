@@ -145,7 +145,7 @@ function RiderWelcome() {
       <div className="nr-rider-welcome-intro">
         <span className="nr-rider-entry-kicker">
           <Icon name="navigation" size={15} />
-          NEXRIDE · {t("rider")}
+          BILOO · {t("rider")}
         </span>
         <h1>{t("entryWelcomeTitle")}</h1>
         <p>{t("entryWelcomeIntro")}</p>

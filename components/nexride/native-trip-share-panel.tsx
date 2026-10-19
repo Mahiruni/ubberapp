@@ -72,7 +72,7 @@ export function NativeTripSharePanel({tripId,role,userId,online}:{
    if(current?.id===id)setCurrent(null);
    setStatus("Sharing stopped. This link no longer provides live trip details.");
    await refresh();
-  }catch{setStatus("Could not reach NexRide to stop sharing. Try again online.");}
+  }catch{setStatus("Could not reach Biloo to stop sharing. Try again online.");}
   finally{setRevokeBusy(null);}
  };
  const activeLinks=links.filter(link=>!link.revoked_at&&Date.parse(link.expires_at)>Date.now());
@@ -113,6 +113,6 @@ export function NativeTripSharePanel({tripId,role,userId,online}:{
    </div>)}
   </div>}
   {status&&<p className="nr-share-status" role="status" aria-live="polite">{status}</p>}
-  <p className="nr-share-privacy">NexRide does not automatically message trusted contacts. Sharing is your choice. Link recipients do not see phone numbers, account documents, or payment records.</p>
+  <p className="nr-share-privacy">Biloo does not automatically message trusted contacts. Sharing is your choice. Link recipients do not see phone numbers, account documents, or payment records.</p>
  </section>;
 }

@@ -177,7 +177,7 @@ export default function SafetyCenterPage() {
             <Icon name="back" />
           </button>
           <div>
-            <span>NEXRIDE · SAFETY</span>
+            <span>BILOO · SAFETY</span>
             <h1>{view === "home" ? op("Safety Center") : view === "sos" ? op("Emergency SOS") : view === "share" ? op("Share your trip") : view === "help" ? op("Help Center") : op("Report an issue")}</h1>
           </div>
           <span className={`nr-safety-network ${online ? "online" : "offline"}`}>
@@ -239,7 +239,7 @@ function SafetyHome({
           tone="danger"
           icon="phone"
           title={op("Emergency SOS")}
-          detail={op("Open emergency call options. NexRide does not dispatch responders.")}
+          detail={op("Open emergency call options. Biloo does not dispatch responders.")}
           onClick={() => open("sos")}
         />
         <SafetyAction
@@ -260,7 +260,7 @@ function SafetyHome({
           tone="neutral"
           icon="info"
           title={op("Report an issue")}
-          detail={op("Tell NexRide what happened and include trip details when available.")}
+          detail={op("Tell Biloo what happened and include trip details when available.")}
           onClick={() => open("report")}
         />
       </div>
@@ -332,7 +332,7 @@ function EmergencySOS() {
       event: "safety",
       id: "emergency-options:" + Date.now(),
       title: "Emergency options opened",
-      body: "Choose the phone service you need. NexRide has not placed a call automatically.",
+      body: "Choose the phone service you need. Biloo has not placed a call automatically.",
       url: "/safety",
     });
   };
@@ -357,7 +357,7 @@ function EmergencySOS() {
         <span className="nr-sos-icon"><Icon name="phone" size={25} /></span>
         <div>
           <strong>{op("Emergency call options")}</strong>
-          <p>{op("Holding the control opens emergency phone shortcuts. NexRide does not send an emergency alert or dispatch responders.")}</p>
+          <p>{op("Holding the control opens emergency phone shortcuts. Biloo does not send an emergency alert or dispatch responders.")}</p>
         </div>
       </div>
 
@@ -408,16 +408,16 @@ function HelpCenter() {
         <span><Icon name="chat" size={22} /></span>
         <div>
           <strong>{op("Safety guidance")}</strong>
-          <p>These help topics are available in-app. Live NexRide support chat is not currently connected, so the app will not pretend an agent is responding.</p>
+          <p>These help topics are available in-app. Live Biloo support chat is not currently connected, so the app will not pretend an agent is responding.</p>
         </div>
       </div>
       <details open>
         <summary>Emergency or immediate danger</summary>
-        <p>Use Emergency SOS to open phone shortcuts. NexRide currently does not dispatch responders or notify a trusted contact automatically.</p>
+        <p>Use Emergency SOS to open phone shortcuts. Biloo currently does not dispatch responders or notify a trusted contact automatically.</p>
       </details>
       <details>
         <summary>Something happened during a trip</summary>
-        <p>Use Report an issue. NexRide can attach the active trip reference when it is available and save your report securely for follow-up.</p>
+        <p>Use Report an issue. Biloo can attach the active trip reference when it is available and save your report securely for follow-up.</p>
       </details>
       <details>
         <summary>Trip sharing</summary>
@@ -425,7 +425,7 @@ function HelpCenter() {
       </details>
       <details>
         <summary>GPS or internet is unavailable</summary>
-        <p>Emergency phone calling can work independently of NexRide data. Reporting requires an internet connection. Keep the report details in the form and submit after reconnecting.</p>
+        <p>Emergency phone calling can work independently of Biloo data. Reporting requires an internet connection. Keep the report details in the form and submit after reconnecting.</p>
       </details>
     </section>
   );
@@ -471,7 +471,7 @@ function SafetyReport({
     setSuccess(false);
 
     if (!userId) {
-      setFeedback(op("Sign in to NexRide before submitting a report. Emergency phone options remain available without sign-in."));
+      setFeedback(op("Sign in to Biloo before submitting a report. Emergency phone options remain available without sign-in."));
       return;
     }
     if (!online) {
@@ -502,7 +502,7 @@ function SafetyReport({
       .single();
 
     if (error || !data) {
-      setFeedback(op("NexRide could not submit this report. Your draft is still saved on this device."));
+      setFeedback(op("Biloo could not submit this report. Your draft is still saved on this device."));
     } else {
       setSuccess(true);
       setFeedback(`Report submitted. Reference ${String(data.id).slice(0, 8).toUpperCase()}. No emergency responder has been dispatched by this report.`);
@@ -553,7 +553,7 @@ function SafetyReport({
 
       {feedback && <div className={`nr-report-feedback ${success ? "success" : ""}`} role={success ? "status" : "alert"}><Icon name={success ? "check" : "info"} size={17} /><span>{feedback}</span></div>}
 
-      <p className="nr-report-disclaimer">Submitting a report sends information to NexRide for review. It is not an emergency dispatch request. For immediate danger, use Emergency SOS and call the appropriate emergency service.</p>
+      <p className="nr-report-disclaimer">Submitting a report sends information to Biloo for review. It is not an emergency dispatch request. For immediate danger, use Emergency SOS and call the appropriate emergency service.</p>
     </section>
   );
 }

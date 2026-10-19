@@ -48,7 +48,7 @@ export function NexRideFeedbackSettings({
         <span><Icon name="volume" size={19} /></span>
         <div>
           <strong>{say("Sounds & haptics", "ድምፅ እና ንዝረት")}</strong>
-          <small>{say("Clear feedback for important NexRide events.", "ለአስፈላጊ የNexRide ሁኔታዎች ግልጽ ምላሽ።")}</small>
+          <small>{say("Clear feedback for important Biloo events.", "ለአስፈላጊ የBiloo ሁኔታዎች ግልጽ ምላሽ።")}</small>
         </div>
         <button
           type="button"
@@ -62,7 +62,7 @@ export function NexRideFeedbackSettings({
       <FeedbackToggle
         icon="volume"
         title={say("Notification sounds", "የማሳወቂያ ድምፆች")}
-        detail={say("Play NexRide tones for important events.", "ለአስፈላጊ ሁኔታዎች የNexRide ድምፅ አጫውት።")}
+        detail={say("Play Biloo tones for important events.", "ለአስፈላጊ ሁኔታዎች የBiloo ድምፅ አጫውት።")}
         checked={preferences.sounds}
         onChange={(value) => change("sounds", value)}
       />
@@ -107,7 +107,7 @@ export function NexRideFeedbackSettings({
         <div>
           <strong>{permissionLabel}</strong>
           <small>{role === "driver"
-            ? say("Recommended so ride requests remain visible when NexRide is in the background.", "NexRide ከበስተጀርባ ሲሆን የጉዞ ጥያቄዎች እንዲታዩ ይመከራል።")
+            ? say("Recommended so ride requests remain visible when Biloo is in the background.", "Biloo ከበስተጀርባ ሲሆን የጉዞ ጥያቄዎች እንዲታዩ ይመከራል።")
             : say("Useful for driver assignment, arrival and important trip changes.", "ለአሽከርካሪ ምደባ፣ መድረስ እና አስፈላጊ የጉዞ ለውጦች ይጠቅማል።")}</small>
         </div>
         {permission === "default" && (

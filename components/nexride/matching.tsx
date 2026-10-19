@@ -50,10 +50,10 @@ export function DriverMatching({ model, changeCategory, previewAssigned, home }:
           {language === "am"
             ? status === "assigned"
               ? "አሽከርካሪ ተገኝቷል"
-              : "NEXRIDE እየፈለገ ነው"
+              : "BILOO እየፈለገ ነው"
             : status === "assigned"
               ? "DRIVER MATCHED"
-              : "NEXRIDE MATCHING"}
+              : "BILOO MATCHING"}
         </span>
         <h1 tabIndex={-1} ref={heading}>{t(title)}</h1>
         <p>{t(connectionLost ? 'matchingConnectionNote' : degraded ? 'matchingSyncProblemNote' : status === 'assigned' ? 'matchingAcceptedNote' : status === 'no_drivers' ? 'matchingEmptyNote' : status === 'cancelled' ? 'matchingCancelledNote' : status === 'delayed' ? 'matchingDelayedNote' : 'matchingNote')}</p>

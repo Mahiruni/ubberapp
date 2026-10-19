@@ -17,7 +17,7 @@ import {
   PREVIEW_STORAGE_KEY,
   retryStartup,
 } from "../../lib/nexride-startup";
-import { signOutNexRide } from "../../lib/nexride-sign-out";
+import { signOutBiloo } from "../../lib/nexride-sign-out";
 import { resolveSessionRole } from "../../lib/nexride-account-role";
 import { useAppearance } from "../../lib/nexride-appearance";
 import { readAccount } from "../../lib/nexride-account";
@@ -331,7 +331,7 @@ export function RiderMenu({
             </header>
 
 
-            <button type="button" className="nr-menu-person" disabled={locked} onClick={() => navigate("profile")}><span className="nr-menu-person-avatar">{identity.avatar ? <img src={identity.avatar} alt="" onError={() => setIdentity(current => ({...current,avatar:""}))}/> : (identity.name.trim().split(/\s+/).slice(0,2).map(v=>v[0]).join("").toUpperCase() || <Icon name="user"/>)}</span><span className="nr-menu-person-copy"><strong>{identity.name || say("Welcome to NexRide", "እንኳን ወደ NexRide መጡ")}</strong><small>{say("View profile", "መገለጫ ይመልከቱ")}</small></span><Icon name="chevron" size={18}/></button>
+            <button type="button" className="nr-menu-person" disabled={locked} onClick={() => navigate("profile")}><span className="nr-menu-person-avatar">{identity.avatar ? <img src={identity.avatar} alt="" onError={() => setIdentity(current => ({...current,avatar:""}))}/> : (identity.name.trim().split(/\s+/).slice(0,2).map(v=>v[0]).join("").toUpperCase() || <Icon name="user"/>)}</span><span className="nr-menu-person-copy"><strong>{identity.name || say("Welcome to Biloo", "እንኳን ወደ Biloo መጡ")}</strong><small>{say("View profile", "መገለጫ ይመልከቱ")}</small></span><Icon name="chevron" size={18}/></button>
 
 
             <div className="nr-menu-scroll" data-testid="rider-menu-scroll">
@@ -355,7 +355,7 @@ export function RiderMenu({
               <div className="nr-rider-drawer-secondary">
                 <button type="button" disabled={locked} onClick={() => {setOpen(false);window.location.assign("/driver");}}>
                   <Icon name="navigation" size={20}/>
-                  <span><strong>{say("Drive with NexRide", "በNexRide ያሽከርክሩ")}</strong>
+                  <span><strong>{say("Drive with Biloo", "በBiloo ያሽከርክሩ")}</strong>
                   <small>{say("Open Driver", "የአሽከርካሪ ገጽ ይክፈቱ")}</small></span>
                   <Icon name="chevron" size={16}/>
                 </button>
@@ -371,7 +371,7 @@ export function RiderMenu({
               <div className="nr-rider-drawer-footer-card">
                 <div className="nr-rider-drawer-footer-brand">
                   <div>
-                    <strong>NexRide</strong>
+                    <strong>Biloo</strong>
                     <small>{say("Better Rides. A Brighter Tomorrow.", "የተሻለ ጉዞ። ብሩህ ነገ።")}</small>
                     <AppVersion />
                   </div>

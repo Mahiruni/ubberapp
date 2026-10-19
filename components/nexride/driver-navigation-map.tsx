@@ -340,7 +340,7 @@ export function DriverNavigationMap({
   const showCompass = Math.abs(normalizedBearing(bearing)) > 2;
 
   return (
-    <div className="nr-navigation-map nr-live-navigation-map" role="region" aria-label="Live NexRide Mapbox route map" data-gps={gpsState} data-target={target}>
+    <div className="nr-navigation-map nr-live-navigation-map" role="region" aria-label="Live Biloo Mapbox route map" data-gps={gpsState} data-target={target}>
       <div ref={container} className="nr-live-navigation-canvas" />
 
       {mapStatus === "loading" && <div className="nr-driver-map-loading" role="status"><Spinner /> Loading live map…</div>}
@@ -351,7 +351,7 @@ export function DriverNavigationMap({
       )}
       {route.filter(valid).length < 2 && mapStatus === "ready" && (
         <div className="nr-live-map-status route" role="status">
-          Road route is unavailable. NexRide will not draw a straight-line estimate.
+          Road route is unavailable. Biloo will not draw a straight-line estimate.
         </div>
       )}
       {trafficUnavailable && <div className="nr-driver-traffic-unavailable" role="status">Traffic data unavailable</div>}

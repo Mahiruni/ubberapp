@@ -88,7 +88,7 @@ export function AdminAccountIdentities() {
       return;
     }
     if(tab)tab.location.href=signed.data.signedUrl;
-    else setNotice("Allow pop-ups for NexRide to review this private document.");
+    else setNotice("Allow pop-ups for Biloo to review this private document.");
   }
 
   async function decide(kind:"document"|"ownership"|"deletion",id:string,status:string) {

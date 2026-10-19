@@ -128,7 +128,7 @@ export default function DriverActivityPage() {
             <Icon name="back" />
           </button>
           <div className="min-w-0 flex-1">
-            <span className="text-[11px] font-bold tracking-[.14em] text-[#65edb0]">NEXRIDE · DRIVER</span>
+            <span className="text-[11px] font-bold tracking-[.14em] text-[#65edb0]">BILOO · DRIVER</span>
             <h1 className="mt-1 text-[clamp(24px,6vw,34px)] font-extrabold tracking-[-.04em]">{t("activity")}</h1>
             <p className="mt-1 text-sm text-white/60">Accepted, completed, and cancelled trips.</p>
           </div>

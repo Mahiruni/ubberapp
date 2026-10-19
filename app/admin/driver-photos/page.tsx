@@ -69,13 +69,13 @@ export default function AdminDriverPhotos() {
   };
 
   if(checking) return <main className="nr-photo-admin-state" aria-busy="true"><p>Verifying administrator access…</p></main>;
-  if(!allowed) return <main className="nr-photo-admin-state"><h1>Access restricted</h1><p>This queue is available only to active NexRide administrators.</p><Link href="/admin">Return to Admin</Link></main>;
+  if(!allowed) return <main className="nr-photo-admin-state"><h1>Access restricted</h1><p>This queue is available only to active Biloo administrators.</p><Link href="/admin">Return to Admin</Link></main>;
 
   return <main className="nr-photo-admin">
     <header className="nr-photo-admin-header">
       <div className="nr-photo-admin-heading">
         <Link href="/admin" className="nr-photo-admin-back">← Admin dashboard</Link>
-        <span className="nr-photo-admin-kicker">NEXRIDE / TRUST & SAFETY</span>
+        <span className="nr-photo-admin-kicker">BILOO / TRUST & SAFETY</span>
         <h1>Driver portrait moderation</h1>
         <p>Driver portraits are active immediately. Remove a portrait only for a documented safety or policy violation. Driver eligibility and documents retain their separate review.</p>
       </div>

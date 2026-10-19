@@ -121,7 +121,7 @@ const nearbyVehicleElement = (label: string) => {
   root.setAttribute("role", "img");
   root.setAttribute("aria-label", label);
   root.innerHTML =
-    '<span class="nr-nearby-car-brand" aria-hidden="true">NexRide</span>' +
+    '<span class="nr-nearby-car-brand" aria-hidden="true">Biloo</span>' +
     '<span class="nr-nearby-car-body" aria-hidden="true">' +
     '<svg viewBox="0 0 56 36" focusable="false">' +
     '<path class="nr-nearby-car-shadow" d="M10 26c0 4 4 6 18 6s18-2 18-6H10Z"/>' +
@@ -1313,8 +1313,8 @@ export function RiderMap({
           const marker = new mapboxgl.default.Marker({
             element: nearbyVehicleElement(
               language === "am"
-                ? "NexRide ሹፌር በአቅራቢያ"
-                : "NexRide driver nearby",
+                ? "Biloo ሹፌር በአቅራቢያ"
+                : "Biloo driver nearby",
             ),
             anchor: "bottom",
           })

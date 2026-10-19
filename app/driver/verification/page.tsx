@@ -241,18 +241,18 @@ export default function DriverVerificationPage() {
       <section className="driver-onboarding-card driver-auth-card">
         <Link href="/driver/home" className="driver-auth-back">← Back</Link>
         <Brand driver />
-        <span className="driver-auth-role">NEXRIDE · DRIVER · STEP 2 OF 2</span>
+        <span className="driver-auth-role">BILOO · DRIVER · STEP 2 OF 2</span>
         <h1>{status === "approved" ? "You’re verified" : status === "pending" ? "Verification submitted" : "Verify your account"}</h1>
         <p>
           {status === "approved"
             ? "Your driver account is approved and can go online."
             : status === "pending"
               ? "Your documents are private and awaiting review. Your status will update automatically."
-              : "Upload your current driver license and vehicle registration. Only you and authorized NexRide reviewers can access these documents."}
+              : "Upload your current driver license and vehicle registration. Only you and authorized Biloo reviewers can access these documents."}
         </p>
 
         {status === "rejected" && <div className="driver-auth-error" role="alert">{reason || "Your previous submission needs an update. Please upload the corrected documents."}</div>}
-        {status === "suspended" && <div className="driver-auth-error" role="alert">Your driver access is suspended. Contact NexRide support before submitting new documents.</div>}
+        {status === "suspended" && <div className="driver-auth-error" role="alert">Your driver access is suspended. Contact Biloo support before submitting new documents.</div>}
 
         {!locked && (
           <form onSubmit={submit}>

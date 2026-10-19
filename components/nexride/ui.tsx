@@ -87,7 +87,7 @@ export function Brand({ driver = false }: { driver?: boolean }) {
   return (
     <div className="nr-brand nr-text-wordmark">
       <div>
-        <strong>NexRide</strong>
+        <strong>Biloo</strong>
         {driver && <small>{t("driver")}</small>}
       </div>
     </div>
@@ -208,7 +208,7 @@ export function Navigation({
   onNavigate: (id: string) => void;
 }) {
   return (
-    <nav className="nr-navigation grid w-full grid-flow-col auto-cols-fr gap-1" aria-label="NexRide">
+    <nav className="nr-navigation grid w-full grid-flow-col auto-cols-fr gap-1" aria-label="Biloo">
       {items.map((item) => (
         <button
           key={item.id}
@@ -276,7 +276,7 @@ export function Skeleton() {
       className="nr-inline-skeleton"
       role="status"
       aria-busy="true"
-      aria-label="Loading NexRide content"
+      aria-label="Loading Biloo content"
     >
       <span />
       <span />

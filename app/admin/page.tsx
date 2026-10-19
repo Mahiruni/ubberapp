@@ -442,7 +442,7 @@ export default function AdminPage() {
     return (
       <div className="admin-loading">
         <span />
-        Opening NexRide Control Center…
+        Opening Biloo Control Center…
       </div>
     );
   }
@@ -452,8 +452,8 @@ export default function AdminPage() {
       <main className="admin-login">
         <div className="login-card">
           <div className="admin-mark">N</div>
-          <p className="admin-kicker">NEXRIDE · CONTROL CENTER</p>
-          <h1>NexRide Control Center</h1>
+          <p className="admin-kicker">BILOO · CONTROL CENTER</p>
+          <h1>Biloo Control Center</h1>
           <p className="login-copy">
             Sign in with an authorized administrator account. Rider and driver accounts cannot access this workspace.
           </p>
@@ -485,7 +485,7 @@ export default function AdminPage() {
             </button>
           </form>
           <small>
-            Administrative access is restricted to authorized NexRide accounts.
+            Administrative access is restricted to authorized Biloo accounts.
           </small>
         </div>
       </main>
@@ -553,7 +553,7 @@ export default function AdminPage() {
             </button>
             <div className="admin-header-brand"><Brand /></div>
             <div className="admin-header-context">
-              <span className="admin-kicker">NEXRIDE · ADMIN</span>
+              <span className="admin-kicker">BILOO · ADMIN</span>
               <h2>{activeTitle}</h2>
             </div>
           </div>
@@ -943,7 +943,7 @@ function DataModule({
     <main className="admin-content">
       <div className="module-head">
         <div>
-          <p className="admin-kicker">NEXRIDE · ADMIN</p>
+          <p className="admin-kicker">BILOO · ADMIN</p>
           <h1>{title}</h1>
           <p>
             {module === "rides"

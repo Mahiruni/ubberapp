@@ -7,7 +7,7 @@ const manifest = (name: string) => JSON.parse(
   readFileSync(join(root, "public", name), "utf8")
 );
 
-describe("NexRide independently installed Rider / Driver branding", () => {
+describe("Biloo independently installed Rider / Driver branding", () => {
   const rider = manifest("manifest.webmanifest");
   const driver = manifest("driver.webmanifest");
 
@@ -16,8 +16,8 @@ describe("NexRide independently installed Rider / Driver branding", () => {
     expect(driver.id).toBe("/driver");
     expect(rider.start_url).toBe("/");
     expect(driver.start_url).toBe("/driver");
-    expect(rider.name).toBe("NexRide Rider");
-    expect(driver.name).toBe("NexRide Driver");
+    expect(rider.name).toBe("Biloo Rider");
+    expect(driver.name).toBe("Biloo Driver");
   });
 
   it("never shares the two applications' launcher icon files", () => {

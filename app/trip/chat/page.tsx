@@ -127,7 +127,7 @@ export default function TripChatPage() {
                   event: "message",
                   id: incoming.id,
                   title: requestedRole === "driver" ? "New message from your rider" : "New message from your driver",
-                  body: "Open NexRide to view your trip message.",
+                  body: "Open Biloo to view your trip message.",
                   url: `/trip/chat?ride=${encodeURIComponent(rideId)}&role=${requestedRole}${requestedRole === "driver" && offerId ? `&offer=${encodeURIComponent(offerId)}` : ""}`,
                 });
               }
@@ -226,7 +226,7 @@ export default function TripChatPage() {
             <Icon name="back" />
           </button>
           <div>
-            <span className="kicker">NEXRIDE TRIP CHAT</span>
+            <span className="kicker">BILOO TRIP CHAT</span>
             <h1>{otherName}</h1>
             <p>{online ? op("Connected") : op("Offline · unsent messages can be retried")}</p>
           </div>
@@ -274,7 +274,7 @@ export default function TripChatPage() {
             <div className="nr-chat-thread" ref={threadRef} aria-live="polite" aria-label={op("Trip messages")}>
               {!messages.length && !pending.length ? (
                 <div className="nr-chat-empty">
-                  {op("No messages yet. Use chat for trip coordination. NexRide does not currently provide typing indicators, delivery receipts, or read receipts.")}
+                  {op("No messages yet. Use chat for trip coordination. Biloo does not currently provide typing indicators, delivery receipts, or read receipts.")}
                 </div>
               ) : (
                 <>

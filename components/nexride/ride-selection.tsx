@@ -126,15 +126,15 @@ export function RideSelection({
             <Icon name="info" />
             <p>
               {model.loadError === "auth"
-                ? "Your NexRide session is not active. Sign in to book a real ride."
+                ? "Your Biloo session is not active. Sign in to book a real ride."
                 : model.loadError === "profile"
-                  ? "Your NexRide account is recognized. Complete the missing Rider details to book."
+                  ? "Your Biloo account is recognized. Complete the missing Rider details to book."
                   : model.loadError === "offline"
                     ? "You are currently Online as a Driver or handling a trip. Go Offline and finish active trips before requesting as a Rider."
                     : model.loadError === "role"
-                      ? "Use your existing NexRide account to activate Rider access. A second account is not needed."
+                      ? "Use your existing Biloo account to activate Rider access. A second account is not needed."
                       : model.loadError === "suspended"
-                        ? "This account cannot book rides right now. Contact NexRide support."
+                        ? "This account cannot book rides right now. Contact Biloo support."
                         : model.loadError === "journey"
                           ? "Choose a valid pickup and destination within the service area."
                           : t("faresFailed")}

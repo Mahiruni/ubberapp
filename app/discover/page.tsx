@@ -36,14 +36,14 @@ export default function DiscoverNexRidePage() {
   return (
     <main className="nr-app nr-promo-page" data-theme="dark">
       <header className="nr-promo-topbar">
-        <Link className="nr-promo-brand" href="/" aria-label="NexRide home">
+        <Link className="nr-promo-brand" href="/" aria-label="Biloo home">
           <span className="nr-promo-mark" aria-hidden="true">N</span>
           <span>
-            <strong>NexRide</strong>
+            <strong>Biloo</strong>
             <small>Better Rides. A Brighter Tomorrow.</small>
           </span>
         </Link>
-        <nav aria-label="Discover NexRide">
+        <nav aria-label="Discover Biloo">
           <Link href="/">Rider</Link>
           <Link href="/driver">Driver</Link>
         </nav>
@@ -51,11 +51,11 @@ export default function DiscoverNexRidePage() {
 
       <section className="nr-promo-hero" aria-labelledby="nr-promo-title">
         <div className="nr-promo-hero-copy">
-          <span className="nr-promo-eyebrow">NEXRIDE · ADDIS ABABA</span>
+          <span className="nr-promo-eyebrow">BILOO · ADDIS ABABA</span>
           <div className="nr-promo-lockup">
             <span className="nr-promo-mark large" aria-hidden="true">N</span>
             <div>
-              <strong>NexRide</strong>
+              <strong>Biloo</strong>
               <small>Better Rides. A Brighter Tomorrow.</small>
             </div>
           </div>
@@ -65,11 +65,11 @@ export default function DiscoverNexRidePage() {
           </p>
           <div className="nr-promo-actions">
             <Link className="nr-promo-primary" href="/">Book a ride <Icon name="arrow" size={17} /></Link>
-            <Link className="nr-promo-secondary" href="/driver">Drive with NexRide</Link>
+            <Link className="nr-promo-secondary" href="/driver">Drive with Biloo</Link>
           </div>
           <div className="nr-promo-app-note">
             <Icon name="info" size={16} />
-            <span>NexRide is not currently published in the App Store or Google Play. Use the web app for now.</span>
+            <span>Biloo is not currently published in the App Store or Google Play. Use the web app for now.</span>
           </div>
         </div>
         <div className="nr-promo-hero-visual nr-promo-addis-night" role="img" aria-label="Addis Ababa skyline">
@@ -82,7 +82,7 @@ export default function DiscoverNexRidePage() {
 
       <section className="nr-promo-values" aria-labelledby="nr-values-title">
         <div className="nr-promo-section-heading">
-          <span>WHAT GUIDES NEXRIDE</span>
+          <span>WHAT GUIDES BILOO</span>
           <h2 id="nr-values-title">Designed around what matters on every ride.</h2>
         </div>
         <div className="nr-promo-value-grid">
@@ -103,7 +103,7 @@ export default function DiscoverNexRidePage() {
           <span>ROOTED HERE</span>
           <h2 id="nr-skyline-title">Addis Ababa and beyond.</h2>
           <p>
-            Built in Addis with room to grow. Service is shown only where NexRide currently supports booking.
+            Built in Addis with room to grow. Service is shown only where Biloo currently supports booking.
           </p>
         </div>
       </section>
@@ -113,7 +113,7 @@ export default function DiscoverNexRidePage() {
           <div className="nr-promo-driver-lockup">
             <span className="nr-promo-mark large">N</span>
             <div>
-              <strong>NexRide Driver</strong>
+              <strong>Biloo Driver</strong>
               <small>Verified access · clear trips · organized earnings</small>
             </div>
           </div>
@@ -124,10 +124,10 @@ export default function DiscoverNexRidePage() {
           </div>
         </div>
         <div className="nr-promo-split-copy">
-          <span className="nr-promo-eyebrow">NEXRIDE · DRIVER</span>
+          <span className="nr-promo-eyebrow">BILOO · DRIVER</span>
           <h2>Drive. Earn. Grow.</h2>
           <p>
-            Complete verification, go online when approved, and keep trips and earnings organized. Earnings depend on completed rides and actual demand; NexRide does not guarantee income.
+            Complete verification, go online when approved, and keep trips and earnings organized. Earnings depend on completed rides and actual demand; Biloo does not guarantee income.
           </p>
           <Link className="nr-promo-primary" href="/driver">Become a driver <Icon name="arrow" size={17} /></Link>
         </div>
@@ -139,7 +139,7 @@ export default function DiscoverNexRidePage() {
           <h2 id="nr-people-title">Real people. Real journeys.</h2>
           <p>Clear communication at every stage of the ride.</p>
           <small>
-            NexRide is designed around everyday movement while keeping private trip and account data out of marketing content.
+            Biloo is designed around everyday movement while keeping private trip and account data out of marketing content.
           </small>
         </div>
       </section>
@@ -149,7 +149,7 @@ export default function DiscoverNexRidePage() {
         <div>
           <strong>Clear about what’s available.</strong>
           <p>
-            Availability, pricing, and driver assignment come from current product data. NexRide does not invent coverage, earnings, or safety guarantees.
+            Availability, pricing, and driver assignment come from current product data. Biloo does not invent coverage, earnings, or safety guarantees.
           </p>
         </div>
       </section>
@@ -159,11 +159,11 @@ export default function DiscoverNexRidePage() {
           <Link className="nr-promo-brand" href="/">
             <span className="nr-promo-mark" aria-hidden="true">N</span>
             <span>
-              <strong>NexRide</strong>
+              <strong>Biloo</strong>
               <small>Better Rides. A Brighter Tomorrow.</small>
             </span>
           </Link>
-          <div className="nr-promo-footer-values" aria-label="NexRide values">
+          <div className="nr-promo-footer-values" aria-label="Biloo values">
             {values.map((value) => (
               <span key={value.title} title={value.title}>
                 <Icon name={value.icon} size={17} />
@@ -173,7 +173,7 @@ export default function DiscoverNexRidePage() {
           </div>
         </div>
 
-        <nav className="nr-promo-credits" aria-label="NexRide footer navigation">
+        <nav className="nr-promo-credits" aria-label="Biloo footer navigation">
           <Link href="/">Rider</Link>
           <Link href="/driver">Driver</Link>
           <Link href="/safety?role=rider">Safety</Link>

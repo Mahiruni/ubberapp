@@ -34,7 +34,7 @@ function Welcome() {
   };
   return (
     <>
-      <span className="nr-rider-entry-kicker">NEXRIDE · {t("rider")}</span>
+      <span className="nr-rider-entry-kicker">BILOO · {t("rider")}</span>
       <h1>{t("entryWelcomeTitle")}</h1>
       <p>{t("entryWelcomeIntro")}</p>
       <div className="nr-rider-entry-actions">

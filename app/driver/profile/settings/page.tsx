@@ -110,7 +110,7 @@ export default function DriverProfileSettingsPage() {
 
   return <main className="nr-app nr-driver-profile-subpage" data-mode="driver">
     <div className="nr-driver-profile-subwrap">
-      <header className="nr-profile-subhead"><div><span className="nr-driver-kicker">NEXRIDE · {t("driver")}</span><h1>{t("settings")}</h1><p>{t("entrySettingsIntro")}</p></div></header>
+      <header className="nr-profile-subhead"><div><span className="nr-driver-kicker">BILOO · {t("driver")}</span><h1>{t("settings")}</h1><p>{t("entrySettingsIntro")}</p></div></header>
       {loading ? <div className="nr-driver-profile-loading" aria-busy="true"><span className="wide"/><span className="panel"/></div> : profile ? <>
         {profile.accountStatus !== "active" && <div className="nr-profile-alert" role="status"><Icon name="info" size={17}/><span>{t("entryEditingLimited")}</span></div>}
         <SettingsGroups groups={[
@@ -145,7 +145,7 @@ export default function DriverProfileSettingsPage() {
         </section>
           </> },
           { id: "help", icon: "info", title: say("Help & About", "እገዛ እና ስለ እኛ"), summary: say("Support, legal and app information", "ድጋፍ፣ ሕጋዊ መረጃ እና ስለ መተግበሪያው"), children: <>
-        <nav className="nr-settings-legal" aria-label={t("entryAccountSecurity")}><a href="/support?role=driver">{t("help")}</a><a href="/explore/terms">{t("entryTerms")}</a><a href="/explore/privacy">{t("entryPrivacy")}</a><a href="/explore/about">{language === "am" ? "ስለ NexRide" : "About NexRide"}</a></nav><AppVersion/>
+        <nav className="nr-settings-legal" aria-label={t("entryAccountSecurity")}><a href="/support?role=driver">{t("help")}</a><a href="/explore/terms">{t("entryTerms")}</a><a href="/explore/privacy">{t("entryPrivacy")}</a><a href="/explore/about">{language === "am" ? "ስለ Biloo" : "About Biloo"}</a></nav><AppVersion/>
           </> },
         ]}/>
       </> : <section className="nr-profile-state-card" role="alert"><Icon name="info" size={22}/><strong>{t("entrySettingsUnavailable")}</strong><p>{feedback || t("entryProfileLoadFailure")}</p><button type="button" onClick={() => window.location.reload()}>{t("tryAgain")}</button></section>}

@@ -46,7 +46,7 @@ export default function CompleteRiderProfile() {
       setName(profile?.full_name || String(data.session.user.user_metadata?.full_name || ""));
       setPhone(profile?.phone || String(data.session.user.user_metadata?.phone || ""));
       setLoading(false);
-    }).catch(() => { if (active) setError("We couldn't restore your NexRide session."); });
+    }).catch(() => { if (active) setError("We couldn't restore your Biloo session."); });
     return () => { active = false; };
   }, [router]);
 
@@ -78,7 +78,7 @@ export default function CompleteRiderProfile() {
     } catch (cause) {
       if (cause instanceof RiderProfileBootstrapError &&
         cause.code === "email_not_verified") {
-        setError("Verify your NexRide email before completing your Rider account.");
+        setError("Verify your Biloo email before completing your Rider account.");
       } else {
         setError("Your Rider profile could not be completed. Review your details and try again.");
       }
@@ -89,9 +89,9 @@ export default function CompleteRiderProfile() {
 
   return <EntryShell authMode="signup">
     <section className="nr-rider-welcome nr-rider-onboarding-resume" aria-label="Complete Rider profile">
-      <span className="nr-rider-entry-kicker"><Icon name="shield" size={16}/> NEXRIDE · ONE ACCOUNT</span>
+      <span className="nr-rider-entry-kicker"><Icon name="shield" size={16}/> BILOO · ONE ACCOUNT</span>
       <h1>Complete Your Rider Profile</h1>
-      <p>Your NexRide login is already secured. Add only the details missing for Rider access.</p>
+      <p>Your Biloo login is already secured. Add only the details missing for Rider access.</p>
       {loading ? <p role="status">Restoring your profile…</p> : <form className="nr-profile-form" onSubmit={complete}>
         <label className="nr-input-field"><span>Verified account email</span>
           <input type="email" value={email} readOnly aria-readonly="true" /></label>

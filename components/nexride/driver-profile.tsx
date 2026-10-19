@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Dialog, Icon, useTranslation, type IconName } from "./ui";
 import { supabase } from "../../lib/supabase";
-import { signOutNexRide } from "../../lib/nexride-sign-out";
+import { signOutBiloo } from "../../lib/nexride-sign-out";
 import { nexrideApiFetch } from "../../lib/nexride-api-auth";
 import {
   initialsFor,
@@ -114,7 +114,7 @@ export function DriverProfileScreen({
         .maybeSingle();
 
       if (activeRide.error) {
-        setSignOutError(say("NexRide could not verify your active-trip status. Try again before signing out."));
+        setSignOutError(say("Biloo could not verify your active-trip status. Try again before signing out."));
         return;
       }
 
@@ -128,7 +128,7 @@ export function DriverProfileScreen({
         body: JSON.stringify({ online: false }),
       });
       if (!offlineResponse.ok && offlineResponse.status !== 409) {
-        setSignOutError(say("NexRide could not take your driver account offline. Try again before signing out."));
+        setSignOutError(say("Biloo could not take your driver account offline. Try again before signing out."));
         return;
       }
 
@@ -151,7 +151,7 @@ export function DriverProfileScreen({
     <div className="nr-driver-profile-v2">
       <header className="nr-driver-profile-heading">
         <div>
-          <span className="nr-driver-kicker">NEXRIDE · {t("driverAccount")}</span>
+          <span className="nr-driver-kicker">BILOO · {t("driverAccount")}</span>
           <h1>{say("Your driver account")}</h1>
           <p>{say("Profile, verification, vehicle, earnings, and safety in one place.")}</p>
         </div>
@@ -181,7 +181,7 @@ export function DriverProfileScreen({
             </span>
           </div>
           <h2>{profile.fullName}</h2>
-          <p>{profile.email || say("NexRide Driver account")}</p>
+          <p>{profile.email || say("Biloo Driver account")}</p>
           <div className="nr-driver-contact-line">
             <span><Icon name="phone" size={14}/>{profile.phone || say("Add a phone number")}</span>
             {profile.vehiclePlate && <span><Icon name="pin" size={14}/>{profile.vehiclePlate}</span>}
@@ -255,7 +255,7 @@ export function DriverProfileScreen({
             <DriverRow icon="chat" title={say("Driver support")} detail={say("Help with trips and your driver account")} onClick={() => router.push("/support?role=driver")}/>
           </DriverSection>
 
-          <DriverSection title={say("Preferences & account")} subtitle={say("Your NexRide Driver settings")}>
+          <DriverSection title={say("Preferences & account")} subtitle={say("Your Biloo Driver settings")}>
             <DriverRow icon="settings" title={say("App settings")} detail={say("Profile, language, theme, and account details")} onClick={() => router.push("/driver/profile/settings")}/>
             <DriverRow icon="shield" title={say("Manage Account & Verification")} detail={say("Unique identity, verified contacts, role access and security")} onClick={() => router.push("/account/manage")}/>
             <DriverRow icon="info" title={say("Privacy & account data")} detail={say("Your authenticated driver information stays private")} onClick={() => router.push("/explore/privacy")}/>
@@ -286,7 +286,7 @@ export function DriverProfileScreen({
 
       {signOutOpen && (
         <Dialog
-          title={say("Sign out of NexRide?")}
+          title={say("Sign out of Biloo?")}
           onClose={() => {
             if (!signingOut) {
               setSignOutOpen(false);
@@ -298,7 +298,7 @@ export function DriverProfileScreen({
             <span><Icon name="power" size={22}/></span>
             <div>
               <strong>{say("Sign out on this device?")}</strong>
-              <p>{say("NexRide first checks that you have no active trip, then takes you offline and signs you out.")}</p>
+              <p>{say("Biloo first checks that you have no active trip, then takes you offline and signs you out.")}</p>
             </div>
           </div>
           {signOutError && (

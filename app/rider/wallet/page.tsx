@@ -138,11 +138,11 @@ export default function RiderWalletPage() {
     <main className="nr-app nr-support-page" data-theme={theme} data-mode="rider">
       <div className="nr-support-wrap">
         <header className="nr-support-head">
-          <button className="nr-support-back" onClick={() => router.replace("/")} aria-label="Back to NexRide">
+          <button className="nr-support-back" onClick={() => router.replace("/")} aria-label="Back to Biloo">
             <Icon name="back" />
           </button>
           <div>
-            <span className="kicker">NEXRIDE · RIDER</span>
+            <span className="kicker">BILOO · RIDER</span>
             <h1>{op("Payments")}</h1>
             <p>{op("Choose how you pay for your rides.")}</p>
           </div>
@@ -176,7 +176,7 @@ export default function RiderWalletPage() {
               )}
               <div className="nr-payment-notice">
                 {onlinePayments
-                  ? op("Online checkout opens securely with Chapa. NexRide marks a payment confirmed only after verification.")
+                  ? op("Online checkout opens securely with Chapa. Biloo marks a payment confirmed only after verification.")
                   : op("Cash is currently available. Online payment appears only when it is enabled for your ride.")}
               </div>
             </section>

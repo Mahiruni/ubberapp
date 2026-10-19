@@ -310,7 +310,7 @@ export default function DriverRideRequestPage() {
       try {
         await loadOffer(userId, offerId);
       } catch {
-        setAcceptFailure("NexRide could not load this ride request. Check your connection and try again.");
+        setAcceptFailure("Biloo could not load this ride request. Check your connection and try again.");
       } finally {
         if (active) setLoading(false);
       }
@@ -487,7 +487,7 @@ export default function DriverRideRequestPage() {
 
     try {
       // New installations record the selected reason transactionally.
-      // Existing NexRide databases keep using the verified decline RPC
+      // Existing Biloo databases keep using the verified decline RPC
       // until the additive decline-reasons migration has been applied.
       let { data, error } = await supabase.rpc("driver_decline_ride_offer_with_reason", {
         p_offer_id: offer.id, p_reason: declineReason,
@@ -510,7 +510,7 @@ export default function DriverRideRequestPage() {
         } else if (outcome?.status === "unavailable" || outcome?.status === "already_resolved") {
           await loadOffer(driverId, offer.id).catch(() => {});
         }
-        setAcceptFailure(op("NexRide could not decline this request. Its status may already have changed."));
+        setAcceptFailure(op("Biloo could not decline this request. Its status may already have changed."));
         return;
       }
 
@@ -573,7 +573,7 @@ export default function DriverRideRequestPage() {
           onClose={() => { if (!submitting) setConfirmAction(null); }}
         >
           <div className="nr-request-confirm-content">
-            <p>{op("Choose a reason to decline this offer. The rider's booking stays active while NexRide searches for another driver.")}</p>
+            <p>{op("Choose a reason to decline this offer. The rider's booking stays active while Biloo searches for another driver.")}</p>
             <div className="nr-request-reasons" role="radiogroup" aria-label={op("Decline reason")}>
               {DECLINE_REASONS.map((reason) => (
                 <label className="nr-request-reason" key={reason.id} data-selected={declineReason === reason.id}>
@@ -671,7 +671,7 @@ export default function DriverRideRequestPage() {
           <RequestState
             icon="navigation"
             title={op("No active ride request")}
-            body={op("New ride requests will appear here when NexRide dispatch sends one to you.")}
+            body={op("New ride requests will appear here when Biloo dispatch sends one to you.")}
             action={op("Back to Driver Home")}
             onAction={() => router.replace("/driver/home")}
           />
@@ -687,7 +687,7 @@ export default function DriverRideRequestPage() {
           <RequestState
             icon="clock"
             title={op("Request expired")}
-            body={op("Request expired. NexRide is checking for the next available driver.")}
+            body={op("Request expired. Biloo is checking for the next available driver.")}
             action={op("Back to Driver Home")}
             onAction={() => router.replace("/driver/home")}
           />
@@ -704,12 +704,12 @@ export default function DriverRideRequestPage() {
             icon="check"
             title={op(passOutcome ? "Ride passed" : "Ride declined")}
             body={op(passOutcome === "forwarded"
-              ? "NexRide sent this ride request to another available driver."
+              ? "Biloo sent this ride request to another available driver."
               : passOutcome === "other_pending"
                 ? "Another driver has an active offer for this ride."
                 : passOutcome === "no_drivers"
                   ? "No additional driver is available yet. The rider can continue searching."
-                  : "You declined this request. NexRide can send another request while you remain online.")}
+                  : "You declined this request. Biloo can send another request while you remain online.")}
             action={op("Back to Driver Home")}
             onAction={() => router.replace("/driver/home")}
           />
@@ -717,7 +717,7 @@ export default function DriverRideRequestPage() {
           <>
             <div className="nr-request-heading">
               <div>
-                <span className="nr-request-eyebrow">NexRide · {op("New request")}</span>
+                <span className="nr-request-eyebrow">Biloo · {op("New request")}</span>
                 <h1>New ride request</h1>
               </div>
               {offer.expires_at && secondsRemaining !== null && (

@@ -120,7 +120,7 @@ export function DriverEarningsScreen({
     <>
       <header className="nr-earnings-head">
         <div>
-          <span className="nr-driver-kicker">NEXRIDE · DRIVER</span>
+          <span className="nr-driver-kicker">BILOO · DRIVER</span>
           <h1>{op("Earnings")}</h1>
         </div>
         <button className="nr-driver-icon-btn" onClick={onBack} aria-label={op("Back to driver home")}>

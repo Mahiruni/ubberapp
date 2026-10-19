@@ -52,8 +52,8 @@ export default function PrivateTripViewer(){
  return <main className="nr-public-share">
   <div className="nr-public-share-inner">
    <header className="nr-public-share-head">
-    <div><span className="nr-public-eyebrow">NEXRIDE · TRUSTED TRIP LINK</span>
-     <h1>NexRide</h1><p>Live journey updates for someone you trust</p></div>
+    <div><span className="nr-public-eyebrow">BILOO · TRUSTED TRIP LINK</span>
+     <h1>Biloo</h1><p>Live journey updates for someone you trust</p></div>
     <span className="nr-public-status">{live?"● LIVE":state==="loading"?"Checking…":"Not live"}</span>
    </header>
    {state==="loading"?<section className="nr-public-share-card" role="status">Verifying this private trip link…</section>:
@@ -74,7 +74,7 @@ export default function PrivateTripViewer(){
       <SharedTripMap point={point||null}/>
       <p className="nr-public-gps">{point
        ? "Latest verified Driver GPS: "+new Date(point.updatedAt).toLocaleTimeString()+ " · accuracy ~"+point.accuracyMeters+" m"
-       : "Current Driver location unavailable or stale. NexRide does not estimate a position."}</p>
+       : "Current Driver location unavailable or stale. Biloo does not estimate a position."}</p>
       {point&&<a className="nr-public-map-link"
         target="_blank" rel="noopener noreferrer"
         referrerPolicy="no-referrer"
@@ -82,7 +82,7 @@ export default function PrivateTripViewer(){
      </section>
      <p className="nr-public-expiry">This link expires at {new Date(live.expiresAt).toLocaleTimeString()}. Sharing ends immediately if the trip finishes or is cancelled.</p>
     </>}
-   <footer>NexRide · Better Rides. A Brighter Tomorrow.</footer>
+   <footer>Biloo · Better Rides. A Brighter Tomorrow.</footer>
   </div>
  </main>;
 }

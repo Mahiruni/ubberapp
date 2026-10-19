@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "NexRide — Better Rides. A Brighter Tomorrow.";
+export const alt = "Biloo — Better Rides. A Brighter Tomorrow.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -44,7 +44,7 @@ export default function OpenGraphImage() {
           </div>
           <div style={{ display: "flex", flexDirection: "column" }}>
             <div style={{ fontSize: "88px", fontWeight: 800, letterSpacing: "-5px" }}>
-              NexRide
+              Biloo
             </div>
             <div style={{ marginTop: "18px", fontSize: "34px", color: "#D3E6EF" }}>
               Better Rides. A Brighter Tomorrow.

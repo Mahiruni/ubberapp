@@ -149,7 +149,7 @@ export default function NexRideManageAccountPage() {
     await run(async () => {
       const reservation = await supabase.rpc("account_prepare_verified_phone",{p_phone:phone});
       if (reservation.error || reservation.data !== "ready") {
-        setNotice("Phone ownership requires verification or account recovery. Contact NexRide support if this number is already associated with you.");
+        setNotice("Phone ownership requires verification or account recovery. Contact Biloo support if this number is already associated with you.");
         return;
       }
       const response = await supabase.auth.updateUser({phone});
@@ -172,7 +172,7 @@ export default function NexRideManageAccountPage() {
       if (verify.error) { setNotice("The code was not accepted. Try a new code or contact support."); return; }
       const claimed = await supabase.rpc("account_sync_verified_phone");
       if (claimed.error || claimed.data !== "verified") {
-        setNotice("Phone verification needs ownership review. Contact NexRide support.");
+        setNotice("Phone verification needs ownership review. Contact Biloo support.");
         return;
       }
       setOtpPending(""); setOtpCode("");
@@ -216,7 +216,7 @@ export default function NexRideManageAccountPage() {
       }
       setDocumentNumber(""); setDocumentFile(null); setDocumentExpiry("");
       await reload();
-      setNotice("Identity submitted once. NexRide will review it; no further upload is needed while it is pending.");
+      setNotice("Identity submitted once. Biloo will review it; no further upload is needed while it is pending.");
     });
   }
 
@@ -334,7 +334,7 @@ export default function NexRideManageAccountPage() {
         <header className="nex-manage-intro">
           <span>{say("YOUR IDENTITY • YOUR CONTROL","የእርስዎ መለያ • የእርስዎ ቁጥጥር")}</span>
           <h1>{say("Manage account","መለያን ያስተዳድሩ")}</h1>
-          <p>{say("One secure NexRide identity for Rider and Driver. Existing verified information is reused.","ለተሳፋሪና ለአሽከርካሪ አንድ ደህንነቱ የተጠበቀ መለያ።")}</p>
+          <p>{say("One secure Biloo identity for Rider and Driver. Existing verified information is reused.","ለተሳፋሪና ለአሽከርካሪ አንድ ደህንነቱ የተጠበቀ መለያ።")}</p>
         </header>
         {error && <div className="nex-manage-error" role="alert">{op(error)}</div>}
         {notice && <div className="nex-manage-notice" role="status">{op(notice)}</div>}
@@ -349,7 +349,7 @@ export default function NexRideManageAccountPage() {
             </div>
             <div>
               <span className="nex-manage-eyebrow">{say("PRIMARY ACCOUNT","ዋና መለያ")}</span>
-              <h2>{profile.full_name || say("NexRide member","NexRide አባል")}</h2>
+              <h2>{profile.full_name || say("Biloo member","Biloo አባል")}</h2>
               <p>{user.email || op("Email unavailable")}</p>
               <div className="nex-manage-chips">
                 <span>{user.email_confirmed_at ? say("Email verified","ኢሜይል ተረጋግጧል") : say("Email pending","ኢሜይል በጥበቃ ላይ")}</span>

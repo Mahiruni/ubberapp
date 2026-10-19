@@ -316,7 +316,7 @@ export default function DriverPayoutsPage() {
             <Icon name="back" />
           </button>
           <div>
-            <span className="nr-driver-kicker">NEXRIDE · DRIVER</span>
+            <span className="nr-driver-kicker">BILOO · DRIVER</span>
             <h1>{op("Payouts")}</h1>
             <p>Withdraw eligible earnings and track payout status.</p>
           </div>
@@ -507,7 +507,7 @@ export default function DriverPayoutsPage() {
                   <div>
                     <h2>Request payout</h2>
                     <p>
-                      NexRide reserves the amount first, then submits the transfer
+                      Biloo reserves the amount first, then submits the transfer
                       to the provider using an idempotent reference.
                     </p>
                   </div>

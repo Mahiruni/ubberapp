@@ -1,7 +1,7 @@
-NEXRIDE
+BILOO
 Good journeys start together.
 
-You have been invited to create a NexRide account. Accept your invitation to continue with your account setup.
+You have been invited to create a Biloo account. Accept your invitation to continue with your account setup.
 
 Accept my invitation:
 {{ .ConfirmationURL }}
@@ -9,8 +9,8 @@ Accept my invitation:
 FOR YOUR SECURITY
 Not expecting this invitation? You can ignore this email. An account will not be activated by this email alone.
 
-This link is for one-time use. If it has expired, request a new one in NexRide.
+This link is for one-time use. If it has expired, request a new one in Biloo.
 
 Move with confidence.
-NexRide | https://ubberapp.vercel.app
-This is an account email from NexRide.
+Biloo | https://ubberapp.vercel.app
+This is an account email from Biloo.

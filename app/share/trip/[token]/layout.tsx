@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 export const metadata:Metadata={
-  title:"Live Trip · NexRide",
-  description:"Private time-limited NexRide live trip progress",
+  title:"Live Trip · Biloo",
+  description:"Private time-limited Biloo live trip progress",
   robots:{index:false,follow:false,nocache:true},
   referrer:"no-referrer",
 };

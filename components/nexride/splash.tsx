@@ -26,13 +26,13 @@ export function RiderSplash({
   return (
     <section
       className={`nr-rider-splash ${error ? "has-error" : "is-restoring"} ${error && animate ? "is-opening" : ""}`}
-      aria-label="NexRide"
+      aria-label="Biloo"
       aria-busy={!error}
       data-nr-startup-pending={error ? undefined : "true"}
     >
       {error ? (
         <div className="nr-splash-identity">
-          <h1 className="nr-splash-wordmark">NexRide</h1>
+          <h1 className="nr-splash-wordmark">Biloo</h1>
           <div className="nr-splash-error" role="alert">
             <Icon name="info" />
             <h2>{t("startupError")}</h2>
@@ -50,7 +50,7 @@ export function RiderSplash({
               </Button>
             )}
             {error.kind === "session" && (
-              <nav className="nr-splash-recovery-links" aria-label="NexRide account access">
+              <nav className="nr-splash-recovery-links" aria-label="Biloo account access">
                 <Link href="/rider/sign-in">{t("signIn")}</Link>
                 <Link href="/rider">{t("startupOpenRiderWelcome")}</Link>
               </nav>

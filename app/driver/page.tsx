@@ -47,7 +47,7 @@ export default function DriverWelcome() {
   if (checking) return <RiderSplash error={startupError} onRetry={() => setAttempt(value => value + 1)}/>;
 
   return <EntryShell role="driver">
-    <span className="driver-auth-role">NEXRIDE · {t("driver")}</span>
+    <span className="driver-auth-role">BILOO · {t("driver")}</span>
     <h1>{t("entryDriveHeadline")}</h1>
     <p>{t("entryDriverIntro")}</p>
     <div className="nr-rider-entry-actions"><Link className="nr-rider-get-started" href="/driver/onboarding">{t("entryStartDriving")}<Icon name="arrow" size={20}/></Link><Link className="nr-rider-welcome-sign-in" href="/driver/auth">{t("signIn")}</Link></div>

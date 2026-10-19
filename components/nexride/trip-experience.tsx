@@ -189,8 +189,8 @@ export function TripExperience({ screen, tripId, userId, preview, navigate, setP
                 : next.status === "completed" ? "Trip completed"
                 : "Ride cancelled",
               body:
-                next.status === "arrived" ? "Your NexRide driver has arrived at the pickup point."
-                : next.status === "in_trip" ? "Your NexRide trip is now in progress."
+                next.status === "arrived" ? "Your Biloo driver has arrived at the pickup point."
+                : next.status === "in_trip" ? "Your Biloo trip is now in progress."
                 : next.status === "completed" ? "You’ve arrived. Your trip is complete."
                 : "This ride is no longer active.",
               url: "/",
@@ -391,7 +391,7 @@ export function TripExperience({ screen, tripId, userId, preview, navigate, setP
         ref={frame}
         key={`${file}:${tripId || 'preview'}`}
         className="nr-trip-frame"
-        title={screen === 'summary' ? 'NexRide trip receipt and rating' : screen === 'live' ? 'NexRide active trip' : 'NexRide assigned driver'}
+        title={screen === 'summary' ? 'Biloo trip receipt and rating' : screen === 'live' ? 'Biloo active trip' : 'Biloo assigned driver'}
         onLoad={() => frame.current?.contentWindow?.postMessage({ type: 'nexride:ping' }, window.location.origin)}
         src={`/nexride/screens/${file}?embedded=1${live ? '&live=1' : ''}`}
         allow="web-share; clipboard-write"

@@ -25,9 +25,9 @@ export default function CampaignSettings() {
  }
  return <main style={{minHeight:"100vh",background:"#F5F7F9",color:"#102334",padding:"clamp(20px,5vw,60px)",fontFamily:"Inter,Arial,sans-serif"}}>
   <div style={{maxWidth:1000,margin:"auto"}}>
-   <Link href="/admin" style={{color:"#041C30"}}>← NexRide Admin</Link>
+   <Link href="/admin" style={{color:"#041C30"}}>← Biloo Admin</Link>
    <header style={{background:"#041C30",color:"#fff",borderRadius:24,padding:"clamp(24px,4vw,48px)",marginTop:22}}>
-    <p style={{color:"#00C878",fontWeight:800,letterSpacing:2}}>NEXRIDE · COMMUNICATIONS SECURITY</p>
+    <p style={{color:"#00C878",fontWeight:800,letterSpacing:2}}>BILOO · COMMUNICATIONS SECURITY</p>
     <h1 style={{fontSize:"clamp(36px,6vw,60px)",lineHeight:1.05,margin:"12px 0"}}>Bulk messaging controls</h1>
     <p style={{fontSize:16,opacity:.85}}>Administrator-only delivery settings and campaign safety.</p>
    </header>

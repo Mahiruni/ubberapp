@@ -31,7 +31,7 @@ const TOPICS = [
   },
   {
     title: "Emergency or safety concern",
-    body: "Open Safety for emergency call options, trip sharing, and safety reporting. NexRide does not dispatch emergency responders.",
+    body: "Open Safety for emergency call options, trip sharing, and safety reporting. Biloo does not dispatch emergency responders.",
     tags: "safety emergency sos share",
   },
   {
@@ -209,7 +209,7 @@ export default function HelpSupportPage() {
             <Icon name="back" />
           </button>
           <div>
-            <span className="kicker">NEXRIDE · SUPPORT</span>
+            <span className="kicker">BILOO · SUPPORT</span>
             <h1>{op("How can we help?")}</h1>
             <p>{online ? op("Find an answer or tell us what happened.") : op("You’re offline. Your draft is saved on this device.")}</p>
           </div>

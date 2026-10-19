@@ -83,7 +83,7 @@ export default function DriverEarningsReportPage() {
             <Icon name="back" />
           </button>
           <div>
-            <span className="nr-driver-kicker">NEXRIDE · DRIVER EARNINGS</span>
+            <span className="nr-driver-kicker">BILOO · DRIVER EARNINGS</span>
             <h1>Earnings report</h1>
             <p>{report ? earningsPeriodLabel(report.period) : "Reporting period"}</p>
           </div>
@@ -146,7 +146,7 @@ export default function DriverEarningsReportPage() {
             </section>
 
             <div className="nr-report-note">
-              “Net driver earnings” is not the same as gross rider fare, available balance, or paid-out funds. Available-balance withdrawals and exports are not currently enabled in NexRide, so this screen does not show inactive payout or export controls. Online time reflects recorded availability sessions.
+              “Net driver earnings” is not the same as gross rider fare, available balance, or paid-out funds. Available-balance withdrawals and exports are not currently enabled in Biloo, so this screen does not show inactive payout or export controls. Online time reflects recorded availability sessions.
             </div>
           </>
         ) : null}

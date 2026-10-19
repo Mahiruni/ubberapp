@@ -96,7 +96,7 @@ function verificationCopy(status: ReviewStatus, rejectionReason: string) {
     return {
       tone: "blocked",
       title: "Driver access suspended",
-      body: "Your account is not eligible to go online. Review your verification status or contact NexRide support.",
+      body: "Your account is not eligible to go online. Review your verification status or contact Biloo support.",
       action: "Review account",
     };
   }
@@ -351,7 +351,7 @@ export function DriverWorkspace({
   // or flip the server's Online state because visibility or GPS was paused.
   useEffect(() => {
     if (!driverId || !state.online || locationPermission !== "denied") return;
-    setError("Location access is unavailable. Keep NexRide open and restore GPS for accurate ride matching.");
+    setError("Location access is unavailable. Keep Biloo open and restore GPS for accurate ride matching.");
   }, [driverId, locationPermission, state.online]);
 
   const initials = useMemo(
@@ -369,7 +369,7 @@ export function DriverWorkspace({
       return {
         tone: "pending",
         title: "Checking location access",
-        body: "NexRide is checking the location permission required for driver availability.",
+        body: "Biloo is checking the location permission required for driver availability.",
         action: "",
       };
     }
@@ -377,7 +377,7 @@ export function DriverWorkspace({
       return {
         tone: "blocked",
         title: "Location permission required",
-        body: "Location access is blocked. Enable it for NexRide in your browser or device settings before going online.",
+        body: "Location access is blocked. Enable it for Biloo in your browser or device settings before going online.",
         action: "Try location again",
       };
     }
@@ -393,7 +393,7 @@ export function DriverWorkspace({
       return {
         tone: "pending",
         title: "Enable driver location",
-        body: "NexRide needs location access while you are available for ride requests.",
+        body: "Biloo needs location access while you are available for ride requests.",
         action: "Enable location",
       };
     }
@@ -433,7 +433,7 @@ export function DriverWorkspace({
           setError("Location permission is blocked. Enable it in your browser or device settings, then try again.");
         } else {
           setLocationPermission("prompt");
-          setError("NexRide could not get your location. Check GPS and try again.");
+          setError("Biloo could not get your location. Check GPS and try again.");
         }
       });
   };
@@ -480,7 +480,7 @@ export function DriverWorkspace({
         .maybeSingle();
 
       if (activeRide.error) {
-        setError("NexRide could not verify your active-trip status. Stay online and try again.");
+        setError("Biloo could not verify your active-trip status. Stay online and try again.");
         setUpdating(false);
         return;
       }
@@ -514,7 +514,7 @@ export function DriverWorkspace({
           setLocationPermission("denied");
           setError("Location permission is blocked. Enable it before going online.");
         } else {
-          setError("NexRide could not confirm your current location. Check GPS and try again.");
+          setError("Biloo could not confirm your current location. Check GPS and try again.");
         }
         setUpdating(false);
         return;
@@ -539,21 +539,21 @@ export function DriverWorkspace({
           setError("Complete your vehicle model, color, and plate before going online.");
           router.push("/driver/verification");
         } else if (payload?.status === "account_inactive") {
-          setError("This driver account is not active. Contact NexRide support.");
+          setError("This driver account is not active. Contact Biloo support.");
         } else if (payload?.status === "location_required") {
-          setError("NexRide needs your current location before you can go online.");
+          setError("Biloo needs your current location before you can go online.");
         } else if (payload?.status === "unauthorized") {
           setError("Your Driver session expired. Sign in again to change availability.");
         } else if (payload?.status === "driver_required") {
           setError("This signed-in account is not registered as a Driver.");
         } else if (payload?.status === "driver_status_unavailable") {
-          setError("NexRide could not read your Driver status. Refresh and try again.");
+          setError("Biloo could not read your Driver status. Refresh and try again.");
         } else if (payload?.status === "availability_update_failed") {
-          setError("NexRide could not save your availability. Your current status was not changed.");
+          setError("Biloo could not save your availability. Your current status was not changed.");
         } else if (payload?.status === "availability_service_unavailable") {
           setError("The Driver availability service is temporarily unavailable. Try again shortly.");
         } else {
-          setError("NexRide could not update availability. Refresh your Driver status and try again.");
+          setError("Biloo could not update availability. Refresh your Driver status and try again.");
         }
       } else if (payload?.driver) {
         setGpsConfirmedAt(payload.gpsStatus === "ready" ? Date.now() : 0);
@@ -588,7 +588,7 @@ export function DriverWorkspace({
       <div className="nr-driver-page nr-driver-map-page">
         <header className="nr-driver-map-header">
           <div>
-            <span className="nr-driver-kicker">NEXRIDE · DRIVER</span>
+            <span className="nr-driver-kicker">BILOO · DRIVER</span>
             <h1>Driver map</h1>
             <p>{state.online ? "You’re online and ready for ride requests." : "Go online when you’re ready to receive requests."}</p>
           </div>
@@ -666,7 +666,7 @@ export function DriverWorkspace({
       : gpsHealth === "ready" && gpsConfirmedAt > 0 && presenceClock - gpsConfirmedAt <= 60_000
         ? say("GPS verified · ready for requests", "ጂፒኤስ ተረጋግጧል · ለጉዞ ጥያቄዎች ዝግጁ")
         : gpsHealth === "ready"
-          ? say("Confirming GPS with NexRide", "ጂፒኤስን ከኔክስራይድ ጋር በማረጋገጥ ላይ")
+          ? say("Confirming GPS with Biloo", "ጂፒኤስን ከኔክስራይድ ጋር በማረጋገጥ ላይ")
         : gpsHealth === "inaccurate"
           ? say("Improving GPS accuracy", "የጂፒኤስ ትክክለኛነትን በማሻሻል ላይ")
           : gpsHealth === "stale"
@@ -735,10 +735,10 @@ export function DriverWorkspace({
           <div className="nr-driver-home-control-panel">
             <div className="nr-driver-home-control-heading">
               <div className="nr-driver-home-control-state">
-                <span className="nr-driver-home-control-brand">NEXRIDE · DRIVER</span>
+                <span className="nr-driver-home-control-brand">BILOO · DRIVER</span>
                 <strong>{state.online ? say("Ready for rides", "ለጉዞ ዝግጁ") : say("You're offline", "ከመስመር ውጭ ነዎት")}</strong>
                 <small>{state.online
-                  ? say("Online stays active when minimized. Android may pause GPS and delay alerts until you reopen NexRide.", "መተግበሪያው ሲቀነስ የመስመር ላይ ሁኔታዎ ይቀጥላል። Android GPSን እና ማሳወቂያዎችን ሊያዘገይ ይችላል።")
+                  ? say("Online stays active when minimized. Android may pause GPS and delay alerts until you reopen Biloo.", "መተግበሪያው ሲቀነስ የመስመር ላይ ሁኔታዎ ይቀጥላል። Android GPSን እና ማሳወቂያዎችን ሊያዘገይ ይችላል።")
                   : say("Swipe to start receiving ride requests", "ጉዞ ለመቀበል ያንሸራትቱ")}</small>
               </div>
               <div className="nr-driver-home-control-tools">

@@ -6,7 +6,7 @@ import { ALERTS_KEY, readAccount, saveAccount, validateProfile, type RiderAccoun
 import { RiderPhotoEditor } from './rider-photo-editor';
 import { photoSizeLabel } from '../../lib/nexride-photo-processing';
 import { PREVIEW_ENABLED_KEY, PREVIEW_STORAGE_KEY, retryStartup } from '../../lib/nexride-startup';
-import { signOutNexRide } from '../../lib/nexride-sign-out';
+import { signOutBiloo } from '../../lib/nexride-sign-out';
 import type { Language } from '../../lib/nexride-i18n';
 import type { PreviewProfile } from '../../lib/nexride-preview';
 import { Button, Dialog, Icon, InputField, useTranslation, type IconName } from './ui';
@@ -81,7 +81,7 @@ export function RiderSettings({language,setLanguage}: Pick<Props,'language'|'set
     <div className="nr-settings-block">
       <div>
         <strong>{t('language')}</strong>
-        <small>{say('Choose the language used across NexRide.','በNexRide ውስጥ የሚጠቀሙትን ቋንቋ ይምረጡ።')}</small>
+        <small>{say('Choose the language used across Biloo.','በBiloo ውስጥ የሚጠቀሙትን ቋንቋ ይምረጡ።')}</small>
       </div>
       <div className="nr-segmented" role="group" aria-label={t('language')}>
         <button aria-pressed={language==='en'} onClick={()=>setLanguage('en')}>English</button>
@@ -90,7 +90,7 @@ export function RiderSettings({language,setLanguage}: Pick<Props,'language'|'set
     </div>
       </> },
       { id: "help", icon: "info", title: say("Help & About", "እገዛ እና ስለ እኛ"), summary: say("Support, legal and app information", "ድጋፍ፣ ሕጋዊ መረጃ እና ስለ መተግበሪያው"), children: <>
-    <nav className="nr-settings-legal" aria-label={say("Help & legal", "እገዛ እና ሕጋዊ መረጃ")}><a href="/support?role=rider">{say("Help & support", "እገዛ እና ድጋፍ")}</a><a href="/explore/terms">{t("entryTerms")}</a><a href="/explore/privacy">{t("entryPrivacy")}</a><a href="/explore/about">{say("About NexRide", "ስለ NexRide")}</a></nav><AppVersion/>
+    <nav className="nr-settings-legal" aria-label={say("Help & legal", "እገዛ እና ሕጋዊ መረጃ")}><a href="/support?role=rider">{say("Help & support", "እገዛ እና ድጋፍ")}</a><a href="/explore/terms">{t("entryTerms")}</a><a href="/explore/privacy">{t("entryPrivacy")}</a><a href="/explore/about">{say("About Biloo", "ስለ Biloo")}</a></nav><AppVersion/>
       </> },
     ]}/>
   </div>;
@@ -220,7 +220,7 @@ export function RiderProfile(props:Props) {
   return <section className="nr-account nr-account-v2 nr-account-standard" aria-labelledby="nr-account-title">
     <header className="nr-account-top nr-account-standard-top">
       <div>
-        <span className="nr-account-eyebrow">NEXRIDE · {say('ACCOUNT','መለያ')}</span>
+        <span className="nr-account-eyebrow">BILOO · {say('ACCOUNT','መለያ')}</span>
         <h1 id="nr-account-title">{say('Your account','የእርስዎ መለያ')}</h1>
         <p>{say('Everything about you, in one place.','ስለ እርስዎ ሁሉም መረጃ በአንድ ቦታ።')}</p>
       </div>
@@ -258,7 +258,7 @@ export function RiderProfile(props:Props) {
     </div>}
 
     <div className="nr-account-standard-groups">
-      <AccountSection title={say('Your NexRide','የእርስዎ NexRide')} subtitle={say('Everything for your rides','ለጉዞዎችዎ የሚያስፈልጉ ነገሮች')}>
+      <AccountSection title={say('Your Biloo','የእርስዎ Biloo')} subtitle={say('Everything for your rides','ለጉዞዎችዎ የሚያስፈልጉ ነገሮች')}>
         <AccountRow icon="clock" title={say('Activity','እንቅስቃሴ')} detail={say('Trips and receipts','ጉዞዎች እና ደረሰኞች')} onClick={props.rides}/>
         <AccountRow icon="wallet" title={say('Payments','ክፍያዎች')} detail={say('Payment methods and status','የክፍያ መንገዶች እና ሁኔታ')} onClick={props.payments}/>
         <AccountRow icon="star" title={say('Saved places','የተቀመጡ ቦታዎች')} detail={say('Home, work and frequent places','ቤት፣ ስራ እና ተደጋጋሚ ቦታዎች')} onClick={props.saved}/>
@@ -269,17 +269,17 @@ export function RiderProfile(props:Props) {
         <AccountRow icon="user" title={say('Personal information','የግል መረጃ')} detail={say('Name and contact details','ስም እና የመገናኛ ዝርዝሮች')} onClick={()=>{setForm(shown);open('edit')}}/>
         <AccountRow icon="shield" title={say('Manage Account & Verification','መለያ እና ማረጋገጫ')} detail={say('Unique identity, verified contacts, roles and security','ማንነት፣ ስልክ እና ደህንነት')} onClick={()=>window.location.assign('/account/manage')}/>
         <AccountRow icon="chat" title={say('Support','ድጋፍ')} detail={say('Help with rides and your account','ለጉዞና መለያ እገዛ')} onClick={props.support}/>
-        <AccountRow icon="info" title={say('Privacy & data','ግላዊነት እና ውሂብ')} detail={say('How NexRide handles your information','NexRide መረጃዎን እንዴት እንደሚይዝ')} onClick={()=>open('privacy')}/>
+        <AccountRow icon="info" title={say('Privacy & data','ግላዊነት እና ውሂብ')} detail={say('How Biloo handles your information','Biloo መረጃዎን እንዴት እንደሚይዝ')} onClick={()=>open('privacy')}/>
       </AccountSection>
 
       <AccountSection title={say('Preferences','ምርጫዎች')} subtitle={say('Language, appearance and alerts','ቋንቋ፣ መልክ እና ማሳወቂያዎች')}>
         <AccountRow icon="settings" title={t('settings')} detail={say('Manage your app preferences','የመተግበሪያ ምርጫዎችዎን ያስተዳድሩ')} onClick={()=>open('settings')}/>
       </AccountSection>
 
-      <section className="nr-account-secondary-actions" aria-label={say('More NexRide options','ተጨማሪ የNexRide አማራጮች')}>
+      <section className="nr-account-secondary-actions" aria-label={say('More Biloo options','ተጨማሪ የBiloo አማራጮች')}>
         <button onClick={props.switchDriver}>
           <span className="nr-account-row-icon" data-tone="navigation"><Icon name="navigation" size={19}/></span>
-          <span className="nr-account-row-copy"><strong>{say('Drive with NexRide','በNexRide ያሽከርክሩ')}</strong><small>{say('Open the Driver experience','የአሽከርካሪ ልምድን ይክፈቱ')}</small></span>
+          <span className="nr-account-row-copy"><strong>{say('Drive with Biloo','በBiloo ያሽከርክሩ')}</strong><small>{say('Open the Driver experience','የአሽከርካሪ ልምድን ይክፈቱ')}</small></span>
           <Icon name="chevron" size={17}/>
         </button>
         {props.isAdmin&&<button className="admin-access" onClick={()=>window.location.assign('/admin')}>
@@ -296,7 +296,7 @@ export function RiderProfile(props:Props) {
       <button className="nr-account-signout-button" onClick={()=>open('signout')}>
         <Icon name="power" size={18}/>{account||loadError?say('Sign out','ውጣ'):say('Exit preview','ከማሳያ ውጣ')}
       </button>
-      <small>{say('NexRide · Better Rides. A Brighter Tomorrow.','NexRide · የተሻለ ጉዞ። ብሩህ ነገ።')}</small>
+      <small>{say('Biloo · Better Rides. A Brighter Tomorrow.','Biloo · የተሻለ ጉዞ። ብሩህ ነገ።')}</small>
       <AppVersion />
     </footer>
 
@@ -304,12 +304,12 @@ export function RiderProfile(props:Props) {
       panel==='edit'?say('Edit profile','መገለጫ አርትዕ')
       :panel==='settings'?t('settings')
       :panel==='privacy'?say('Privacy & your data','ግላዊነት እና ውሂብዎ')
-      :say('Sign out of NexRide?','ከNexRide ይውጡ?')
+      :say('Sign out of Biloo?','ከBiloo ይውጡ?')
     } onClose={()=>{if(!busy)setPanel(null)}}>
       {panel==='edit'?<form className="nr-profile-form nr-profile-form-v2" onSubmit={e=>{e.preventDefault();void save()}} aria-busy={busy}>
         <div className="nr-edit-profile-intro">
           <div className="nr-edit-avatar">{account?.avatar&&!photoFailed?<Image src={account.avatar} width={50} height={50} alt="" unoptimized onError={()=>setPhotoFailed(true)}/>:initials}</div>
-          <div><strong>{say('Keep your account details current','የመለያ ዝርዝሮችዎን ወቅታዊ ያድርጉ')}</strong><small>{account?say('These details are used across your NexRide rides.','እነዚህ ዝርዝሮች በNexRide ጉዞዎችዎ ላይ ይጠቀማሉ።'):t('localAccount')}</small></div>
+          <div><strong>{say('Keep your account details current','የመለያ ዝርዝሮችዎን ወቅታዊ ያድርጉ')}</strong><small>{account?say('These details are used across your Biloo rides.','እነዚህ ዝርዝሮች በBiloo ጉዞዎችዎ ላይ ይጠቀማሉ።'):t('localAccount')}</small></div>
         </div>
         <fieldset disabled={busy}>
           <InputField label={t('name')} required autoComplete="name" maxLength={80} value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/>
@@ -329,7 +329,7 @@ export function RiderProfile(props:Props) {
       :panel==='privacy'?<div className="nr-account-info nr-privacy-copy">
         <div className="nr-privacy-icon"><Icon name="shield" size={22}/></div>
         <h3>{say('Your data, clearly explained','ስለ ውሂብዎ ግልጽ መረጃ')}</h3>
-        <p>{say('Signed-in profile details, bookings and feedback are stored with your NexRide account and protected by the existing account permissions.','የመገለጫ ዝርዝሮች፣ ጉዞዎችና አስተያየቶች በNexRide መለያዎ ይቀመጣሉ።')}</p>
+        <p>{say('Signed-in profile details, bookings and feedback are stored with your Biloo account and protected by the existing account permissions.','የመገለጫ ዝርዝሮች፣ ጉዞዎችና አስተያየቶች በBiloo መለያዎ ይቀመጣሉ።')}</p>
         <p>{say('Preview details and preferences are stored in this browser. Location permission stays under your browser or device controls.','የማሳያ ዝርዝሮችና ምርጫዎች በዚህ አሳሽ ይቀመጣሉ።')}</p>
         <a className="nr-settings-security-link" href="/account/manage">{t('entryAccountSecurity')}<Icon name="chevron" size={17}/></a>
       </div>

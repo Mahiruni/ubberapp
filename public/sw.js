@@ -116,7 +116,7 @@ self.addEventListener("push", (event) => {
     data = { body: event.data ? event.data.text() : "" };
   }
 
-  const title = typeof data.title === "string" && data.title ? data.title : "NexRide";
+  const title = typeof data.title === "string" && data.title ? data.title : "Biloo";
   const body = typeof data.body === "string" ? data.body : "";
   const url = typeof data.url === "string" && data.url.startsWith("/") ? data.url : "/";
   const tag = typeof data.tag === "string" ? data.tag : undefined;

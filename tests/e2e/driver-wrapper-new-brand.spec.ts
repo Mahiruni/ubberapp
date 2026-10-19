@@ -7,7 +7,7 @@ const requestId = '55555555-5555-4555-8555-555555555555';
 
 async function connectedDriver(page: Page, trip: 'pending' | 'accepted' | 'in_trip', theme: 'dark' | 'light') {
   const user = { id: driverId, aud: 'authenticated', role: 'authenticated', email: 'driver@example.test',
-    app_metadata: {}, user_metadata: { role: 'driver', full_name: 'NexRide Driver' }, created_at: '2026-01-01T00:00:00Z' };
+    app_metadata: {}, user_metadata: { role: 'driver', full_name: 'Biloo Driver' }, created_at: '2026-01-01T00:00:00Z' };
   const token = `eyJhbGciOiJIUzI1NiJ9.${Buffer.from(JSON.stringify({ sub: driverId, exp: 4102444800 })).toString('base64url')}.test`;
   const session = { access_token: token, refresh_token: 'test', expires_at: 4102444800, expires_in: 3600, token_type: 'bearer', user };
   await page.addInitScript(({ session, theme }) => {
@@ -22,7 +22,7 @@ async function connectedDriver(page: Page, trip: 'pending' | 'accepted' | 'in_tr
     const name = new URL(route.request().url()).pathname.split('/').pop();
     const single = route.request().headers().accept?.includes('object+json');
     const respond = (value: object | null) => route.fulfill({ json: single ? value : value ? [value] : [] });
-    if (name === 'profiles') return respond({ id: driverId, role: 'driver', full_name: 'NexRide Driver', phone: '+251900000000' });
+    if (name === 'profiles') return respond({ id: driverId, role: 'driver', full_name: 'Biloo Driver', phone: '+251900000000' });
     if (name === 'drivers') return respond({ id: driverId, review_status: 'approved', is_online: true, rating: null });
     if (name === 'ride_request_offers') return respond({ id: offerId, request_id: requestId, driver_id: driverId,
       status: trip === 'in_trip' ? 'accepted' : trip, pickup_distance_km: 1.1, pickup_eta_minutes: 4,
@@ -45,7 +45,7 @@ test('incoming Rider call uses navy and emerald brand with theme-aware surfaces'
   const wrapper = page.locator('.nr-driver-request-page .nr-request-sheet');
   await expect(wrapper).toBeVisible();
   await expect(wrapper).toHaveCSS('background-color', 'rgb(11, 43, 67)');
-  await expect(wrapper.locator('.nr-request-eyebrow')).toContainText('NexRide');
+  await expect(wrapper.locator('.nr-request-eyebrow')).toContainText('Biloo');
   await expect(wrapper.getByRole('button', { name: 'Accept' })).toHaveCSS('background-color', 'rgb(0, 200, 120)');
   await expect(wrapper.getByRole('button', { name: 'Pass/Skip' })).toHaveCSS('background-color', 'rgb(4, 28, 48)');
   await expect(wrapper.locator('.nr-request-route-horizontal')).toBeVisible();
@@ -59,7 +59,7 @@ test('accepted Rider trip retains pinned stage action and brand-aware light/dark
   const wrapper = page.locator('.nr-driver-navigation-page .nr-nav-bottom-card');
   await expect(wrapper).toBeVisible();
   await expect(wrapper).toHaveCSS('background-color', 'rgb(11, 43, 67)');
-  await expect(wrapper.locator('.nr-nav-trip-meta')).toContainText('NexRide');
+  await expect(wrapper.locator('.nr-nav-trip-meta')).toContainText('Biloo');
   const pinned = wrapper.locator('.nr-driver-sheet-footer').getByRole('button', { name: 'Arrived at pickup' });
   await expect(pinned).toBeVisible();
   await expect(pinned).toHaveCSS('background-color', 'rgb(0, 200, 120)');

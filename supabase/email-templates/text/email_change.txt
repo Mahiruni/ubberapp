@@ -1,7 +1,7 @@
-NEXRIDE
-New email. Same NexRide.
+BILOO
+New email. Same Biloo.
 
-A change to the email address on your NexRide account was requested. Confirm the change to continue.
+A change to the email address on your Biloo account was requested. Confirm the change to continue.
 
 New email address: {{ .NewEmail }}
 
@@ -9,10 +9,10 @@ Confirm email change:
 {{ .ConfirmationURL }}
 
 FOR YOUR SECURITY
-Did not request this change? Do not confirm it. Open NexRide directly and review your account security.
+Did not request this change? Do not confirm it. Open Biloo directly and review your account security.
 
-This link is for one-time use. If it has expired, request a new one in NexRide.
+This link is for one-time use. If it has expired, request a new one in Biloo.
 
 Move with confidence.
-NexRide | https://ubberapp.vercel.app
-This is an account email from NexRide.
+Biloo | https://ubberapp.vercel.app
+This is an account email from Biloo.

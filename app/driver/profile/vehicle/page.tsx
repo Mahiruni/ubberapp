@@ -61,7 +61,7 @@ export default function DriverVehiclePage() {
             <Icon name="back" />
           </button>
           <div>
-            <span className="nr-driver-kicker">NexRide · {say("Driver account")}</span>
+            <span className="nr-driver-kicker">Biloo · {say("Driver account")}</span>
             <h1>{say("Vehicle")}</h1>
             <p>{say("Your verified vehicle details.")}</p>
           </div>

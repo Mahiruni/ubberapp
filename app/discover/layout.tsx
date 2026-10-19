@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Discover Addis Ababa",
-  description: "Discover NexRide places and mobility experiences across Addis Ababa.",
+  description: "Discover Biloo places and mobility experiences across Addis Ababa.",
   alternates: { canonical: "/discover" },
 };
 
