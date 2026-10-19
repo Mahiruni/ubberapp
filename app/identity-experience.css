@@ -16,7 +16,7 @@
 .nr-text-wordmark {
   display: inline-flex;
   align-items: center;
-  gap: 0 !important;
+  gap: 8px !important;
 }
 
 .nr-text-wordmark strong {

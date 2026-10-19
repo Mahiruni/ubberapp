@@ -42,12 +42,12 @@ async function connectedAccount(page: Page, role: 'rider' | 'driver') {
   return { signupCalls: () => signupCalls };
 }
 
-const noSymbol = async (page: Page) => {
-  await expect(page.locator('.nr-brand').first()).toContainText('NexRide');
-  await expect(page.locator('.nr-brand img,.nr-brand svg,.nr-brand-mark,.nr-splash-mark,.driver-welcome-mark')).toHaveCount(0);
+const verifyBilooBrand = async (page: Page) => {
+  await expect(page.locator('.nr-brand').first()).toContainText('Biloo');
+  await expect(page.locator('.nr-brand').first().locator('img.nr-brand-symbol')).toHaveCount(1);
 };
 
-test('welcome actions fit small phones, preserve role context and use a text wordmark', async ({ page }, info) => {
+test('welcome actions fit small phones, preserve role context and show the Biloo icon and wordmark', async ({ page }, info) => {
   await page.setViewportSize({ width: 360, height: 640 });
   for (const [path, heading, action] of [
     ['/rider', 'Your city. Your ride.', 'Get started'],
@@ -55,7 +55,7 @@ test('welcome actions fit small phones, preserve role context and use a text wor
   ]) {
     await page.goto(path);
     await expect(page.getByRole('heading', { level: 1 })).toContainText(heading);
-    await noSymbol(page);
+    await verifyBilooBrand(page);
     await expect(page.getByRole('link', { name: action, exact: true })).toBeInViewport();
     await expect(page.getByRole('link', { name: path === '/rider' ? 'Already have an account?' : 'Sign in', exact: true })).toBeInViewport();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
@@ -73,7 +73,7 @@ test('both sign-in forms preserve email, reveal passwords and recover from real 
   for (const path of ['/rider/sign-in', '/driver/auth']) {
     await page.goto(path);
     await expect(page.getByRole('heading', { name: 'Welcome back.', exact: true })).toBeVisible();
-    await noSymbol(page);
+    await verifyBilooBrand(page);
     const email = page.getByLabel('Email address', { exact: true }), password = page.getByLabel('Password', { exact: true });
     await email.fill('person@example.test');
     await password.fill('private-password');
@@ -259,7 +259,7 @@ test('startup does not confuse a failed authenticated profile lookup with being 
   await page.goto('/driver');
   await expect(page.locator('.nr-splash-error')).toBeVisible();
   await expect(page.getByRole('link', { name: 'Start driving', exact: true })).toHaveCount(0);
-  await expect(page.locator('.nr-splash-wordmark')).toHaveText('NexRide');
+  await expect(page.locator('.nr-splash-wordmark')).toHaveText('Biloo');
   unavailable = false;
   await page.getByRole('button', { name: 'Try again', exact: true }).click();
   await expect(page).toHaveURL(/\/driver\/onboarding$/);

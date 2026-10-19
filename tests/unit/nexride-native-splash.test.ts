@@ -18,7 +18,7 @@ test.each(["rider", "driver"])("%s native splash preserves runtime theme and fit
   const first = readFileSync(join(res,"values/styles.xml"),"utf8");
   expect(first).toContain(runtime);
   expect(first).toContain('name="postSplashScreenTheme">@style/AppTheme.NoActionBar');
-  expect(first).toContain('name="windowSplashScreenBackground">#625CF6');
+  expect(first).toContain('name="windowSplashScreenBackground">#08295F');
   expect(first).not.toContain("setKeepOnScreenCondition");
   const icon = sharp(join(res,"drawable-nodpi/nexride_splash_wordmark.png"));
   const { data, info } = await icon.raw().toBuffer({ resolveWithObject: true });
@@ -32,8 +32,8 @@ test.each(["rider", "driver"])("%s native splash preserves runtime theme and fit
       }
   }
   const fallbackDrawable = readFileSync(join(res,"drawable/nexride_launch.xml"),"utf8");
-  expect(fallbackDrawable).toContain('<solid android:color="#625CF6" />');
-  expect(fallbackDrawable).not.toContain('android:drawable="#625CF6"');
+  expect(fallbackDrawable).toContain('<solid android:color="#08295F" />');
+  expect(fallbackDrawable).not.toContain('android:drawable="#08295F"');
   expect(readFileSync(join(res,"values-v31/nexride-splash.xml"),"utf8")).not.toContain("windowSplashScreenBrandingImage");
   expect(readFileSync(join(res,"values-v31/nexride-splash.xml"),"utf8")).toContain("windowSplashScreenBackground");
   execFileSync(process.execPath,["scripts/setup-android-splash.mjs",role,dir]);

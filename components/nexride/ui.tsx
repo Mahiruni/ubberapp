@@ -86,6 +86,7 @@ export function Brand({ driver = false }: { driver?: boolean }) {
   const t = useTranslation();
   return (
     <div className="nr-brand nr-text-wordmark">
+      <img src="/brand/biloo-mark.svg" width={34} height={34} alt="" aria-hidden="true" className="nr-brand-symbol" />
       <div>
         <strong>Biloo</strong>
         {driver && <small>{t("driver")}</small>}

@@ -200,7 +200,7 @@ test("live rider sees assignment, real trip transition and receipt, then retries
   api.setPayment("failed");
   await page.evaluate(() => window.dispatchEvent(new Event("online")));
   const receipt = page.frameLocator(
-    'iframe[title="NexRide trip receipt and rating"]',
+    'iframe[title="Biloo trip receipt and rating"]',
   );
   await expect(
     receipt.getByRole("heading", { name: "You’ve arrived", exact: true }),
