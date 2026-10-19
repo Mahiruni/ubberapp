@@ -267,3 +267,22 @@
   background:#eafff3;
   color:#007448;
 }
+
+
+/* Biloo Driver campaign welcome — scoped to prevent legacy theme overrides. */
+.biloo-driver-campaign{min-height:100dvh;display:flex;flex-direction:column;position:relative;background:#041638;color:#fff;isolation:isolate;overflow:hidden}
+.biloo-driver-photo{min-height:56dvh;flex:1;background:linear-gradient(180deg,transparent 70%,rgba(3,22,56,.35)),url('/nexride/screens/assets/driver.png') center 44%/cover no-repeat}
+.biloo-driver-panel{position:relative;z-index:1;margin-top:-24px;border-radius:30px 30px 0 0;padding:24px max(20px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(20px,env(safe-area-inset-left));background:linear-gradient(160deg,#083a87,#031638 70%);text-align:center;box-shadow:0 -16px 36px rgba(3,22,56,.18)}
+.biloo-driver-logo{display:block;width:62px;height:76px;object-fit:contain;margin:0 auto 4px}
+.biloo-driver-panel h1{font-size:clamp(32px,7vw,48px);letter-spacing:-.05em;font-weight:850;line-height:1.08;color:white;margin:0}
+.biloo-driver-panel h1 span{color:#ffca46}
+.biloo-driver-panel p{font-size:clamp(13px,3.3vw,16px);line-height:1.5;color:#e2eafa;margin:12px auto 22px;max-width:420px}
+.biloo-driver-actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:530px;margin:auto}
+.biloo-driver-actions a{min-height:56px;border-radius:999px;display:flex;justify-content:center;align-items:center;gap:12px;text-decoration:none;font-size:16px;font-weight:800;transition:transform .18s ease}
+.biloo-driver-actions a:focus-visible{outline:3px solid #ffca46;outline-offset:3px}
+.biloo-driver-actions a:hover{transform:translateY(-2px)}
+.biloo-driver-signin{background:#ffca46;color:#061a3e}
+.biloo-driver-register{border:1px solid rgba(255,255,255,.82);color:#fff;background:rgba(255,255,255,.06)}
+.biloo-driver-secondary{margin-top:16px;font-size:12px}.biloo-driver-secondary a{color:#dbe7ff;text-underline-offset:3px}
+@media(min-width:700px){.biloo-driver-campaign{max-width:620px;margin:0 auto;min-height:100dvh}.biloo-driver-photo{min-height:62dvh}}
+@media(prefers-reduced-motion:reduce){.biloo-driver-actions a{transition:none}}
