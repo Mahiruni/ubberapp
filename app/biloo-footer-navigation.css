@@ -140,6 +140,7 @@
     /* Include footer in the 40% bottom occupation, not in addition to it.
        Snap gestures continue to update --nr-flow-sheet-height unchanged. */
     height: max(120px, calc(var(--nr-flow-sheet-height,40dvh) - 79px - env(safe-area-inset-bottom,0px)))!important;
+    min-height: 0!important;
     max-height: calc(100dvh - 79px - env(safe-area-inset-bottom,0px))!important;
   }
   /* Never impose footer offsets on search, matching, and active-trip sheets:
@@ -176,6 +177,7 @@
     .nr-app[data-mode="rider"] .rider-map-flow.rider-home-view .nr-main > .nr-rider-flow-panel {
       bottom: calc(68px + env(safe-area-inset-bottom,0px))!important;
       height: max(110px, calc(var(--nr-flow-sheet-height,40dvh) - 68px - env(safe-area-inset-bottom,0px)))!important;
+      min-height: 0!important;
       max-height: calc(100dvh - 68px - env(safe-area-inset-bottom,0px))!important;
     }
   }
