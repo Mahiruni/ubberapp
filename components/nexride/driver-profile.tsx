@@ -151,15 +151,16 @@ export function DriverProfileScreen({
     <div className="nr-driver-profile-v2">
       <header className="nr-driver-profile-heading">
         <div>
-          <span className="nr-driver-kicker">BILOO · {t("driverAccount")}</span>
-          <h1>{say("Account")}</h1>
-          <p>{say("Your professional identity, preferences and security.")}</p>
+          <span className="nr-driver-kicker">{say("DRIVER WORKSPACE / 05")}</span>
+          <h1>{say("Driver Account")}</h1>
+          <p>{say("Your identity, verification and earnings.")}</p>
         </div>
         <button className="nr-driver-icon-btn" onClick={onBack} aria-label={say("Back to driver home")}>
           <Icon name="back" />
         </button>
       </header>
 
+      <div className="biloo-driver-overview">
       <section className="nr-driver-profile-hero nr-driver-profile-hero-v2">
         <DriverPhotoManager driverId={driverId} fullName={profile.fullName}>
         <span className="nr-driver-profile-photo">
@@ -233,6 +234,7 @@ export function DriverProfileScreen({
           <Icon name="chevron" size={16}/>
         </button>
       </section>
+      </div>
 
       <div className="nr-driver-profile-columns" aria-label={say("Driver account options")}>
         <div>

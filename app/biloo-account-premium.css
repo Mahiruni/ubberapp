@@ -807,3 +807,407 @@
     font-size:24px!important;
   }
 }
+
+/* Biloo Account showcase · approved Rider & Driver visual treatment.
+   Scoped to authenticated Account surfaces; existing data, routes, dialogs,
+   authorization, verification decisions and footer navigation are unchanged. */
+.nr-app[data-mode="rider"][data-theme="light"],
+.nr-driver-app-shell[data-theme="light"] {
+  --biloo-account-canvas:#f1f4f8;
+  --biloo-account-soft:#f4f6f9;
+  --biloo-account-border:#e0e7ef;
+  --biloo-account-ink:#132744;
+  --biloo-account-muted:#607289;
+  --biloo-account-hover:#eef3f8;
+}
+.nr-app[data-mode="rider"][data-theme="dark"],
+.nr-driver-app-shell[data-theme="dark"] {
+  --biloo-account-canvas:#07172a;
+  --biloo-account-surface:#0d233c;
+  --biloo-account-soft:#193653;
+  --biloo-account-border:#294563;
+  --biloo-account-ink:#f7faff;
+  --biloo-account-muted:#b3c3d6;
+  --biloo-account-hover:#1b3a56;
+}
+.nr-app[data-mode="rider"][data-theme] .nr-account-standard,
+.nr-driver-app-shell[data-theme] .nr-driver-profile-v2 {
+  max-width:820px;
+  padding:clamp(16px,3vw,28px) clamp(14px,3vw,26px)!important;
+  color:var(--biloo-account-ink)!important;
+}
+.nr-app[data-mode="rider"][data-theme] .nr-account-standard-top,
+.nr-driver-app-shell[data-theme] .nr-driver-profile-heading {
+  margin-bottom:19px!important;
+}
+.nr-app[data-mode="rider"][data-theme] .nr-account-eyebrow,
+.nr-driver-app-shell[data-theme] .nr-driver-profile-heading .nr-driver-kicker {
+  color:var(--biloo-account-muted)!important;
+  font-size:10px!important;
+  font-weight:850!important;
+  letter-spacing:.16em!important;
+}
+.nr-app[data-mode="rider"][data-theme] .nr-account-standard-top h1,
+.nr-driver-app-shell[data-theme] .nr-driver-profile-heading h1 {
+  font-size:clamp(29px,5vw,36px)!important;
+  font-weight:850!important;
+  letter-spacing:-.052em!important;
+  line-height:1.1!important;
+  margin:6px 0 5px!important;
+}
+.nr-app[data-mode="rider"][data-theme] .nr-account-standard-top h1::after,
+.nr-driver-app-shell[data-theme] .nr-driver-profile-heading h1::after {
+  content:".";
+  color:#eab74b;
+}
+.nr-app[data-mode="rider"][data-theme] .nr-account-standard-top p,
+.nr-driver-app-shell[data-theme] .nr-driver-profile-heading p {
+  margin:5px 0 0!important;
+  font-size:12px!important;
+  line-height:1.58!important;
+  color:var(--biloo-account-muted)!important;
+}
+/* Rider identity remains real, editable and photo-upload capable. */
+.nr-app[data-mode="rider"][data-theme] .nr-account-identity-card {
+  grid-template-columns:auto minmax(0,1fr) auto;
+  gap:11px!important;
+  padding:14px!important;
+  border-radius:17px!important;
+  background:var(--biloo-account-surface)!important;
+  box-shadow:0 3px 12px rgba(7,27,43,.045)!important;
+}
+.nr-app[data-mode="rider"][data-theme] .nr-account-standard .nr-account-avatar {
+  width:52px!important;
+  height:52px!important;
+  border-radius:14px!important;
+}
+.nr-app[data-mode="rider"][data-theme] .nr-account-identity h2 {
+  font-size:15px!important;
+  font-weight:820!important;
+  line-height:1.32!important;
+}
+.nr-app[data-mode="rider"][data-theme] .nr-account-identity :is(p,small) {
+  font-size:10.5px!important;
+  margin-top:3px!important;
+  color:var(--biloo-account-muted)!important;
+}
+.nr-app[data-mode="rider"][data-theme] .nr-account-identity-card .nr-account-edit {
+  min-height:38px!important;
+  padding:8px 10px!important;
+  border-radius:10px!important;
+  font-size:11px!important;
+}
+.nr-app[data-mode="rider"][data-theme] .biloo-account-protection-note {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:11px 3px 3px;
+  color:var(--biloo-account-muted)!important;
+  font-size:10.5px;
+  line-height:1.45;
+}
+.nr-app[data-mode="rider"][data-theme] .biloo-account-protection-note svg {
+  flex:none;
+  color:#198c78;
+}
+/* Numbered editorial section headers, quiet rounded list cards. */
+.nr-app[data-mode="rider"][data-theme] .nr-account-standard-groups {
+  counter-reset:biloo-rider-section;
+  gap:19px!important;
+  margin-top:20px!important;
+}
+.nr-driver-app-shell[data-theme] .nr-driver-profile-columns {
+  counter-reset:biloo-driver-section;
+  gap:19px!important;
+  margin-top:20px!important;
+}
+.nr-driver-app-shell[data-theme] .nr-driver-profile-columns>div {
+  gap:19px!important;
+}
+.nr-app[data-mode="rider"][data-theme] .nr-account-standard .nr-account-section,
+.nr-driver-app-shell[data-theme] .nr-driver-profile-section {
+  overflow:visible!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  border-radius:0!important;
+}
+.nr-app[data-mode="rider"][data-theme] .nr-account-section>header,
+.nr-driver-app-shell[data-theme] .nr-driver-profile-section>header {
+  display:flex!important;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 2px 9px!important;
+  border:0!important;
+  background:transparent!important;
+}
+.nr-app[data-mode="rider"][data-theme] .nr-account-section>header { counter-increment:biloo-rider-section; }
+.nr-driver-app-shell[data-theme] .nr-driver-profile-section>header { counter-increment:biloo-driver-section; }
+.nr-app[data-mode="rider"][data-theme] .nr-account-section>header::after,
+.nr-driver-app-shell[data-theme] .nr-driver-profile-section>header::after {
+  flex:none;
+  font-size:10px;
+  font-weight:850;
+  font-variant-numeric:tabular-nums;
+  color:var(--biloo-account-muted);
+}
+.nr-app[data-mode="rider"][data-theme] .nr-account-section>header::after { content:counter(biloo-rider-section,decimal-leading-zero); }
+.nr-driver-app-shell[data-theme] .nr-driver-profile-section>header::after { content:counter(biloo-driver-section,decimal-leading-zero); }
+.nr-app[data-mode="rider"][data-theme] .nr-account-section>header h3,
+.nr-driver-app-shell[data-theme] .nr-driver-profile-section>header h3 {
+  margin:0!important;
+  font-size:10px!important;
+  letter-spacing:.09em!important;
+  line-height:1.35!important;
+  font-weight:850!important;
+  text-transform:uppercase;
+  color:var(--biloo-account-muted)!important;
+}
+.nr-app[data-mode="rider"][data-theme] .nr-account-section>header p,
+.nr-driver-app-shell[data-theme] .nr-driver-profile-section>header p {
+  display:none!important;
+}
+.nr-app[data-mode="rider"][data-theme] .nr-account-section-list,
+.nr-driver-app-shell[data-theme] .nr-driver-profile-section>div {
+  overflow:hidden;
+  border:1px solid var(--biloo-account-border)!important;
+  border-radius:14px!important;
+  background:var(--biloo-account-surface)!important;
+}
+.nr-app[data-mode="rider"][data-theme] .nr-account-row,
+.nr-app[data-mode="rider"][data-theme] .nr-account-secondary-actions>button,
+.nr-driver-app-shell[data-theme] .nr-driver-profile-row {
+  grid-template-columns:36px minmax(0,1fr) 17px!important;
+  min-height:62px!important;
+  gap:11px!important;
+  padding:11px 12px!important;
+  color:var(--biloo-account-ink)!important;
+}
+.nr-app[data-mode="rider"][data-theme] .nr-account-row-icon,
+.nr-driver-app-shell[data-theme] .nr-driver-profile-row-icon {
+  width:36px!important;
+  height:36px!important;
+  border-radius:10px!important;
+  border:1px solid var(--biloo-account-border)!important;
+  background:var(--biloo-account-soft)!important;
+}
+.nr-app[data-mode="rider"][data-theme] .nr-account-row-icon svg,
+.nr-driver-app-shell[data-theme] .nr-driver-profile-row-icon svg {
+  width:18px!important;
+  height:18px!important;
+}
+.nr-app[data-mode="rider"][data-theme] .nr-account-row-copy strong,
+.nr-driver-app-shell[data-theme] .nr-driver-profile-row-copy strong {
+  font-size:12.5px!important;
+  font-weight:790!important;
+  line-height:1.33!important;
+}
+.nr-app[data-mode="rider"][data-theme] .nr-account-row-copy small,
+.nr-driver-app-shell[data-theme] .nr-driver-profile-row-copy small {
+  color:var(--biloo-account-muted)!important;
+  font-size:10.5px!important;
+  line-height:1.5!important;
+}
+.nr-app[data-mode="rider"][data-theme] .nr-account-secondary-actions {
+  border-radius:14px!important;
+}
+/* Driver's entire first panel is one deep-navy professional workspace.
+   Metrics and verification remain populated from Supabase, not placeholders. */
+.nr-driver-app-shell[data-theme] .biloo-driver-overview {
+  display:flex;
+  flex-direction:column;
+  gap:0;
+  margin-bottom:0;
+  padding:15px!important;
+  border:1px solid #264970!important;
+  border-radius:18px!important;
+  background:#0a294f!important;
+  box-shadow:0 8px 24px rgba(4,24,44,.09)!important;
+  color:#fff!important;
+  isolation:isolate;
+}
+.nr-driver-app-shell[data-theme] .biloo-driver-overview .nr-driver-profile-hero-v2 {
+  order:1;
+  display:grid!important;
+  grid-template-columns:auto minmax(0,1fr) auto!important;
+  align-items:center!important;
+  gap:11px!important;
+  padding:0!important;
+  margin:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+.nr-driver-app-shell[data-theme] .biloo-driver-overview .nr-driver-profile-photo {
+  width:51px!important;
+  height:51px!important;
+  border-radius:14px!important;
+  color:#fff!important;
+  background:#23486c!important;
+  border:1px solid #55718c!important;
+}
+.nr-driver-app-shell[data-theme] .biloo-driver-overview .nr-driver-profile-identity h2 {
+  color:#fff!important;
+  font-size:15px!important;
+  font-weight:830!important;
+}
+.nr-driver-app-shell[data-theme] .biloo-driver-overview .nr-driver-profile-identity :is(p,small),
+.nr-driver-app-shell[data-theme] .biloo-driver-overview .nr-driver-contact-line,
+.nr-driver-app-shell[data-theme] .biloo-driver-overview .nr-driver-contact-line :is(span,svg) {
+  color:#cfdaeb!important;
+  font-size:10px!important;
+}
+.nr-driver-app-shell[data-theme] .biloo-driver-overview .nr-driver-profile-role {
+  color:#cbd8e8!important;
+  font-size:9px!important;
+}
+.nr-driver-app-shell[data-theme] .biloo-driver-overview .nr-driver-profile-edit {
+  min-height:36px!important;
+  border-radius:10px!important;
+  background:rgba(255,255,255,.1)!important;
+  border:1px solid rgba(255,255,255,.28)!important;
+  color:#fff!important;
+  font-size:11px!important;
+  padding:7px 9px!important;
+}
+.nr-driver-app-shell[data-theme] .biloo-driver-overview .nr-driver-verification-card {
+  order:2;
+  display:grid!important;
+  grid-template-columns:auto minmax(0,1fr) auto!important;
+  margin:13px 0 0!important;
+  gap:10px!important;
+  padding:11px!important;
+  border:1px solid rgba(255,255,255,.14)!important;
+  border-radius:11px!important;
+  background:rgba(255,255,255,.05)!important;
+  color:#fff!important;
+}
+.nr-driver-app-shell[data-theme] .biloo-driver-overview .nr-driver-verification-symbol {
+  border:1px solid rgba(255,255,255,.19)!important;
+  border-radius:10px!important;
+  color:#f5c45e!important;
+  background:rgba(255,255,255,.07)!important;
+}
+.nr-driver-app-shell[data-theme] .biloo-driver-overview .nr-driver-verification-card :is(strong,span) {
+  color:#fff!important;
+}
+.nr-driver-app-shell[data-theme] .biloo-driver-overview .nr-driver-verification-card p {
+  color:#c8d6e7!important;
+  font-size:10px!important;
+  line-height:1.45!important;
+}
+.nr-driver-app-shell[data-theme] .biloo-driver-overview .nr-driver-verification-card>button {
+  min-height:38px!important;
+  padding:7px 10px!important;
+  background:rgba(255,255,255,.13)!important;
+  color:#fff!important;
+  border:1px solid rgba(255,255,255,.22)!important;
+  font-size:10px!important;
+}
+.nr-driver-app-shell[data-theme] .biloo-driver-overview .nr-driver-profile-summary-v2 {
+  order:3;
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:7px!important;
+  width:100%;
+  margin:12px 0 0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+.nr-driver-app-shell[data-theme] .biloo-driver-overview .nr-profile-metric {
+  min-width:0;
+  min-height:70px;
+  padding:11px 9px!important;
+  border:1px solid rgba(255,255,255,.12)!important;
+  border-radius:10px!important;
+  background:rgba(255,255,255,.045)!important;
+}
+.nr-driver-app-shell[data-theme] .biloo-driver-overview .nr-profile-metric small {
+  color:#c9d6e7!important;
+  font-size:10px!important;
+}
+.nr-driver-app-shell[data-theme] .biloo-driver-overview .nr-profile-metric strong,
+.nr-driver-app-shell[data-theme] .biloo-driver-overview .nr-profile-metric strong span {
+  display:block;
+  color:#fff!important;
+  font-size:15px!important;
+  font-weight:825!important;
+  line-height:1.35!important;
+  margin-top:4px;
+}
+.nr-driver-app-shell[data-theme] .biloo-driver-overview .nr-profile-metric strong span {
+  display:inline;
+  font-size:12px!important;
+}
+.nr-driver-app-shell[data-theme] .biloo-driver-overview .nr-profile-restriction {
+  order:4;
+  margin:12px 0 0!important;
+  border-radius:10px!important;
+}
+/* Never disguise rejected, expired or pending verification as approved. */
+.nr-driver-app-shell[data-theme] .biloo-driver-overview .nr-driver-verification-pill:not(.approved) {
+  color:#ffe3a4!important;
+  border-color:rgba(245,196,94,.5)!important;
+}
+.nr-driver-app-shell[data-theme] .biloo-driver-overview .nr-driver-verification-pill.approved {
+  color:#99f1d2!important;
+  border-color:rgba(153,241,210,.55)!important;
+}
+.nr-driver-app-shell[data-theme] .biloo-driver-overview :is(button,a):focus-visible {
+  outline:3px solid #f5c45e!important;
+  outline-offset:2px!important;
+}
+/* All cards retain keyboard focus and practical minimum touch targets. */
+.nr-app[data-mode="rider"][data-theme] .nr-account-standard :is(button,a):focus-visible,
+.nr-driver-app-shell[data-theme] .nr-driver-profile-v2 :is(button,a):focus-visible {
+  outline:3px solid #d3a43a!important;
+  outline-offset:2px!important;
+}
+@media(max-width:800px) {
+  .nr-driver-app-shell[data-theme] .nr-driver-profile-columns {grid-template-columns:1fr!important;}
+  .nr-driver-app-shell[data-theme] .biloo-driver-overview .nr-driver-verification-card {grid-template-columns:auto minmax(0,1fr)!important;}
+  .nr-driver-app-shell[data-theme] .biloo-driver-overview .nr-driver-verification-card>button {grid-column:1/-1;width:100%;}
+}
+@media(max-width:520px) {
+  .nr-app[data-mode="rider"][data-theme] .nr-account-standard,
+  .nr-driver-app-shell[data-theme] .nr-driver-profile-v2 {
+    padding:18px 13px calc(89px + env(safe-area-inset-bottom,0px))!important;
+  }
+  .nr-app[data-mode="rider"][data-theme] .nr-account-identity-card {
+    grid-template-columns:auto minmax(0,1fr) auto!important;
+    gap:9px!important;
+  }
+  .nr-app[data-mode="rider"][data-theme] .nr-account-identity-card .nr-account-edit {
+    grid-column:auto!important;
+    width:auto!important;
+    min-width:44px;
+  }
+  .nr-driver-app-shell[data-theme] .biloo-driver-overview {padding:13px!important;}
+  .nr-driver-app-shell[data-theme] .biloo-driver-overview .nr-driver-profile-hero-v2 {
+    grid-template-columns:auto minmax(0,1fr) auto!important;
+    gap:9px!important;
+  }
+  .nr-driver-app-shell[data-theme] .biloo-driver-overview .nr-driver-profile-edit {
+    grid-column:auto!important;
+    width:auto!important;
+  }
+  .nr-driver-app-shell[data-theme] .biloo-driver-overview .nr-driver-profile-summary-v2 {
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+  .nr-driver-app-shell[data-theme] .biloo-driver-overview .nr-profile-metric {min-height:64px;}
+  .nr-app[data-mode="rider"][data-theme] .nr-account-standard-groups,
+  .nr-driver-app-shell[data-theme] .nr-driver-profile-columns {gap:17px!important;}
+}
+@media(max-width:355px) {
+  .nr-app[data-mode="rider"][data-theme] .nr-account-identity-card .nr-account-edit span {display:none;}
+  .nr-driver-app-shell[data-theme] .biloo-driver-overview .nr-driver-profile-hero-v2 {grid-template-columns:auto minmax(0,1fr)!important;}
+  .nr-driver-app-shell[data-theme] .biloo-driver-overview .nr-driver-profile-edit {grid-column:1/-1!important;justify-self:stretch;}
+}
+@media(prefers-reduced-motion:reduce) {
+  .nr-app[data-mode="rider"][data-theme] .nr-account-standard *,
+  .nr-driver-app-shell[data-theme] .nr-driver-profile-v2 * {transition:none!important;animation:none!important;}
+}
