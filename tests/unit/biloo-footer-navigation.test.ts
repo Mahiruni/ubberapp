@@ -44,5 +44,14 @@ describe("Biloo approved Rider and Driver footer menus", () => {
     expect(css).toContain('prefers-reduced-motion: reduce');
     expect(footer).toContain('aria-current={selected ? "page" : undefined}');
     expect(footer).toContain("biloo-footer-nav__indicator");
+    expect(css).toContain("border-radius: 0;");
+    expect(css).toContain("box-shadow: none;");
+    expect(css).toContain("clip-path: inset(50%)");
+    expect(css).toContain("bottom: 0!important;");
+    expect(css).toContain("scroll-padding-bottom: calc(var(--biloo-dock-bar-height)");
+    expect(css).toContain("padding-bottom: calc(var(--biloo-dock-bar-height)");
+    expect(css).not.toContain("min-height: 66px;");
+    expect(css).not.toContain("border-radius: 20px;");
+
   });
 });

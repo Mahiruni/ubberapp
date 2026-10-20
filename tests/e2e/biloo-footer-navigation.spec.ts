@@ -39,9 +39,17 @@ test("Rider footer matches the approved five items and leaves the map booking sh
   const footer = page.getByRole("navigation", { name: "Rider bottom navigation" });
   await expect(footer).toBeVisible();
   await expect(footer.locator(".biloo-footer-nav__item")).toHaveCount(5);
+  // X-style navigation is icon-only visually; accessible names remain available.
   for (const name of ["Home", "Activity", "Wallet", "Support", "Account"]) {
-    await expect(footer.getByText(name, { exact: true })).toBeVisible();
+    await expect(footer.getByRole(name === "Home" || name === "Account" ? "button" : "link", { name, exact: true })).toBeVisible();
   }
+  await expect(footer.locator(".biloo-footer-nav__surface")).toHaveCSS("border-radius", "0px");
+  await expect(footer.locator(".biloo-footer-nav__surface")).toHaveCSS("box-shadow", "none");
+  const navBox = (await footer.boundingBox())!;
+  expect(navBox.x).toBe(0);
+  expect(navBox.width).toBeCloseTo(390, 0);
+  expect(navBox.y + navBox.height).toBeCloseTo(844, 0);
+  await expect(footer.locator(".biloo-footer-nav__label").first()).toHaveCSS("width", "1px");
   await expect(footer.getByRole("link", { name: "Activity" })).toHaveAttribute("href", "/rider/trips");
   await expect(footer.getByRole("link", { name: "Wallet" })).toHaveAttribute("href", "/rider/wallet");
   await expect(footer.getByRole("link", { name: "Support" })).toHaveAttribute("href", "/support");
@@ -58,6 +66,11 @@ test("Rider footer matches the approved five items and leaves the map booking sh
   const searchBox = (await page.getByRole("button", { name: "Search destination", exact: true }).boundingBox())!;
   expect(searchBox.y + searchBox.height).toBeLessThanOrEqual(tabs.y - 3);
   expect(sheet.y + sheet.height).toBeGreaterThanOrEqual(tabs.y);
+  // The top of the opaque nav replaces the visible bottom edge of the Rider
+  // sheet; the sheet snap height and pointer targets remain unchanged.
+  expect(tabs.y).toBeGreaterThan(sheet.y);
+  await expect(footer).toHaveCSS("background-color", "rgb(255, 255, 255)");
+  await expect(page.locator(".nr-rider-home-sheet")).toBeVisible();
   // The drawer remains full snap-height so touch gestures do not jump when tabs appear.
   await footer.getByRole("button", { name: "Account" }).click();
   await expect(footer.getByRole("button", { name: "Account" })).toHaveAttribute("aria-current", "page");
@@ -72,8 +85,10 @@ test("Driver footer uses Trips/Earnings and hides during critical live-trip cont
   await expect(footer).toBeVisible();
   await expect(footer.locator(".biloo-footer-nav__item")).toHaveCount(5);
   for (const name of ["Home", "Trips", "Earnings", "Support", "Account"]) {
-    await expect(footer.getByText(name, { exact: true })).toBeVisible();
+    await expect(footer.getByRole("link", { name, exact: true })).toBeVisible();
   }
+  await expect(footer.locator(".biloo-footer-nav__surface")).toHaveCSS("border-radius", "0px");
+  await expect(footer.locator(".biloo-footer-nav__surface")).toHaveCSS("box-shadow", "none");
   await expect(footer.getByRole("link", { name: "Trips" })).toHaveAttribute("href", "/driver/activity");
   await expect(footer.getByRole("link", { name: "Earnings" })).toHaveAttribute("aria-current", "page");
   await expect(footer.getByRole("link", { name: "Support" })).toHaveAttribute("href", "/support?role=driver");
