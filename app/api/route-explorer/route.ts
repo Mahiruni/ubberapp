@@ -4,8 +4,13 @@ type Point = { lat: number; lng: number; name: string };
 const reply = (body: unknown, status = 200) => Response.json(body, { status, headers: { "Cache-Control": "no-store" } });
 
 async function resolvePlace(query: string, token: string): Promise<Point> {
+  // Oromiffa Mattuu is commonly indexed as Metu/Mettu in mapping providers.
+  // Use the geographically specific lookup to avoid the similarly named MetU near Addis Ababa.
+  const lookup = /^(mattuu|matuu|metu|mettu)(?:,?\\s+(?:oromia|ethiopia))*$/i.test(query)
+    ? "Metu Ethiopia"
+    : query;
   const params = new URLSearchParams({
-    q: query, country: "et", limit: "5", language: "en",
+    q: lookup, country: "et", limit: "5", language: "en",
     access_token: token,
   });
   const response = await fetch(`https://api.mapbox.com/search/geocode/v6/forward?${params}`, {
