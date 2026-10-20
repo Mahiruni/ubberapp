@@ -1,0 +1,358 @@
+/*
+ * Biloo accessibility contrast authority. Scope to app chrome and wrappers,
+ * never alter map tiles/canvas or success/danger semantic fills.
+ * Token pairs target WCAG AA >=4.5:1 for text in both light and dark modes.
+ */
+:is(.nr-app,.nr-driver-app-shell,.nr-identity-entry,.nex-manage)[data-theme="light"],
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer)[data-theme="light"] {
+  --biloo-contrast-bg: #f6f8fb;
+  --biloo-contrast-surface: #fff;
+  --biloo-contrast-raised: #eef3f9;
+  --biloo-contrast-text: #132a48;
+  --biloo-contrast-muted: #53657e;
+  --biloo-contrast-border: #cbd6e3;
+  --biloo-contrast-action: #08295f;
+  --biloo-contrast-action-text: #fff;
+  --biloo-contrast-link: #154e91;
+  --biloo-contrast-placeholder: #586a80;
+  --biloo-contrast-status-success: #126c49;
+  --biloo-contrast-status-danger: #a12c3b;
+  color-scheme: light;
+}
+:is(.nr-app,.nr-driver-app-shell,.nr-identity-entry,.nex-manage)[data-theme="dark"],
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer)[data-theme="dark"],
+.nr-driver-app-shell[data-theme="dark"] .nr-app {
+  --biloo-contrast-bg: #08295f;
+  --biloo-contrast-surface: #10386f;
+  --biloo-contrast-raised: #174579;
+  --biloo-contrast-text: #fff;
+  --biloo-contrast-muted: #d5dfed;
+  --biloo-contrast-border: #6483ac;
+  --biloo-contrast-action: #f9c449;
+  --biloo-contrast-action-text: #08295f;
+  --biloo-contrast-link: #ffdc86;
+  --biloo-contrast-placeholder: #c9d7e9;
+  --biloo-contrast-status-success: #72e4ae;
+  --biloo-contrast-status-danger: #ffb4bf;
+  color-scheme: dark;
+}
+/* The UI's historical variable vocabulary must have the same theme authority. */
+:is(.nr-app,.nr-driver-app-shell,.nr-identity-entry,.nex-manage)[data-theme] {
+  --bg: var(--biloo-contrast-bg);
+  --surface: var(--biloo-contrast-surface);
+  --surface-alt: var(--biloo-contrast-raised);
+  --text: var(--biloo-contrast-text);
+  --muted: var(--biloo-contrast-muted);
+  --line: var(--biloo-contrast-border);
+  --nr-bg: var(--biloo-contrast-bg);
+  --nr-surface: var(--biloo-contrast-surface);
+  --nr-text: var(--biloo-contrast-text);
+  --nr-text-secondary: var(--biloo-contrast-muted);
+  --nr-border: var(--biloo-contrast-border);
+  --nr-id-bg: var(--biloo-contrast-bg);
+  --nr-id-surface: var(--biloo-contrast-surface);
+  --nr-id-field: var(--biloo-contrast-raised);
+  --nr-id-text: var(--biloo-contrast-text);
+  --nr-id-muted: var(--biloo-contrast-muted);
+  --nr-id-line: var(--biloo-contrast-border);
+}
+/* Trip and account surfaces: don't allow dark captions on dark cards or reverse. */
+.nr-app[data-mode="rider"][data-theme] :is(
+  .nr-account-standard,.nr-account-group,.nr-account-hero,.nr-account-section,
+  .nr-account-row,.nr-profile-card,.nr-rider-page,.nr-destination-panel,
+  .nr-ride-selection,.nr-ride-card,.nr-ride-payment,.nr-trip-frame,
+  .nr-trip-experience,.nr-driver-matching,.nr-sheet,.nr-dialog
+) {
+  --text: var(--biloo-contrast-text);
+  --muted: var(--biloo-contrast-muted);
+  --surface: var(--biloo-contrast-surface);
+  --surface-alt: var(--biloo-contrast-raised);
+  --line: var(--biloo-contrast-border);
+  color: var(--biloo-contrast-text);
+}
+.nr-app[data-mode="rider"][data-theme="dark"] :is(
+  .nr-account-standard,.nr-account-group,.nr-account-hero,.nr-account-section,
+  .nr-account-row,.nr-profile-card,.nr-destination-panel,
+  .nr-ride-selection,.nr-ride-card,.nr-ride-payment,.nr-trip-frame,
+  .nr-trip-experience,.nr-driver-matching,.nr-dialog
+) {
+  background-color: var(--biloo-contrast-surface)!important;
+  border-color: var(--biloo-contrast-border)!important;
+  color: var(--biloo-contrast-text)!important;
+}
+.nr-app[data-mode="rider"][data-theme="dark"] :is(
+  .nr-endpoint-field,.nr-input-field,.nr-field-value,
+  .nr-place-suggestion,.nr-recent-destination,.nr-ride-card,
+  .nr-payment-choices button,.nr-account-secondary-actions,.nr-account-row
+) {
+  background-color: var(--biloo-contrast-raised)!important;
+  border-color: var(--biloo-contrast-border)!important;
+  color: var(--biloo-contrast-text)!important;
+}
+.nr-app[data-mode="rider"][data-theme="dark"] :is(
+  .nr-ride-selection,.nr-destination-panel,.nr-trip-experience,.nr-driver-matching,
+  .nr-account-standard,.nr-account-group,.nr-account-hero,.nr-account-section
+) :is(h1,h2,h3,h4,label,strong,b) {
+  color: var(--biloo-contrast-text)!important;
+}
+.nr-app[data-mode="rider"][data-theme="dark"] :is(
+  .nr-ride-selection,.nr-destination-panel,.nr-trip-experience,.nr-driver-matching,
+  .nr-account-standard,.nr-account-group,.nr-account-hero,.nr-account-section
+) :is(p,small,time,.nr-muted,.nr-ride-copy small,.nr-fare-explanation,.nr-fare-source) {
+  color: var(--biloo-contrast-muted)!important;
+}
+/* Rider draggable flow panels are shared across Home, Search, Ride, Match, Trip. */
+.nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper
+  .nr-main > .nr-rider-flow-panel > .nr-rider-persistent-wrapper,
+.nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper
+  .nr-rider-persistent-wrapper :is(.nr-rider-home-sheet,.nr-destination-panel,.nr-ride-selection,.nr-driver-matching,.nr-trip-experience) {
+  --text: var(--biloo-contrast-text);
+  --muted: var(--biloo-contrast-muted);
+  --surface: var(--biloo-contrast-surface);
+  --surface-alt: var(--biloo-contrast-raised);
+  --line: var(--biloo-contrast-border);
+  color: var(--biloo-contrast-text)!important;
+  border-color: var(--biloo-contrast-border)!important;
+  background: var(--biloo-contrast-surface)!important;
+}
+/* Home previously forced white on its header, handle, scroll, shortcut and text. */
+.nr-app[data-mode="rider"][data-theme] .rider-map-flow.rider-home-view {
+  --biloo-home-ink: var(--biloo-contrast-text);
+  --biloo-home-muted: var(--biloo-contrast-muted);
+  --biloo-home-line: var(--biloo-contrast-border);
+}
+.nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view
+  :is(.nr-home-sheet-grab-area,.nr-home-sheet-drag-zone,.nr-rider-home-intro,.nr-home-sheet-scroll) {
+  background: var(--biloo-contrast-surface)!important;
+  color: var(--biloo-contrast-text)!important;
+}
+.nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view
+  :is(.nr-rider-home-intro h2,.nr-home-history-heading h2) {
+  color: var(--biloo-contrast-text)!important;
+}
+.nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view
+  :is(.nr-wrapper-subtitle,.nr-home-location,.nr-home-location span,.nr-home-location svg) {
+  color: var(--biloo-contrast-muted)!important;
+}
+.nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view
+  :is(.nr-home-shortcuts button,.nr-home-destinations .nr-list-row) {
+  color: var(--biloo-contrast-text)!important;
+  background: var(--biloo-contrast-raised)!important;
+  border-color: var(--biloo-contrast-border)!important;
+}
+.nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view
+  .nr-home-shortcuts button svg {
+  color: var(--biloo-contrast-text)!important;
+}
+.nr-app[data-mode="rider"][data-theme="dark"] .rider-map-flow.nr-polished-wrapper.rider-home-view
+  .nr-home-shortcuts button:is(:hover,:focus-visible) {
+  background: #225286!important;
+  border-color: #89a9cf!important;
+}
+.nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view
+  .nr-home-search {
+  background: #08295f!important;
+  color: #fff!important;
+  border-color: #08295f!important;
+}
+.nr-app[data-mode="rider"][data-theme="dark"] .rider-map-flow.nr-polished-wrapper.rider-home-view
+  .nr-home-search {
+  border-color: #8aaad0!important;
+}
+/* Keep gold and ink as a pair for filled branded action buttons. */
+.nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view
+  .nr-home-search .nr-search-arrow {
+  background: #f9c449!important;
+  color: #08295f!important;
+}
+/* Fields: native controls must not inherit pale text from another theme. */
+:is(.nr-app,.nr-driver-app-shell,.nr-identity-entry,.nex-manage)[data-theme]
+  :is(input:not([type="checkbox"]):not([type="radio"]),select,textarea) {
+  color: var(--biloo-contrast-text)!important;
+  caret-color: var(--biloo-contrast-text);
+  background-color: var(--biloo-contrast-raised)!important;
+  border-color: var(--biloo-contrast-border)!important;
+  color-scheme: inherit;
+}
+:is(.nr-app,.nr-driver-app-shell,.nr-identity-entry,.nex-manage)[data-theme]
+  :is(input,textarea)::placeholder {
+  color: var(--biloo-contrast-placeholder)!important;
+  opacity: 1;
+}
+:is(.nr-app,.nr-driver-app-shell,.nr-identity-entry,.nex-manage)[data-theme]
+  :is(input,textarea,select):disabled {
+  opacity: .65;
+}
+/* Explicit Driver card and wrapper foregrounds complement the brand tokens. */
+.nr-driver-app-shell[data-theme] {
+  --driver-bg: var(--biloo-contrast-bg);
+  --driver-surface: var(--biloo-contrast-surface);
+  --driver-surface-elevated: var(--biloo-contrast-raised);
+  --driver-border: var(--biloo-contrast-border);
+  --driver-text-primary: var(--biloo-contrast-text);
+  --driver-text-secondary: var(--biloo-contrast-muted);
+}
+.nr-driver-app-shell[data-theme] :is(
+  .nr-driver-card,.nr-driver-operational-card,.nr-driver-profile-section,
+  .nr-profile-panel,.nr-profile-state-card,.nr-earnings-total-card,
+  .nr-earnings-metric,.nr-report-section,.nr-report-summary-card,
+  .nr-driver-verification-card,.nr-driver-profile-quick,
+  .nr-activity-row
+) {
+  color: var(--driver-text-primary)!important;
+  border-color: var(--driver-border)!important;
+  background-color: var(--driver-surface)!important;
+}
+.nr-driver-app-shell[data-theme] :is(
+  .nr-driver-card,.nr-driver-operational-card,.nr-driver-profile-section,
+  .nr-profile-panel,.nr-profile-state-card,.nr-earnings-total-card,
+  .nr-earnings-metric,.nr-report-section,.nr-report-summary-card,
+  .nr-driver-verification-card,.nr-driver-profile-quick,.nr-activity-row
+) :is(h1,h2,h3,h4,label,strong) {
+  color: var(--driver-text-primary)!important;
+}
+.nr-driver-app-shell[data-theme] :is(
+  .nr-driver-card,.nr-driver-operational-card,.nr-driver-profile-section,
+  .nr-profile-panel,.nr-profile-state-card,.nr-earnings-total-card,
+  .nr-earnings-metric,.nr-report-section,.nr-report-summary-card,
+  .nr-driver-verification-card,.nr-driver-profile-quick,.nr-activity-row
+) :is(p,small,time,.nr-muted,.nr-driver-kicker,.nr-earnings-definition) {
+  color: var(--driver-text-secondary)!important;
+}
+.nr-driver-app-shell[data-theme] :is(.nr-driver-global-header,.nr-driver-nav,.nr-driver-bottom-nav) {
+  border-color: var(--driver-border)!important;
+}
+.nr-driver-app-shell[data-theme] :is(.nr-driver-global-header-title strong,.nr-driver-global-header-title small) {
+  color: var(--driver-text-primary)!important;
+}
+.nr-driver-app-shell[data-theme] :is(.nr-driver-theme-selector button[data-active="true"]) {
+  background: var(--driver-surface-elevated)!important;
+  color: var(--driver-text-primary)!important;
+  border: 1px solid var(--driver-border)!important;
+}
+/* Portaled menu layers do not inherit the Rider/Driver app's CSS variables. */
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer)[data-theme] {
+  --ed-ink: var(--biloo-contrast-text);
+  --ed-muted: var(--biloo-contrast-muted);
+  --ed-line: var(--biloo-contrast-border);
+  --ed-bg: var(--biloo-contrast-surface);
+  --ed-panel: var(--biloo-contrast-raised);
+}
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer)[data-theme]
+  :is(.nr-rider-drawer,.nr-driver-menu-panel) {
+  background: var(--biloo-contrast-surface)!important;
+  color: var(--biloo-contrast-text)!important;
+  border-color: var(--biloo-contrast-border)!important;
+}
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer)[data-theme]
+  :is(.nr-rider-drawer-nav button,.nr-driver-menu-row,.nr-driver-menu-utility) {
+  color: var(--biloo-contrast-text)!important;
+}
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer)[data-theme]
+  :is(.nr-menu-section-label,.nr-driver-menu-row-copy small,.nr-rider-drawer-nav small) {
+  color: var(--biloo-contrast-muted)!important;
+}
+/* No invisible outline after theme switch; preserve large touch targets. */
+:is(.nr-app,.nr-driver-app-shell,.nr-identity-entry)[data-theme] :is(
+  button,a,input,select,textarea,summary
+):focus-visible,
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer)[data-theme] :is(a,button):focus-visible {
+  outline: 3px solid var(--biloo-contrast-action)!important;
+  outline-offset: 3px;
+}
+/* Light focus on gold filled buttons needs navy outline for contrast. */
+:is(.nr-app,.nr-driver-app-shell)[data-theme="dark"] :is(.nr-primary,.driver-auth-submit,.nr-auth-submit):focus-visible {
+  outline-color: #fff!important;
+}
+@media (prefers-reduced-motion: reduce) {
+  :is(.nr-app,.nr-driver-app-shell,.nr-identity-entry)[data-theme]
+    :is(input,textarea,select) {
+    transition: none!important;
+  }
+}
+
+/* Driver dispatch/live-trip sheets use their existing --trip-* pair. Keeping this
+   scoped prevents a theme update from changing Accept/Skip/Cancel semantics. */
+.nr-driver-app-shell[data-theme] :is(
+  .nr-driver-request-page .nr-request-sheet,
+  .nr-driver-navigation-page .nr-nav-bottom-card,
+  .nr-driver-request-page .nr-driver-sheet,
+  .nr-driver-navigation-page .nr-driver-sheet
+) {
+  color: var(--trip-text,var(--biloo-contrast-text))!important;
+  background-color: var(--trip-surface,var(--biloo-contrast-surface))!important;
+  border-color: var(--trip-border,var(--biloo-contrast-border))!important;
+}
+/* Location errors retain danger semantics, not the normal location caption. */
+.nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view
+  .nr-home-location:is(.denied,.unavailable),
+.nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view
+  .nr-home-location:is(.denied,.unavailable) :is(span,svg) {
+  color: var(--biloo-contrast-status-danger)!important;
+}
+/* Safety, support and account-management are separate route shells. */
+.nr-app:is(.nr-support-page,.nr-safety-page)[data-theme] {
+  background-color: var(--biloo-contrast-bg)!important;
+  color: var(--biloo-contrast-text)!important;
+}
+.nr-app:is(.nr-support-page,.nr-safety-page)[data-theme]
+  :is(.nr-support-card,.nr-safety-intro,.nr-safety-card,.nr-support-state,.nr-support-loading) {
+  background: var(--biloo-contrast-surface)!important;
+  border-color: var(--biloo-contrast-border)!important;
+  color: var(--biloo-contrast-text)!important;
+}
+.nr-app:is(.nr-support-page,.nr-safety-page)[data-theme]
+  :is(.nr-support-head,.nr-safety-head,.nr-support-card,.nr-safety-intro,.nr-support-state)
+  :is(p,small,.kicker) {
+  color: var(--biloo-contrast-muted)!important;
+}
+.nr-app:is(.nr-support-page,.nr-safety-page)[data-theme]
+  :is(.nr-support-head,.nr-safety-head,.nr-support-card,.nr-safety-intro,.nr-support-state)
+  :is(h1,h2,h3,strong) {
+  color: var(--biloo-contrast-text)!important;
+}
+.nex-manage[data-theme] {
+  background: var(--biloo-contrast-bg)!important;
+  color: var(--biloo-contrast-text)!important;
+}
+.nex-manage[data-theme] :is(.nex-manage-top,.nex-manage-card) {
+  background: var(--biloo-contrast-surface)!important;
+  color: var(--biloo-contrast-text)!important;
+  border-color: var(--biloo-contrast-border)!important;
+}
+.nex-manage[data-theme] :is(.nex-manage-intro h1,.nex-manage-identity h2,.nex-manage-brand span) {
+  color: var(--biloo-contrast-text)!important;
+}
+.nex-manage[data-theme] :is(.nex-manage-intro p,.nex-manage-identity p,.nex-manage-brand small) {
+  color: var(--biloo-contrast-muted)!important;
+}
+/* Admin is a separate application; respect its existing --admin-* palette. */
+.admin-app[data-theme="light"] {
+  --admin-text: #132a48;
+  --admin-muted: #53657e;
+  --admin-bg: #f6f8fb;
+  --admin-surface: #fff;
+}
+.admin-app[data-theme="dark"] {
+  --admin-text: #f7faff;
+  --admin-muted: #d5dfed;
+}
+.admin-app[data-theme] :is(.admin-content,.admin-card,.metric,.signal,.queue-row) {
+  color: var(--admin-text)!important;
+}
+.admin-app[data-theme] :is(.metric small,.signal small,.queue-row small,.table-meta) {
+  color: var(--admin-muted)!important;
+}
+/* Semantic status labels on regular backgrounds use true contrast colors. */
+.nr-app[data-theme="light"] :is(.nr-status-success,.nr-success-text) {
+  color: var(--biloo-contrast-status-success)!important;
+}
+.nr-app[data-theme="light"] :is(.nr-status-danger,.nr-error-text) {
+  color: var(--biloo-contrast-status-danger)!important;
+}
+.nr-app[data-theme="dark"] :is(.nr-status-success,.nr-success-text) {
+  color: var(--biloo-contrast-status-success)!important;
+}
+.nr-app[data-theme="dark"] :is(.nr-status-danger,.nr-error-text) {
+  color: var(--biloo-contrast-status-danger)!important;
+}
