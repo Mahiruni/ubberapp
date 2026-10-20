@@ -139,7 +139,10 @@ function RiderWelcome() {
   }
 
   return (
-    <main className="nr-rider-welcome biloo-rider-campaign">\n      <header className="biloo-rider-brand"><img src="/brand/biloo-mark.svg" alt="" /><strong>biloo</strong><span>RIDES FOR A BETTER TOMORROW</span></header>\n      <section className="biloo-rider-heading"><h1>Your Ride<br/>is Here</h1><p>Safe. Reliable. Affordable.<br/>Across Addis Ababa.</p></section>\n      <div className="biloo-rider-photo" role="img" aria-label="Biloo ride-hailing welcome illustration" />
+    <main className="nr-rider-welcome biloo-rider-campaign">
+      <header className="biloo-rider-brand"><img src="/brand/biloo-mark.svg" alt="" /><strong>biloo</strong><span>RIDES FOR A BETTER TOMORROW</span></header>
+      <section className="biloo-rider-heading"><h1>Your Ride<br/>is Here</h1><p>Safe. Reliable. Affordable.<br/>Across Addis Ababa.</p></section>
+      <div className="biloo-rider-photo" role="img" aria-label="Biloo ride-hailing welcome illustration" />
       <div className="nr-rider-welcome-intro" hidden>
         <span className="nr-rider-entry-kicker">
           <Icon name="navigation" size={15} />
@@ -165,7 +168,8 @@ function RiderWelcome() {
           <span>{t("entryGetStarted")}</span>
           <Icon name="arrow" size={20} />
         </Link>}
-        {!returningDriver && <Link className="biloo-rider-register" href="/rider/sign-up">{t("createAccount")}</Link>}\n        <Link className="nr-rider-welcome-sign-in" href={returningDriver ? "/driver/home" : "/rider/sign-in"}>
+        {!returningDriver && <Link className="biloo-rider-register" href="/rider/sign-up">{t("createAccount")}</Link>}
+        <Link className="nr-rider-welcome-sign-in" href={returningDriver ? "/driver/home" : "/rider/sign-in"}>
           <span>{returningDriver ? t("entryReturnDriver") : t("alreadyHaveAccount")}</span>
           <Icon name="chevron" size={19} />
         </Link>
