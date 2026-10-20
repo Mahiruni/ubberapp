@@ -340,7 +340,7 @@ test("EliteTrade-inspired Driver groups show management links without hiding log
   await trigger.click();
   const panel = page.locator(".nr-driver-menu-panel");
   await expect(panel.getByText("OVERVIEW", { exact: true })).toBeVisible();
-  await expect(panel.getByRole("navigation", { name: "Account and settings" }).getByRole("link", { name: /^Account/ })).toBeVisible();
+  await expect(panel.getByRole("navigation", { name: "Account and settings" }).locator(".nr-driver-menu-row").filter({ hasText: /^Account/ })).toBeVisible();
   await expect(panel.getByRole("navigation", { name: "Help and safety" }).getByRole("link", { name: /^Help & Support/ })).toBeVisible();
   await expect(panel.getByRole("button", { name: /ACCOUNT & HELP/ })).toHaveCount(0);
   const management = panel.getByRole("button", { name: /DRIVER MANAGEMENT/ });
