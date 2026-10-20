@@ -1,0 +1,53 @@
+name: Biloo Light & Dark Contrast Regression
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "app/biloo-contrast-system.css"
+      - "app/layout.tsx"
+      - "tests/e2e/biloo-contrast.spec.ts"
+      - "tests/unit/biloo-contrast-system.test.ts"
+      - ".github/workflows/biloo-contrast-regression.yml"
+  push:
+    branches: [main]
+    paths:
+      - "app/biloo-contrast-system.css"
+      - "app/layout.tsx"
+      - "tests/e2e/biloo-contrast.spec.ts"
+      - "tests/unit/biloo-contrast-system.test.ts"
+      - ".github/workflows/biloo-contrast-regression.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  contrast:
+    name: Rendered contrast · desktop and mobile
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      NEXT_PUBLIC_APP_ENV: test
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      NEXT_PUBLIC_MAPBOX_TOKEN: replace_me
+      NEXT_PUBLIC_SUPABASE_URL: https://eyyvvwecpyctttiueban.supabase.co
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_kXFOrtwKkKmrqCtYTTuzdg__CjjABBf
+      PLAYWRIGHT_SERVER_COMMAND: npm run start -- --hostname 127.0.0.1
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npx vitest run tests/unit/biloo-contrast-system.test.ts
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test tests/e2e/biloo-contrast.spec.ts --project=chromium --project=mobile --workers=2 --timeout=45000
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: biloo-contrast-report
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
