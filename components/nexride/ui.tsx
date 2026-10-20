@@ -88,7 +88,7 @@ export function Brand({ driver = false }: { driver?: boolean }) {
     <div className="nr-brand nr-text-wordmark">
       <img src="/brand/biloo-mark.svg" width={34} height={34} alt="" aria-hidden="true" className="nr-brand-symbol" />
       <div>
-        <strong>Biloo</strong>
+        <strong>biloo</strong>
         {driver && <small>{t("driver")}</small>}
       </div>
     </div>
