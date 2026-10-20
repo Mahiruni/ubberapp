@@ -1,4 +1,4 @@
-const VERSION = "nexride-biloo-only-20261020-v2";
+const VERSION = "biloo-rider-home-20261020-v3";
 const CORE_CACHE = VERSION + "-core";
 const RUNTIME_CACHE = VERSION + "-runtime";
 const CORE_ASSETS = [
@@ -35,7 +35,7 @@ self.addEventListener("install", (event) => {
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys()
-      .then((keys) => Promise.all(keys.filter((key) => key.startsWith("nexride-") && key !== CORE_CACHE && key !== RUNTIME_CACHE).map((key) => caches.delete(key))))
+      .then((keys) => Promise.all(keys.filter((key) => (key.startsWith("nexride-") || key.startsWith("biloo-")) && key !== CORE_CACHE && key !== RUNTIME_CACHE).map((key) => caches.delete(key))))
       .then(() => self.clients.claim())
   );
 });
