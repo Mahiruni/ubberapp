@@ -7,6 +7,8 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import "./route-explorer.css";
 
 type Point = { lat: number; lng: number; name: string };
+type PlaceSuggestion = Point & { id: string; label: string };
+type SearchField = "origin" | "destination";
 type RouteResult = {
   status: "ready";
   origin: Point;
@@ -50,6 +52,13 @@ function boundsOfRoute(coordinates: [number, number][]) {
 export default function RouteExplorerPage() {
   const [origin, setOrigin] = useState("Addis Ababa");
   const [destination, setDestination] = useState("");
+  const [selected, setSelected] = useState<{ origin: PlaceSuggestion | null; destination: PlaceSuggestion | null }>({
+    origin: null, destination: null,
+  });
+  const [activeField, setActiveField] = useState<SearchField | null>(null);
+  const [suggestions, setSuggestions] = useState<PlaceSuggestion[]>([]);
+  const [suggestionStatus, setSuggestionStatus] = useState<"idle" | "searching" | "ready" | "error">("idle");
+  const [panelOpen, setPanelOpen] = useState(true);
   const [route, setRoute] = useState<RouteResult | null>(null);
   const [mapStyle, setMapStyle] = useState<StyleName>("streets");
   const [mapReady, setMapReady] = useState(false);
@@ -63,6 +72,7 @@ export default function RouteExplorerPage() {
   const mapboxClassRef = useRef<typeof import("mapbox-gl")["default"] | null>(null);
   const markersRef = useRef<MapboxMarker[]>([]);
   const currentRouteRef = useRef<RouteResult | null>(null);
+  const styleRef = useRef<StyleName>("streets");
   const requestRef = useRef<AbortController | null>(null);
   const mountedRef = useRef(false);
 
@@ -91,7 +101,7 @@ export default function RouteExplorerPage() {
         type: "line",
         source: "biloo-route-explorer",
         layout: { "line-cap": "round", "line-join": "round" },
-        paint: { "line-color": "#ffffff", "line-width": 10, "line-opacity": 0.98 },
+        paint: { "line-color": styleRef.current === "night" ? "#10376b" : "#ffffff", "line-width": 10, "line-opacity": 0.98 },
       });
     }
     if (!map.getLayer("biloo-route-main")) {
@@ -100,7 +110,7 @@ export default function RouteExplorerPage() {
         type: "line",
         source: "biloo-route-explorer",
         layout: { "line-cap": "round", "line-join": "round" },
-        paint: { "line-color": "#08295f", "line-width": 6, "line-opacity": 0.98 },
+        paint: { "line-color": styleRef.current === "night" ? "#f9c449" : "#08295f", "line-width": 6, "line-opacity": 0.98 },
       });
     }
 
@@ -154,6 +164,7 @@ export default function RouteExplorerPage() {
           const saved = window.localStorage.getItem(STORAGE_KEY);
           if (saved === "streets" || saved === "satellite" || saved === "night") preferred = saved;
         } catch { /* Browsers may block local preference storage. */ }
+        styleRef.current = preferred;
         setMapStyle(preferred);
         const map = new mapboxgl.Map({
           container: containerRef.current,
@@ -217,6 +228,100 @@ export default function RouteExplorerPage() {
     return () => window.clearTimeout(timer);
   }, [toast]);
 
+
+  // Separate nationwide route search: it never changes Biloo's ride-booking coverage.
+  useEffect(() => {
+    const field = activeField;
+    const query = (field === "origin" ? origin : destination).trim();
+    if (!field || query.length < 3) {
+      setSuggestions([]);
+      setSuggestionStatus("idle");
+      return;
+    }
+    const controller = new AbortController();
+    setSuggestionStatus("searching");
+    setSuggestions([]);
+    const timer = window.setTimeout(async () => {
+      try {
+        const response = await fetch(
+          "/api/route-explorer/places?q=" + encodeURIComponent(query),
+          { signal: controller.signal, cache: "no-store" },
+        );
+        const data: { status?: string; results?: PlaceSuggestion[] } = await response.json();
+        if (controller.signal.aborted) return;
+        if (!response.ok || data.status !== "ready") throw new Error("search_unavailable");
+        setSuggestions(Array.isArray(data.results) ? data.results.slice(0, 7) : []);
+        setSuggestionStatus("ready");
+      } catch {
+        if (!controller.signal.aborted) {
+          setSuggestions([]);
+          setSuggestionStatus("error");
+        }
+      }
+    }, 340);
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [activeField, origin, destination]);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      const instance = mapRef.current;
+      instance?.resize();
+      if (currentRouteRef.current && instance?.isStyleLoaded()) drawRoute(currentRouteRef.current);
+    }, 70);
+    return () => window.clearTimeout(timer);
+  }, [panelOpen, drawRoute]);
+
+  function editField(field: SearchField, value: string) {
+    if (field === "origin") setOrigin(value);
+    else setDestination(value);
+    setSelected(previous => ({ ...previous, [field]: null }));
+    setActiveField(field);
+    setError("");
+  }
+
+  function selectSuggestion(field: SearchField, value: PlaceSuggestion) {
+    if (field === "origin") setOrigin(value.name);
+    else setDestination(value.name);
+    setSelected(previous => ({ ...previous, [field]: value }));
+    setActiveField(null);
+    setSuggestions([]);
+    setSuggestionStatus("idle");
+  }
+
+  function suggestionsFor(field: SearchField) {
+    const isOpen = activeField === field;
+    const query = field === "origin" ? origin : destination;
+    if (!isOpen || query.trim().length < 3) return null;
+    return (
+      <div className="biloo-explore-autocomplete" role="listbox" id={"biloo-place-options-" + field} aria-label={field === "origin" ? "Starting point suggestions" : "Destination suggestions"}>
+        {suggestionStatus === "searching" ? (
+          <p className="biloo-explore-suggestion-status" role="status">Finding places in Ethiopia…</p>
+        ) : suggestionStatus === "error" ? (
+          <p className="biloo-explore-suggestion-status" role="status">Suggestions unavailable. You can still enter a place manually.</p>
+        ) : suggestions.length ? suggestions.map(item => (
+          <button
+            type="button"
+            role="option"
+            aria-selected={false}
+            className="biloo-explore-suggestion"
+            key={item.id}
+            onPointerDown={event => event.preventDefault()}
+            onClick={() => selectSuggestion(field, item)}
+          >
+            <span className="biloo-explore-suggestion-pin" aria-hidden="true">⌖</span>
+            <span><strong>{item.name}</strong><small>{item.label}</small></span>
+            <span className="biloo-explore-suggestion-arrow" aria-hidden="true">↗</span>
+          </button>
+        )) : (
+          <p className="biloo-explore-suggestion-status" role="status">No places found. Try a nearby town or another spelling.</p>
+        )}
+      </div>
+    );
+  }
+
   async function calculateRoute(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const from = origin.trim();
@@ -237,7 +342,7 @@ export default function RouteExplorerPage() {
       const response = await fetch("/api/route-explorer", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ origin: from, destination: to }),
+        body: JSON.stringify({ origin: from, destination: to, originPoint: selected.origin, destinationPoint: selected.destination }),
         signal: controller.signal,
         cache: "no-store",
       });
@@ -266,12 +371,15 @@ export default function RouteExplorerPage() {
 
   function changeStyle(value: StyleName) {
     if (value === mapStyle) return;
+    styleRef.current = value;
     setMapStyle(value);
   }
 
   function swapLocations() {
     setOrigin(destination);
     setDestination(origin);
+    setSelected(previous => ({ origin: previous.destination, destination: previous.origin }));
+    setActiveField(null);
     setError("");
   }
 
@@ -318,7 +426,7 @@ export default function RouteExplorerPage() {
         <span className="biloo-explore-top-tag"><i aria-hidden="true" /> ROUTE EXPLORER</span>
       </header>
 
-      <section className="biloo-explore-workspace" aria-label="Biloo route planning workspace">
+      <section className="biloo-explore-workspace" data-panel-open={panelOpen ? "true" : "false"} aria-label="Biloo route planning workspace">
         <div className="biloo-explore-map" ref={containerRef} aria-label="Interactive Ethiopia road map" />
         {!mapReady && !mapError && (
           <div className="biloo-explore-map-loading" role="status">
@@ -334,6 +442,7 @@ export default function RouteExplorerPage() {
         )}
 
         <div className="biloo-explore-map-toolbar" aria-label="Map display options">
+          <button type="button" className="biloo-explore-panel-toggle" aria-expanded={panelOpen} aria-controls="biloo-explore-route-panel" onClick={() => setPanelOpen(open => !open)}>{panelOpen ? "Hide planner ↑" : "Plan a route +"}</button>
           <div className="biloo-explore-map-style" role="group" aria-label="Map style">
             <button type="button" className={mapStyle === "streets" ? "is-active" : ""} aria-pressed={mapStyle === "streets"} onClick={() => changeStyle("streets")}>Streets</button>
             <button type="button" className={mapStyle === "satellite" ? "is-active" : ""} aria-pressed={mapStyle === "satellite"} onClick={() => changeStyle("satellite")}>Satellite</button>
@@ -342,7 +451,7 @@ export default function RouteExplorerPage() {
           <button type="button" className="biloo-explore-reset" onClick={resetView} aria-label="Fit route or reset map view" title="Reset map view">⌖</button>
         </div>
 
-        <aside className="biloo-explore-panel" aria-label="Route planner">
+        <aside className="biloo-explore-panel" id="biloo-explore-route-panel" hidden={!panelOpen} aria-label="Route planner">
           <div className="biloo-explore-panel-accent" />
           <div className="biloo-explore-panel-head">
             <span className="biloo-explore-eyebrow"><i aria-hidden="true" /> YOUR ROAD, YOUR WAY</span>
@@ -353,14 +462,20 @@ export default function RouteExplorerPage() {
           <form className="biloo-explore-form" onSubmit={calculateRoute}>
             <div className="biloo-explore-waypoints">
               <span className="biloo-explore-track" aria-hidden="true"><i /><b /></span>
-              <label className="biloo-explore-field">
-                <span>FROM</span>
-                <input name="origin" type="text" value={origin} onChange={event => setOrigin(event.target.value)} maxLength={100} placeholder="Enter a starting point" autoComplete="off" required />
-              </label>
-              <label className="biloo-explore-field">
-                <span>TO</span>
-                <input name="destination" type="text" value={destination} onChange={event => setDestination(event.target.value)} maxLength={100} placeholder="Where would you like to go?" autoComplete="off" required />
-              </label>
+              <div className="biloo-explore-field-wrap">
+                <label className="biloo-explore-field">
+                  <span>FROM</span>
+                  <input name="origin" type="text" value={origin} onChange={event => editField("origin", event.target.value)} onFocus={() => setActiveField("origin")} onKeyDown={event => { if (event.key === "Escape") setActiveField(null); }} role="combobox" aria-autocomplete="list" aria-expanded={activeField === "origin" && origin.trim().length >= 3} aria-controls="biloo-place-options-origin" maxLength={100} placeholder="Enter a starting point" autoComplete="off" required />
+                </label>
+                {suggestionsFor("origin")}
+              </div>
+              <div className="biloo-explore-field-wrap">
+                <label className="biloo-explore-field">
+                  <span>TO</span>
+                  <input name="destination" type="text" value={destination} onChange={event => editField("destination", event.target.value)} onFocus={() => setActiveField("destination")} onKeyDown={event => { if (event.key === "Escape") setActiveField(null); }} role="combobox" aria-autocomplete="list" aria-expanded={activeField === "destination" && destination.trim().length >= 3} aria-controls="biloo-place-options-destination" maxLength={100} placeholder="Where would you like to go?" autoComplete="off" required />
+                </label>
+                {suggestionsFor("destination")}
+              </div>
               <button className="biloo-explore-swap" type="button" onClick={swapLocations} aria-label="Swap start and destination" title="Swap places">⇅</button>
             </div>
             <button className="biloo-explore-submit" type="submit" disabled={loading}>
