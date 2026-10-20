@@ -30,7 +30,7 @@ describe("Biloo premium Account experience", () => {
     expect(driverScreen).toContain('signOutNexRide("driver")');
     expect(driverSettings).toContain("supabase.auth.getUser()");
     expect(driverSettings).toContain("identity.data.user?.id !== profile.id");
-    expect(driverSettings).toContain('onClick={() => router.push("/driver/profile")');
+    expect(driverSettings).toContain('router.push("/driver/profile")');
   });
 
   it("does not fabricate wallet balances, rides or verification statuses", () => {
