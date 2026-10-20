@@ -137,6 +137,10 @@
      the footer rather than allowing tabs to cover the destination button. */
   .nr-app[data-mode="rider"] .rider-map-flow.rider-home-view .nr-main > .nr-rider-flow-panel {
     bottom: calc(79px + env(safe-area-inset-bottom,0px))!important;
+    /* Include footer in the 40% bottom occupation, not in addition to it.
+       Snap gestures continue to update --nr-flow-sheet-height unchanged. */
+    height: max(120px, calc(var(--nr-flow-sheet-height,40dvh) - 79px - env(safe-area-inset-bottom,0px)))!important;
+    max-height: calc(100dvh - 79px - env(safe-area-inset-bottom,0px))!important;
   }
   /* Never impose footer offsets on search, matching, and active-trip sheets:
      navigation is context-hidden in those safety-critical states. */
@@ -171,6 +175,8 @@
     }
     .nr-app[data-mode="rider"] .rider-map-flow.rider-home-view .nr-main > .nr-rider-flow-panel {
       bottom: calc(68px + env(safe-area-inset-bottom,0px))!important;
+      height: max(110px, calc(var(--nr-flow-sheet-height,40dvh) - 68px - env(safe-area-inset-bottom,0px)))!important;
+      max-height: calc(100dvh - 68px - env(safe-area-inset-bottom,0px))!important;
     }
   }
 }

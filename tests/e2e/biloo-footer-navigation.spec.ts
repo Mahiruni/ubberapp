@@ -46,6 +46,7 @@ test("Rider footer matches the approved five items and leaves the map booking sh
   await expect(footer.getByRole("link", { name: "Wallet" })).toHaveAttribute("href", "/rider/wallet");
   await expect(footer.getByRole("link", { name: "Support" })).toHaveAttribute("href", "/support");
   const sheet = (await page.locator(".nr-rider-flow-panel").boundingBox())!;
+  expect(sheet.y).toBeGreaterThanOrEqual(844 * 0.55);
   const tabs = (await footer.boundingBox())!;
   expect(sheet.y + sheet.height).toBeLessThanOrEqual(tabs.y + 4);
   await footer.getByRole("button", { name: "Account" }).click();
