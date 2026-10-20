@@ -9,7 +9,6 @@ import { enterDriver, explicitSignOutRole, StartupError } from "../../lib/nexrid
 import { driverResumeDestination } from "../../lib/nexride-driver-verification";
 import { resolveSessionRole } from "../../lib/nexride-account-role";
 import "./driver-welcome.css";
-import "../detail-system.css";
 
 export default function DriverWelcome() {
   const router = useRouter();
@@ -41,20 +40,33 @@ export default function DriverWelcome() {
     return () => { active = false; };
   }, [router, attempt]);
 
-  if (checking) return <RiderSplash error={startupError} onRetry={() => setAttempt(value => value + 1)} />;
+  if (checking) {
+    return <RiderSplash error={startupError} onRetry={() => setAttempt(value => value + 1)} />;
+  }
 
-  return <main className="biloo-driver-campaign biloo-driver-campaign--2026" aria-label="Biloo Driver welcome">
-    <img className="biloo-driver-image" src="/nexride/screens/assets/driver.png" alt="Biloo driver beside a white branded car" loading="eager" fetchPriority="high" decoding="async" />
-    <section className="biloo-driver-bottom" aria-label="Driver access">
-      <Link href="/driver/onboarding" className="biloo-driver-primary">Get Started <span aria-hidden="true">→</span></Link>
-      <div className="biloo-driver-action-row">
-        <Link href="/driver/auth" className="biloo-driver-secondary-action">Sign In</Link>
-        <Link href="/driver/onboarding" className="biloo-driver-register-action">Register</Link>
-      </div>
-      <nav className="biloo-driver-links" aria-label="Helpful links">
-        <Link href="/support?role=driver">Help &amp; Support</Link>
-        <Link href="/rider">Rider App</Link>
-      </nav>
-    </section>
-  </main>;
+  return (
+    <main className="biloo-driver-welcome" aria-label="Biloo Driver welcome">
+      <img
+        className="biloo-driver-welcome__photo"
+        src="/nexride/screens/assets/driver.png"
+        alt="Biloo driver and vehicle"
+        loading="eager"
+        fetchPriority="high"
+        decoding="async"
+      />
+      <section className="biloo-driver-welcome__actions" aria-label="Driver account access">
+        <Link href="/driver/onboarding" className="biloo-driver-welcome__start">
+          Get Started <span aria-hidden="true">→</span>
+        </Link>
+        <div className="biloo-driver-welcome__auth">
+          <Link href="/driver/auth" className="biloo-driver-welcome__signin">Sign In</Link>
+          <Link href="/driver/onboarding" className="biloo-driver-welcome__register">Register</Link>
+        </div>
+        <nav className="biloo-driver-welcome__links" aria-label="Additional links">
+          <Link href="/support?role=driver">Help &amp; Support</Link>
+          <Link href="/rider">Rider App</Link>
+        </nav>
+      </section>
+    </main>
+  );
 }
