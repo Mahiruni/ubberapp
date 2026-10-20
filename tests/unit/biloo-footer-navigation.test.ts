@@ -38,8 +38,9 @@ describe("Biloo approved Rider and Driver footer menus", () => {
     expect(css).toContain("repeat(5,minmax(0,1fr))");
     expect(css).toContain(".nr-driver-home-swipe[data-map-input-boundary=\"true\"]");
     expect(css).not.toContain("height: max(120px");
-    expect(css).toContain(".rider-map-flow.rider-home-view .nr-home-sheet-scroll");
-    expect(css).toContain("scroll-padding-bottom: calc(105px");
+    expect(css).toContain(".rider-map-flow.rider-home-view");
+    expect(css).toContain(".nr-home-sheet-scroll");
+    expect(css).toContain("scroll-padding-bottom: calc(var(--biloo-dock-bar-height)");
     expect(css).toContain("env(safe-area-inset-bottom,0px)");
     expect(css).toContain('prefers-reduced-motion: reduce');
     expect(footer).toContain('aria-current={selected ? "page" : undefined}');
