@@ -1,6 +1,7 @@
 "use client";
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useRef,
@@ -17,7 +18,7 @@ import {
 export const LanguageContext = createContext<Language>("en");
 export const useTranslation = () => {
   const language = useContext(LanguageContext);
-  return (key: MessageKey) => translate(language, key);
+  return useCallback((key: MessageKey) => translate(language, key), [language]);
 };
 const paths = {
   mail: "M3 5h18v14H3ZM3 5l9 8 9-8",
