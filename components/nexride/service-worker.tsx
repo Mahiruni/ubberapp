@@ -19,7 +19,7 @@ export function ServiceWorkerRegistration() {
       if ("requestIdleCallback" in window) {
         idleId = window.requestIdleCallback(register, { timeout: 3000 });
       } else {
-        timerId = window.setTimeout(register, 1200);
+        timerId = setTimeout(register, 1200);
       }
     };
     if (document.readyState === "complete") schedule();
