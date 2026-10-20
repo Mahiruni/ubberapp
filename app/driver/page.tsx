@@ -44,7 +44,7 @@ export default function DriverWelcome() {
   if (checking) return <RiderSplash error={startupError} onRetry={() => setAttempt(value => value + 1)} />;
 
   return <main className="biloo-driver-campaign biloo-driver-campaign--2026" aria-label="Biloo Driver welcome">
-    <div className="biloo-driver-image" role="img" aria-label="Biloo driver beside a branded white car" />
+    <img className="biloo-driver-image" src="/nexride/screens/assets/driver.png" alt="Biloo driver beside a white branded car" loading="eager" fetchPriority="high" decoding="async" />
     <section className="biloo-driver-bottom" aria-label="Driver access">
       <Link href="/driver/onboarding" className="biloo-driver-primary">Get Started <span aria-hidden="true">→</span></Link>
       <div className="biloo-driver-action-row">
