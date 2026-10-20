@@ -1,7 +1,7 @@
 :root {
-  --nexride-navy: #041c30;
-  --nexride-emerald: #00c878;
-  --nexride-emerald-bright: #42e9a4;
+  --nexride-navy: #08295f;
+  --nexride-emerald: #f9c449;
+  --nexride-emerald-bright: #ffdb7c;
 }
 
 html,
@@ -72,7 +72,7 @@ body {
   padding: calc(24px + env(safe-area-inset-top)) 24px
     calc(24px + env(safe-area-inset-bottom));
   background:
-    radial-gradient(circle at 50% 44%, rgba(0, 200, 120, 0.11), transparent 28%),
+    radial-gradient(circle at 50% 44%, rgba(249, 196, 73, 0.11), transparent 28%),
     var(--nexride-navy);
   color: white;
 }
@@ -134,8 +134,8 @@ body {
     calc(24px + env(safe-area-inset-bottom)) !important;
   overflow: hidden !important;
   background:
-    radial-gradient(circle at 50% 42%, rgba(0, 200, 120, 0.12), transparent 30%),
-    #041c30 !important;
+    radial-gradient(circle at 50% 42%, rgba(249, 196, 73, 0.12), transparent 30%),
+    #08295f !important;
 }
 
 .nr-splash-city,
@@ -149,7 +149,7 @@ body {
   pointer-events: none;
   background:
     radial-gradient(circle at 12% 84%, rgba(37, 99, 235, 0.09), transparent 24%),
-    radial-gradient(circle at 88% 18%, rgba(66, 233, 164, 0.08), transparent 22%);
+    radial-gradient(circle at 88% 18%, rgba(249, 196, 73, 0.08), transparent 22%);
 }
 
 .nr-splash-identity {
