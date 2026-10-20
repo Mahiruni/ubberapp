@@ -309,3 +309,49 @@
     transition: none!important;
   }
 }
+
+/* Home map deliberately uses one location message: the sheet already reports
+   location permission state. Suppress the second floating banner, which crossed
+   the map toolbar on narrow devices; recenter still allows a GPS retry. */
+.nr-app[data-mode="rider"] .rider-map-flow.rider-home-view
+  .nr-rider-map-surface :is(.nr-location-permission,.nr-gps-status) {
+  display: none!important;
+}
+
+/* Legacy mobile rules reserve ~96px for the old promotional header.
+   The new one-line sheet title is sized by its actual contents. */
+.nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper.rider-home-view
+  .nr-home-sheet-grab-area {
+  min-height: 0!important;
+}
+.nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper.rider-home-view
+  .nr-rider-home-intro h2 {
+  white-space: normal!important;
+  overflow-wrap: break-word;
+}
+
+/* Landscape phones: place map actions in one short horizontal toolbar.
+   Otherwise a vertical control stack occupies the entire exposed map area. */
+@media (max-width: 800px) and (min-width: 480px) and (max-height: 500px) {
+  .nr-app[data-mode="rider"] .rider-map-flow.rider-home-view
+    .nr-rider-map-surface .nr-map-control-stack {
+    top: calc(env(safe-area-inset-top,0px) + 12px)!important;
+    right: max(12px,env(safe-area-inset-right,0px))!important;
+    bottom: auto!important;
+    flex-direction: row!important;
+    gap: 6px!important;
+  }
+  .nr-app[data-mode="rider"] .rider-map-flow.rider-home-view
+    .nr-rider-map-surface .nr-map-touch-control {
+    width: 44px!important;
+    min-width: 44px!important;
+    height: 44px!important;
+    min-height: 44px!important;
+  }
+  .nr-app[data-mode="rider"] .rider-map-flow.rider-home-view
+    .nr-rider-map-surface .nr-map-layer-menu {
+    top: calc(env(safe-area-inset-top,0px) + 65px)!important;
+    right: max(12px,env(safe-area-inset-right,0px))!important;
+    bottom: auto!important;
+  }
+}

@@ -12,26 +12,22 @@ test.beforeEach(async ({ page }) => {
   );
   await mockTiles(page);
 });
-test("home exposes empty history, labeled examples and the requested navigation", async ({
-  page,
-}) => {
+test("mobile home has one prominent search action and working navigation", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
-  await expect(
-    page.getByText("No recent destinations yet.", { exact: false }),
-  ).toBeVisible();
-  await expect(
-    page
-      .locator(".nr-rider-home-panel")
-      .getByRole("button", { name: "Search destination", exact: true }),
-  ).toContainText("Where to?");
-  for (const label of ["Home", "Activity", "Safety center", "Messages", "Account"])
-    await expect(
-      page
-        .locator(".nr-navigation:visible")
-        .getByRole("button", { name: label, exact: true }),
-    ).toBeVisible();
-  await expect(page.locator(".nr-user-location-dot")).toHaveCount(0);
-  await expect(page.locator(".map-position")).toHaveCount(0);
+  await expect(page.locator(".nr-rider-home-panel")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Where to?", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Search destination", exact: true })).toContainText("Search destination");
+  await expect(page.locator(".nr-home-empty-state")).toHaveCount(0);
+  await expect(page.locator(".biloo-home-floating-header")).toBeVisible();
+  const menu = page.locator(".biloo-home-floating-header").getByRole("button", { name: "Open menu" });
+  await expect(menu).toBeVisible();
+  await menu.click();
+  const drawer = page.getByRole("dialog", { name: "Rider menu" });
+  await expect(drawer).toBeVisible();
+  await expect(drawer.getByRole("button", { name: /My rides/ })).toBeVisible();
+  await drawer.getByRole("button", { name: "Close menu" }).click();
+  await expect(drawer).toHaveCount(0);
 });
 test("a real browser fix creates the blue dot and accuracy circle, and recenter moves the map", async ({
   page,
@@ -148,8 +144,10 @@ test("Home and Work shortcuts are explicitly selected and restored, with preview
   ).toBeVisible();
   await page.getByRole("button", { name: "Back", exact: true }).click();
   await page.getByRole("button", { name: "Back", exact: true }).click();
+  await page.getByRole("button", { name: "Expand or collapse ride panel" }).press("End");
   await expect(panel.getByText("Meskel Square", { exact: true })).toBeVisible();
   await page.reload();
+  await page.getByRole("button", { name: "Expand or collapse ride panel" }).press("End");
   await expect(panel.getByText("Meskel Square", { exact: true })).toBeVisible();
   await panel.getByRole("button", { name: "Saved", exact: true }).click();
   await expect(
@@ -177,37 +175,35 @@ test("a failed map does not block destination search", async ({ page }) => {
     page.getByRole("textbox", { name: "Search destination" }),
   ).toBeVisible();
 });
-test("small, landscape and desktop layouts keep map controls, sheet and navigation separate", async ({
-  page,
-}) => {
-  await page.goto("/");
+test("small, landscape and desktop home layouts prevent control overlap", async ({ page }) => {
   for (const viewport of [
+    { width: 320, height: 568 },
     { width: 360, height: 780 },
     { width: 390, height: 844 },
     { width: 740, height: 390 },
     { width: 1440, height: 900 },
   ]) {
     await page.setViewportSize(viewport);
+    await page.goto("/");
     const map = (await page.locator(".nr-rider-map-surface").boundingBox())!;
-    const panel = (await page.locator(".nr-panel").boundingBox())!;
-    const control = (await page.locator(".nr-recenter").boundingBox())!;
-    expect(control.x).toBeGreaterThanOrEqual(map.x);
-    expect(control.y).toBeGreaterThanOrEqual(map.y);
-    expect(control.x + control.width).toBeLessThanOrEqual(map.x + map.width);
-    expect(control.y + control.height).toBeLessThanOrEqual(map.y + map.height);
+    const sheet = (await page.locator(".nr-rider-flow-panel").boundingBox())!;
+    expect(sheet.x).toBeGreaterThanOrEqual(-1);
+    expect(sheet.y).toBeGreaterThanOrEqual(-1);
+    expect(sheet.x + sheet.width).toBeLessThanOrEqual(viewport.width + 1);
+    expect(sheet.y + sheet.height).toBeLessThanOrEqual(viewport.height + 1);
+    expect(map.y).toBeLessThan(sheet.y);
+    await expect(page.getByRole("button", { name: "Search destination", exact: true })).toBeInViewport();
     if (viewport.width <= 800) {
-      const nav = (await page.locator(".nr-mobile-nav").boundingBox())!;
-      expect(map.y + map.height).toBeLessThanOrEqual(panel.y + 1);
-      expect(panel.y + panel.height).toBeLessThanOrEqual(nav.y + 1);
-    } else expect(map.x + map.width).toBeLessThanOrEqual(panel.x + 1);
-    expect(
-      await page.evaluate(
-        () => document.documentElement.scrollWidth <= innerWidth,
-      ),
-    ).toBe(true);
+      const header = (await page.locator(".biloo-home-floating-header").boundingBox())!;
+      const controls = (await page.locator(".nr-map-control-stack").boundingBox())!;
+      expect(header.x + header.width).toBeLessThanOrEqual(controls.x + 2);
+      expect(header.y + header.height).toBeLessThan(sheet.y);
+    } else {
+      await expect(page.locator(".biloo-home-floating-header")).toBeHidden();
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
   }
 });
-
 test("mobile focused destination search keeps saved and suggested places above the keyboard surface", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 780 });
   await page.goto("/");

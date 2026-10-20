@@ -31,6 +31,8 @@ describe("Biloo Rider homepage clarity", () => {
     expect(home).toContain("onClick={() => shortcut(kind)}");
     expect(css).toContain("rider-home-view");
     expect(css).toContain("prefers-reduced-motion: reduce");
+    expect(css).toContain(".nr-location-permission,.nr-gps-status");
+    expect(css).toContain("flex-direction: row!important;");
     expect(css).not.toContain("mapboxgl-map");
     expect(css).not.toContain("leaflet-container");
   });
