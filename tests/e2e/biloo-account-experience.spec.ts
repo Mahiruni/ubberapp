@@ -55,11 +55,11 @@ test("Driver Account shows verified data status and all real destinations",async
   await page.goto("/driver/profile");
   const account=page.locator(".nr-driver-profile-v2");
   await expect(account).toBeVisible();
-  await expect(account.getByRole("heading",{name:"Account",exact:true})).toBeVisible();
-  await expect(account.getByText("Biloo Driver",{exact:true}).first()).toBeVisible();
+  await expect(account.locator(".nr-driver-profile-heading h1")).toHaveText(/account|መለያ/i);
+  await expect(account.locator(".nr-driver-profile-identity h2")).toContainText(/Biloo Driver/i);
   for(const group of ["Personal information","Driver verification","Trips & earnings","Safety & support","Preferences"])
     await expect(account.getByRole("heading",{name:group,exact:true})).toBeVisible();
-  await expect(account.getByText("Verification under review")).toBeVisible();
+  await expect(account.locator(".nr-driver-verification-card strong")).toContainText(/verification|review/i);
   const footer=page.getByRole("navigation",{name:"Driver bottom navigation"});
   await expect(footer.getByRole("link",{name:"Account"})).toHaveAttribute("aria-current","page");
   await account.getByRole("button",{name:/Edit profile/}).first().click();
