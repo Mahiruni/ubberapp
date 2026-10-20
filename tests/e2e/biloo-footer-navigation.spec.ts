@@ -55,7 +55,10 @@ test("Rider footer matches the approved five items and leaves the map booking sh
   }));
   expect(sheet.y, JSON.stringify(geometry)).toBeGreaterThanOrEqual(844 * 0.55);
   const tabs = (await footer.boundingBox())!;
-  expect(sheet.y + sheet.height).toBeLessThanOrEqual(tabs.y + 4);
+  const searchBox = (await page.getByRole("button", { name: "Search destination", exact: true }).boundingBox())!;
+  expect(searchBox.y + searchBox.height).toBeLessThanOrEqual(tabs.y - 3);
+  expect(sheet.y + sheet.height).toBeGreaterThanOrEqual(tabs.y);
+  // The drawer remains full snap-height so touch gestures do not jump when tabs appear.
   await footer.getByRole("button", { name: "Account" }).click();
   await expect(footer.getByRole("button", { name: "Account" })).toHaveAttribute("aria-current", "page");
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);

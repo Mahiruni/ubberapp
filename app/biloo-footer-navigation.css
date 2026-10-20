@@ -133,20 +133,12 @@
     bottom: calc(340px + env(safe-area-inset-bottom,0px))!important;
   }
 
-  /* Rider home maintains its sheet snap/drag height; the entire sheet sits above
-     the footer rather than allowing tabs to cover the destination button. */
-  .nr-app[data-mode="rider"] .rider-map-flow.rider-home-view.nr-polished-wrapper[data-keyboard] .nr-main > .nr-rider-flow-panel {
-    bottom: calc(79px + env(safe-area-inset-bottom,0px))!important;
-    /* Include footer in the 40% bottom occupation, not in addition to it.
-       Snap gestures continue to update --nr-flow-sheet-height unchanged. */
-    height: max(120px, calc(var(--nr-flow-sheet-height,40dvh) - 79px - env(safe-area-inset-bottom,0px)))!important;
-    min-height: 0!important;
-    max-height: calc(100dvh - 79px - env(safe-area-inset-bottom,0px))!important;
-  }
-  /* Never impose footer offsets on search, matching, and active-trip sheets:
-     navigation is context-hidden in those safety-critical states. */
+  /* Preserve the Rider sheet's exact JS-controlled snap height, position and
+     pointer drag physics. Tabs overlay only the reserved lower scroll area.
+     Search, heading and drag handle stay above the navigation surface. */
   .nr-app[data-mode="rider"] .rider-map-flow.rider-home-view .nr-home-sheet-scroll {
-    padding-bottom: calc(16px + env(safe-area-inset-bottom,0px))!important;
+    padding-bottom: calc(110px + env(safe-area-inset-bottom,0px))!important;
+    scroll-padding-bottom: calc(105px + env(safe-area-inset-bottom,0px))!important;
   }
 
   /* All non-map screens and support forms can scroll beyond the last interactive row. */
@@ -174,11 +166,8 @@
     .nr-driver-app-shell[data-home="true"] .nr-driver-home-swipe[data-map-input-boundary="true"] {
       bottom: calc(72px + env(safe-area-inset-bottom,0px))!important;
     }
-    .nr-app[data-mode="rider"] .rider-map-flow.rider-home-view.nr-polished-wrapper[data-keyboard] .nr-main > .nr-rider-flow-panel {
-      bottom: calc(68px + env(safe-area-inset-bottom,0px))!important;
-      height: max(110px, calc(var(--nr-flow-sheet-height,40dvh) - 68px - env(safe-area-inset-bottom,0px)))!important;
-      min-height: 0!important;
-      max-height: calc(100dvh - 68px - env(safe-area-inset-bottom,0px))!important;
+    .nr-app[data-mode="rider"] .rider-map-flow.rider-home-view .nr-home-sheet-scroll {
+      padding-bottom: calc(96px + env(safe-area-inset-bottom,0px))!important;
     }
   }
 }
