@@ -666,7 +666,7 @@ export function DriverWorkspace({
       : gpsHealth === "ready" && gpsConfirmedAt > 0 && presenceClock - gpsConfirmedAt <= 60_000
         ? say("GPS verified · ready for requests", "ጂፒኤስ ተረጋግጧል · ለጉዞ ጥያቄዎች ዝግጁ")
         : gpsHealth === "ready"
-          ? say("Confirming GPS with Biloo", "ጂፒኤስን ከኔክስራይድ ጋር በማረጋገጥ ላይ")
+          ? say("Confirming GPS with Biloo", "ጂፒኤስን ከቢሎ ጋር በማረጋገጥ ላይ")
         : gpsHealth === "inaccurate"
           ? say("Improving GPS accuracy", "የጂፒኤስ ትክክለኛነትን በማሻሻል ላይ")
           : gpsHealth === "stale"
