@@ -7,7 +7,7 @@ export function ServiceWorkerRegistration() {
     if (process.env.NODE_ENV !== "production" || !("serviceWorker" in navigator)) return;
     let disposed = false;
     let idleId: number | undefined;
-    let timerId: number | undefined;
+    let timerId: ReturnType<typeof setTimeout> | undefined;
     const register = () => {
       if (disposed) return;
       void navigator.serviceWorker.register("/sw.js", { scope: "/", updateViaCache: "none" })
@@ -28,7 +28,7 @@ export function ServiceWorkerRegistration() {
       disposed = true;
       window.removeEventListener("load", schedule);
       if (idleId !== undefined && "cancelIdleCallback" in window) window.cancelIdleCallback(idleId);
-      if (timerId !== undefined) window.clearTimeout(timerId);
+      if (timerId !== undefined) clearTimeout(timerId);
     };
   }, []);
   return null;
