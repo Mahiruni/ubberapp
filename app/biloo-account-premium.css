@@ -614,3 +614,134 @@
   border:1px solid var(--biloo-account-border);
   border-radius:12px;
 }
+
+/* Shared identity / account management remains role aware and authentic. */
+.nex-manage[data-theme="light"] {
+  --biloo-account-canvas:#f6f8fb;
+  --biloo-account-surface:#fff;
+  --biloo-account-soft:#f0f4f9;
+  --biloo-account-border:#d7e0eb;
+  --biloo-account-ink:#132a48;
+  --biloo-account-muted:#526780;
+  --biloo-account-cta:#08295f;
+  --biloo-account-cta-ink:#fff;
+}
+.nex-manage[data-theme="dark"] {
+  --biloo-account-canvas:#08295f;
+  --biloo-account-surface:#10386f;
+  --biloo-account-soft:#194877;
+  --biloo-account-border:#5275a4;
+  --biloo-account-ink:#f8fbff;
+  --biloo-account-muted:#d5dfed;
+  --biloo-account-cta:#f9c449;
+  --biloo-account-cta-ink:#08295f;
+}
+.nex-manage[data-theme] {
+  --nex-navy:#08295f;
+  --nex-green:#f9c449;
+  color:var(--biloo-account-ink)!important;
+  background:var(--biloo-account-canvas)!important;
+}
+.nex-manage[data-theme] .nex-manage-top {
+  background:var(--biloo-account-surface)!important;
+  border-color:var(--biloo-account-border)!important;
+}
+.nex-manage[data-theme] :is(.nex-manage-back,.nex-manage-brand,.nex-manage-brand span,
+  .nex-manage-intro h1,.nex-manage-card h2,.nex-manage-card h3,
+  .nex-manage-identity h2,.nex-manage-role strong,.nex-manage-detail strong,
+  .nex-manage-form h3,.nex-manage-form label) {
+  color:var(--biloo-account-ink)!important;
+}
+.nex-manage[data-theme] :is(.nex-manage-intro>span,.nex-manage-eyebrow) {
+  color:var(--biloo-account-muted)!important;
+  font-size:10px!important;
+  font-weight:760!important;
+  letter-spacing:.11em;
+}
+.nex-manage[data-theme] :is(.nex-manage-intro p,.nex-manage-section p,
+  .nex-manage-identity p,.nex-manage-detail>span,.nex-manage-role small,
+  .nex-manage-muted,.nex-manage-brand small) {
+  color:var(--biloo-account-muted)!important;
+  opacity:1!important;
+  line-height:1.55!important;
+}
+.nex-manage[data-theme] .nex-manage-card {
+  padding:clamp(15px,3vw,21px);
+  background:var(--biloo-account-surface)!important;
+  color:var(--biloo-account-ink)!important;
+  border-color:var(--biloo-account-border)!important;
+  border-radius:18px!important;
+  box-shadow:none!important;
+}
+.nex-manage[data-theme] :is(.nex-manage-form,.nex-manage-detail,.nex-manage-role) {
+  border-color:var(--biloo-account-border)!important;
+}
+.nex-manage[data-theme] .nex-manage-avatar {
+  background:var(--biloo-account-soft)!important;
+  color:var(--biloo-account-ink)!important;
+  border:1px solid var(--biloo-account-border);
+  border-radius:17px;
+}
+.nex-manage[data-theme] .nex-manage-chips span {
+  background:var(--biloo-account-soft)!important;
+  color:var(--biloo-account-ink)!important;
+  border-color:var(--biloo-account-border)!important;
+}
+.nex-manage[data-theme] :is(input:not([type=checkbox]):not([type=radio]),textarea,select) {
+  min-height:44px;
+  color:var(--biloo-account-ink)!important;
+  background:var(--biloo-account-soft)!important;
+  border:1px solid var(--biloo-account-border)!important;
+  border-radius:11px!important;
+}
+.nex-manage[data-theme] :is(.nex-manage-form button,.nex-manage-role button,.nex-manage-actions button):not(.nex-manage-danger-button) {
+  min-height:44px!important;
+  border:1px solid var(--biloo-account-cta)!important;
+  border-radius:11px!important;
+  background:var(--biloo-account-cta)!important;
+  color:var(--biloo-account-cta-ink)!important;
+}
+.nex-manage[data-theme] :is(.nex-manage-actions button,.nex-manage-form button):focus-visible {
+  outline:3px solid var(--biloo-account-cta)!important;
+  outline-offset:3px;
+}
+@media(max-width:800px){
+  .nex-manage[data-theme] .nex-manage-content {
+    padding:16px 13px calc(28px + env(safe-area-inset-bottom,0px));
+  }
+}
+
+/* Secondary Driver Account pages: documents, vehicle and payouts.
+   Present real statuses without rewriting operational stage action colors. */
+.nr-driver-app-shell[data-theme] .nr-driver-profile-subpage .nr-driver-profile-subwrap {
+  max-width:820px;
+}
+.nr-driver-app-shell[data-theme] .nr-driver-profile-subpage :is(
+  .nr-document-card,.nr-profile-panel,.nr-profile-state-card
+) {
+  border:1px solid var(--biloo-account-border)!important;
+  border-radius:15px!important;
+  background:var(--biloo-account-surface)!important;
+  color:var(--biloo-account-ink)!important;
+  box-shadow:none!important;
+}
+.nr-driver-app-shell[data-theme] .nr-driver-profile-subpage :is(
+  .nr-document-card h3,.nr-document-card strong,.nr-profile-panel h2
+) {
+  color:var(--biloo-account-ink)!important;
+}
+.nr-driver-app-shell[data-theme] .nr-driver-profile-subpage :is(
+  .nr-document-card small,.nr-profile-panel-head p,.nr-profile-subhead p
+) {
+  color:var(--biloo-account-muted)!important;
+  font-size:11px!important;
+}
+.nr-driver-app-shell[data-theme] .nr-driver-profile-subpage .nr-doc-status {
+  font-size:10px!important;
+  padding:5px 9px!important;
+  font-weight:740!important;
+}
+.nr-driver-app-shell[data-theme] .nr-driver-profile-subpage :is(button,a):focus-visible {
+  outline:3px solid var(--biloo-account-cta)!important;
+  outline-offset:2px;
+}

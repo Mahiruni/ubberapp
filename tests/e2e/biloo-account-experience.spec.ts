@@ -64,8 +64,11 @@ test("Driver Account shows verified data status and all real destinations",async
   await expect(footer.getByRole("link",{name:"Account"})).toHaveAttribute("aria-current","page");
   await account.getByRole("button",{name:/Edit profile/}).first().click();
   await expect(page).toHaveURL(/\/driver\/profile\/settings/);
-  await expect(page.getByRole("button",{name:"Back to Account"})).toBeVisible();
-  await page.getByRole("button",{name:"Back to Account"}).click();
+  const returnToAccount=page.locator(".biloo-account-return");
+  await expect(page.locator(".nr-driver-profile-subpage")).toBeVisible();
+  await expect(returnToAccount).toBeVisible({timeout:10000});
+  await expect(returnToAccount).toHaveAttribute("aria-label",/Account|መለያ/);
+  await returnToAccount.click();
   await expect(page).toHaveURL(/\/driver\/profile$/);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
 });
