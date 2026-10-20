@@ -351,3 +351,41 @@
 @media(prefers-reduced-motion:reduce){
  .biloo-driver-campaign--2026 a{transition:none!important}
 }
+
+
+/* Ensure the real Driver photo is visible above the welcome background.
+   Keep text/buttons in separate accessible HTML, with no brand logo overlay. */
+.biloo-driver-campaign.biloo-driver-campaign--2026 {
+  position: relative !important;
+  isolation: isolate !important;
+  background: #fff !important;
+}
+.biloo-driver-campaign.biloo-driver-campaign--2026 > img.biloo-driver-image {
+  display: block !important;
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  min-height: 100% !important;
+  object-fit: cover !important;
+  object-position: center 40% !important;
+  opacity: 1 !important;
+  filter: none !important;
+  visibility: visible !important;
+  background: none !important;
+  z-index: 0 !important;
+  pointer-events: none !important;
+}
+.biloo-driver-campaign.biloo-driver-campaign--2026::after {
+  content: "" !important;
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent 45%, rgba(255,255,255,.1) 62%, rgba(255,255,255,.85) 82%, #fff 96%);
+  z-index: 1;
+  pointer-events: none;
+}
+.biloo-driver-campaign.biloo-driver-campaign--2026 > .biloo-driver-bottom {
+  position: relative !important;
+  z-index: 2 !important;
+}
