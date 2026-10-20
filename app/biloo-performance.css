@@ -1,0 +1,14 @@
+/* Biloo performance: reserve space while the Mapbox chunk and tiles initialize. */
+.biloo-map-preparing {
+  position: absolute;
+  inset: 0;
+  min-height: 240px;
+  background: linear-gradient(135deg, #f1f5f8 0%, #e8eff5 45%, #f7f9fb 100%);
+  pointer-events: none;
+}
+.nr-app[data-theme="dark"] .biloo-map-preparing {
+  background: linear-gradient(135deg, #08295f, #10386f);
+}
+@media (prefers-reduced-motion: reduce) {
+  .biloo-map-preparing { animation: none; }
+}

@@ -2,8 +2,9 @@
 import { useAppearance } from "../lib/nexride-appearance";
 import type { TripSnapshot } from "../lib/nexride-trip-data";
 import Image from "next/image";
-import { RiderProfile, RiderSettings } from "../components/nexride/rider-profile";
-import { NexRideFeedbackSettings } from "../components/nexride/feedback-settings";
+import dynamic from "next/dynamic";
+import type { RiderScreen } from "../components/nexride/rider";
+
 import { useRouter } from "next/navigation";
 import { RiderSplash } from "../components/nexride/splash";
 import {
@@ -31,17 +32,14 @@ import {
   useTranslation,
   type IconName,
 } from "../components/nexride/ui";
-import { RiderMap } from "../components/nexride/rider-map";
+
 import { useMatching } from "../lib/nexride-use-matching";
 import { useJourney } from "../lib/nexride-journey";
 import { useRiderLocation } from "../lib/nexride-location";
-import { RiderWorkspace, type RiderScreen } from "../components/nexride/rider";
+
 import { RiderMenu, type RiderMenuId } from "../components/nexride/rider-menu";
 import { BilooFooterNav, riderFooterLinks } from "../components/nexride/biloo-footer-nav";
-import {
-  DriverWorkspace,
-  type DriverScreen,
-} from "../components/nexride/driver";
+import type { DriverScreen } from "../components/nexride/driver";
 import type { Language } from "../lib/nexride-i18n";
 import { LANGUAGE_EVENT } from "../components/nexride/language-provider";
 import type { PreviewProfile, PreviewTrip } from "../lib/nexride-preview";
@@ -61,6 +59,18 @@ import "./wrapper-polish.css";
 import "./precision-rider.css";
 import "./nexride-2026-tokens.css";
 import "./biloo-home-clean.css";
+// Only load the map engine or settings screens when they are actually rendered.
+// This keeps Mapbox/geocoder and profile tooling out of unrelated initial bundles.
+const RiderMap = dynamic(() => import("../components/nexride/rider-map").then(mod => mod.RiderMap), {
+  ssr: false,
+  loading: () => <div className="biloo-map-preparing" role="status" aria-label="Preparing your map" />,
+});
+const RiderWorkspace = dynamic(() => import("../components/nexride/rider").then(mod => mod.RiderWorkspace), { ssr: false });
+const DriverWorkspace = dynamic(() => import("../components/nexride/driver").then(mod => mod.DriverWorkspace), { ssr: false });
+const RiderProfile = dynamic(() => import("../components/nexride/rider-profile").then(mod => mod.RiderProfile), { ssr: false });
+const RiderSettings = dynamic(() => import("../components/nexride/rider-profile").then(mod => mod.RiderSettings), { ssr: false });
+const NexRideFeedbackSettings = dynamic(() => import("../components/nexride/feedback-settings").then(mod => mod.NexRideFeedbackSettings), { ssr: false });
+
 const STORAGE_KEY = PREVIEW_STORAGE_KEY;
 type Mode = "rider" | "driver";
 type Panel =
@@ -276,7 +286,13 @@ function AppWorkspace({
       return;
     }
     let active = true;
-    const refreshAvatar = () => {
+    let lastRefresh = 0;
+    const refreshAvatar = (force = false) => {
+      // Focus events can fire repeatedly when returning from system dialogs.
+      // Avoid redundant network reads for an unchanged photo.
+      const now = Date.now();
+      if (!force && now - lastRefresh < 45_000) return;
+      lastRefresh = now;
       const requestId = ++avatarRefreshId.current;
       void readAccount().then(account => {
         if (!active || requestId !== avatarRefreshId.current) return;
@@ -287,13 +303,17 @@ function AppWorkspace({
         // Keep the last good portrait during a temporary session/network failure.
       });
     };
-    refreshAvatar();
-    window.addEventListener("focus", refreshAvatar);
+    refreshAvatar(true);
+    const onFocus = () => refreshAvatar();
+    const onProfileChange = () => refreshAvatar(true);
+    window.addEventListener("focus", onFocus);
+    window.addEventListener("nexride:profile-change", onProfileChange);
     return () => {
       active = false;
-      window.removeEventListener("focus", refreshAvatar);
+      window.removeEventListener("focus", onFocus);
+      window.removeEventListener("nexride:profile-change", onProfileChange);
     };
-  }, [authenticated, mode, profileView]);
+  }, [authenticated, mode]);
   // Keep Android Back distinct from destructive cancellation/dispatch actions.
   useEffect(() => {
     if (mode !== "rider") return;
