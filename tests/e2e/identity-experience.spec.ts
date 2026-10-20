@@ -43,26 +43,29 @@ async function connectedAccount(page: Page, role: 'rider' | 'driver') {
 }
 
 const verifyBilooBrand = async (page: Page) => {
-  await expect(page.locator('.nr-brand').first()).toContainText('Biloo');
+  await expect(page.locator('.nr-brand').first()).toContainText(/biloo/i);
   await expect(page.locator('.nr-brand').first().locator('img.nr-brand-symbol')).toHaveCount(1);
 };
 
-test('welcome actions fit small phones, preserve role context and show the Biloo icon and wordmark', async ({ page }, info) => {
+test('welcome actions fit small phones and use the current Biloo campaigns', async ({ page }, info) => {
   await page.setViewportSize({ width: 360, height: 640 });
-  for (const [path, heading, action] of [
-    ['/rider', 'Your city. Your ride.', 'Get started'],
-    ['/driver', 'Drive. Earn. Grow.', 'Start driving'],
-  ]) {
-    await page.goto(path);
-    await expect(page.getByRole('heading', { level: 1 })).toContainText(heading);
-    await verifyBilooBrand(page);
-    await expect(page.getByRole('link', { name: action, exact: true })).toBeInViewport();
-    await expect(page.getByRole('link', { name: path === '/rider' ? 'Already have an account?' : 'Sign in', exact: true })).toBeInViewport();
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-    await page.screenshot({ path: `/tmp/nexride-${path.slice(1)}-welcome-${info.project.name}.png`, fullPage: true });
-  }
-});
+  await page.goto('/rider');
+  await expect(page.locator('.biloo-rider-brand')).toContainText(/biloo/i);
+  await expect(page.locator('.biloo-rider-brand img')).toHaveCount(1);
+  await expect(page.getByRole('heading', { level: 1 })).toContainText(/Your Ride\s*is Here/i);
+  await expect(page.getByRole('link', { name: /Get started/i }).first()).toBeInViewport();
+  await expect(page.getByRole('link', { name: 'Already have an account?' })).toBeInViewport();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: `/tmp/biloo-rider-welcome-${info.project.name}.png`, fullPage: true });
 
+  await page.goto('/driver');
+  await expect(page.locator('.biloo-driver-welcome__photo')).toBeVisible();
+  await expect(page.getByRole('link', { name: /Get Started/i })).toHaveAttribute('href', '/driver/onboarding');
+  await expect(page.getByRole('link', { name: 'Sign In', exact: true })).toBeInViewport();
+  await expect(page.getByRole('link', { name: 'Register', exact: true })).toBeInViewport();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: `/tmp/biloo-driver-welcome-${info.project.name}.png`, fullPage: true });
+});
 test('both sign-in forms preserve email, reveal passwords and recover from real server failures', async ({ page }, info) => {
   await page.setViewportSize({ width: 360, height: 640 });
   let requests = 0;
@@ -309,7 +312,7 @@ test('entry layouts remain usable on desktop, tablet, short screens and reduced 
 });
 
 
-test("EliteTrade-inspired Rider menu groups toggle without losing navigation or pinned logout", async ({ page }) => {
+test("Biloo Rider Account and Help are direct menu links with navigation and pinned logout", async ({ page }) => {
   await page.addInitScript(() => {
     localStorage.setItem("nexride:preview-enabled", "true");
     localStorage.setItem("nexride:onboarding-complete", "true");
@@ -319,13 +322,11 @@ test("EliteTrade-inspired Rider menu groups toggle without losing navigation or 
   await page.getByRole("button", { name: "Open menu", exact: true }).click();
   const menu = page.getByRole("dialog", { name: "Rider menu", exact: true });
   await expect(menu.getByText("OVERVIEW", { exact: true })).toBeVisible();
-  await expect(menu.getByRole("button", { name: /ACCOUNT & PREFERENCES/ })).toHaveAttribute("aria-expanded", "true");
-  const supportGroup = menu.getByRole("button", { name: /SAFETY & SUPPORT/ });
-  await expect(supportGroup).toHaveAttribute("aria-expanded", "false");
-  await supportGroup.click();
-  await expect(supportGroup).toHaveAttribute("aria-expanded", "true");
-  await expect(menu.getByRole("button", { name: /^Safety/ })).toBeVisible();
-  await expect(menu.getByRole("button", { name: /^Settings/ })).toBeVisible();
+  await expect(menu.getByRole("navigation", { name: "Account and settings" }).getByRole("button", { name: /^Account/ })).toBeVisible();
+  await expect(menu.getByRole("navigation", { name: "Account and settings" }).getByRole("button", { name: /^Settings/ })).toBeVisible();
+  await expect(menu.getByRole("navigation", { name: "Help and safety" }).getByRole("button", { name: /^Safety/ })).toBeVisible();
+  await expect(menu.getByRole("navigation", { name: "Help and safety" }).getByRole("button", { name: /^Support/ })).toBeVisible();
+  await expect(menu.locator(".nr-menu-group-toggle")).toHaveCount(0);
   await expect(menu.getByRole("button", { name: "Log out" })).toBeInViewport();
   await expect(menu.locator(".nr-menu-scroll")).toHaveCSS("overflow-y", "auto");
   await page.keyboard.press("Escape");
@@ -339,6 +340,9 @@ test("EliteTrade-inspired Driver groups show management links without hiding log
   await trigger.click();
   const panel = page.locator(".nr-driver-menu-panel");
   await expect(panel.getByText("OVERVIEW", { exact: true })).toBeVisible();
+  await expect(panel.getByRole("navigation", { name: "Account and settings" }).getByRole("link", { name: /^Account/ })).toBeVisible();
+  await expect(panel.getByRole("navigation", { name: "Help and safety" }).getByRole("link", { name: /^Help & Support/ })).toBeVisible();
+  await expect(panel.getByRole("button", { name: /ACCOUNT & HELP/ })).toHaveCount(0);
   const management = panel.getByRole("button", { name: /DRIVER MANAGEMENT/ });
   await expect(management).toHaveAttribute("aria-expanded", "false");
   await management.click();
