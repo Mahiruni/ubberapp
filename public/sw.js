@@ -1,4 +1,4 @@
-const VERSION = "nexride-midnight-release-20261016-v1";
+const VERSION = "nexride-biloo-navy-gold-20261020-v1";
 const CORE_CACHE = VERSION + "-core";
 const RUNTIME_CACHE = VERSION + "-runtime";
 const CORE_ASSETS = [
@@ -11,7 +11,8 @@ const CORE_ASSETS = [
   "/apple-touch-icon.png",
   "/driver-apple-touch-icon.png",
   "/driver-favicon-32x32.png",
-  "/brand/nexride-mark.svg",
+  "/brand/biloo-mark.svg",
+  "/nexride/screens/assets/driver.png",
   "/icons/icon-192.png",
   "/icons/driver-icon-192.png",
   "/icons/icon-512.png",
@@ -77,6 +78,7 @@ self.addEventListener("fetch", (event) => {
   const cacheable =
     url.pathname.startsWith("/_next/static/") ||
     url.pathname.startsWith("/brand/") ||
+    url.pathname === "/nexride/screens/assets/driver.png" ||
     url.pathname.startsWith("/icons/") ||
     url.pathname.startsWith("/fonts/") ||
     url.pathname.startsWith("/audio/") ||
