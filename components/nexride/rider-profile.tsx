@@ -246,7 +246,7 @@ export function RiderProfile(props:Props) {
         <p>{shown.phone||shown.email||say('Add your contact details','የመገናኛ መረጃዎን ያክሉ')}</p>
         {shown.phone&&shown.email&&<small>{shown.email}</small>}
       </div>
-      <button className="nr-account-edit" disabled={loading||loadError} onClick={()=>{setForm(shown);open('edit')}}>
+      <button className="nr-account-edit" aria-label={say('Edit profile','መገለጫ አርትዕ')} disabled={loading||loadError} onClick={()=>{setForm(shown);open('edit')}}>
         <Icon name="user" size={17}/><span>{say('Edit','አርትዕ')}</span>
       </button>
     </section>
