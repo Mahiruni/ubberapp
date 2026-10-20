@@ -30,9 +30,9 @@ import "@fontsource/inter/latin-600.css";
 import "@fontsource/inter/latin-700.css";
 import "@fontsource/inter/latin-800.css";
 import "./premium-mobility.css";
-import "./aurora-theme.css";
 import "./nexride-2026-tokens.css";
 import "./elite-inspired-menus.css";
+import "./biloo-brand-system.css";
 
 const description =
   "Book reliable rides across Addis Ababa with Biloo, a rider and driver mobility platform built for Ethiopia.";
