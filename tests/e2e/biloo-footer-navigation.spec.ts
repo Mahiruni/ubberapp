@@ -46,7 +46,14 @@ test("Rider footer matches the approved five items and leaves the map booking sh
   await expect(footer.getByRole("link", { name: "Wallet" })).toHaveAttribute("href", "/rider/wallet");
   await expect(footer.getByRole("link", { name: "Support" })).toHaveAttribute("href", "/support");
   const sheet = (await page.locator(".nr-rider-flow-panel").boundingBox())!;
-  expect(sheet.y).toBeGreaterThanOrEqual(844 * 0.55);
+  const geometry = await page.locator(".nr-rider-flow-panel").evaluate(el => ({
+    height: getComputedStyle(el).height,
+    minHeight: getComputedStyle(el).minHeight,
+    bottom: getComputedStyle(el).bottom,
+    ratio: getComputedStyle(el.closest(".rider-map-flow")!).getPropertyValue("--nr-flow-sheet-height"),
+    host: el.closest(".rider-map-flow")?.className,
+  }));
+  expect(sheet.y, JSON.stringify(geometry)).toBeGreaterThanOrEqual(844 * 0.55);
   const tabs = (await footer.boundingBox())!;
   expect(sheet.y + sheet.height).toBeLessThanOrEqual(tabs.y + 4);
   await footer.getByRole("button", { name: "Account" }).click();

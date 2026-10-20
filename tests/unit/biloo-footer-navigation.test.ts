@@ -38,6 +38,7 @@ describe("Biloo approved Rider and Driver footer menus", () => {
     expect(css).toContain("repeat(5,minmax(0,1fr))");
     expect(css).toContain(".nr-driver-home-swipe[data-map-input-boundary=\"true\"]");
     expect(css).toContain(".nr-rider-flow-panel");
+    expect(css).toContain(".rider-map-flow.rider-home-view.nr-polished-wrapper[data-keyboard]");
     expect(css).toContain("env(safe-area-inset-bottom,0px)");
     expect(css).toContain('prefers-reduced-motion: reduce');
     expect(footer).toContain('aria-current={selected ? "page" : undefined}');
