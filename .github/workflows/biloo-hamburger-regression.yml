@@ -1,0 +1,55 @@
+name: Biloo Hamburger Menu Regression
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "components/nexride/rider-menu.tsx"
+      - "components/nexride/driver-app-shell.tsx"
+      - "app/biloo-menu-refinement.css"
+      - "app/layout.tsx"
+      - "tests/e2e/biloo-hamburger-flat.spec.ts"
+      - "tests/unit/biloo-hamburger-flat.test.ts"
+      - ".github/workflows/biloo-hamburger-regression.yml"
+  push:
+    branches: [main]
+    paths:
+      - "components/nexride/rider-menu.tsx"
+      - "components/nexride/driver-app-shell.tsx"
+      - "app/biloo-menu-refinement.css"
+      - "app/layout.tsx"
+      - "tests/e2e/biloo-hamburger-flat.spec.ts"
+      - "tests/unit/biloo-hamburger-flat.test.ts"
+      - ".github/workflows/biloo-hamburger-regression.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  hamburger:
+    name: Menu icon, routing, keyboard and responsive checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NEXT_PUBLIC_APP_ENV: test
+      NEXT_PUBLIC_MAPBOX_TOKEN: replace_me
+      NEXT_PUBLIC_SUPABASE_URL: https://eyyvvwecpyctttiueban.supabase.co
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_kXFOrtwKkKmrqCtYTTuzdg__CjjABBf
+      PLAYWRIGHT_SERVER_COMMAND: npm run start -- --hostname 127.0.0.1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npx vitest run tests/unit/biloo-hamburger-flat.test.ts
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test tests/e2e/biloo-hamburger-flat.spec.ts --project=chromium --project=mobile --workers=2 --timeout=45000
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: biloo-hamburger-e2e
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
