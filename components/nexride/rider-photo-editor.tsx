@@ -28,35 +28,44 @@ export function RiderPhotoEditor({
   const [zoom, setZoom] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [ready, setReady] = useState(false);
+  const [decoded, setDecoded] = useState<{ src: string; image: HTMLImageElement } | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => () => { if (source) URL.revokeObjectURL(source); }, [source]);
+  // Decode the original only when a photo is selected, not on each crop gesture.
   useEffect(() => {
-    if (!source || !open) { setReady(false); return; }
     let active = true;
+    setDecoded(null);
     setReady(false);
+    if (!source || !open) return;
     const image = new window.Image();
+    image.decoding = 'async';
     image.src = source;
     void image.decode().then(() => {
       if (!active) return;
-      const canvas = canvasRef.current;
-      const ctx = canvas?.getContext('2d');
-      if (!canvas || !ctx || !image.naturalWidth || !image.naturalHeight) {
-        setError(translate(language, 'photoInvalidType'));
-        return;
-      }
-      const crop = portraitCrop(image.naturalWidth, image.naturalHeight, zoom, position.x, position.y);
-      ctx.clearRect(0, 0, PHOTO_CROP_SIZE, PHOTO_CROP_SIZE);
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, PHOTO_CROP_SIZE, PHOTO_CROP_SIZE);
-      ctx.imageSmoothingEnabled = true;
-      ctx.imageSmoothingQuality = 'high';
-      ctx.drawImage(image, crop.x, crop.y, crop.side, crop.side, 0, 0, PHOTO_CROP_SIZE, PHOTO_CROP_SIZE);
-      setReady(true);
+      if (!image.naturalWidth || !image.naturalHeight) throw Error('photo_invalid_dimensions');
+      setDecoded({ src: source, image });
     }).catch(() => { if (active) setError(translate(language, 'photoInvalidType')); });
     return () => { active = false; };
-  }, [source, open, zoom, position, language]);
+  }, [source, open, language]);
+
+  // Repaint at high quality using the already-decoded image as zoom/pan changes.
+  useEffect(() => {
+    if (!open || !source || decoded?.src !== source) { setReady(false); return; }
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext('2d');
+    if (!canvas || !ctx) return;
+    const image = decoded.image;
+    const crop = portraitCrop(image.naturalWidth, image.naturalHeight, zoom, position.x, position.y);
+    ctx.clearRect(0, 0, PHOTO_CROP_SIZE, PHOTO_CROP_SIZE);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, PHOTO_CROP_SIZE, PHOTO_CROP_SIZE);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(image, crop.x, crop.y, crop.side, crop.side, 0, 0, PHOTO_CROP_SIZE, PHOTO_CROP_SIZE);
+    setReady(true);
+  }, [decoded, source, open, zoom, position]);
 
   const choose = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.currentTarget.files?.[0];

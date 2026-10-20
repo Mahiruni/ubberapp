@@ -10,30 +10,44 @@ export function DriverPhotoManager({ driverId, fullName, children }: { driverId:
   const fileRef = useRef<HTMLInputElement>(null), canvasRef = useRef<HTMLCanvasElement>(null);
   const [open, setOpen] = useState(false), [view, setView] = useState(false), [confirm, setConfirm] = useState(false);
   const [cropReady, setCropReady] = useState(false);
+  const [decoded, setDecoded] = useState<{ src: string; image: HTMLImageElement } | null>(null);
   const [busy, setBusy] = useState(false), [step, setStep] = useState(0);
   const [source, setSource] = useState(''), [zoom, setZoom] = useState(1), [position, setPosition] = useState({ x: 0, y: 0 });
   const [error, setError] = useState(''), [notice, setNotice] = useState(''), [failedURL, setFailedURL] = useState('');
   const initials = fullName.trim().split(/\s+/).slice(0, 2).map(word => word[0]).join('').toUpperCase() || 'N';
   useEffect(() => () => { if (source) URL.revokeObjectURL(source); }, [source]);
+  // Decode once per chosen image; drag/zoom only repaints the existing bitmap.
   useEffect(() => {
     let active = true;
-    if (!source) return;
+    setDecoded(null);
     setCropReady(false);
-    const image = new window.Image(); image.src = source;
+    if (!source) return;
+    const image = new window.Image();
+    image.decoding = 'async';
+    image.src = source;
     void image.decode().then(() => {
       if (!active) return;
-      const canvas = canvasRef.current, ctx = canvas?.getContext('2d'); if (!canvas || !ctx) return;
-      const crop = portraitCrop(image.width, image.height, zoom, position.x, position.y);
-      ctx.clearRect(0, 0, 512, 512);
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, 512, 512);
-      ctx.imageSmoothingEnabled = true;
-      ctx.imageSmoothingQuality = 'high';
-      ctx.drawImage(image, crop.x, crop.y, crop.side, crop.side, 0, 0, 512, 512);
-      setCropReady(true);
+      if (!image.naturalWidth || !image.naturalHeight) throw Error('photo_invalid_dimensions');
+      setDecoded({ src: source, image });
     }).catch(() => { if (active) setError(t('photoInvalidType')); });
     return () => { active = false; };
-  }, [source, zoom, position]);
+  }, [source, t]);
+
+  useEffect(() => {
+    if (!source || decoded?.src !== source) { setCropReady(false); return; }
+    const canvas = canvasRef.current, ctx = canvas?.getContext('2d');
+    if (!canvas || !ctx) return;
+    const image = decoded.image;
+    const crop = portraitCrop(image.naturalWidth, image.naturalHeight, zoom, position.x, position.y);
+    ctx.clearRect(0, 0, 512, 512);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, 512, 512);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(image, crop.x, crop.y, crop.side, crop.side, 0, 0, 512, 512);
+    setCropReady(true);
+  }, [decoded, source, zoom, position]);
+
   const choose = (file?: File) => {
     if (!file) return; setError(''); setNotice('');
     const invalid = validateDriverPhoto(file); if (invalid) { setError(t(invalid)); return; }
