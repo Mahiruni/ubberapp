@@ -286,3 +286,68 @@
 .biloo-driver-secondary{margin-top:16px;font-size:12px}.biloo-driver-secondary a{color:#dbe7ff;text-underline-offset:3px}
 @media(min-width:700px){.biloo-driver-campaign{max-width:620px;margin:0 auto;min-height:100dvh}.biloo-driver-photo{min-height:62dvh}}
 @media(prefers-reduced-motion:reduce){.biloo-driver-actions a{transition:none}}
+
+
+/* Biloo Driver Get Started — light, static, mobile-first photo welcome. */
+.biloo-driver-campaign.biloo-driver-campaign--2026 {
+  position:relative!important; display:flex!important; flex-direction:column!important;
+  width:100%!important; max-width:620px!important; margin:0 auto!important;
+  min-height:100svh!important; min-height:100dvh!important;
+  background:#fff!important; color:#051741!important;
+  overflow:hidden!important; isolation:isolate; color-scheme:light;
+}
+.biloo-driver-campaign--2026 .biloo-driver-image {
+  position:absolute; inset:0 0 0; z-index:-1;
+  background-image:linear-gradient(180deg,rgba(255,255,255,.17) 0%,transparent 27%,transparent 65%,rgba(255,255,255,.92) 83%,#fff 96%),url('/nexride/screens/assets/driver.png');
+  background-position:center,center 41%; background-repeat:no-repeat; background-size:cover;
+}
+.biloo-driver-campaign--2026 .biloo-driver-header {
+  display:flex; align-items:center; gap:10px;
+  padding:calc(env(safe-area-inset-top,0px) + 22px) 24px 0;
+}
+.biloo-driver-campaign--2026 .biloo-driver-header-logo {
+  width:46px;height:54px;object-fit:contain;flex-shrink:0;
+}
+.biloo-driver-campaign--2026 .biloo-driver-header-name {
+  font-size:clamp(27px,6vw,36px);font-weight:850;line-height:1;letter-spacing:-.055em;color:#061643;
+}
+.biloo-driver-campaign--2026 .biloo-driver-header-name small {
+  display:block;font-size:9px;letter-spacing:.23em;font-weight:750;margin-top:6px;color:#6b7488;
+}
+.biloo-driver-campaign--2026 .biloo-driver-bottom {
+  margin-top:auto; padding:90px max(20px,env(safe-area-inset-right)) calc(env(safe-area-inset-bottom,0px) + 22px) max(20px,env(safe-area-inset-left));
+  display:grid;gap:12px;position:relative;z-index:1;
+}
+.biloo-driver-campaign--2026 .biloo-driver-primary,
+.biloo-driver-campaign--2026 .biloo-driver-secondary-action,
+.biloo-driver-campaign--2026 .biloo-driver-register-action {
+  min-height:56px; display:flex;align-items:center;justify-content:center;
+  border-radius:18px;text-decoration:none;font-size:16px;font-weight:790;
+  text-align:center;transition:transform .16s ease,box-shadow .16s ease;
+  -webkit-tap-highlight-color:transparent;
+}
+.biloo-driver-campaign--2026 .biloo-driver-primary{
+  background:#061c51;color:#fff;box-shadow:0 10px 24px rgba(4,22,61,.16);
+  position:relative;
+}
+.biloo-driver-campaign--2026 .biloo-driver-primary span{position:absolute;right:22px;font-size:24px}
+.biloo-driver-campaign--2026 .biloo-driver-action-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.biloo-driver-campaign--2026 .biloo-driver-secondary-action{
+  background:rgba(255,255,255,.97);border:1px solid #c8d0dc;color:#061643;
+}
+.biloo-driver-campaign--2026 .biloo-driver-register-action{
+  background:#ffbb12;color:#061643;border:1px solid #ffbb12;
+}
+.biloo-driver-campaign--2026 .biloo-driver-links{
+  display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:8px 24px;margin-top:6px;
+}
+.biloo-driver-campaign--2026 .biloo-driver-links a{font-size:12px;font-weight:650;color:#334b72;text-underline-offset:4px}
+.biloo-driver-campaign--2026 a:focus-visible{outline:3px solid #056bd8;outline-offset:3px}
+.biloo-driver-campaign--2026 .biloo-driver-primary:active,
+.biloo-driver-campaign--2026 .biloo-driver-action-row a:active{transform:scale(.985)}
+@media(min-width:700px){
+ .biloo-driver-campaign.biloo-driver-campaign--2026{box-shadow:0 0 55px rgba(5,30,60,.09)}
+}
+@media(prefers-reduced-motion:reduce){
+ .biloo-driver-campaign--2026 a{transition:none!important}
+}
