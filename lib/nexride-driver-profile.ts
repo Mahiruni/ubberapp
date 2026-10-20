@@ -114,6 +114,16 @@ export function verificationSummary(profile: DriverProfileData) {
       detail: "Some driver actions are unavailable while this account is restricted.",
     };
   }
+  // A previously approved document can expire independently of the stored
+  // review flag. Never display a green "Verified driver" badge for an
+  // expired license: request a new document through the existing workflow.
+  if (documentStatus(profile, "license") === "Expired") {
+    return {
+      tone: "pending" as const,
+      title: "Driver license expired",
+      detail: "Update your driver's license document before continuing verification.",
+    };
+  }
   if (profile.reviewStatus === "approved") {
     return {
       tone: "approved" as const,
@@ -125,7 +135,7 @@ export function verificationSummary(profile: DriverProfileData) {
     return {
       tone: "pending" as const,
       title: "Verification under review",
-      detail: "Your latest driver documents are awaiting NexRide review.",
+      detail: "Your latest driver documents are awaiting Biloo review.",
     };
   }
   if (profile.reviewStatus === "rejected") {
@@ -139,7 +149,7 @@ export function verificationSummary(profile: DriverProfileData) {
     return {
       tone: "restricted" as const,
       title: "Driver access suspended",
-      detail: "Verification changes are restricted until NexRide restores access.",
+      detail: "Verification changes are restricted until Biloo restores access.",
     };
   }
   return {

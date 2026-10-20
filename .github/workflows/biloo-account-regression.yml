@@ -1,0 +1,56 @@
+name: Biloo Premium Account Regression
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "components/nexride/rider-profile.tsx"
+      - "components/nexride/driver-profile.tsx"
+      - "lib/nexride-driver-profile.ts"
+      - "app/driver/profile/settings/page.tsx"
+      - "app/biloo-account-premium.css"
+      - "app/layout.tsx"
+      - "tests/**/biloo-account-experience.*"
+      - ".github/workflows/biloo-account-regression.yml"
+  push:
+    branches: [main]
+    paths:
+      - "components/nexride/rider-profile.tsx"
+      - "components/nexride/driver-profile.tsx"
+      - "lib/nexride-driver-profile.ts"
+      - "app/biloo-account-premium.css"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  account:
+    name: Rider + Driver Account, security and responsive tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      NEXT_PUBLIC_APP_ENV: test
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      NEXT_PUBLIC_MAPBOX_TOKEN: replace_me
+      NEXT_PUBLIC_SUPABASE_URL: https://eyyvvwecpyctttiueban.supabase.co
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_kXFOrtwKkKmrqCtYTTuzdg__CjjABBf
+      NEXT_TELEMETRY_DISABLED: "1"
+      PLAYWRIGHT_SERVER_COMMAND: npm run start -- --hostname 127.0.0.1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npx vitest run tests/unit/biloo-account-experience.test.ts
+      - run: npx tsc --noEmit --pretty false
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test tests/e2e/biloo-account-experience.spec.ts --project=chromium --project=mobile --workers=2 --timeout=45000
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: biloo-account-browser-report
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore

@@ -217,7 +217,7 @@ test('Rider settings persist, and its menu protects focus and the current screen
   await page.route('**/api/**', route => route.fulfill({ status: 503, json: { status: 'unavailable' } }));
   await page.goto('/?screen=profile');
   await expect(page.locator('.nr-account-standard')).toBeVisible();
-  await page.locator('.nr-account-standard').getByRole('button', { name: /^Settings/ }).click();
+  await page.locator('.nr-account-standard').getByRole('button', { name: /Appearance, language & alerts/ }).click();
   const dialog = page.getByRole('dialog', { name: 'Settings', exact: true });
   await expect(dialog.locator('.nr-settings-group-heading button')).toHaveCount(5);
   await expect(dialog.locator('.nr-settings-group-heading button[aria-expanded=false]')).toHaveCount(5);
@@ -248,7 +248,7 @@ test('Rider settings persist, and its menu protects focus and the current screen
   await expect(page.locator('.nr-account-standard')).toBeVisible();
   await page.reload();
   await expect(page.locator('main.nr-app').first()).toHaveAttribute('data-theme', 'dark');
-  await page.locator('.nr-account-standard').getByRole('button', { name: /^Settings/ }).click();
+  await page.locator('.nr-account-standard').getByRole('button', { name: /Appearance, language & alerts/ }).click();
   await dialog.getByRole('button', { name: /^Notifications Trip alerts/ }).click();
   await expect(page.getByRole('switch', { name: /^In-app trip alerts/ })).not.toBeChecked();
 });

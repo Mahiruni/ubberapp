@@ -72,7 +72,7 @@ export default function DriverProfileSettingsPage() {
 
     const cleanName = name.trim();
 
-    if (!cleanName) {
+    if (cleanName.length < 2 || cleanName.length > 80) {
       setSuccess(false);
       setFeedback(t("entryNameRequired"));
       return;
@@ -83,12 +83,19 @@ export default function DriverProfileSettingsPage() {
     setSuccess(false);
 
     try {
-    const { error } = await supabase
+    // Reconfirm the authoritative authenticated identity immediately before
+    // mutating a protected profile; the phone/email remain OTP-owned fields.
+    const identity = await supabase.auth.getUser();
+    if (identity.error || identity.data.user?.id !== profile.id) {
+      setFeedback(t("entryProfileSaveFailure"));
+      return;
+    }
+    const { data: updated, error } = await supabase
       .from("profiles")
       .update({ full_name: cleanName })
-      .eq("id", profile.id).select("id").single();
+      .eq("id", identity.data.user.id).select("id,full_name").single();
 
-    if (error) {
+    if (error || !updated || updated.id !== profile.id) {
       setFeedback(t("entryProfileSaveFailure"));
       return;
     }
@@ -98,7 +105,8 @@ export default function DriverProfileSettingsPage() {
     await supabase.auth.updateUser({ data: { full_name: cleanName } }).catch(() => {});
     window.dispatchEvent(new Event("nexride:profile-change"));
 
-    setProfile({ ...profile, fullName: cleanName });
+    setProfile({ ...profile, fullName: updated.full_name || cleanName });
+    setName(updated.full_name || cleanName);
     setSuccess(true);
     setFeedback(t("entryProfileSaved"));
     } catch {
@@ -110,7 +118,7 @@ export default function DriverProfileSettingsPage() {
 
   return <main className="nr-app nr-driver-profile-subpage" data-mode="driver">
     <div className="nr-driver-profile-subwrap">
-      <header className="nr-profile-subhead"><div><span className="nr-driver-kicker">BILOO · {t("driver")}</span><h1>{t("settings")}</h1><p>{t("entrySettingsIntro")}</p></div></header>
+      <header className="nr-profile-subhead"><div><span className="nr-driver-kicker">BILOO · {t("driver")}</span><h1>{t("settings")}</h1><p>{t("entrySettingsIntro")}</p></div><button type="button" className="biloo-account-return" aria-label={say("Back to Account","ወደ መለያ ተመለስ")} onClick={()=>router.push("/driver/profile")}><Icon name="back" size={18}/></button></header>
       {loading ? <div className="nr-driver-profile-loading" aria-busy="true"><span className="wide"/><span className="panel"/></div> : profile ? <>
         {profile.accountStatus !== "active" && <div className="nr-profile-alert" role="status"><Icon name="info" size={17}/><span>{t("entryEditingLimited")}</span></div>}
         <SettingsGroups groups={[
@@ -118,12 +126,21 @@ export default function DriverProfileSettingsPage() {
         <section className="nr-profile-panel">
           <div className="nr-profile-panel-head"><div><h2>{t("entryPersonalInfo")}</h2><p>{t("entryPersonalInfoIntro")}</p></div></div>
           <form className="nr-profile-form" onSubmit={save} aria-busy={busy}>
-            <label>{t("fullName")}<input value={name} maxLength={100} autoComplete="name" onChange={e => setName(e.target.value)} disabled={profile.accountStatus !== "active"} required/></label>
+            <label>{t("fullName")}<input value={name} maxLength={80} autoComplete="name" onChange={e => {setName(e.target.value);setFeedback("");setSuccess(false)}} disabled={profile.accountStatus !== "active"} required/></label>
             <label>{t("phoneNumber")}<input value={phone} type="tel" autoComplete="tel" readOnly aria-describedby="nr-phone-verify-note"/></label>
             <small id="nr-phone-verify-note">{t("entryContactNote")}</small>
             <label>{t("authEmail")}<input value={profile.email || "—"} readOnly aria-describedby="nr-email-note"/></label>
             <small id="nr-email-note">{t("entryEmailNote")}</small>
-            <button type="submit" disabled={busy || profile.accountStatus !== "active"}>{t(busy ? "entrySaving" : "entrySaveChanges")}</button>
+            <div className="biloo-profile-form-actions">
+              <button type="button" className="biloo-account-cancel" disabled={busy} onClick={() => {
+                setName(profile.fullName);
+                setPhone(profile.phone);
+                setFeedback("");
+                setSuccess(false);
+                router.push("/driver/profile");
+              }}>{say("Cancel","ተወው")}</button>
+              <button type="submit" disabled={busy || profile.accountStatus !== "active" || name.trim() === profile.fullName}>{t(busy ? "entrySaving" : "entrySaveChanges")}</button>
+            </div>
           </form>
           {feedback && <div className={"nr-profile-alert " + (success ? "success" : "")} role={success ? "status" : "alert"}><Icon name={success ? "check" : "info"} size={17}/><span>{feedback}</span></div>}
 

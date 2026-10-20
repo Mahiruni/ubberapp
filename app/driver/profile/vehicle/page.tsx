@@ -6,6 +6,7 @@ import { useOperationalTranslation } from "../../../../components/nexride/operat
 import { Icon } from "../../../../components/nexride/ui";
 import { supabase } from "../../../../lib/supabase";
 import {
+  documentStatus,
   loadDriverProfileData,
   verificationSummary,
   type DriverProfileData,
@@ -52,12 +53,13 @@ export default function DriverVehiclePage() {
   }, [router]);
 
   const verification = profile ? verificationSummary(profile) : null;
+  const licenseExpired = profile ? documentStatus(profile, "license") === "Expired" : false;
 
   return (
     <main className="nr-app nr-driver-profile-subpage" data-mode="driver">
       <div className="nr-driver-profile-subwrap">
         <header className="nr-profile-subhead">
-          <button className="nr-driver-icon-btn" onClick={() => router.replace("/driver/home?screen=profile")} aria-label={say("Back to driver profile")}>
+          <button className="nr-driver-icon-btn" onClick={() => router.push("/driver/profile")} aria-label={say("Back to driver profile")}>
             <Icon name="back" />
           </button>
           <div>
@@ -77,8 +79,8 @@ export default function DriverVehiclePage() {
                   <h2>{profile.vehicle || say("Vehicle details incomplete")}</h2>
                   <p>{say(verification?.title || "Verification status unavailable")}</p>
                 </div>
-                <span className={"nr-doc-status " + (profile.reviewStatus === "approved" ? "approved" : profile.reviewStatus === "pending" ? "review" : profile.reviewStatus === "rejected" || profile.reviewStatus === "suspended" ? "danger" : "")}>
-                  {profile.reviewStatus === "approved" ? say("Approved") : profile.reviewStatus === "pending" ? say("Under Review") : profile.reviewStatus === "rejected" ? say("Rejected") : profile.reviewStatus === "suspended" ? say("Restricted") : say("Incomplete")}
+                <span className={"nr-doc-status " + (licenseExpired ? "danger" : verification?.tone === "approved" ? "approved" : profile.reviewStatus === "pending" ? "review" : profile.reviewStatus === "rejected" || profile.reviewStatus === "suspended" ? "danger" : "")}>
+                  {licenseExpired ? say("Expired") : verification?.tone === "approved" ? say("Approved") : profile.reviewStatus === "pending" ? say("Under Review") : profile.reviewStatus === "rejected" ? say("Rejected") : profile.reviewStatus === "suspended" ? say("Restricted") : say("Incomplete")}
                 </span>
               </div>
 

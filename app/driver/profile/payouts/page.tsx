@@ -7,7 +7,7 @@ import { useOperationalTranslation } from "../../../../components/nexride/operat
 import { nexrideApiFetch } from "../../../../lib/nexride-api-auth";
 import { supabase } from "../../../../lib/supabase";
 import { formatEtb } from "../../../../lib/nexride-driver-earnings";
-import { loadDriverProfileData } from "../../../../lib/nexride-driver-profile";
+import { loadDriverProfileData, verificationSummary } from "../../../../lib/nexride-driver-profile";
 import "../../../nexride.css";
 import "../profile.css";
 import "../../../detail-system.css";
@@ -111,7 +111,7 @@ export default function DriverPayoutsPage() {
 
       setAccountRestricted(
         profile.accountStatus !== "active" ||
-          profile.reviewStatus !== "approved",
+          verificationSummary(profile).tone !== "approved",
       );
       setAccountName(profile.fullName);
 
@@ -310,7 +310,7 @@ export default function DriverPayoutsPage() {
         <header className="nr-profile-subhead">
           <button
             className="nr-driver-icon-btn"
-            onClick={() => router.replace("/driver/home?screen=profile")}
+            onClick={() => router.push("/driver/profile")}
             aria-label={op("Back to driver profile")}
           >
             <Icon name="back" />

@@ -143,7 +143,7 @@ export function RiderProfile(props:Props) {
   },[]);
 
   const shown=account?.profile || (!loading&&!loadError?profile:{name:'',phone:'',email:''});
-  const initials=shown.name.trim().split(/\s+/).slice(0,2).map(v=>v[0]).join('').toUpperCase()||'NR';
+  const initials=shown.name.trim().split(/\s+/).slice(0,2).map(v=>v[0]).join('').toUpperCase()||'BL';
   const open=(next:typeof panel)=>{setError('');setPanel(next)};
 
   const save=async()=>{
@@ -220,9 +220,9 @@ export function RiderProfile(props:Props) {
   return <section className="nr-account nr-account-v2 nr-account-standard" aria-labelledby="nr-account-title">
     <header className="nr-account-top nr-account-standard-top">
       <div>
-        <span className="nr-account-eyebrow">BILOO · {say('ACCOUNT','መለያ')}</span>
-        <h1 id="nr-account-title">{say('Your account','የእርስዎ መለያ')}</h1>
-        <p>{say('Everything about you, in one place.','ስለ እርስዎ ሁሉም መረጃ በአንድ ቦታ።')}</p>
+        <span className="nr-account-eyebrow">BILOO · {say('PERSONAL SPACE','የግል ቦታ')}</span>
+        <h1 id="nr-account-title">{say('Account','መለያ')}</h1>
+        <p>{say('Your details, preferences and security. All in one place.','የእርስዎ መረጃ፣ ምርጫዎች እና ደህንነት።')}</p>
       </div>
     </header>
 
@@ -257,23 +257,30 @@ export function RiderProfile(props:Props) {
       <button onClick={()=>setAttempt(v=>v+1)}>{say('Retry','እንደገና ሞክር')}</button>
     </div>}
 
-    <div className="nr-account-standard-groups">
-      <AccountSection title={say('Your Biloo','የእርስዎ Biloo')} subtitle={say('Everything for your rides','ለጉዞዎችዎ የሚያስፈልጉ ነገሮች')}>
-        <AccountRow icon="clock" title={say('Activity','እንቅስቃሴ')} detail={say('Trips and receipts','ጉዞዎች እና ደረሰኞች')} onClick={props.rides}/>
-        <AccountRow icon="wallet" title={say('Payments','ክፍያዎች')} detail={say('Payment methods and status','የክፍያ መንገዶች እና ሁኔታ')} onClick={props.payments}/>
-        <AccountRow icon="star" title={say('Saved places','የተቀመጡ ቦታዎች')} detail={say('Home, work and frequent places','ቤት፣ ስራ እና ተደጋጋሚ ቦታዎች')} onClick={props.saved}/>
-        <AccountRow icon="shield" title={say('Safety','ደህንነት')} detail={say('Safety tools and trip sharing','የደህንነት መሳሪያዎች እና ጉዞ ማጋራት')} onClick={props.safety}/>
+    <div className="nr-account-standard-groups" aria-label={say('Your account options', 'የመለያ አማራጮች')}>
+      <AccountSection title={say('Personal information','የግል መረጃ')} subtitle={say('Your identity and contact details','የእርስዎ ማንነት እና የመገናኛ መረጃ')}>
+        <AccountRow icon="user" title={say('Edit profile','መገለጫ አርትዕ')} detail={say('Name, photo and contact information','ስም፣ ፎቶ እና የመገናኛ መረጃ')} onClick={()=>{setForm(shown);open('edit')}}/>
+        <AccountRow icon="shield" title={say('Account & security','መለያ እና ደህንነት')} detail={say('Verified contacts, sign-in and privacy','የተረጋገጠ መገናኛ፣ መግቢያ እና ግላዊነት')} onClick={()=>window.location.assign('/account/manage?role=rider#account-security')}/>
       </AccountSection>
 
-      <AccountSection title={say('Account & help','መለያ እና እገዛ')} subtitle={say('Your details and support','ዝርዝሮችዎ እና ድጋፍ')}>
-        <AccountRow icon="user" title={say('Personal information','የግል መረጃ')} detail={say('Name and contact details','ስም እና የመገናኛ ዝርዝሮች')} onClick={()=>{setForm(shown);open('edit')}}/>
-        <AccountRow icon="shield" title={say('Manage Account & Verification','መለያ እና ማረጋገጫ')} detail={say('Unique identity, verified contacts, roles and security','ማንነት፣ ስልክ እና ደህንነት')} onClick={()=>window.location.assign('/account/manage')}/>
-        <AccountRow icon="chat" title={say('Support','ድጋፍ')} detail={say('Help with rides and your account','ለጉዞና መለያ እገዛ')} onClick={props.support}/>
-        <AccountRow icon="info" title={say('Privacy & data','ግላዊነት እና ውሂብ')} detail={say('How Biloo handles your information','Biloo መረጃዎን እንዴት እንደሚይዝ')} onClick={()=>open('privacy')}/>
+      <AccountSection title={say('Rides & places','ጉዞዎች እና ቦታዎች')} subtitle={say('Your journey history and destinations','የጉዞ ታሪክ እና መድረሻዎች')}>
+        <AccountRow icon="clock" title={say('My rides & receipts','ጉዞዎቼ እና ደረሰኞች')} detail={say('Completed, cancelled and recent trips','የተጠናቀቁ፣ የተሰረዙ እና የቅርብ ጉዞዎች')} onClick={props.rides}/>
+        <AccountRow icon="star" title={say('Saved places','የተቀመጡ ቦታዎች')} detail={say('Home, work and favourite destinations','ቤት፣ ስራ እና ተወዳጅ መድረሻዎች')} onClick={props.saved}/>
       </AccountSection>
 
-      <AccountSection title={say('Preferences','ምርጫዎች')} subtitle={say('Language, appearance and alerts','ቋንቋ፣ መልክ እና ማሳወቂያዎች')}>
-        <AccountRow icon="settings" title={t('settings')} detail={say('Manage your app preferences','የመተግበሪያ ምርጫዎችዎን ያስተዳድሩ')} onClick={()=>open('settings')}/>
+      <AccountSection title={say('Wallet & payments','የኪስ ቦርሳ እና ክፍያዎች')} subtitle={say('Payments and recorded transactions','ክፍያዎች እና የተመዘገቡ ግብይቶች')}>
+        <AccountRow icon="wallet" title={say('Wallet & payment methods','ኪስ ቦርሳ እና የክፍያ መንገዶች')} detail={say('Manage the methods available to your account','ለመለያዎ የሚገኙ የክፍያ መንገዶች')} onClick={props.payments}/>
+      </AccountSection>
+
+      <AccountSection title={say('Safety & support','ደህንነት እና ድጋፍ')} subtitle={say('Assistance whenever you need it','በሚያስፈልግዎ ጊዜ እገዛ')}>
+        <AccountRow icon="shield" title={say('Safety Center','የደህንነት ማዕከል')} detail={say('Emergency tools and trip safety','የአደጋ ጊዜ እገዛ እና የጉዞ ደህንነት')} onClick={props.safety}/>
+        <AccountRow icon="chat" title={say('Help & support','እገዛ እና ድጋፍ')} detail={say('Get help with rides or your account','በጉዞዎች ወይም በመለያዎ ላይ እገዛ')} onClick={props.support}/>
+      </AccountSection>
+
+      <AccountSection title={say('Preferences','ምርጫዎች')} subtitle={say('Make Biloo work your way','Bilooን ለራስዎ ያስተካክሉ')}>
+        <AccountRow icon="settings" title={say('Appearance, language & alerts','ገጽታ፣ ቋንቋ እና ማሳወቂያዎች')} detail={say('Light/dark theme, permissions and settings','ብርሃን/ጨለማ ገጽታ፣ ፈቃዶች እና ቅንብሮች')} onClick={()=>open('settings')}/>
+        <AccountRow icon="info" title={say('Privacy & your data','ግላዊነት እና ውሂብዎ')} detail={say('Understand how your information is handled','መረጃዎ እንዴት እንደሚተዳደር ይወቁ')} onClick={()=>open('privacy')}/>
+        <AccountRow icon="info" title={say('Terms & about Biloo','ሕጋዊ መረጃ እና ስለ Biloo')} detail={say('Service terms and product information','የአገልግሎት ውሎች እና ስለ መተግበሪያው')} onClick={()=>window.location.assign('/explore/terms')}/>
       </AccountSection>
 
       <section className="nr-account-secondary-actions" aria-label={say('More Biloo options','ተጨማሪ የBiloo አማራጮች')}>
