@@ -221,7 +221,7 @@ export function RiderProfile(props:Props) {
     <header className="nr-account-top nr-account-standard-top">
       <div>
         <span className="nr-account-eyebrow">{say('YOUR SPACE / 05','የእርስዎ ቦታ / 05')}</span>
-        <h1 id="nr-account-title">{say('Account','መለያ')}</h1>
+        <h1 id="nr-account-title" aria-label={say('Account','መለያ')}>{say('Account','መለያ')}</h1>
         <p>{say('All your personal essentials, beautifully organized.','የግል መረጃዎ፣ ምርጫዎችዎ እና ደህንነትዎ በአንድ ቦታ።')}</p>
       </div>
     </header>
