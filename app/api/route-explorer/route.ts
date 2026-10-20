@@ -6,7 +6,7 @@ const reply = (body: unknown, status = 200) => Response.json(body, { status, hea
 async function resolvePlace(query: string, token: string): Promise<Point> {
   // Oromiffa Mattuu is commonly indexed as Metu/Mettu in mapping providers.
   // Use the geographically specific lookup to avoid the similarly named MetU near Addis Ababa.
-  const lookup = /^(mattuu|matuu|metu|mettu)(?:,?\\s+(?:oromia|ethiopia))*$/i.test(query)
+  const lookup = ["mattuu", "matuu", "metu", "mettu"].includes(query.trim().toLowerCase())
     ? "Metu Ethiopia"
     : query;
   const params = new URLSearchParams({
