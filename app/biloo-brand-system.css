@@ -1,0 +1,213 @@
+/* BILOO | single 2026 brand authority.
+   Official symbol: /brand/biloo-mark.svg (navy + gold).
+   Design accents do not replace map, safety, earnings or error semantics. */
+:root {
+  --biloo-navy:#08295f;
+  --biloo-navy-deep:#061e44;
+  --biloo-gold:#f9c449;
+  --biloo-gold-pressed:#e8b339;
+  --biloo-gold-soft:#fff5d9;
+  --biloo-bg:#f6f8fb;
+  --biloo-line:#dfe6ef;
+  --biloo-ink:#132a48;
+  --biloo-muted:#63748b;
+  --biloo-focus:#1765b6;
+  --nexride-navy:var(--biloo-navy);
+  --nexride-emerald:var(--biloo-gold);
+  --nexride-emerald-bright:#ffdb7c;
+}
+:is(.nr-app,.nr-identity-entry,.nr-driver-app-shell,.nex-manage) {
+  --bg:var(--biloo-bg);
+  --surface:#fff;
+  --surface-alt:#f0f4f8;
+  --text:var(--biloo-ink);
+  --muted:var(--biloo-muted);
+  --line:var(--biloo-line);
+  --navy:var(--biloo-navy);
+  --nr-navy:var(--biloo-navy);
+  --nr-navy-2:#0e3775;
+  --nr-emerald:var(--biloo-gold);
+  --nr-emerald-pressed:var(--biloo-gold-pressed);
+  --nr-emerald-soft:var(--biloo-gold-soft);
+  --nr-bg:var(--biloo-bg);
+  --nr-bg-secondary:#eef2f7;
+  --nr-surface:#fff;
+  --nr-surface-raised:#fff;
+  --nr-text:var(--biloo-ink);
+  --nr-text-secondary:var(--biloo-muted);
+  --nr-text-muted:#6b7b91;
+  --nr-border:var(--biloo-line);
+  --nr-border-strong:#bfcbd9;
+  --nr-brand-primary:var(--biloo-navy);
+  --nr-brand-primary-strong:var(--biloo-navy-deep);
+  --nr-id-navy:var(--biloo-navy);
+  --nr-id-elevated:#0e3775;
+  --nr-id-emerald:var(--biloo-gold);
+  --nr-id-emerald-text:#7a5306;
+  --nr-id-blue:var(--biloo-navy);
+  --nr-id-bg:var(--biloo-bg);
+  --nr-id-surface:#fff;
+  --nr-id-text:var(--biloo-ink);
+  --nr-id-muted:var(--biloo-muted);
+  --nr-id-line:var(--biloo-line);
+  --nr-id-field:#f5f7fa;
+  --nx-em:var(--biloo-gold);
+  --nx-em-deep:var(--biloo-navy);
+  --precision-emerald:var(--biloo-gold);
+  color-scheme:light;
+}
+.nr-driver-app-shell,
+.nr-driver-standalone-menu {
+  --driver-bg:var(--biloo-bg);
+  --driver-surface:#fff;
+  --driver-surface-elevated:#fff;
+  --driver-border:rgba(8,41,95,.15);
+  --driver-text-primary:var(--biloo-ink);
+  --driver-text-secondary:var(--biloo-muted);
+  --driver-accent:var(--biloo-gold);
+  --driver-header-bg:rgba(255,255,255,.96);
+  --driver-nav-bg:rgba(255,255,255,.96);
+  --driver-overlay:rgba(255,255,255,.96);
+  --driver-success:#078955;
+  --driver-danger:#ba3849;
+  --driver-warning:#a8690d;
+  background:var(--driver-bg);
+  color:var(--driver-text-primary);
+  color-scheme:light;
+}
+:is(.nr-app,.nr-identity-entry,.nr-driver-app-shell,.nex-manage)[data-theme="dark"],
+.nr-driver-app-shell[data-theme="dark"] .nr-app {
+  --bg:#08295f;
+  --surface:#10386f;
+  --surface-alt:#174579;
+  --text:#fff;
+  --muted:#d5dfed;
+  --line:#315987;
+  --navy:#f9c449;
+  --nr-bg:#08295f;
+  --nr-bg-secondary:#0c336b;
+  --nr-surface:#10386f;
+  --nr-surface-raised:#174579;
+  --nr-text:#fff;
+  --nr-text-secondary:#d5dfed;
+  --nr-text-muted:#bdcde2;
+  --nr-border:#315987;
+  --nr-border-strong:#52739d;
+  --nr-brand-primary:#f9c449;
+  --nr-brand-primary-strong:#f0b936;
+  --nr-id-bg:#08295f;
+  --nr-id-surface:#10386f;
+  --nr-id-text:#fff;
+  --nr-id-muted:#d5dfed;
+  --nr-id-line:#315987;
+  --nr-id-field:#174579;
+  --nr-id-blue:#f9c449;
+  --nr-id-emerald-text:#f9c449;
+  --driver-bg:#08295f;
+  --driver-surface:#10386f;
+  --driver-surface-elevated:#174579;
+  --driver-border:#315987;
+  --driver-text-primary:#fff;
+  --driver-text-secondary:#d5dfed;
+  --driver-accent:#f9c449;
+  --driver-header-bg:rgba(8,41,95,.96);
+  --driver-nav-bg:rgba(16,56,111,.97);
+  --driver-overlay:rgba(16,56,111,.97);
+  color-scheme:dark;
+}
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer) {
+  --ed-bg:#fff;
+  --ed-ink:var(--biloo-ink);
+  --ed-muted:var(--biloo-muted);
+  --ed-line:var(--biloo-line);
+  --ed-panel:#f3f6fa;
+  --ed-accent:var(--biloo-navy);
+  --ed-active:var(--biloo-gold-soft);
+  --nr-nav-bg:#fff;
+  --nr-nav-fg:var(--biloo-ink);
+  --nr-nav-muted:var(--biloo-muted);
+  --nr-nav-accent:var(--biloo-navy);
+}
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer)[data-theme="dark"] {
+  --ed-bg:#10386f;
+  --ed-ink:#fff;
+  --ed-muted:#d5dfed;
+  --ed-line:#315987;
+  --ed-panel:#174579;
+  --ed-accent:#f9c449;
+  --ed-active:#204e83;
+  --nr-nav-bg:#10386f;
+  --nr-nav-fg:#fff;
+  --nr-nav-muted:#d5dfed;
+  --nr-nav-accent:#f9c449;
+}
+.nr-driver-app-shell[data-theme="dark"] :is(.nr-driver-page,.nr-driver-shell-content,.nr-driver-profile-subpage,.nr-driver-activity-page,.nr-earnings-report-page){
+  background-color:var(--driver-bg);
+  color:var(--driver-text-primary);
+}
+.nr-app[data-theme="dark"] :is(.nr-workspace,.nr-main,.nr-stage,.nr-sidebar,.nr-panel,.nr-account-standard,.nr-profile-page,.nr-rider-page){
+  background-color:var(--nr-bg);
+  color:var(--nr-text);
+}
+:is(.nr-app,.nr-driver-app-shell,.nr-identity-entry) .nr-brand strong,
+.nr-driver-global-header-title strong {color:var(--nr-text,var(--biloo-ink));}
+.nr-app[data-theme="dark"] .nr-brand strong,
+.nr-driver-app-shell[data-theme="dark"] .nr-brand strong {color:#fff;}
+.nr-app .nr-button.nr-primary {
+  background:var(--biloo-gold)!important;
+  border-color:var(--biloo-gold)!important;
+  color:var(--biloo-navy)!important;
+}
+.nr-app .nr-button.nr-primary:not(:disabled):hover {
+  background:var(--biloo-gold-pressed)!important;
+  border-color:var(--biloo-gold-pressed)!important;
+}
+:is(.nr-app,.nr-identity-entry) :is(.nr-rider-get-started,.nr-auth-submit,.nr-auth-cta-dock .driver-auth-submit),
+.nr-driver-app-shell .driver-auth-submit {
+  background:var(--biloo-gold)!important;
+  color:var(--biloo-navy)!important;
+  border-color:var(--biloo-gold)!important;
+}
+.nr-app :is(.nr-rider-get-started,.nr-auth-submit):hover,
+.nr-driver-app-shell .driver-auth-submit:not(:disabled):hover{
+  background:var(--biloo-gold-pressed)!important;
+}
+.nr-app .nr-navigation button[aria-current="page"],
+.nr-app .nr-navigation button.active,
+.nr-driver-app-shell :is(.nr-driver-nav,.nr-driver-bottom-nav) [aria-current="page"]{
+  color:var(--biloo-navy)!important;
+  background:var(--biloo-gold-soft)!important;
+}
+.nr-app[data-theme="dark"] .nr-navigation button[aria-current="page"],
+.nr-driver-app-shell[data-theme="dark"] :is(.nr-driver-nav,.nr-driver-bottom-nav) [aria-current="page"]{
+  color:var(--biloo-gold)!important;
+  background:#174579!important;
+}
+.nr-app .nr-rider-welcome .nr-rider-get-started{background:var(--biloo-navy)!important;color:#fff!important;border-color:var(--biloo-navy)!important}
+.nr-app .biloo-rider-register{background:var(--biloo-gold)!important;color:var(--biloo-navy)!important}
+.nr-app :is(.nr-rider-splash,.nr-branded-loader) {--nexride-emerald:var(--biloo-gold);}
+.nr-rider-splash .nr-splash-progress > span,
+.nr-branded-loader .nr-loader-line > span{background:var(--biloo-gold)!important}
+.nr-driver-menu-layer .nr-driver-menu-nav .nr-driver-menu-row[data-active="true"],
+.nr-rider-drawer-layer .nr-rider-drawer-nav button.active{
+  background:var(--ed-active)!important;
+}
+:is(.nr-app,.nr-driver-app-shell,.nr-identity-entry) :is(a,button,input,select,textarea):focus-visible,
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer) :is(a,button):focus-visible{
+  outline:3px solid var(--biloo-focus)!important;
+  outline-offset:3px;
+}
+:is(.nr-app,.nr-driver-app-shell,.nr-identity-entry) :is(input,textarea,select):focus{
+  border-color:var(--biloo-navy);
+}
+.nr-app[data-theme="dark"] :is(a,button,input,select,textarea):focus-visible,
+.nr-driver-app-shell[data-theme="dark"] :is(a,button,input,select,textarea):focus-visible{
+  outline-color:var(--biloo-gold)!important;
+}
+/* Keep operational statuses distinct from brand accent. */
+:is(.nr-app,.nr-driver-app-shell) :is(.nr-error,.nr-auth-error,[role="alert"]) {
+  --nr-brand-primary:#b52636;
+}
+@media(prefers-reduced-motion:reduce){
+  .biloo-driver-welcome a,.nr-driver-menu-panel,.nr-rider-drawer{transition:none!important;animation:none!important}
+}
