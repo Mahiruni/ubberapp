@@ -45,10 +45,6 @@ export default function DriverWelcome() {
 
   return <main className="biloo-driver-campaign biloo-driver-campaign--2026" aria-label="Biloo Driver welcome">
     <div className="biloo-driver-image" role="img" aria-label="Biloo driver beside a branded white car" />
-    <header className="biloo-driver-header">
-      <img src="/brand/biloo-mark.svg" alt="" className="biloo-driver-header-logo" />
-      <span className="biloo-driver-header-name">biloo <small>DRIVER</small></span>
-    </header>
     <section className="biloo-driver-bottom" aria-label="Driver access">
       <Link href="/driver/onboarding" className="biloo-driver-primary">Get Started <span aria-hidden="true">→</span></Link>
       <div className="biloo-driver-action-row">
