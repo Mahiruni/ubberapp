@@ -185,4 +185,6 @@ function RiderWelcome() {
           <Link href="/driver">{t("driverSignIn")}</Link>
         </p>
       </div>
-    </main>\n  );\n}
+    </main>
+  );
+}
