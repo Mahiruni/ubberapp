@@ -745,3 +745,65 @@
   outline:3px solid var(--biloo-account-cta)!important;
   outline-offset:2px;
 }
+
+/*
+ * Actual Driver Account subpage navigation:
+ * driver-shell.css suppresses the old local headers to avoid duplicating
+ * the main app bar. These are account-specific section headings WITH their
+ * Back control; restore the smaller heading beneath the global bar.
+ */
+.nr-driver-app-shell[data-theme] .nr-driver-shell-content
+  .nr-driver-profile-subpage.nr-app .nr-profile-subhead {
+  display:flex!important;
+  visibility:visible!important;
+  align-items:center!important;
+  justify-content:space-between;
+  gap:14px;
+  width:100%;
+  min-height:52px;
+  margin-bottom:18px!important;
+  padding:0!important;
+  background:transparent!important;
+  border:0!important;
+}
+.nr-driver-app-shell[data-theme] .nr-driver-profile-subpage .nr-profile-subhead>div {
+  min-width:0;
+  flex:1 1 auto;
+}
+.nr-driver-app-shell[data-theme] .nr-driver-profile-subpage .nr-profile-subhead :is(h1,strong) {
+  color:var(--biloo-account-ink)!important;
+}
+.nr-driver-app-shell[data-theme] .nr-driver-profile-subpage .nr-profile-subhead .nr-driver-kicker {
+  color:var(--biloo-account-muted)!important;
+  font-size:10px!important;
+  letter-spacing:.12em!important;
+}
+.nr-driver-app-shell[data-theme] .nr-driver-profile-subpage .nr-profile-subhead>button {
+  display:inline-flex!important;
+  visibility:visible!important;
+  flex:0 0 44px;
+  align-items:center;
+  justify-content:center;
+  width:44px;
+  min-width:44px;
+  min-height:44px;
+  padding:0!important;
+  border:1px solid var(--biloo-account-border)!important;
+  border-radius:12px!important;
+  color:var(--biloo-account-ink)!important;
+  background:var(--biloo-account-surface)!important;
+  opacity:1!important;
+  cursor:pointer;
+}
+.nr-driver-app-shell[data-theme] .nr-driver-profile-subpage .nr-profile-subhead>button svg {
+  display:block;
+  color:inherit!important;
+}
+@media(max-width:520px) {
+  .nr-driver-app-shell[data-theme] .nr-driver-profile-subpage .nr-profile-subhead {
+    gap:9px;
+  }
+  .nr-driver-app-shell[data-theme] .nr-driver-profile-subpage .nr-profile-subhead h1 {
+    font-size:24px!important;
+  }
+}

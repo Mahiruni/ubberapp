@@ -63,6 +63,13 @@ describe("Biloo premium Account experience", () => {
     expect(css).toContain('var(--biloo-account-ink)');
     expect(css).toContain('env(safe-area-inset-bottom,0px)');
     expect(css).toContain('prefers-reduced-motion: reduce');
+    expect(css).toContain('.nr-driver-profile-subpage.nr-app .nr-profile-subhead');
+    expect(css).toContain('display:flex!important;');
+    expect(css).toContain('.nr-driver-profile-subpage .nr-profile-subhead>button');
+    for(const name of ["documents","vehicle","payouts"]){
+      const route=source("app/driver/profile/"+name+"/page.tsx");
+      expect(route).toContain('router.push("/driver/profile")');
+    }
     expect(css).not.toContain("mapboxgl-canvas");
   });
 });

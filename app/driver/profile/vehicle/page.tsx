@@ -57,7 +57,7 @@ export default function DriverVehiclePage() {
     <main className="nr-app nr-driver-profile-subpage" data-mode="driver">
       <div className="nr-driver-profile-subwrap">
         <header className="nr-profile-subhead">
-          <button className="nr-driver-icon-btn" onClick={() => router.replace("/driver/home?screen=profile")} aria-label={say("Back to driver profile")}>
+          <button className="nr-driver-icon-btn" onClick={() => router.push("/driver/profile")} aria-label={say("Back to driver profile")}>
             <Icon name="back" />
           </button>
           <div>

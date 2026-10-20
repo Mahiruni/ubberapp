@@ -310,7 +310,7 @@ export default function DriverPayoutsPage() {
         <header className="nr-profile-subhead">
           <button
             className="nr-driver-icon-btn"
-            onClick={() => router.replace("/driver/home?screen=profile")}
+            onClick={() => router.push("/driver/profile")}
             aria-label={op("Back to driver profile")}
           >
             <Icon name="back" />
