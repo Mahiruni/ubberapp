@@ -1,4 +1,4 @@
-# NexRide authentication email collection
+# Biloo authentication email collection
 
 Six responsive branded emails, with HTML, plain-text companions, subjects,
 preheaders, a reusable builder, safe browser previews and screenshots.
@@ -9,14 +9,14 @@ preheaders, a reusable builder, safe browser previews and screenshots.
 - `text/`: equivalent plain-text content for a custom mail sender or manual use.
 - `manifest.json`: subjects, preheaders and dashboard template mappings.
 - `supabase-auth-config.json`: template-only Management API payload. No secrets.
-- `assets/nexride-email-mark.png`: raster conversion of NexRide's official SVG mark.
+- `assets/biloo-email-mark.png`: raster conversion of Biloo's official SVG mark.
 - `index.html`, `previews/`: non-delivering design previews with sample data.
 - `screenshots/`: desktop and mobile visual proofs.
 - `build.py`, `verify.py`: regenerate and validate the collection.
 
 ## Supabase installation
 
-Project: `eyyvvwecpyctttiueban` (NexRide, production).
+Project: `eyyvvwecpyctttiueban` (Biloo, production).
 
 On 10 October 2026, the dashboard showed custom SMTP disabled. Template subject
 and source editing were disabled with the message “Set up custom SMTP to edit
@@ -25,7 +25,7 @@ templates.” The free built-in sender currently uses Supabase's defaults.
 Before installation, configure a verified sender and custom SMTP in
 Authentication → Emails → SMTP Settings. Enter credentials directly in the
 dashboard, never in chat or this repository. Required provider details are the
-verified sender email, sender name (`NexRide`), SMTP host, TLS port, username and
+verified sender email, sender name (`Biloo`), SMTP host, TLS port, username and
 password/API credential. Configure the provider's SPF/DKIM and DMARC records for
 the actual owned sending domain. Do not invent a sender address. Disable provider
 click tracking so verification links are not rewritten. Choose a sending limit
@@ -42,8 +42,8 @@ multipart email support; they are not claimed to be installed through the
 dashboard.
 
 The image must be publicly available at
-`https://ubberapp.vercel.app/brand/nexride-email-mark.png` before activation.
-The visible NexRide wordmark, headings, actions and security copy are live text
+`https://ubberapp.vercel.app/brand/biloo-email-mark.png` before activation.
+The visible Biloo wordmark, headings, actions and security copy are live text
 and do not depend on image loading.
 
 ## Auth behavior

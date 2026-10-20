@@ -79,7 +79,7 @@ export async function sendSmtpTest(to: string, subject: string, body: string) {
     let read = responseReader(socket);
     const send = (command: string) => socket.write(command + "\r\n");
     await read([220]);
-    send("EHLO nexride.app"); await read([250]);
+    send("EHLO ubberapp.vercel.app"); await read([250]);
     if (port === 587) {
       send("STARTTLS"); await read([220]);
       socket.removeAllListeners("data");
@@ -90,7 +90,7 @@ export async function sendSmtpTest(to: string, subject: string, body: string) {
         upgraded.once("error", reject);
       });
       read = responseReader(socket);
-      socket.write("EHLO nexride.app\r\n"); await read([250]);
+      socket.write("EHLO ubberapp.vercel.app\r\n"); await read([250]);
     }
     const command = async (value: string, expected: number[]) => { socket.write(value + "\r\n"); await read(expected); };
     await command("AUTH LOGIN", [334]);
@@ -103,7 +103,7 @@ export async function sendSmtpTest(to: string, subject: string, body: string) {
       "From: " + from, "To: " + to,
       "Subject: =?UTF-8?B?" + b64(subject) + "?=",
       "MIME-Version: 1.0", "Content-Type: text/plain; charset=UTF-8",
-      "Content-Transfer-Encoding: base64", "X-NexRide-Campaign: test", ""
+      "Content-Transfer-Encoding: base64", "X-Biloo-Campaign: test", ""
     ];
     await command(headers.join("\r\n") + "\r\n" + (b64(body).match(/.{1,76}/g) || []).join("\r\n") + "\r\n.", [250]);
     socket.write("QUIT\r\n");
