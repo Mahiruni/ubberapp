@@ -220,9 +220,9 @@ export function RiderProfile(props:Props) {
   return <section className="nr-account nr-account-v2 nr-account-standard" aria-labelledby="nr-account-title">
     <header className="nr-account-top nr-account-standard-top">
       <div>
-        <span className="nr-account-eyebrow">BILOO · {say('PERSONAL SPACE','የግል ቦታ')}</span>
+        <span className="nr-account-eyebrow">{say('YOUR SPACE / 05','የእርስዎ ቦታ / 05')}</span>
         <h1 id="nr-account-title">{say('Account','መለያ')}</h1>
-        <p>{say('Your details, preferences and security. All in one place.','የእርስዎ መረጃ፣ ምርጫዎች እና ደህንነት።')}</p>
+        <p>{say('All your personal essentials, beautifully organized.','የግል መረጃዎ፣ ምርጫዎችዎ እና ደህንነትዎ በአንድ ቦታ።')}</p>
       </div>
     </header>
 
@@ -250,6 +250,13 @@ export function RiderProfile(props:Props) {
         <Icon name="user" size={17}/><span>{say('Edit','አርትዕ')}</span>
       </button>
     </section>
+
+    <div className="biloo-account-protection-note">
+      <Icon name="shield" size={15}/>
+      <span>{account
+        ? say('Your account details are protected with secure sign-in.','የመለያዎ መረጃ በደህንነቱ በተጠበቀ መግቢያ ይጠበቃል።')
+        : say('Preview details stay on this device.','የማሳያ መረጃ በዚህ መሣሪያ ላይ ይቀመጣል።')}</span>
+    </div>
 
     {loadError&&<div className="nr-account-inline-error" role="alert">
       <Icon name="info" size={18}/>
