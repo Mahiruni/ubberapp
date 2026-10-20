@@ -1,4 +1,4 @@
-const VERSION = "nexride-biloo-navy-gold-20261020-v1";
+const VERSION = "nexride-biloo-only-20261020-v2";
 const CORE_CACHE = VERSION + "-core";
 const RUNTIME_CACHE = VERSION + "-runtime";
 const CORE_ASSETS = [

@@ -124,7 +124,7 @@ jobs:
                 "launchAutoHide": true,
                 "launchShowDuration": 12000,
                 "launchFadeOutDuration": 160,
-                "backgroundColor": "#625CF6",
+                "backgroundColor": "#08295F",
                 "androidSplashResourceName": "nexride_launch",
                 "showSpinner": false
               }

@@ -1,4 +1,4 @@
-/* NexRide 2026 — one Driver trip-wrapper identity.
+/* Biloo 2026 — one Driver trip-wrapper identity.
    This file is imported LAST by both operational screens. The Driver's
    current navy and emerald identity supports both light and dark wrappers. No trip logic is changed. */
 .nr-driver-app-shell :is(.nr-driver-request-page,.nr-driver-navigation-page){
@@ -528,3 +528,7 @@
     transition:none!important;
   }
 }
+
+/* Biloo gold is the primary interaction accent; success and danger remain semantic. */
+.nr-driver-app-shell{--trip-primary:#f9c449;--trip-handle:#f9c449;--trip-active-text:#08295f}
+.nr-driver-app-shell[data-theme="dark"]{--trip-primary:#f9c449;--trip-handle:#f9c449;--trip-active-text:#f9c449}

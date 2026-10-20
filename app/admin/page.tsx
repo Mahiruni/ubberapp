@@ -451,7 +451,7 @@ export default function AdminPage() {
     return (
       <main className="admin-login">
         <div className="login-card">
-          <div className="admin-mark">N</div>
+          <div className="admin-mark"><img src="/brand/biloo-mark.svg" alt="Biloo" width={40} height={40}/></div>
           <p className="admin-kicker">BILOO · CONTROL CENTER</p>
           <h1>Biloo Control Center</h1>
           <p className="login-copy">

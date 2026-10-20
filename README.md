@@ -1,8 +1,8 @@
-# NexRide
+# Biloo
 
-**Better Rides. A Brighter Tomorrow.**
+**Rides for a Better Tomorrow.**
 
-NexRide is a responsive ride-hailing frontend for Ethiopia, built with Next.js App Router and React. The rider home pairs a light geographic street map with a destination panel; the driver workspace uses deep navy surfaces and emerald actions. English and Amharic share one translation system, with a bundled licensed Ethiopic fallback font.
+Biloo is a responsive ride-hailing frontend for Ethiopia, built with Next.js App Router and React. The rider home pairs a light geographic street map with a destination panel; the driver workspace uses Biloo navy surfaces and gold primary actions. English and Amharic share one translation system, with a bundled licensed Ethiopic fallback font.
 
 ## Frontend experience
 
