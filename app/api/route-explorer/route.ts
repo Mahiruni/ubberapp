@@ -3,6 +3,22 @@ import { mapboxToken, routeBetween } from "../../../lib/location";
 type Point = { lat: number; lng: number; name: string };
 const reply = (body: unknown, status = 200) => Response.json(body, { status, headers: { "Cache-Control": "no-store" } });
 
+/** Only planner locations returned by the Ethiopia place picker are expected here.
+ * Bounds are deliberately broad: this does not alter the ride-booking service area.
+ */
+function pickedPoint(value: unknown, expectedName: string): Point | null {
+  if (!value || typeof value !== "object") return null;
+  const item = value as { lat?: unknown; lng?: unknown; name?: unknown };
+  const lat = Number(item.lat);
+  const lng = Number(item.lng);
+  const name = typeof item.name === "string" ? item.name.trim() : "";
+  if (!name || name.length > 120 || !Number.isFinite(lat) || !Number.isFinite(lng) ||
+      lat < 3 || lat > 15 || lng < 33 || lng > 48 ||
+      name.normalize("NFKC").toLocaleLowerCase() !== expectedName.normalize("NFKC").toLocaleLowerCase())
+    return null;
+  return { lat, lng, name };
+}
+
 async function resolvePlace(query: string, token: string): Promise<Point> {
   const params = new URLSearchParams({
     q: query, country: "et", limit: "5", language: "en",
@@ -30,7 +46,7 @@ async function resolvePlace(query: string, token: string): Promise<Point> {
 export async function POST(request: Request) {
   let body: unknown;
   try { body = await request.json(); } catch { return reply({ status: "invalid" }, 400); }
-  const value = body as { origin?: unknown; destination?: unknown } | null;
+  const value = body as { origin?: unknown; destination?: unknown; originPoint?: unknown; destinationPoint?: unknown } | null;
   const origin = typeof value?.origin === "string" ? value.origin.trim() : "";
   const destination = typeof value?.destination === "string" ? value.destination.trim() : "";
   if (!origin || !destination || origin.length > 100 || destination.length > 100 ||
@@ -38,7 +54,12 @@ export async function POST(request: Request) {
   const token = mapboxToken();
   if (!token) return reply({ status: "unavailable", message: "Map service is not configured." }, 503);
   try {
-    const [start, end] = await Promise.all([resolvePlace(origin, token), resolvePlace(destination, token)]);
+    const startChoice = pickedPoint(value?.originPoint, origin);
+    const endChoice = pickedPoint(value?.destinationPoint, destination);
+    const [start, end] = await Promise.all([
+      startChoice || resolvePlace(origin, token),
+      endChoice || resolvePlace(destination, token),
+    ]);
     const separation = Math.hypot(start.lat - end.lat, start.lng - end.lng);
     if (separation < 0.0003) return reply({ status: "same" }, 422);
     // Explorer routes are informational. Never bypass the separate booking coverage rules.

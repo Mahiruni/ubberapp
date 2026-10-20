@@ -376,3 +376,79 @@
 @media(prefers-reduced-motion:reduce) {
   .biloo-explore-page * { animation:none!important; transition:none!important; scroll-behavior:auto!important; }
 }
+
+
+/* Live location suggestions: clear hierarchy, keyboard focus and safe overlay. */
+.biloo-explore-field-wrap { position:relative; min-width:0; }
+.biloo-explore-field-wrap .biloo-explore-field { width:100%; }
+.biloo-explore-autocomplete {
+  position:absolute;
+  inset:calc(100% + 6px) 0 auto 0;
+  z-index:30;
+  overflow:auto;
+  max-height:min(300px,40dvh);
+  border:1px solid #cbdbe9;
+  border-radius:14px;
+  background:#fff;
+  box-shadow:0 15px 36px #08295f29;
+  padding:5px;
+  overscroll-behavior:contain;
+}
+.biloo-explore-suggestion {
+  width:100%;
+  display:flex; align-items:center; gap:10px;
+  min-height:49px; padding:9px 10px;
+  border:0; border-radius:10px; background:transparent;
+  color:#0b2e5c; text-align:left;
+}
+.biloo-explore-suggestion:is(:hover,:focus-visible) { background:#eef4fb; }
+.biloo-explore-suggestion-pin {
+  display:grid; place-items:center;
+  flex:0 0 29px; width:29px; height:29px; border-radius:9px;
+  background:#edf3f8; color:#244976; font-size:19px;
+}
+.biloo-explore-suggestion>span:nth-child(2) { display:flex; flex-direction:column; gap:2px; min-width:0; flex:1; }
+.biloo-explore-suggestion strong {
+  font-size:13px; font-weight:850; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;
+}
+.biloo-explore-suggestion small {
+  font-size:11px; color:#667a90; text-overflow:ellipsis; white-space:nowrap; overflow:hidden;
+}
+.biloo-explore-suggestion-arrow { color:#748ba4; font-size:16px; }
+.biloo-explore-suggestion-status { margin:0; padding:12px; color:#5d7087; font-size:12px; }
+
+/* Keep every map interaction usable when the planner is dismissed. */
+.biloo-explore-panel[hidden] { display:none!important; }
+.biloo-explore-panel-toggle {
+  min-height:45px;
+  padding:0 14px;
+  border:1px solid #d4e0eb;
+  border-radius:14px;
+  background:#fff;
+  color:#08295f;
+  font-size:12px;
+  font-weight:850;
+  box-shadow:0 10px 28px #08295f2b;
+  white-space:nowrap;
+}
+.biloo-explore-panel-toggle:hover { background:#f4f8fd; }
+.biloo-explore-workspace[data-panel-open="false"] .biloo-explore-panel { display:none; }
+
+@media (max-width:920px) {
+  .biloo-explore-map-toolbar {
+    flex-direction:row; align-items:center; flex-wrap:wrap;
+    justify-content:flex-end; max-width:calc(100% - 24px);
+  }
+  .biloo-explore-panel-toggle { min-height:38px; border-radius:11px; padding:0 9px; }
+  .biloo-explore-workspace[data-panel-open="false"] .biloo-explore-map {
+    height:calc(100dvh - 150px);
+    min-height:470px;
+  }
+  .biloo-explore-workspace[data-panel-open="false"] {
+    background:#e3edf2;
+  }
+}
+@media (max-width:400px) {
+  .biloo-explore-map-style button { padding:7px 7px; font-size:10.5px; }
+  .biloo-explore-panel-toggle { font-size:11px; }
+}
