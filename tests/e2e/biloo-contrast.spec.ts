@@ -2,7 +2,7 @@ import { test, expect, type Locator, type Page } from "@playwright/test";
 
 /* Measure the rendered RGB pair, not design tokens, so inherited legacy colors
    cannot silently erase a label when the device theme changes. */
-const renderedContrast = (target: Locator, surface: Locator) => target.evaluate((element, backgroundElement) => {
+const renderedContrast = async (target: Locator, surface: Locator) => target.evaluate((element, backgroundElement) => {
   const foreground = getComputedStyle(element).color;
   const background = getComputedStyle(document.querySelector(backgroundElement as string)!).backgroundColor;
   const channels = (v: string) => {
