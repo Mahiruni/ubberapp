@@ -152,8 +152,8 @@ export function DriverProfileScreen({
       <header className="nr-driver-profile-heading">
         <div>
           <span className="nr-driver-kicker">BILOO · {t("driverAccount")}</span>
-          <h1>{say("Your driver account")}</h1>
-          <p>{say("Profile, verification, vehicle, earnings, and safety in one place.")}</p>
+          <h1>{say("Account")}</h1>
+          <p>{say("Your professional identity, preferences and security.")}</p>
         </div>
         <button className="nr-driver-icon-btn" onClick={onBack} aria-label={say("Back to driver home")}>
           <Icon name="back" />
@@ -234,31 +234,35 @@ export function DriverProfileScreen({
         </button>
       </section>
 
-      <div className="nr-driver-profile-columns">
+      <div className="nr-driver-profile-columns" aria-label={say("Driver account options")}>
         <div>
-          <DriverSection title={say("Driver account")} subtitle={say("Identity, trips, documents and vehicle")}>
-            <DriverRow icon="user" title={say("Personal details")} detail={profile.phone || profile.email || say("Driver contact information")} onClick={() => router.push("/driver/profile/settings")}/>
-            <DriverRow icon="clock" title={say("Trip activity")} detail={say("Accepted, completed, and cancelled trips")} onClick={() => router.push("/driver/activity")}/>
-            <DriverRow icon="shield" title={say("Driver documents")} detail={say(verification.title)} onClick={() => router.push("/driver/profile/documents")}/>
-            <DriverRow icon="pin" title={say("Vehicle information")} detail={profile.vehicle || say("Vehicle details")} onClick={() => router.push("/driver/profile/vehicle")}/>
+          <DriverSection title={say("Personal information")} subtitle={say("Your identity and contact information")}>
+            <DriverRow icon="user" title={say("Edit profile")} detail={say("Name, photo and contact details")} onClick={() => router.push("/driver/profile/settings")}/>
+            <DriverRow icon="shield" title={say("Account & security")} detail={say("Verified contacts, passwords and sessions")} onClick={() => router.push("/account/manage?role=driver#account-security")}/>
           </DriverSection>
 
-          <DriverSection title={say("Earnings & payouts")} subtitle={say("Earnings and payout history")}>
-            <DriverRow icon="money" title={say("Earnings report")} detail={say("Completed trips and recorded earnings")} onClick={() => router.push("/driver/earnings")}/>
-            <DriverRow icon="wallet" title={say("Payouts")} detail={say("Payout account and history")} onClick={() => router.push("/driver/profile/payouts")}/>
+          <DriverSection title={say("Driver verification")} subtitle={say("Documents and account approval")}>
+            <DriverRow icon="shield" title={say("Verification & documents")} detail={say(verification.title)} onClick={() => router.push("/driver/profile/documents")}/>
+            <DriverRow icon="pin" title={say("Vehicle management")} detail={profile.vehiclePlate || profile.vehicle || say("Vehicle details and registration")} onClick={() => router.push("/driver/profile/vehicle")}/>
+          </DriverSection>
+
+          <DriverSection title={say("Trips & earnings")} subtitle={say("Your recorded work and payouts")}>
+            <DriverRow icon="clock" title={say("Trip activity")} detail={say("Accepted, completed and cancelled trips")} onClick={() => router.push("/driver/activity")}/>
+            <DriverRow icon="money" title={say("Earnings report")} detail={say("Actual trip earnings and history")} onClick={() => router.push("/driver/earnings")}/>
+            <DriverRow icon="wallet" title={say("Payout details")} detail={say("Payout account and transaction history")} onClick={() => router.push("/driver/profile/payouts")}/>
           </DriverSection>
         </div>
 
         <div>
-          <DriverSection title={say("Safety & support")} subtitle={say("Protection and help tools")}>
-            <DriverRow icon="shield" title={say("Safety Center")} detail={say("Emergency help, trip sharing, and reports")} onClick={onSafety}/>
-            <DriverRow icon="chat" title={say("Driver support")} detail={say("Help with trips and your driver account")} onClick={() => router.push("/support?role=driver")}/>
+          <DriverSection title={say("Safety & support")} subtitle={say("Help with your trips and account")}>
+            <DriverRow icon="shield" title={say("Safety Center")} detail={say("Trip safety and emergency assistance")} onClick={onSafety}/>
+            <DriverRow icon="chat" title={say("Help & support")} detail={say("Driver support and trip issues")} onClick={() => router.push("/support?role=driver")}/>
           </DriverSection>
 
-          <DriverSection title={say("Preferences & account")} subtitle={say("Your Biloo Driver settings")}>
-            <DriverRow icon="settings" title={say("App settings")} detail={say("Profile, language, theme, and account details")} onClick={() => router.push("/driver/profile/settings")}/>
-            <DriverRow icon="shield" title={say("Manage Account & Verification")} detail={say("Unique identity, verified contacts, role access and security")} onClick={() => router.push("/account/manage")}/>
-            <DriverRow icon="info" title={say("Privacy & account data")} detail={say("Your authenticated driver information stays private")} onClick={() => router.push("/explore/privacy")}/>
+          <DriverSection title={say("Preferences")} subtitle={say("Make Biloo work your way")}>
+            <DriverRow icon="settings" title={say("Appearance, language & notifications")} detail={say("Theme, app permissions and preferences")} onClick={() => router.push("/driver/profile/settings")}/>
+            <DriverRow icon="info" title={say("Privacy & data")} detail={say("Read how Biloo handles your information")} onClick={() => router.push("/explore/privacy")}/>
+            <DriverRow icon="info" title={say("Terms & about Biloo")} detail={say("Service terms and information")} onClick={() => router.push("/explore/terms")}/>
           </DriverSection>
         </div>
       </div>
