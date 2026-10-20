@@ -60,7 +60,7 @@ test("logout never restores a saved Rider session automatically", async ({ page 
   await expect(password).toBeVisible({ timeout: 15000 });
 });
 
-test("Rider planning opens with Pickup focused and Plan your ride text", async ({ page }) => {
+test("Rider destination search opens with Pickup focused and the planning placeholder", async ({ page }) => {
   await page.addInitScript(() => {
     localStorage.setItem("nexride:explicit-signout", "rider");
     localStorage.setItem("nexride:preview-enabled", "true");
@@ -68,7 +68,7 @@ test("Rider planning opens with Pickup focused and Plan your ride text", async (
   });
   await page.goto("/");
   const planner = page.getByRole("button", { name: "Search destination", exact: true });
-  await expect(planner).toContainText("Plan your ride");
+  await expect(planner).toContainText("Search destination");
   await planner.click();
   const pickup = page.locator(".nr-endpoint-fields input").first();
   const destination = page.locator(".nr-endpoint-fields input").last();
