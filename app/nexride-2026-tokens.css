@@ -1,15 +1,36 @@
-.nr-app { --bg: #fafafc; --surface: #ffffff; --surface-alt: #f5f5fb; --text: #171720; --muted: #696b78; --line: #e9e9f0; --navy: #625cf6; --nr-indigo: #625cf6; --nr-violet: #9276f8; --nr-cyan: #7ddceb; --nr-peach: #ffcfb7; --nr-pink: #f4b6d2; color-scheme: light; }
-.nr-app[data-theme="dark"] { --bg: #302560; --surface: #443579; --surface-alt: #52428e; --text: #ffffff; --muted: #ded8f2; --line: #7568ac; --navy: #d0c7ff; color-scheme: dark; }
-.nr-app[data-mode="driver"][data-theme="light"] { --bg: #fafafc; --surface: #ffffff; --surface-alt: #f5f5fb; --text: #171720; --muted: #696b78; --line: #e9e9f0; color-scheme: light; }
-.nr-app :is(button,a,input,select,textarea):focus-visible { outline: 3px solid #8981ff; outline-offset: 3px; }
-@media (prefers-reduced-motion: reduce) { .nr-app *, .nr-app *::before, .nr-app *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
-
-.nr-rider-splash.is-restoring { background: #fafafc; color: #171720; align-items: center; padding: 24px; }
-.nr-rider-splash.is-restoring .nr-splash-loading-indicator { border-top-color: #625cf6; }
-.nr-rider-splash.has-error { background: #fafafc; color: #171720; }
-.nr-rider-splash.has-error .nr-splash-wordmark { color: #171720; }
-.nr-rider-splash.has-error .nr-splash-error { background: #fff; border-color: #e9e9f0; }
-.nr-rider-splash.has-error .nr-splash-error p { color: #696b78; }
-.nr-rider-splash.has-error .nr-splash-error > svg { color: #625cf6; }
-.nr-rider-splash.has-error .nr-splash-recovery-links a { color: #625cf6; border-color: #e9e9f0; }
-/* Startup and recovery always use the light palette regardless of device preference. */
+/* Biloo 2026 tokens — retained historical filename for import compatibility. */
+.nr-app {
+  --bg:#f6f8fb; --surface:#fff; --surface-alt:#f0f4f8;
+  --text:#132a48; --muted:#63748b; --line:#dfe6ef;
+  --navy:#08295f; --nr-indigo:#08295f; --nr-violet:#174579;
+  --nr-cyan:#8dc3e1; --nr-peach:#f9c449; --nr-pink:#fff5d9;
+  color-scheme:light;
+}
+.nr-app[data-theme="dark"] {
+  --bg:#08295f; --surface:#10386f; --surface-alt:#174579;
+  --text:#fff; --muted:#d5dfed; --line:#315987; --navy:#f9c449;
+  color-scheme:dark;
+}
+.nr-app[data-mode="driver"][data-theme="light"] {
+  --bg:#f6f8fb; --surface:#fff; --surface-alt:#f0f4f8;
+  --text:#132a48; --muted:#63748b; --line:#dfe6ef;
+  color-scheme:light;
+}
+.nr-app :is(button,a,input,select,textarea):focus-visible {
+  outline:3px solid #1765b6; outline-offset:3px;
+}
+@media (prefers-reduced-motion:reduce) {
+  .nr-app *, .nr-app *::before, .nr-app *::after {
+    animation-duration:.01ms!important;transition-duration:.01ms!important;
+  }
+}
+.nr-rider-splash.is-restoring {
+  background:#f6f8fb; color:#132a48; align-items:center; padding:24px;
+}
+.nr-rider-splash.is-restoring .nr-splash-loading-indicator { border-top-color:#f9c449; }
+.nr-rider-splash.has-error { background:#f6f8fb; color:#132a48; }
+.nr-rider-splash.has-error .nr-splash-wordmark { color:#132a48; }
+.nr-rider-splash.has-error .nr-splash-error { background:#fff; border-color:#dfe6ef; }
+.nr-rider-splash.has-error .nr-splash-error p { color:#63748b; }
+.nr-rider-splash.has-error .nr-splash-error > svg { color:#08295f; }
+.nr-rider-splash.has-error .nr-splash-recovery-links a { color:#08295f; border-color:#dfe6ef; }
