@@ -2,7 +2,6 @@
 
 import { createPortal } from "react-dom";
 import { AppVersion } from "./app-version";
-import { MenuGroup } from "./menu-group";
 import { registerNexRideBackHandler } from "../../lib/nexride-native-navigation";
 
 import {
@@ -236,7 +235,7 @@ export function RiderMenu({
       onClick={() => navigate(item.id)}>
       <span className="nr-rider-drawer-icon" data-tone={item.id}><Icon name={item.icon} size={20}/></span>
       <span><strong>{item.label}</strong><small>{item.detail}</small></span>
-      {selected && <span className="nr-menu-active-dot" aria-hidden="true"/>}
+      {selected ? <span className="nr-menu-active-dot" aria-hidden="true"/> : <Icon name="chevron" size={16} />}
     </button>;
   });
 
@@ -339,18 +338,14 @@ export function RiderMenu({
               <nav className="nr-rider-drawer-nav" aria-label={say("Rider navigation", "የተሳፋሪ አሰሳ")}>
                 {renderRows(items.slice(0,4))}
               </nav>
-              <MenuGroup label={say("ACCOUNT & PREFERENCES", "መለያ እና ምርጫዎች")}
-                icon="user" initiallyOpen active={active === "profile" || active === "settings"}>
-                <nav className="nr-rider-drawer-nav nr-menu-nested" aria-label={say("Account and preferences", "መለያ እና ምርጫዎች")}>
-                  {renderRows(items.slice(6,8))}
-                </nav>
-              </MenuGroup>
-              <MenuGroup label={say("SAFETY & SUPPORT", "ደህንነት እና ድጋፍ")}
-                icon="shield" active={active === "safety" || active === "messages"}>
-                <nav className="nr-rider-drawer-nav nr-menu-nested" aria-label={say("Safety and support", "ደህንነት እና ድጋፍ")}>
-                  {renderRows(items.slice(4,6))}
-                </nav>
-              </MenuGroup>
+              <div className="nr-menu-section-label">{say("ACCOUNT", "መለያ")}</div>
+              <nav className="nr-rider-drawer-nav" aria-label={say("Account and settings", "መለያ እና ቅንብሮች")}>
+                {renderRows(items.slice(6,8))}
+              </nav>
+              <div className="nr-menu-section-label">{say("HELP & SAFETY", "ድጋፍ እና ደህንነት")}</div>
+              <nav className="nr-rider-drawer-nav" aria-label={say("Help and safety", "ድጋፍ እና ደህንነት")}>
+                {renderRows(items.slice(4,6))}
+              </nav>
               <div className="nr-menu-section-label">{say("MORE", "ተጨማሪ")}</div>
               <div className="nr-rider-drawer-secondary">
                 <button type="button" disabled={locked} onClick={() => {setOpen(false);window.location.assign("/driver");}}>

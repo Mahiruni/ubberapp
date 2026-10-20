@@ -65,7 +65,7 @@ const NAV_ITEMS: Array<{ id: DriverNavId; icon: IconName; href: string; en: stri
   { id: "home", icon: "home", href: "/driver/home", en: "Home", am: "መነሻ" },
   { id: "requests", icon: "navigation", href: "/driver/activity", en: "Requests", am: "ጥያቄዎች" },
   { id: "earnings", icon: "wallet", href: "/driver/earnings", en: "Earnings", am: "ገቢ" },
-  { id: "messages", icon: "chat", href: "/support?role=driver", en: "Messages", am: "መልዕክቶች" },
+  { id: "messages", icon: "chat", href: "/support?role=driver", en: "Help & Support", am: "እገዛ እና ድጋፍ" },
   { id: "account", icon: "user", href: "/driver/profile", en: "Account", am: "መለያ" },
 ];
 
@@ -318,16 +318,29 @@ function DriverHamburgerMenu({
                   <Link href="/driver/profile/payouts" className="nr-driver-menu-utility" onClick={() => setOpen(false)}><Icon name="card" size={20}/><span>{language === "am" ? "የክፍያ መረጃ" : "Payout information"}</span></Link>
                 </nav>
               </MenuGroup>
-              <MenuGroup label={language === "am" ? "መለያ እና ድጋፍ" : "ACCOUNT & HELP"} icon="user" initiallyOpen
-                active={active === "account" || active === "messages"}>
-                <nav className="nr-driver-menu-nav nr-menu-nested" aria-label={language === "am" ? "መለያ እና ድጋፍ" : "Account and help"}>
-                  {menuRows(accountItems)}
-                  {menuRows(supportItems)}
-                  <Link href="/account/manage?role=driver" className="nr-driver-menu-utility" onClick={() => setOpen(false)}><Icon name="shield" size={20}/><span>{language === "am" ? "መለያ እና ደህንነት" : "Account & security"}</span></Link>
-                  <Link href="/safety?role=driver" className="nr-driver-menu-utility" onClick={() => setOpen(false)}><Icon name="shield" size={20}/><span>{language === "am" ? "የደህንነት ማዕከል" : "Safety Center"}</span></Link>
-                  <Link href="/driver/profile/settings" className="nr-driver-menu-utility" onClick={() => setOpen(false)}><Icon name="settings" size={20}/><span>{language === "am" ? "ቅንብሮች" : "Settings"}</span></Link>
-                </nav>
-              </MenuGroup>
+              <div className="nr-menu-section-label">{language === "am" ? "መለያ" : "ACCOUNT"}</div>
+              <nav className="nr-driver-menu-nav" aria-label={language === "am" ? "መለያ እና ቅንብሮች" : "Account and settings"}>
+                {menuRows(accountItems)}
+                <Link href="/account/manage?role=driver" className="nr-driver-menu-utility" onClick={() => setOpen(false)}>
+                  <span className="nr-driver-menu-utility-icon"><Icon name="shield" size={20}/></span>
+                  <span className="nr-driver-menu-utility-copy">{language === "am" ? "መለያ እና ደህንነት" : "Account & security"}</span>
+                  <Icon name="chevron" size={16}/>
+                </Link>
+                <Link href="/driver/profile/settings" className="nr-driver-menu-utility" onClick={() => setOpen(false)}>
+                  <span className="nr-driver-menu-utility-icon"><Icon name="settings" size={20}/></span>
+                  <span className="nr-driver-menu-utility-copy">{language === "am" ? "ቅንብሮች" : "Settings"}</span>
+                  <Icon name="chevron" size={16}/>
+                </Link>
+              </nav>
+              <div className="nr-menu-section-label">{language === "am" ? "ድጋፍ እና ደህንነት" : "HELP & SAFETY"}</div>
+              <nav className="nr-driver-menu-nav" aria-label={language === "am" ? "ድጋፍ እና ደህንነት" : "Help and safety"}>
+                {menuRows(supportItems)}
+                <Link href="/safety?role=driver" className="nr-driver-menu-utility" onClick={() => setOpen(false)}>
+                  <span className="nr-driver-menu-utility-icon"><Icon name="shield" size={20}/></span>
+                  <span className="nr-driver-menu-utility-copy">{language === "am" ? "የደህንነት ማዕከል" : "Safety Center"}</span>
+                  <Icon name="chevron" size={16}/>
+                </Link>
+              </nav>
               <MenuGroup label={language === "am" ? "ቋንቋ" : "LANGUAGE"} icon="settings">
                 <div className="nr-driver-menu-preferences">
                   <div className="nr-driver-menu-pref-head"><span>{language === "am" ? "ቋንቋ" : "Language"}</span><small>{language === "am" ? "አማርኛ" : "English"}</small></div>
