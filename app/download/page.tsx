@@ -1,1 +1,49 @@
-import type { Metadata } from "next";import Link from "next/link";import Image from "next/image";import "../explore/style.css";export const metadata:Metadata={title:"Download Biloo Rider & Biloo Driver | Biloo",description:"Official Biloo Android download center.",alternates:{canonical:"/download"}};export default function Download(){return <div className="marketing"><header className="header"><Link className="brand" href="/explore"><img src="/brand/biloo-mark.svg" width={36} height={36} alt="" aria-hidden="true" />Biloo</Link><Link href="/explore">Back to home ↗</Link></header><main><section className="end"><h1 style={{fontSize:"clamp(38px,6vw,68px)",letterSpacing:"-.06em"}}>One platform.<br/>Two experiences.</h1><p>Official Biloo Android app releases.</p></section><section className="section pale"><div className="cards" style={{gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,270px),1fr))",maxWidth:950,margin:"auto"}}>{[{id:"rider",name:"Biloo Rider",icon:"/brand/biloo-rider.svg",url:"/rider/sign-in"},{id:"driver",name:"Biloo Driver",icon:"/brand/biloo-driver.svg",url:"/driver"}].map(a=><article id={a.id} key={a.id} style={{scrollMarginTop:100,textAlign:"center"}}><Image src={a.icon} width={100} height={100} alt={a.name+" icon"} style={{borderRadius:24,margin:"auto"}}/><h2 style={{fontSize:30}}>{a.name}</h2><p>Official Android APK: not yet published.</p><p>Download will become available after signed APK verification.</p><Link href={a.url} className="cta">Open {a.name} web app ↗</Link></article>)}</div></section><section className="section"><h2>Install safely.</h2><p>Only download APK files from official Biloo channels. Android may ask for permission to install from your browser. Never disable Play Protect.</p></section></main><footer><div className="copyright" style={{marginTop:0}}>© {new Date().getFullYear()} Biloo. All rights reserved.<Link href="/explore">Home ↑</Link></div></footer></div>}
+import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
+import { MarketingHeader, MarketingFooter } from "../explore/site-shell";
+import "../explore/style.css";
+
+export const metadata: Metadata = {
+  title: "Biloo Rider & Driver Apps | Biloo",
+  description: "Access the official Biloo Rider and Biloo Driver web experiences and see verified Android app release availability.",
+  alternates: { canonical: "/download" },
+};
+
+const applications = [
+  { id: "rider", title: "Biloo Rider", description: "Explore your city. Search destinations, request available rides, and follow your journey.", image: "/brand/biloo-rider.svg", href: "/rider/sign-in", action: "Open Rider web app" },
+  { id: "driver", title: "Biloo Driver", description: "Get started with driver registration and access the dedicated driving experience.", image: "/brand/biloo-driver.svg", href: "/driver", action: "Open Driver portal" },
+];
+
+export default function Download() {
+  return (
+    <div className="marketing bl-site" id="top">
+      <a className="bl-skip-link" href="#main-content">Skip to content</a>
+      <MarketingHeader />
+      <main id="main-content">
+        <section className="bl-info-hero">
+          <div className="bl-container">
+            <span className="bl-kicker">BILOO APPS</span>
+            <h1>One platform.<br />Two ways to move<span className="bl-accent">.</span></h1>
+            <p>Find the experience that's right for you. The web apps are available below; Android downloads will appear when signed releases are published.</p>
+          </div>
+        </section>
+        <section className="bl-info-cards">
+          <div className="bl-container bl-download-grid">
+            {applications.map((app) => (
+              <article className="bl-download-card" id={app.id} key={app.id}>
+                <div className="bl-download-card-icon"><Image src={app.image} alt={app.title + " logo"} width={76} height={76} /></div>
+                <h2>{app.title}</h2>
+                <p>{app.description}</p>
+                <div className="bl-release-status"><i aria-hidden="true" /> Android APK not yet published</div>
+                <Link className="bl-btn bl-btn-dark" href={app.href}>{app.action} <span aria-hidden="true">↗</span></Link>
+              </article>
+            ))}
+          </div>
+        </section>
+        <section className="bl-download-note"><div className="bl-container"><h2>Install with confidence.</h2><p>Only download Android packages from official Biloo channels after their release is confirmed. Do not install an APK from an unknown sender or disable Android's security protections to proceed.</p></div></section>
+      </main>
+      <MarketingFooter />
+    </div>
+  );
+}
