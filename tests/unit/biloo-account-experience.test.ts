@@ -51,6 +51,11 @@ describe("Biloo premium Account experience", () => {
     expect(verificationSummary(valid).tone).toBe("approved");
     const pending = driver({reviewStatus:"pending"});
     expect(verificationSummary(pending).title).toMatch(/review/i);
+    const vehicle = source("app/driver/profile/vehicle/page.tsx");
+    const payouts = source("app/driver/profile/payouts/page.tsx");
+    expect(vehicle).toContain('documentStatus(profile, "license") === "Expired"');
+    expect(vehicle).toContain('licenseExpired ? say("Expired")');
+    expect(payouts).toContain('verificationSummary(profile).tone !== "approved"');
   });
 
   it("loads shared light/dark styles and reserves space for the dock", () => {
