@@ -355,3 +355,65 @@
     bottom: auto!important;
   }
 }
+
+/* Journey state menu: the original top bar is intentionally suppressed for
+   map-first screens, so ride selection/matching/live trip still need a
+   persistent safety/support entry. Do not create another brand banner. */
+.nr-app[data-mode="rider"] .rider-map-flow .biloo-home-floating-header[data-context="journey"] {
+  position: absolute;
+  z-index: 140;
+  top: calc(env(safe-area-inset-top,0px) + 12px);
+  left: auto;
+  right: max(12px,env(safe-area-inset-right,0px));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  min-height: 48px;
+  padding: 2px;
+  border: 1px solid rgba(8,41,95,.12);
+  border-radius: 14px;
+  background: #fff;
+  color: #08295f;
+  box-shadow: 0 7px 24px rgba(8,41,95,.14);
+  pointer-events: auto;
+}
+.nr-app[data-mode="rider"] .rider-map-flow .biloo-home-floating-header[data-context="journey"] .nr-rider-menu-root {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+}
+.nr-app[data-mode="rider"] .rider-map-flow .biloo-home-floating-header[data-context="journey"] .nr-rider-hamburger {
+  display: grid!important;
+  place-items: center;
+  width: 44px!important;
+  min-width: 44px!important;
+  height: 44px!important;
+  min-height: 44px!important;
+  margin: 0!important;
+  padding: 10px!important;
+  border: 0!important;
+  background: transparent!important;
+  color: #08295f!important;
+  box-shadow: none!important;
+}
+.nr-app[data-mode="rider"] .rider-map-flow .biloo-home-floating-header[data-context="journey"] .nr-rider-hamburger-line {
+  background: currentColor!important;
+}
+.nr-app[data-mode="rider"] .rider-map-flow .biloo-home-floating-header[data-context="journey"] .nr-rider-hamburger:focus-visible {
+  outline: 3px solid #be860e!important;
+  outline-offset: 1px;
+}
+@media (min-width: 801px) {
+  .nr-app[data-mode="rider"] .rider-map-flow .biloo-home-floating-header {
+    display: none!important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nr-app[data-mode="rider"] .rider-map-flow .biloo-home-floating-header[data-context="journey"] * {
+    transition: none!important;
+  }
+}

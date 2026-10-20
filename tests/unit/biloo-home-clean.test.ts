@@ -18,7 +18,11 @@ describe("Biloo Rider homepage clarity", () => {
 
   it("keeps one map-mounted navigation menu on the home screen", () => {
     expect(app).toContain("biloo-home-floating-header");
-    expect(app).toContain('!riderHome && (');
+    expect(app).toContain('!riderMapView && (');
+    expect(app).toContain('riderMapView && !riderSearch && (');
+    expect(app).toContain('data-context={riderHome ? "home" : "journey"}');
+    expect(app).toContain('id !== "safety" && id !== "messages"');
+    expect(css).toContain('biloo-home-floating-header[data-context="journey"]');
     expect(app).toContain('active="home"');
     expect(app).toContain('import "./biloo-home-clean.css";');
     expect(css).toContain(".biloo-home-floating-header");

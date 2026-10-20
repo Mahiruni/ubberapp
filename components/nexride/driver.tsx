@@ -673,6 +673,20 @@ export function DriverWorkspace({
             ? say("GPS stale · reconnecting", "ጂፒኤስ የቆየ ነው · እንደገና በመገናኘት ላይ")
             : say("Waiting for a fresh GPS fix", "አዲስ የጂፒኤስ ቦታ በመጠባበቅ ላይ");
 
+  // Keep the live map status legible next to the controls. Preserve full detail
+  // for assistive technology while showing a concise state in the badge.
+  const gpsBadgeMessage = !state.online
+    ? say("Offline", "ከመስመር ውጭ")
+    : mapLocation.status === "denied"
+      ? say("Location off", "ቦታ ዝግ ነው")
+      : gpsHealth === "ready" && gpsConfirmedAt > 0 && presenceClock - gpsConfirmedAt <= 60_000
+        ? say("GPS ready", "ጂፒኤስ ዝግጁ ነው")
+        : gpsHealth === "inaccurate"
+          ? say("GPS accuracy low", "የጂፒኤስ ትክክለኛነት ዝቅተኛ ነው")
+          : gpsHealth === "stale"
+            ? say("GPS reconnecting", "ጂፒኤስ እየተገናኘ ነው")
+            : say("Checking GPS", "ጂፒኤስ እየተፈተሸ ነው");
+
   const swipeFeedback = !verified
     ? say("Verification required", "ማረጋገጫ ያስፈልጋል")
     : error
@@ -715,8 +729,15 @@ export function DriverWorkspace({
           {portrait.url ? <img src={portrait.url} alt="" onError={() => void portrait.refresh()} /> : <Icon name="user" size={22} />}
         </button>
 
-        <div className="nr-driver-presence-label" role="status" aria-live="polite" data-ready={state.online && gpsHealth === "ready" && gpsConfirmedAt > 0 && presenceClock - gpsConfirmedAt <= 60_000 ? "true" : "false"}>
-          {gpsHealthMessage}
+        <div
+          className="nr-driver-presence-label"
+          role="status"
+          aria-live="polite"
+          aria-label={gpsHealthMessage}
+          title={gpsHealthMessage}
+          data-ready={state.online && gpsHealth === "ready" && gpsConfirmedAt > 0 && presenceClock - gpsConfirmedAt <= 60_000 ? "true" : "false"}
+        >
+          {gpsBadgeMessage}
         </div>
         <div
           className="nr-driver-home-swipe"
@@ -738,7 +759,7 @@ export function DriverWorkspace({
                 <span className="nr-driver-home-control-brand">BILOO · DRIVER</span>
                 <strong>{state.online ? say("Ready for rides", "ለጉዞ ዝግጁ") : say("You're offline", "ከመስመር ውጭ ነዎት")}</strong>
                 <small>{state.online
-                  ? say("Online stays active when minimized. Android may pause GPS and delay alerts until you reopen Biloo.", "መተግበሪያው ሲቀነስ የመስመር ላይ ሁኔታዎ ይቀጥላል። Android GPSን እና ማሳወቂያዎችን ሊያዘገይ ይችላል።")
+                  ? say("Keep Biloo open for the most timely GPS and ride alerts.", "ጂፒኤስ እና የጉዞ ማሳወቂያዎች በሰዓቱ እንዲደርሱ ቢሎን ክፍት ያድርጉ።")
                   : say("Swipe to start receiving ride requests", "ጉዞ ለመቀበል ያንሸራትቱ")}</small>
               </div>
               <div className="nr-driver-home-control-tools">
