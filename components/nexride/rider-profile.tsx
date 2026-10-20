@@ -1,5 +1,6 @@
 'use client';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { supabase } from '../../lib/supabase';
 import { ALERTS_KEY, readAccount, saveAccount, validateProfile, type RiderAccount } from '../../lib/nexride-account';
@@ -97,6 +98,7 @@ export function RiderSettings({language,setLanguage}: Pick<Props,'language'|'set
 }
 
 export function RiderProfile(props:Props) {
+  const router = useRouter();
   const {language,profile,setProfile}=props;
   const t=useTranslation();
   const say=(en:string,am:string)=>language==='am'?am:en;
@@ -267,7 +269,7 @@ export function RiderProfile(props:Props) {
     <div className="nr-account-standard-groups" aria-label={say('Your account options', 'የመለያ አማራጮች')}>
       <AccountSection title={say('Personal information','የግል መረጃ')} subtitle={say('Your identity and contact details','የእርስዎ ማንነት እና የመገናኛ መረጃ')}>
         <AccountRow icon="user" title={say('Edit profile','መገለጫ አርትዕ')} detail={say('Name, photo and contact information','ስም፣ ፎቶ እና የመገናኛ መረጃ')} onClick={()=>{setForm(shown);open('edit')}}/>
-        <AccountRow icon="shield" title={say('Account & security','መለያ እና ደህንነት')} detail={say('Verified contacts, sign-in and privacy','የተረጋገጠ መገናኛ፣ መግቢያ እና ግላዊነት')} onClick={()=>window.location.assign('/account/manage?role=rider#account-security')}/>
+        <AccountRow icon="shield" title={say('Account & security','መለያ እና ደህንነት')} detail={say('Verified contacts, sign-in and privacy','የተረጋገጠ መገናኛ፣ መግቢያ እና ግላዊነት')} onClick={()=>router.push('/account/manage?role=rider#account-security')}/>
       </AccountSection>
 
       <AccountSection title={say('Rides & places','ጉዞዎች እና ቦታዎች')} subtitle={say('Your journey history and destinations','የጉዞ ታሪክ እና መድረሻዎች')}>
@@ -287,7 +289,7 @@ export function RiderProfile(props:Props) {
       <AccountSection title={say('Preferences','ምርጫዎች')} subtitle={say('Make Biloo work your way','Bilooን ለራስዎ ያስተካክሉ')}>
         <AccountRow icon="settings" title={say('Appearance, language & alerts','ገጽታ፣ ቋንቋ እና ማሳወቂያዎች')} detail={say('Light/dark theme, permissions and settings','ብርሃን/ጨለማ ገጽታ፣ ፈቃዶች እና ቅንብሮች')} onClick={()=>open('settings')}/>
         <AccountRow icon="info" title={say('Privacy & your data','ግላዊነት እና ውሂብዎ')} detail={say('Understand how your information is handled','መረጃዎ እንዴት እንደሚተዳደር ይወቁ')} onClick={()=>open('privacy')}/>
-        <AccountRow icon="info" title={say('Terms & about Biloo','ሕጋዊ መረጃ እና ስለ Biloo')} detail={say('Service terms and product information','የአገልግሎት ውሎች እና ስለ መተግበሪያው')} onClick={()=>window.location.assign('/explore/terms')}/>
+        <AccountRow icon="info" title={say('Terms & about Biloo','ሕጋዊ መረጃ እና ስለ Biloo')} detail={say('Service terms and product information','የአገልግሎት ውሎች እና ስለ መተግበሪያው')} onClick={()=>router.push('/explore/terms')}/>
       </AccountSection>
 
       <section className="nr-account-secondary-actions" aria-label={say('More Biloo options','ተጨማሪ የBiloo አማራጮች')}>
@@ -296,7 +298,7 @@ export function RiderProfile(props:Props) {
           <span className="nr-account-row-copy"><strong>{say('Drive with Biloo','በBiloo ያሽከርክሩ')}</strong><small>{say('Open the Driver experience','የአሽከርካሪ ልምድን ይክፈቱ')}</small></span>
           <Icon name="chevron" size={17}/>
         </button>
-        {props.isAdmin&&<button className="admin-access" onClick={()=>window.location.assign('/admin')}>
+        {props.isAdmin&&<button className="admin-access" onClick={()=>router.push('/admin')}>
           <span className="nr-account-row-icon" data-tone="shield"><Icon name="shield" size={19}/></span>
           <span className="nr-account-row-copy"><strong>Admin Control Center</strong><small>Operations and platform management</small></span>
           <Icon name="chevron" size={17}/>
@@ -332,7 +334,7 @@ export function RiderProfile(props:Props) {
         </fieldset>
         {account&&<>
           <p className="nr-muted">{say('Verified email and phone changes require account ownership confirmation.','ኢሜይልን እና ስልክን ለመቀየር የባለቤትነት ማረጋገጫ ያስፈልጋል።')}</p>
-          <button type="button" className="nr-account-edit" onClick={()=>window.location.assign("/account/manage")}>
+          <button type="button" className="nr-account-edit" onClick={()=>router.push("/account/manage")}>
             {say('Verify or change email and phone in Manage Account →','ኢሜይልና ስልክን በመለያ አስተዳደር ይቀይሩ →')}
           </button>
         </>}

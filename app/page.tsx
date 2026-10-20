@@ -355,7 +355,7 @@ function AppWorkspace({
     if (bookingLock.current && id !== "safety") return;
     if (mode === "rider" && id === "trips") {
       setPanel(null);
-      window.location.assign("/rider/trips");
+      router.push("/rider/trips");
       return;
     }
     if (mode === "rider" && id === "safety") {
@@ -364,22 +364,22 @@ function AppWorkspace({
     }
     if (mode === "rider" && id === "wallet") {
       setPanel(null);
-      window.location.assign("/rider/wallet");
+      router.push("/rider/wallet");
       return;
     }
     if (mode === "rider" && id === "messages") {
       setPanel(null);
-      window.location.assign("/support");
+      router.push("/support");
       return;
     }
     if (mode === "driver" && id === "request") {
       setPanel(null);
-      window.location.assign("/driver/activity");
+      router.push("/driver/activity");
       return;
     }
     if (mode === "driver" && id === "messages") {
       setPanel(null);
-      window.location.assign("/support?role=driver");
+      router.push("/support?role=driver");
       return;
     }
     if (mode === "rider") setRiderScreen(id as RiderScreen);
@@ -392,12 +392,12 @@ function AppWorkspace({
   };
   const openSafety = (safetyRole: Mode = mode) => {
     setPanel(null);
-    window.location.assign(`/safety?role=${safetyRole}`);
+    router.push(`/safety?role=${safetyRole}`);
   };
   const switchMode = (m: Mode) => {
     if (bookingLock.current) return;
     if (m === "driver") {
-      window.location.assign("/driver");
+      router.push("/driver");
       return;
     }
     setMode("rider");
@@ -474,12 +474,12 @@ function AppWorkspace({
             <Icon name="globe" />
             {language === "en" ? "አማርኛ" : "English"}
           </button>
-          <button onClick={() => window.location.assign("/discover")}>
+          <button onClick={() => router.push("/discover")}>
             <Icon name="star" />
             Discover Biloo
           </button>
           {isAdmin && (
-            <button onClick={() => window.location.assign("/admin")}>
+            <button onClick={() => router.push("/admin")}>
               <Icon name="shield" />
               Admin Control Center
             </button>
@@ -629,7 +629,7 @@ function AppWorkspace({
               avatarRefreshId.current += 1;
               setRiderAvatar(avatar);
               setRiderAvatarFailed(false);
-            }} language={language} setLanguage={setLanguage} theme={theme} setTheme={setTheme} profile={profile} setProfile={setProfile} rides={() => setRiderScreen("trips")} saved={() => setRiderScreen("saved")} payments={() => setRiderScreen("wallet")} safety={() => openSafety(mode)} support={() => window.location.assign("/support")} switchDriver={() => switchMode("driver")} isAdmin={isAdmin} /> : profileView ? (
+            }} language={language} setLanguage={setLanguage} theme={theme} setTheme={setTheme} profile={profile} setProfile={setProfile} rides={() => setRiderScreen("trips")} saved={() => setRiderScreen("saved")} payments={() => setRiderScreen("wallet")} safety={() => openSafety(mode)} support={() => router.push("/support")} switchDriver={() => switchMode("driver")} isAdmin={isAdmin} /> : profileView ? (
               <Sheet title={t("profile")}>
                 <div className="nr-profile-header">
                   <div className="nr-avatar">{initials}</div>
@@ -865,7 +865,7 @@ function AppWorkspace({
                 <ListRow
                   icon="star"
                   title="Discover Biloo"
-                  onClick={() => window.location.assign("/discover")}
+                  onClick={() => router.push("/discover")}
                 />
                 {isAdmin && (
                   <ListRow
@@ -874,7 +874,7 @@ function AppWorkspace({
                     detail="Review drivers, documents & operations"
                     onClick={() => {
                       setPanel(null);
-                      window.location.assign("/admin");
+                      router.push("/admin");
                     }}
                   />
                 )}

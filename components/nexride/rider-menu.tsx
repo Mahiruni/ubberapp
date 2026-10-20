@@ -1,6 +1,7 @@
 "use client";
 
 import { createPortal } from "react-dom";
+import { useRouter } from "next/navigation";
 import { AppVersion } from "./app-version";
 import { registerNexRideBackHandler } from "../../lib/nexride-native-navigation";
 
@@ -70,6 +71,7 @@ export function RiderMenu({
   className?: string;
   locked?: boolean;
 }) {
+  const router = useRouter();
   const { resolvedTheme } = useAppearance("rider");
   const language = useContext(LanguageContext);
   const say = (en: string, am: string) => (language === "am" ? am : en);
@@ -224,7 +226,7 @@ export function RiderMenu({
       onNavigate(id);
       return;
     }
-    window.location.assign(hrefs[id]);
+    router.push(hrefs[id]);
   };
 
   const renderRows = (subset: typeof items) => subset.map(item => {
@@ -348,13 +350,13 @@ export function RiderMenu({
               </nav>
               <div className="nr-menu-section-label">{say("MORE", "ተጨማሪ")}</div>
               <div className="nr-rider-drawer-secondary">
-                <button type="button" disabled={locked} onClick={() => {setOpen(false);window.location.assign("/driver");}}>
+                <button type="button" disabled={locked} onClick={() => {setOpen(false);router.push("/driver");}}>
                   <Icon name="navigation" size={20}/>
                   <span><strong>{say("Drive with Biloo", "በBiloo ያሽከርክሩ")}</strong>
                   <small>{say("Open Driver", "የአሽከርካሪ ገጽ ይክፈቱ")}</small></span>
                   <Icon name="chevron" size={16}/>
                 </button>
-                {isAdmin && <button type="button" onClick={() => {setOpen(false);window.location.assign("/admin");}}>
+                {isAdmin && <button type="button" onClick={() => {setOpen(false);router.push("/admin");}}>
                   <Icon name="shield" size={20}/>
                   <span><strong>Admin Control Center</strong><small>Operations and platform management</small></span>
                   <Icon name="chevron" size={16}/>

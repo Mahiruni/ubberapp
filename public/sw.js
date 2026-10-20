@@ -1,27 +1,14 @@
-const VERSION = "biloo-rider-home-20261020-v3";
+const VERSION = "biloo-fast-navigation-20261021-v1";
 const CORE_CACHE = VERSION + "-core";
 const RUNTIME_CACHE = VERSION + "-runtime";
+// Keep install lightweight: large images, fonts, and audio cache on first demand.
 const CORE_ASSETS = [
   "/offline.html",
   "/manifest.webmanifest",
   "/driver.webmanifest",
-  "/favicon.svg",
-  "/favicon.ico",
-  "/favicon-32x32.png",
-  "/apple-touch-icon.png",
-  "/driver-apple-touch-icon.png",
-  "/driver-favicon-32x32.png",
   "/brand/biloo-mark.svg",
-  "/nexride/screens/assets/driver.png",
-  "/icons/icon-192.png",
-  "/icons/driver-icon-192.png",
-  "/icons/icon-512.png",
-  "/icons/icon-maskable-512.png",
-  "/icons/driver-icon-maskable-512.png",
-  "/fonts/noto-sans-ethiopic-400.woff2",
-  "/fonts/noto-sans-ethiopic-700.woff2",
-  "/fonts/Benaiah/Benaiah-Bold-Ethiopic.woff2?v=5",
-  "/audio/nexride-driver-request.mp3?v=1"
+  "/brand/biloo-driver-get-started.webp",
+  "/brand/biloo-rider-get-started.jpg"
 ];
 
 self.addEventListener("install", (event) => {
@@ -48,37 +35,19 @@ self.addEventListener("fetch", (event) => {
   if (url.origin !== self.location.origin || url.pathname.startsWith("/api/")) return;
 
   if (request.mode === "navigate") {
-    // Retain ONLY selected app shells, never auth/account/admin pages.
-    // A Driver navigation failure must never display a stale Rider page.
-    // No POST/ride mutation, auth response, or /api endpoint is cached.
-    const appShell = url.pathname === "/" ||
-      url.pathname === "/driver/home" ||
-      url.pathname === "/driver/navigation" ||
-      url.pathname === "/driver/request" ||
-      url.pathname === "/rider/trips";
-    event.respondWith(
-      fetch(request)
-        .then((response) => {
-          if (appShell && response.ok && response.type === "basic" &&
-              !response.headers.has("Set-Cookie")) {
-            const copy = response.clone();
-            event.waitUntil(caches.open(RUNTIME_CACHE)
-              .then(cache => cache.put(request, copy)).catch(() => {}));
-          }
-          return response;
-        })
-        .catch(async () =>
-          (appShell ? (await caches.match(request)) : null) ||
-          (await caches.match("/offline.html"))
-        )
-    );
+    // Never store user-specific SSR HTML or show a stale authenticated shell.
+    // The offline fallback contains no private account, trip, or payment data.
+    event.respondWith(fetch(request).catch(async () =>
+      (await caches.match("/offline.html")) || Response.error()
+    ));
     return;
   }
 
   const cacheable =
     url.pathname.startsWith("/_next/static/") ||
     url.pathname.startsWith("/brand/") ||
-    url.pathname === "/nexride/screens/assets/driver.png" ||
+    url.pathname === "/brand/biloo-driver-get-started.webp" ||
+    url.pathname === "/brand/biloo-rider-get-started.jpg" ||
     url.pathname.startsWith("/icons/") ||
     url.pathname.startsWith("/fonts/") ||
     url.pathname.startsWith("/audio/") ||
@@ -93,20 +62,23 @@ self.addEventListener("fetch", (event) => {
 
   if (!cacheable) return;
 
-  event.respondWith(
-    caches.match(request).then((cached) => {
-      const update = fetch(request)
-        .then((response) => {
-          if (response.ok) {
-            const copy = response.clone();
-            caches.open(RUNTIME_CACHE).then((cache) => cache.put(request, copy));
-          }
-          return response;
-        })
-        .catch(() => cached);
-      return cached || update;
-    })
-  );
+  // Immutable build assets are content-hashed; avoid redundant mobile requests.
+  const immutable = url.pathname.startsWith("/_next/static/");
+  event.respondWith(caches.match(request).then((cached) => {
+    if (cached && immutable) return cached;
+    const update = fetch(request).then(response => {
+      if (response.ok && response.type === "basic" && !response.headers.has("Set-Cookie")) {
+        const copy = response.clone();
+        event.waitUntil(caches.open(RUNTIME_CACHE).then(cache => cache.put(request, copy)).catch(() => {}));
+      }
+      return response;
+    }).catch(() => cached || Response.error());
+    if (cached) {
+      event.waitUntil(update.then(() => {}).catch(() => {}));
+      return cached;
+    }
+    return update;
+  }));
 });
 
 
