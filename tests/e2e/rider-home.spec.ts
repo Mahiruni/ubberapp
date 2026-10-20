@@ -234,3 +234,30 @@ test("mobile focused destination search keeps saved and suggested places above t
   await expect(page.locator(".nr-place-suggestion").first()).toBeVisible();
   await expect(root).toHaveAttribute("data-search-open", "true");
 });
+
+test("ride-selection keeps a visible accessible menu when the normal header is hidden", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  const panel = page.locator(".nr-rider-home-panel");
+  await panel.getByRole("button", { name: "Home", exact: true }).click();
+  await page.getByRole("button", { name: /Meskel Square/ }).click();
+  await panel.getByRole("button", { name: "Home", exact: true }).click();
+  await page.getByLabel("Pickup location", { exact: true }).fill("Bole Atlas");
+  await page.locator(".nr-place-suggestion").filter({ hasText: "Bole Atlas" }).first().click();
+  await page.getByRole("button", { name: "Preview ride options", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Choose a ride" })).toBeVisible();
+  const navigation = page.locator('.biloo-home-floating-header[data-context="journey"]');
+  await expect(navigation).toBeVisible();
+  const routeLabel = (await page.locator(".nr-map-ride-label").boundingBox())!;
+  const navBox = (await navigation.boundingBox())!;
+  expect(navBox.x).toBeGreaterThanOrEqual(routeLabel.x + routeLabel.width - 2);
+  const button = navigation.getByRole("button", { name: "Open menu" });
+  await expect(button).toBeVisible();
+  await button.click();
+  const drawer = page.getByRole("dialog", { name: "Rider menu" });
+  await expect(drawer).toBeVisible();
+  await expect(drawer.getByRole("button", { name: /Safety/ })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(drawer).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "Choose a ride" })).toBeVisible();
+});

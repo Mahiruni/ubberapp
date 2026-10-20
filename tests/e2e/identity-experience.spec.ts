@@ -43,26 +43,29 @@ async function connectedAccount(page: Page, role: 'rider' | 'driver') {
 }
 
 const verifyBilooBrand = async (page: Page) => {
-  await expect(page.locator('.nr-brand').first()).toContainText('Biloo');
+  await expect(page.locator('.nr-brand').first()).toContainText(/biloo/i);
   await expect(page.locator('.nr-brand').first().locator('img.nr-brand-symbol')).toHaveCount(1);
 };
 
-test('welcome actions fit small phones, preserve role context and show the Biloo icon and wordmark', async ({ page }, info) => {
+test('welcome actions fit small phones and use the current Biloo campaigns', async ({ page }, info) => {
   await page.setViewportSize({ width: 360, height: 640 });
-  for (const [path, heading, action] of [
-    ['/rider', 'Your city. Your ride.', 'Get started'],
-    ['/driver', 'Drive. Earn. Grow.', 'Start driving'],
-  ]) {
-    await page.goto(path);
-    await expect(page.getByRole('heading', { level: 1 })).toContainText(heading);
-    await verifyBilooBrand(page);
-    await expect(page.getByRole('link', { name: action, exact: true })).toBeInViewport();
-    await expect(page.getByRole('link', { name: path === '/rider' ? 'Already have an account?' : 'Sign in', exact: true })).toBeInViewport();
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-    await page.screenshot({ path: `/tmp/nexride-${path.slice(1)}-welcome-${info.project.name}.png`, fullPage: true });
-  }
-});
+  await page.goto('/rider');
+  await expect(page.locator('.biloo-rider-brand')).toContainText(/biloo/i);
+  await expect(page.locator('.biloo-rider-brand img')).toHaveCount(1);
+  await expect(page.getByRole('heading', { level: 1 })).toContainText(/Your Ride\s*is Here/i);
+  await expect(page.getByRole('link', { name: /Get started/i }).first()).toBeInViewport();
+  await expect(page.getByRole('link', { name: 'Already have an account?' })).toBeInViewport();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: `/tmp/biloo-rider-welcome-${info.project.name}.png`, fullPage: true });
 
+  await page.goto('/driver');
+  await expect(page.locator('.biloo-driver-welcome__photo')).toBeVisible();
+  await expect(page.getByRole('link', { name: /Get Started/i })).toHaveAttribute('href', '/driver/onboarding');
+  await expect(page.getByRole('link', { name: 'Sign In', exact: true })).toBeInViewport();
+  await expect(page.getByRole('link', { name: 'Register', exact: true })).toBeInViewport();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: `/tmp/biloo-driver-welcome-${info.project.name}.png`, fullPage: true });
+});
 test('both sign-in forms preserve email, reveal passwords and recover from real server failures', async ({ page }, info) => {
   await page.setViewportSize({ width: 360, height: 640 });
   let requests = 0;

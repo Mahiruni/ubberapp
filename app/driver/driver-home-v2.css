@@ -580,8 +580,8 @@
 }
 
 /* NexRide navy and emerald Driver home accent, scoped to non-semantic surfaces. */
-.nr-driver-app-shell{--driver-accent:#00c878;--driver-success:#00b77a}
-.nr-driver-home-quick-actions button:focus-visible{outline-color:#00c878}
+.nr-driver-app-shell[data-home="true"]{--driver-success:#00b77a}
+.nr-driver-home-quick-actions button:focus-visible{outline-color:var(--driver-accent,#f9c449)}
 
 /* Live Driver availability should distinguish the user-selected Online mode
    from accurate, server-confirmed GPS. Compact and non-interactive over map. */
@@ -609,4 +609,63 @@
 }
 @media(prefers-reduced-motion:reduce){
   .nr-driver-home-cockpit .nr-driver-presence-label{transition:none!important}
+}
+
+/* Home operational compactness: respect the header / map tool lanes. */
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-cockpit .nr-driver-presence-label {
+  top: calc(env(safe-area-inset-top,0px) + 70px);
+  max-width: min(236px, calc(100vw - 128px));
+  padding: 9px 12px;
+  border-radius: 12px;
+  font-size: 11px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-control-panel {
+  gap: 11px;
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-control-state small {
+  max-width: 33ch;
+}
+@media (max-width: 390px) {
+  .nr-driver-app-shell[data-home="true"] .nr-driver-home-control-heading {
+    gap: 7px;
+  }
+  .nr-driver-app-shell[data-home="true"] .nr-driver-home-control-state strong {
+    font-size: 18px;
+  }
+  .nr-driver-app-shell[data-home="true"] .nr-driver-home-control-tools {
+    gap: 5px;
+  }
+  .nr-driver-app-shell[data-home="true"] .nr-driver-home-control-online {
+    padding: 5px 7px;
+  }
+  .nr-driver-app-shell[data-home="true"] .nr-driver-home-alert-icon {
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+    min-height: 38px;
+    flex-basis: 38px;
+  }
+}
+@media (max-width: 800px) and (min-width: 480px) and (max-height: 500px) {
+  .nr-driver-app-shell[data-home="true"] .nr-driver-home-map-canvas .nr-map-control-stack {
+    flex-direction: row!important;
+    top: calc(env(safe-area-inset-top,0px) + 10px)!important;
+    right: max(12px,env(safe-area-inset-right,0px))!important;
+    gap: 6px!important;
+  }
+  .nr-driver-app-shell[data-home="true"] .nr-driver-home-map-canvas .nr-map-layer-menu {
+    top: calc(env(safe-area-inset-top,0px) + 65px)!important;
+    right: max(12px,env(safe-area-inset-right,0px))!important;
+  }
+  .nr-driver-app-shell[data-home="true"] .nr-driver-home-cockpit .nr-driver-presence-label {
+    top: calc(env(safe-area-inset-top,0px) + 68px);
+    max-width: min(220px, calc(100vw - 150px));
+  }
+}
+@media (prefers-reduced-motion:reduce) {
+  .nr-driver-app-shell[data-home="true"] .nr-driver-home-map-canvas :is(.nr-map-touch-control,.nr-map-layer-menu) {
+    transition: none!important;
+  }
 }

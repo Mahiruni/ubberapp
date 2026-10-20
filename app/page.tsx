@@ -351,7 +351,7 @@ function AppWorkspace({
           { id: "profile", label: t("account"), icon: "user" },
         ];
   const navigate = (id: string) => {
-    if (bookingLock.current && id !== "safety") return;
+    if (bookingLock.current && id !== "safety" && id !== "messages") return;
     if (mode === "rider" && id === "trips") {
       setPanel(null);
       window.location.assign("/rider/trips");
@@ -489,7 +489,7 @@ function AppWorkspace({
       <section className="nr-main">
         <header className="nr-topbar">
           {mode === "rider" ? (
-            !riderHome && (
+            !riderMapView && (
               <RiderMenu
                 className="nr-rider-hamburger-inline"
                 active={riderScreen === "wallet" ? "wallet" : (["destination", "rides", "finding", "trip", "live", "summary"].includes(riderScreen) ? "home" : riderScreen) as RiderMenuId}
@@ -735,8 +735,12 @@ function AppWorkspace({
           </div>}
         </div>
 
-        {riderHome && (
-          <div className="biloo-home-floating-header" aria-label="Biloo home navigation">
+        {riderMapView && !riderSearch && (
+          <nav
+            className="biloo-home-floating-header"
+            data-context={riderHome ? "home" : "journey"}
+            aria-label="Biloo ride navigation"
+          >
             <RiderMenu
               className="biloo-home-floating-menu"
               active="home"
@@ -745,8 +749,8 @@ function AppWorkspace({
               isAdmin={isAdmin}
               locked={requestPending || matching.active}
             />
-            <Brand />
-          </div>
+            {riderHome && <Brand />}
+          </nav>
         )}
 
         {mode === "rider" && riderMapView && (

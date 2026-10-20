@@ -1,7 +1,7 @@
 .nr-driver-app-shell{
   --driver-bg:#f5f7f9;--driver-surface:#fff;--driver-surface-elevated:#fff;
   --driver-border:rgba(26,58,78,.13);--driver-text-primary:#102334;--driver-text-secondary:#667587;
-  --driver-accent:#00c878;--driver-success:#0aa56a;--driver-warning:#c98718;--driver-danger:#c54b5c;
+  --driver-accent:#f9c449;--driver-success:#0aa56a;--driver-warning:#c98718;--driver-danger:#c54b5c;
   --driver-header-bg:rgba(255,255,255,.92);--driver-nav-bg:rgba(255,255,255,.94);--driver-overlay:rgba(255,255,255,.92);
   --driver-shadow:0 12px 32px rgba(17,43,59,.10);--driver-header-height:56px;--driver-menu-width:356px;
   --driver-header-total:calc(var(--driver-header-height) + env(safe-area-inset-top,0px));
@@ -70,7 +70,7 @@ html[lang="am"] .nr-driver-global-header-title :where(span,strong,small){letter-
 .nr-support-page[data-mode="driver"],.nr-safety-page[data-mode="driver"]{
   --driver-bg:#041c30;--driver-surface:#08283f;--driver-surface-elevated:#0b2b43;
   --driver-border:rgba(153,188,207,.18);--driver-text-primary:#f5fafc;--driver-text-secondary:#91a9b8;
-  --driver-accent:#00c878;--driver-success:#0aa56a;--driver-warning:#c98718;--driver-danger:#c54b5c;
+  --driver-accent:#f9c449;--driver-success:#0aa56a;--driver-warning:#c98718;--driver-danger:#c54b5c;
   --driver-nav-bg:rgba(4,28,48,.94);--driver-motion-fast:160ms;--driver-z-menu:100;
   padding-bottom:max(20px,env(safe-area-inset-bottom,0px))!important
 }
@@ -163,7 +163,7 @@ html[lang="am"] .nr-driver-global-header-title :where(span,strong,small){letter-
 
 .nr-driver-standalone-menu{
   --driver-bg:#041c30;--driver-surface:#08283f;--driver-surface-elevated:#0b2b43;--driver-border:rgba(153,188,207,.18);
-  --driver-text-primary:#f5fafc;--driver-text-secondary:#91a9b8;--driver-accent:#00c878;--driver-motion-fast:160ms;--driver-motion-base:220ms;--driver-z-menu:100;
+  --driver-text-primary:#f5fafc;--driver-text-secondary:#91a9b8;--driver-accent:#f9c449;--driver-motion-fast:160ms;--driver-motion-base:220ms;--driver-z-menu:100;
   position:fixed;z-index:100;top:max(8px,env(safe-area-inset-top,0px));right:max(8px,env(safe-area-inset-right,0px))
 }
 .nr-driver-standalone-menu[data-theme="light"]{
