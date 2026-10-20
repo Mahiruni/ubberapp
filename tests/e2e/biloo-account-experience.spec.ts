@@ -84,7 +84,7 @@ test("Driver Account subpages keep visible Back controls below the global app ba
     await expect(back).toBeVisible();
     await expect(back).toBeInViewport();
     await back.click();
-    await expect(page).toHaveURL(/\\/driver\\/profile$/);
+    await expect(page).toHaveURL(new RegExp("/driver/profile$"));
     await expect(page.locator(".nr-driver-profile-v2")).toBeVisible();
   }
   expect(await page.evaluate(()=>document.documentElement.scrollWidth <= window.innerWidth+1)).toBe(true);
