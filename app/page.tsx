@@ -59,6 +59,7 @@ import "./rider-sheet-standard.css";
 import "./wrapper-polish.css";
 import "./precision-rider.css";
 import "./nexride-2026-tokens.css";
+import "./biloo-home-clean.css";
 const STORAGE_KEY = PREVIEW_STORAGE_KEY;
 type Mode = "rider" | "driver";
 type Panel =
@@ -488,26 +489,18 @@ function AppWorkspace({
       <section className="nr-main">
         <header className="nr-topbar">
           {mode === "rider" ? (
-            <RiderMenu
-              className="nr-rider-hamburger-inline"
-              active={
-                (["destination", "rides", "finding", "trip", "live", "summary"].includes(riderScreen)
-                  ? "home"
-                  : riderScreen === "wallet"
-                    ? "wallet"
-                    : riderScreen) as RiderMenuId
-              }
-              onNavigate={(id) => navigate(id)}
-              onSettings={() => setPanel("settings")}
-              isAdmin={isAdmin}
-              locked={requestPending || matching.active}
-            />
+            !riderHome && (
+              <RiderMenu
+                className="nr-rider-hamburger-inline"
+                active={riderScreen === "wallet" ? "wallet" : (["destination", "rides", "finding", "trip", "live", "summary"].includes(riderScreen) ? "home" : riderScreen) as RiderMenuId}
+                onNavigate={(id) => navigate(id)}
+                onSettings={() => setPanel("settings")}
+                isAdmin={isAdmin}
+                locked={requestPending || matching.active}
+              />
+            )
           ) : (
-            <button
-              className="nr-icon-button nr-mobile-menu"
-              onClick={() => setPanel("menu")}
-              aria-label={t("menu")}
-            >
+            <button className="nr-icon-button nr-mobile-menu" onClick={() => setPanel("menu")} aria-label={t("menu")}>
               <Icon name="menu" />
             </button>
           )}
@@ -741,6 +734,20 @@ function AppWorkspace({
             )}
           </div>}
         </div>
+
+        {riderHome && (
+          <div className="biloo-home-floating-header" aria-label="Biloo home navigation">
+            <RiderMenu
+              className="biloo-home-floating-menu"
+              active="home"
+              onNavigate={(id) => navigate(id)}
+              onSettings={() => setPanel("settings")}
+              isAdmin={isAdmin}
+              locked={requestPending || matching.active}
+            />
+            <Brand />
+          </div>
+        )}
 
         {mode === "rider" && riderMapView && (
           <div

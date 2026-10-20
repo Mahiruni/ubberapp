@@ -2,7 +2,7 @@
 
 import { useContext } from "react";
 import { useSheetMotion } from "./use-sheet-motion";
-import { Brand, Icon, LanguageContext, ListRow, useTranslation } from "./ui";
+import { Icon, LanguageContext, ListRow, useTranslation } from "./ui";
 import { locality, placeKey, placeName } from "../../lib/nexride-search";
 import { type Place } from "../../lib/nexride-places";
 import type { HomePlaces } from "../../lib/nexride-home";
@@ -103,13 +103,8 @@ export function RiderHomePanel({
 
         <div className="nr-rider-home-intro">
           <div>
-            <div className="nr-wrapper-brand"><Brand /><span>{language === "am" ? "የእርስዎ ጉዞ።" : "YOUR WAY FORWARD"}</span></div>
-            <h2>
-              {language === "am"
-                ? "ወዴት መሄድ ይፈልጋሉ?"
-                : "Where to next?"}
-            </h2>
-            <p className="nr-wrapper-subtitle">{language === "am" ? "መድረሻዎን ይምረጡ። ቀሪውን እኛ እንረዳዎታለን።" : "Your city. Your plans. Let’s get you there."}</p>
+            <h2>{language === "am" ? "ወዴት ይሂዱ?" : "Where to?"}</h2>
+            <p className="nr-wrapper-subtitle">{language === "am" ? "መድረሻዎን ይምረጡ" : "Choose a destination to get started"}</p>
           </div>
         </div>
       </div>
@@ -129,7 +124,7 @@ export function RiderHomePanel({
           aria-label={t("destination")}
         >
           <Icon name="search" size={22} />
-          <span>{language === "am" ? "ጉዞዎን ያቅዱ" : "Plan your ride"}</span>
+          <span>{language === "am" ? "መድረሻ ይፈልጉ" : "Search destination"}</span>
           <span className="nr-search-arrow">
             <Icon name="arrow" size={20} />
           </span>
@@ -181,19 +176,9 @@ export function RiderHomePanel({
             label={locationLabel}
           />
 
-          <div className="nr-home-history-heading">
-            <h2>{t("recentDestinations")}</h2>
-          </div>
-
-          {!data.recent.length && (
-            <div className="nr-home-empty-state">
-              <span>
-                <Icon name="clock" size={19} />
-              </span>
-              <div>
-                <strong>{t("emptyRecent")}</strong>
-                <small>{language === "am" ? "የጎበኟቸው ቦታዎች እዚህ ይታያሉ።" : "Your next favourite place is a ride away."}</small>
-              </div>
+          {rows.length > 0 && (
+            <div className="nr-home-history-heading">
+              <h2>{t("recentDestinations")}</h2>
             </div>
           )}
 
