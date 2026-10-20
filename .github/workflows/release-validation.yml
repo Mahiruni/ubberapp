@@ -1,4 +1,4 @@
-name: NexRide Release Validation
+name: Biloo Release Validation
 
 on:
   push:

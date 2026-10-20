@@ -1,4 +1,4 @@
-name: NexRide Wrapper Regression
+name: Biloo Wrapper Regression
 on:
   pull_request:
     branches: [main]
