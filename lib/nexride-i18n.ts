@@ -405,7 +405,7 @@ export const messages = {
   tryAgain: ["Try again", "እንደገና ሞክር"],
 
   zoomIn: ["Zoom in", "አቅርብ"],
-  brandTagline: ["Better Rides. A Brighter Tomorrow.", "የተሻለ ጉዞ። ብሩህ ነገ።"],
+  brandTagline: ["Rides for a Better Tomorrow.", "ለተሻለ ነገ የተሻለ ጉዞ።"],
   brandMessage: ["More than a ride. A better way to move.", "ከጉዞ በላይ። የተሻለ የመንቀሳቀስ መንገድ።"],
   rider: ["Rider", "ተሳፋሪ"],
   driver: ["Driver", "አሽከርካሪ"],

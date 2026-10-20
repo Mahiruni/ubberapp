@@ -93,7 +93,7 @@ export const metadata: Metadata = {
         url: "/opengraph-image",
         width: 1200,
         height: 630,
-        alt: "Biloo — Better Rides. A Brighter Tomorrow.",
+        alt: "Biloo — Rides for a Better Tomorrow.",
       },
     ],
   },
