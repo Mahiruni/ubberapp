@@ -1,8 +1,8 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#05352f">
-<title>NexRide · On trip</title><meta name="description" content="Follow your NexRide trip, share trip details, and reach safety controls.">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#08295f">
+<title>Biloo · On trip</title><meta name="description" content="Follow your Biloo trip, share trip details, and reach safety controls.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2305352f'/%3E%3Cpath d='M8 24V8l16 16V8' stroke='%2316db95' stroke-width='5' fill='none'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="style.css"><link rel="stylesheet" href="trip.css">
 <link rel="stylesheet" href="embedded.css"><link rel="stylesheet" href="vendor/leaflet/leaflet.css">
@@ -19,7 +19,7 @@
 <symbol id="target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/></symbol>
 <symbol id="check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
 </defs></svg>
-<header class="app-header"><a class="brand" href="./" aria-label="NexRide"><span class="brandmark">N</span>NexRide</a><span class="header-label">On trip</span><a class="screen-link" href="completion.html" data-preview-link>Completion preview</a><a class="screen-link" href="./">Pickup</a><span class="ride-badge">Rider</span></header>
+<header class="app-header"><a class="brand" href="./" aria-label="Biloo"><img src="../../brand/biloo-mark.svg" width="32" height="32" alt="" style="vertical-align:middle;margin-right:8px">Biloo</a><span class="header-label">On trip</span><a class="screen-link" href="completion.html" data-preview-link>Completion preview</a><a class="screen-link" href="./">Pickup</a><span class="ride-badge">Rider</span></header>
 <div id="demoBar" class="demo-bar"><span><b>Design preview</b><span class="demo-note"> · Sample trip & map</span></span><div class="preview-controls"><button id="sampleUpdate" class="sample-update">Receive sample location</button><label>State <select id="scenario"><option value="normal">On trip</option><option value="route">Route change</option><option value="delay">Delayed arrival</option><option value="stale">Stale location</option><option value="offline">Connection lost</option><option value="eta">No ETA or distance</option><option value="completed">Trip completed</option></select></label></div></div>
 <main class="workspace">
 <section class="map-section" aria-label="Active trip map">

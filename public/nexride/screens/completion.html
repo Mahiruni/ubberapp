@@ -1,8 +1,8 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#05352f">
-<title>NexRide · Trip completed</title><meta name="description" content="View your NexRide receipt and rate your completed ride.">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#08295f">
+<title>Biloo · Trip completed</title><meta name="description" content="View your Biloo receipt and rate your completed ride.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2305352f'/%3E%3Cpath d='M8 24V8l16 16V8' stroke='%2316db95' stroke-width='5' fill='none'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="style.css"><link rel="stylesheet" href="completion.css">
 <link rel="stylesheet" href="embedded.css"><link rel="stylesheet" href="vendor/leaflet/leaflet.css">
@@ -19,10 +19,10 @@
 <symbol id="target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/></symbol>
 <symbol id="check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
 <symbol id="star" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.9L12 17.8l-6.2 3.3L7 14.2 2 9.3l6.9-1L12 2Z"/></symbol></defs></svg>
-<header class="app-header"><a class="brand" href="./" aria-label="NexRide"><span class="brandmark">N</span>NexRide</a><a class="screen-link" href="trip.html">Active trip</a></header>
+<header class="app-header"><a class="brand" href="./" aria-label="Biloo"><img src="../../brand/biloo-mark.svg" width="32" height="32" alt="" style="vertical-align:middle;margin-right:8px">Biloo</a><a class="screen-link" href="trip.html">Active trip</a></header>
 <div id="demoBar" class="demo-bar"><span><b>Design preview</b><span class="demo-note"> · Sample receipt & driver</span></span><label>Preview state <select id="scenario"><option value="normal">Ready to rate</option><option value="pending">Payment pending</option><option value="failed">Payment failed</option><option value="unknown">Payment unavailable</option><option value="retry">Submission failure</option><option value="already">Already rated</option></select></label></div>
 <main class="completion-shell">
-<section class="completion-header" aria-labelledby="completionTitle"><span id="successIcon" class="success-icon" aria-hidden="true"><svg><use href="#check"/></svg></span><h1 id="completionTitle">You’ve arrived</h1><p id="completionMessage">Thanks for riding with NexRide.</p></section>
+<section class="completion-header" aria-labelledby="completionTitle"><span id="successIcon" class="success-icon" aria-hidden="true"><svg><use href="#check"/></svg></span><h1 id="completionTitle">You’ve arrived</h1><p id="completionMessage">Thanks for riding with Biloo.</p></section>
 <section class="receipt-card" aria-label="Trip receipt"><div class="receipt-driver"><img id="driverPhoto" src="assets/driver.png" alt="Fictional sample driver portrait"><div><h2 id="driverName">Tesfaye Alemu</h2><p id="vehicleDetails">Silver Toyota Corolla</p><p id="vehiclePlate">ET 74235</p></div><span id="rideCategory" class="receipt-category">Economy</span></div><div class="receipt-total"><div><span class="amount-label">Trip total</span><strong id="finalAmount">145 <span>ETB</span></strong></div><button id="viewDetails" class="view-details">View details</button></div><div class="payment-row" role="status" aria-live="polite"><span id="paymentStatus" class="payment-status paid">Paid</span><span id="paymentMethod">Cash</span></div><p id="paymentNotice" class="payment-notice" hidden></p></section>
 <section id="ratingSection" class="rating-section" aria-label="Ride feedback">
 <form id="ratingForm"><fieldset id="starFieldset"><legend>How was your ride?</legend><div class="stars">
