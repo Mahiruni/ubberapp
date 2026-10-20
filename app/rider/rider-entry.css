@@ -656,3 +656,15 @@
     transition: none!important;
   }
 }
+
+/* Hero photo as an actual high-priority image, preserving previous width-based composition. */
+.biloo-rider-campaign img.biloo-rider-photo {
+  display: block!important;
+  width: 100%!important;
+  height: auto!important;
+  min-height: 0!important;
+  object-fit: contain!important;
+  object-position: top center!important;
+  background-image: none!important;
+  background-color: #fff;
+}

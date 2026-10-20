@@ -142,7 +142,14 @@ function RiderWelcome() {
     <main className="nr-rider-welcome biloo-rider-campaign">
       <header className="biloo-rider-brand"><img src="/brand/biloo-mark.svg" alt="" /><strong>biloo</strong><span>RIDES FOR A BETTER TOMORROW</span></header>
       <section className="biloo-rider-heading"><h1>Your Ride<br/>is Here</h1><p>Safe. Reliable. Affordable.<br/>Across Addis Ababa.</p></section>
-      <div className="biloo-rider-photo" role="img" aria-label="Biloo Rider: a woman approaches a white Biloo car in Addis Ababa with a welcoming driver" />
+      <img
+        className="biloo-rider-photo"
+        src="/brand/biloo-rider-get-started.jpg"
+        alt="A woman approaches a white Biloo car in Addis Ababa with a welcoming driver"
+        loading="eager"
+        fetchPriority="high"
+        decoding="async"
+      />
       <div className="nr-rider-welcome-intro" hidden>
         <span className="nr-rider-entry-kicker">
           <Icon name="navigation" size={15} />

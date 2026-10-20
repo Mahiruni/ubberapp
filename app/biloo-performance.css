@@ -12,3 +12,24 @@
 @media (prefers-reduced-motion: reduce) {
   .biloo-map-preparing { animation: none; }
 }
+
+/* Fast, stable page-to-page loading without replaying the branded startup splash. */
+.biloo-route-loading {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  min-height: min(70dvh,600px);
+  padding: max(20px,env(safe-area-inset-top,0px)) 20px 24px;
+  background: var(--nr-bg,#f6f8fb);
+  color: var(--nr-text,#132a48);
+}
+.biloo-route-loading__header {
+  width: min(45%,154px);
+  height: 18px;
+  border-radius: 9px;
+  background: var(--nr-border,#dfe6ef);
+}
+.biloo-route-loading__main{display:grid;gap:13px;max-width:660px;width:100%;margin-inline:auto}
+.biloo-route-loading__line{width:68%;height:20px;border-radius:9px;background:var(--nr-border,#dfe6ef)}
+.biloo-route-loading__line.short{width:37%;height:13px;opacity:.7}
+.biloo-route-loading__panel{height:clamp(170px,32dvh,300px);border-radius:20px;background:var(--nr-surface,#fff);border:1px solid var(--nr-border,#dfe6ef)}
