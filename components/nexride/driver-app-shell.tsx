@@ -28,6 +28,7 @@ import { DriverCancellationNotice } from "./driver-cancellation-notice";
 import { DriverSessionBridge } from "./driver-session-bridge";
 import { explicitSignOutRole } from "../../lib/nexride-startup";
 import { signOutNexRide } from "../../lib/nexride-sign-out";
+import { BilooFooterNav, driverFooterLinks } from "./biloo-footer-nav";
 
 export type DriverThemePreference = "system" | "light" | "dark";
 export type DriverResolvedTheme = "light" | "dark";
@@ -529,6 +530,13 @@ function DriverShellChrome({ children }: { children: ReactNode }) {
       <DriverSessionBridge />
       <DriverCancellationNotice pathname={pathname} />
       <div className="nr-driver-shell-content" data-trip-focus={tripFocus ? "true" : "false"}>{children}</div>
+      {!tripFocus && (
+        <BilooFooterNav
+          role="driver"
+          items={driverFooterLinks()}
+          active={driverNavForPath(pathname) === "requests" ? "trips" : driverNavForPath(pathname) === "messages" ? "support" : driverNavForPath(pathname)}
+        />
+      )}
     </div>
   );
 }

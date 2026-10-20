@@ -37,6 +37,7 @@ import { useJourney } from "../lib/nexride-journey";
 import { useRiderLocation } from "../lib/nexride-location";
 import { RiderWorkspace, type RiderScreen } from "../components/nexride/rider";
 import { RiderMenu, type RiderMenuId } from "../components/nexride/rider-menu";
+import { BilooFooterNav, riderFooterLinks } from "../components/nexride/biloo-footer-nav";
 import {
   DriverWorkspace,
   type DriverScreen,
@@ -787,6 +788,17 @@ function AppWorkspace({
               />
             </div>
           </div>
+        )}
+
+        {mode === "rider" && !riderSearch && !riderTripView && !["rides", "finding"].includes(riderScreen) && (
+          <BilooFooterNav
+            role="rider"
+            active={riderScreen === "profile" ? "account" : riderScreen === "wallet" ? "wallet" : riderScreen === "trips" ? "activity" : "home"}
+            items={riderFooterLinks().map(item =>
+              item.id === "home" ? { ...item, onClick: () => navigate("home"), href: undefined } :
+              item.id === "account" ? { ...item, onClick: () => navigate("profile"), href: undefined } : item
+            )}
+          />
         )}
 
         {mode === "driver" && (
