@@ -1,4 +1,4 @@
-// NexRide Android-only hardening of Capacitor 8 PushNotifications.
+// Biloo Android-only hardening of Capacitor 8 PushNotifications.
 // Some Android 13+ devices crash in Capacitor's permission-state bridge.
 // Keep the plugin API, Firebase delivery and token events unchanged,
 // but avoid the fragile permission callback: open Android notifications
@@ -17,7 +17,7 @@ const end = code.indexOf(endMarker);
 if (start < 0 || end <= start || !code.slice(start, end).includes("FirebaseMessaging.getInstance()")) {
   throw Error("Unexpected Capacitor PushNotifications Java API; stop rather than ship an unverified safety patch");
 }
-const safeMethods = `    // NexRide: use direct Android permission state, avoiding Capacitor's
+const safeMethods = `    // Biloo: use direct Android permission state, avoiding Capacitor's
     // bridge getPermissionStates() NPE seen on certain Android 13+ devices.
     private boolean nexRideAlertsEnabled() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
@@ -85,4 +85,4 @@ if (!code.includes(channelsOld)) {
 }
 code = code.replace(channelsOld, channelsNew);
 fs.writeFileSync(file, code);
-console.log("NexRide Android push crash guard installed (native notification settings + safe FCM errors).");
+console.log("Biloo Android push crash guard installed (native notification settings + safe FCM errors).");

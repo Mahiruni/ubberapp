@@ -40,7 +40,7 @@ public final class NexRideDriverLocationService extends Service implements Locat
     }
     PendingIntent open=PendingIntent.getActivity(this,0,new Intent(this,MainActivity.class),
       PendingIntent.FLAG_UPDATE_CURRENT|PendingIntent.FLAG_IMMUTABLE);
-    Notification notice=new Notification.Builder(this,CHANNEL).setContentTitle("NexRide Driver · Online")
+    Notification notice=new Notification.Builder(this,CHANNEL).setContentTitle("Biloo Driver · Online")
       .setContentText("Sharing location for nearby ride requests")
       .setSmallIcon(android.R.drawable.ic_menu_mylocation).setOngoing(true)
       .setContentIntent(open).build();

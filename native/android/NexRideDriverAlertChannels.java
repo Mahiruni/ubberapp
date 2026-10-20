@@ -27,7 +27,7 @@ public final class NexRideDriverAlertChannels {
 
             NotificationChannel channel = new NotificationChannel(
                 RIDE_REQUESTS, "Incoming ride requests", NotificationManager.IMPORTANCE_HIGH);
-            channel.setDescription("New NexRide trips that need a quick response");
+            channel.setDescription("New Biloo trips that need a quick response");
             channel.enableVibration(true);
             channel.setVibrationPattern(new long[] { 0, 220, 120, 220, 120, 420 });
             channel.setShowBadge(true);

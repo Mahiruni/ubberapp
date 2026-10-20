@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.regex.Pattern;
 
 /**
- * NexRide Android Live Trip: confirmed trip milestones, never arbitrary % or ETA.
+ * Biloo Android Live Trip: confirmed trip milestones, never arbitrary % or ETA.
  * Android 16/API 36 uses platform ProgressStyle; older devices see a standard
  * persistent notification. Promoted status chip is OS-controlled (36.1+).
  * Does not replace Firebase ride alerts or the Driver foreground GPS service.
@@ -61,7 +61,7 @@ public class NexRideLiveTripPlugin extends Plugin {
         if (m.getNotificationChannel(CHANNEL) != null) return;
         NotificationChannel channel = new NotificationChannel(
             CHANNEL, "Live trip progress", NotificationManager.IMPORTANCE_LOW);
-        channel.setDescription("Ongoing NexRide ride stage and arrival progress");
+        channel.setDescription("Ongoing Biloo ride stage and arrival progress");
         channel.setSound(null, null);
         channel.enableVibration(false);
         channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
@@ -86,7 +86,7 @@ public class NexRideLiveTripPlugin extends Plugin {
             ensureChannel();
             String lastId = savedTrip();
             if (!lastId.isEmpty() && !lastId.equals(id)) manager().cancel(NOTIFICATION_ID);
-            String title = "NexRide · Active trip";
+            String title = "Biloo · Active trip";
             String detail;
             if (step == 0) detail = role.equals("driver") ? "Navigate to pickup" : "Your driver is on the way";
             else if (step == 1) detail = role.equals("driver") ? "Driver at pickup" : "Your driver has arrived";
@@ -107,7 +107,7 @@ public class NexRideLiveTripPlugin extends Plugin {
                 : new Notification.Builder(getContext());
             builder.setSmallIcon(android.R.drawable.ic_menu_mylocation)
                 .setContentTitle(title).setContentText(detail)
-                .setSubText(role.equals("driver") ? "NexRide Driver" : "NexRide Rider")
+                .setSubText(role.equals("driver") ? "Biloo Driver" : "Biloo Rider")
                 .setContentIntent(pending).setOnlyAlertOnce(true)
                 .setCategory(Notification.CATEGORY_TRANSPORT)
                 .setVisibility(Notification.VISIBILITY_PUBLIC)

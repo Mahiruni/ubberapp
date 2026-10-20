@@ -106,7 +106,7 @@ public final class NexRideAppLock {
         if (biometric != null) biometric.cancelAuthentication();
         handler.removeCallbacks(countdown);
         settingsOpen = false;
-        if (enabled()) screen(say("NexRide is protected", "NexRide የተጠበቀ ነው"));
+        if (enabled()) screen(say("Biloo is protected", "Biloo የተጠበቀ ነው"));
         else hideCover();
     }
     public void resume() {
@@ -144,8 +144,8 @@ public final class NexRideAppLock {
 
     private void reauthenticate(boolean recovery) {
         screen(say(recovery ? "Recover app lock" : "Confirm your account", recovery ? "የመተግበሪያ ቁልፍ ያስመልሱ" : "መለያዎን ያረጋግጡ"));
-        text(say("Enter your NexRide email and account password. They are verified securely and never saved on this device.",
-            "የNexRide ኢሜይል እና የመለያ ይለፍ ቃል ያስገቡ። በዚህ መሣሪያ ላይ አይቀመጡም።"), 15);
+        text(say("Enter your Biloo email and account password. They are verified securely and never saved on this device.",
+            "የBiloo ኢሜይል እና የመለያ ይለፍ ቃል ያስገቡ። በዚህ መሣሪያ ላይ አይቀመጡም።"), 15);
         EditText email = input(say("Email", "ኢሜይል"), InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
         EditText password = input(say("Account password", "የመለያ ይለፍ ቃል"), InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
         Button submit = button(say("Verify account", "መለያ አረጋግጥ"), () -> {
@@ -213,7 +213,7 @@ public final class NexRideAppLock {
         button(say("Forgot account password?", "የመለያ ይለፍ ቃል ረሱ?"), () -> {
             try { activity.startActivity(new android.content.Intent(android.content.Intent.ACTION_VIEW,
                 android.net.Uri.parse("https://ubberapp.vercel.app/rider/forgot-password"))); }
-            catch (RuntimeException ignored) { message(say("Open NexRide account recovery in your browser.", "የNexRide መለያ ማስመለሻን በአሳሽዎ ይክፈቱ።")); }
+            catch (RuntimeException ignored) { message(say("Open Biloo account recovery in your browser.", "የBiloo መለያ ማስመለሻን በአሳሽዎ ይክፈቱ።")); }
         });
     }
     private boolean authorized() {
@@ -224,7 +224,7 @@ public final class NexRideAppLock {
     }
     private void settings() {
         screen(say("App Lock", "የመተግበሪያ ቁልፍ"));
-        text(say("Protect NexRide on this device.", "NexRideን በዚህ መሣሪያ ይጠብቁ።"), 16);
+        text(say("Protect Biloo on this device.", "Bilooን በዚህ መሣሪያ ይጠብቁ።"), 16);
         text(enabled() ? say("Enabled · ", "በርቷል · ") + state.optString("method", "pin").toUpperCase() : say("App lock is off", "የመተግበሪያ ቁልፍ ጠፍቷል"), 16);
         button(say(enabled() ? "Change PIN" : "Set up six-digit PIN", "ባለ ስድስት አሃዝ PIN አዘጋጅ"), () -> setup("pin"));
         button(say(enabled() ? "Change pattern" : "Set up pattern lock", "የንድፍ ቁልፍ አዘጋጅ"), () -> setup("pattern"));
@@ -250,7 +250,7 @@ public final class NexRideAppLock {
             button(say("Disable App Lock", "የመተግበሪያ ቁልፍ አጥፋ"), () -> {
                 if (!authorized()) return;
                 screen(say("Disable App Lock?", "የመተግበሪያ ቁልፍ ይጥፋ?"));
-                text(say("Anyone with access to this unlocked device can open NexRide.", "ይህን መሣሪያ የሚጠቀም ሰው NexRideን ሊከፍት ይችላል።"), 16);
+                text(say("Anyone with access to this unlocked device can open Biloo.", "ይህን መሣሪያ የሚጠቀም ሰው Bilooን ሊከፍት ይችላል።"), 16);
                 button(say("Confirm disable", "ማጥፋት አረጋግጥ"), () -> {
                     if (!authorized()) return;
                     String language = state.optString("language", "en"); clearBiometric();
@@ -259,7 +259,7 @@ public final class NexRideAppLock {
                 button(say("Keep protected", "ጥበቃው ይቀጥል"), this::settings);
             });
         }
-        text(say("Active rides and background GPS continue. While you remain in the foreground, NexRide stays unlocked; the selected lock timeout applies when you leave.",
+        text(say("Active rides and background GPS continue. While you remain in the foreground, Biloo stays unlocked; the selected lock timeout applies when you leave.",
             "ጉዞዎች እና GPS ይቀጥላሉ። መተግበሪያው በፊት ክፍት ሲሆን አይቆለፍም። ሲወጡ የተመረጠው ጊዜ ይተገበራል።"), 14);
         button(say("Done", "ተጠናቋል"), this::closeSettings);
     }
@@ -305,10 +305,10 @@ public final class NexRideAppLock {
     private void showLock() {
         locked = true; settingsOpen = false; authorizedAt = -1; verifiedOwner = ""; token = "";
         handler.removeCallbacks(countdown);
-        screen(say("Unlock NexRide", "NexRideን ይክፈቱ"));
+        screen(say("Unlock Biloo", "Bilooን ይክፈቱ"));
         if (damaged) {
-            text(say("Device security storage is unavailable. Your account is safe. Restore access by reinstalling NexRide and signing in again; local drafts will be lost.",
-                "የመሣሪያ ደህንነት ማከማቻ አይገኝም። NexRideን እንደገና ይጫኑ እና ይግቡ። የአካባቢ ረቂቆች ይጠፋሉ።"), 16);
+            text(say("Device security storage is unavailable. Your account is safe. Restore access by reinstalling Biloo and signing in again; local drafts will be lost.",
+                "የመሣሪያ ደህንነት ማከማቻ አይገኝም። Bilooን እንደገና ይጫኑ እና ይግቡ። የአካባቢ ረቂቆች ይጠፋሉ።"), 16);
             return;
         }
         String method = state.optString("method", "pin");
@@ -407,7 +407,7 @@ public final class NexRideAppLock {
                     try {
                         if (result.getCryptoObject() == null || result.getCryptoObject().getCipher() == null) throw new IllegalStateException();
                         Cipher authenticated = result.getCryptoObject().getCipher();
-                        byte[] marker = ("NexRide:" + state.optString("owner")).getBytes(StandardCharsets.UTF_8);
+                        byte[] marker = ("Biloo:" + state.optString("owner")).getBytes(StandardCharsets.UTF_8);
                         if (enrolling) {
                             if (!authorized()) return;
                             put(state, "bioData", b64(authenticated.doFinal(marker))); put(state, "bioIv", b64(authenticated.getIV()));
@@ -427,7 +427,7 @@ public final class NexRideAppLock {
                     message(say("Not recognized. Try again or use your PIN or pattern.", "አልታወቀም። እንደገና ይሞክሩ ወይም PIN ይጠቀሙ።"));
                 }
             });
-            biometric.authenticate(new BiometricPrompt.PromptInfo.Builder().setTitle(say("Unlock NexRide", "NexRideን ይክፈቱ"))
+            biometric.authenticate(new BiometricPrompt.PromptInfo.Builder().setTitle(say("Unlock Biloo", "Bilooን ይክፈቱ"))
                 .setSubtitle(say("Use an enrolled face or fingerprint", "የተመዘገበ ፊት ወይም የጣት አሻራ ይጠቀሙ"))
                 .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG)
                 .setNegativeButtonText(say("Cancel", "ሰርዝ")).build(), new BiometricPrompt.CryptoObject(cipher));
@@ -531,7 +531,7 @@ public final class NexRideAppLock {
             panel.setPadding(dp(24), dp(32) + insets.getSystemWindowInsetTop(), dp(24), dp(32) + insets.getSystemWindowInsetBottom()); return insets;
         });
         cover.requestApplyInsets();
-        text("NexRide", 28); TextView heading = text(title, 26); androidx.core.view.ViewCompat.setAccessibilityHeading(heading, true);
+        text("Biloo", 28); TextView heading = text(title, 26); androidx.core.view.ViewCompat.setAccessibilityHeading(heading, true);
         notice = text("", 14); notice.setAccessibilityLiveRegion(View.ACCESSIBILITY_LIVE_REGION_POLITE);
         cover.requestFocus();
         if (activity.getBridge() != null && activity.getBridge().getWebView() != null) activity.getBridge().getWebView().setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS);

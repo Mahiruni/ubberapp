@@ -48,10 +48,10 @@ export async function enableNexRideNativeNotifications(role: Role) {
   await PushNotifications.createChannel({
     // Android notification channel settings are immutable after creation.
     // v2 is intentionally created natively at Driver launch with a custom
-    // NexRide chime and a distinct vibration pattern.
+    // Biloo chime and a distinct vibration pattern.
     id: role === "driver" ? "nexride_driver_requests_v2" : "nexride_trip_updates",
     name: role === "driver" ? "Incoming ride requests" : "Trip updates",
-    description: "Important NexRide ride and trip events",
+    description: "Important Biloo ride and trip events",
     importance: role === "driver" ? 5 : 3, vibration: true, visibility: 1,
     ...(role === "driver" ? { sound: "nexride_ride_request.wav" } : {}),
   });
