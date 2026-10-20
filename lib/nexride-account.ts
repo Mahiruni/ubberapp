@@ -10,18 +10,45 @@ export function validateProfile(profile: PreviewProfile): 'name' | 'phone' | 'em
   if (profile.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(profile.email.trim())) return 'email';
   return null;
 }
+// Brief, user-scoped cache prevents repeat profile and signed-URL fetches during tab navigation.
+// Never cache payment, verification, dispatch, or live-trip state here.
+const ACCOUNT_CACHE_MS = 30_000;
+let accountCache: { userId: string; expiresAt: number; value: RiderAccount } | null = null;
+let accountPending: { userId: string; promise: Promise<RiderAccount> } | null = null;
+export function invalidateRiderAccountCache() { accountCache = null; accountPending = null; }
+
 export async function readAccount(): Promise<RiderAccount | null> {
   const { data: session, error: sessionError } = await supabase.auth.getSession();
   if (sessionError) throw sessionError;
-  if (!session.session) return null;
-  const { data, error } = await supabase.from('profiles').select('id,full_name,phone,avatar_path').eq('id', session.session.user.id).single();
-  if (error || !data || data.id !== session.session.user.id) throw error || Error('Profile unavailable');
-  let avatar: string | null = null;
-  if (typeof data.avatar_path === 'string' && data.avatar_path) {
-    if (data.avatar_path.startsWith('https://')) avatar = data.avatar_path;
-    else { const signed = await supabase.storage.from('profile-photos').createSignedUrl(data.avatar_path, 3600); avatar = signed.data?.signedUrl || null; }
-  }
-  return { id: data.id, profile: { name: data.full_name || '', phone: data.phone || '', email: session.session.user.email || '' }, avatar, avatarPath: typeof data.avatar_path === 'string' ? data.avatar_path : null };
+  if (!session.session) { invalidateRiderAccountCache(); return null; }
+  const userId = session.session.user.id;
+  if (accountCache?.userId === userId && accountCache.expiresAt > Date.now()) return accountCache.value;
+  if (accountPending?.userId === userId) return accountPending.promise;
+  const promise: Promise<RiderAccount> = (async () => {
+    const { data, error } = await supabase.from('profiles')
+      .select('id,full_name,phone,avatar_path').eq('id', userId).single();
+    if (error || !data || data.id !== userId) throw error || Error('Profile unavailable');
+    let avatar: string | null = null;
+    if (typeof data.avatar_path === 'string' && data.avatar_path) {
+      if (data.avatar_path.startsWith('https://')) avatar = data.avatar_path;
+      else {
+        const signed = await supabase.storage.from('profile-photos').createSignedUrl(data.avatar_path, 3600);
+        avatar = signed.data?.signedUrl || null;
+      }
+    }
+    const value: RiderAccount = {
+      id: data.id,
+      profile: { name: data.full_name || '', phone: data.phone || '', email: session.session.user.email || '' },
+      avatar,
+      avatarPath: typeof data.avatar_path === 'string' ? data.avatar_path : null,
+    };
+    // If a mutation invalidated the cache during the request, do not reinsert stale data.
+    if (accountPending?.promise === promise) accountCache = { userId, expiresAt: Date.now() + ACCOUNT_CACHE_MS, value };
+    return value;
+  })();
+  accountPending = { userId, promise };
+  try { return await promise; }
+  finally { if (accountPending?.promise === promise) accountPending = null; }
 }
 export async function saveAccount(account: RiderAccount, profile: PreviewProfile): Promise<PreviewProfile> {
   if (validateProfile(profile)) throw Error('Invalid profile');
@@ -32,6 +59,7 @@ export async function saveAccount(account: RiderAccount, profile: PreviewProfile
   const { data, error } = await supabase.from('profiles').update({ full_name: profile.name.trim() })
     .eq('id', account.id).select('id,full_name,phone').single();
   if (error || !data || data.id !== account.id) throw error || Error('Save not confirmed');
+  invalidateRiderAccountCache();
   return { name: data.full_name || '', phone: data.phone || '', email: auth.data.user.email || '' };
 }
 
@@ -72,6 +100,7 @@ export async function uploadRiderAvatar(
     throw updated.error || new Error('avatar_save_failed');
   }
 
+  invalidateRiderAccountCache();
   const signed = await storage.createSignedUrl(path, 3600);
   // A successful profile update must never be reported as failed solely
   // because URL generation was temporarily unavailable.

@@ -44,7 +44,7 @@ import type { Language } from "../lib/nexride-i18n";
 import { LANGUAGE_EVENT } from "../components/nexride/language-provider";
 import type { PreviewProfile, PreviewTrip } from "../lib/nexride-preview";
 import { resolveSessionRole } from "../lib/nexride-account-role";
-import { readAccount } from "../lib/nexride-account";
+import { invalidateRiderAccountCache, readAccount } from "../lib/nexride-account";
 import { registerNexRideBackHandler } from "../lib/nexride-native-navigation";
 import "./nexride.css";
 import "./rider-home.css";
@@ -305,7 +305,7 @@ function AppWorkspace({
     };
     refreshAvatar(true);
     const onFocus = () => refreshAvatar();
-    const onProfileChange = () => refreshAvatar(true);
+    const onProfileChange = () => { invalidateRiderAccountCache(); refreshAvatar(true); };
     window.addEventListener("focus", onFocus);
     window.addEventListener("nexride:profile-change", onProfileChange);
     return () => {
