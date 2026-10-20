@@ -42,13 +42,15 @@ export async function readAccount(): Promise<RiderAccount | null> {
       avatar,
       avatarPath: typeof data.avatar_path === 'string' ? data.avatar_path : null,
     };
-    // If a mutation invalidated the cache during the request, do not reinsert stale data.
-    if (accountPending?.promise === promise) accountCache = { userId, expiresAt: Date.now() + ACCOUNT_CACHE_MS, value };
     return value;
   })();
   accountPending = { userId, promise };
-  try { return await promise; }
-  finally { if (accountPending?.promise === promise) accountPending = null; }
+  try {
+    const value = await promise;
+    // Do not cache a result invalidated by an avatar or profile mutation in flight.
+    if (accountPending?.promise === promise) accountCache = { userId, expiresAt: Date.now() + ACCOUNT_CACHE_MS, value };
+    return value;
+  } finally { if (accountPending?.promise === promise) accountPending = null; }
 }
 export async function saveAccount(account: RiderAccount, profile: PreviewProfile): Promise<PreviewProfile> {
   if (validateProfile(profile)) throw Error('Invalid profile');
