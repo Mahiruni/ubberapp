@@ -1,391 +1,119 @@
-.driver-welcome {
-  --driver-navy: #06131d;
-  --driver-navy-2: #0a202d;
-  --driver-emerald: #00c878;
-  --driver-white: #f8fbfa;
-  min-height: 100svh;
-  min-height: 100dvh;
+/* Biloo Driver · one static welcome layout (legacy layouts removed). */
+.biloo-driver-welcome {
+  --biloo-deep: #08295f;
+  --biloo-gold: #f9c449;
   position: relative;
-  overflow: hidden;
   isolation: isolate;
-  background: var(--driver-navy);
-  color: var(--driver-white);
-  padding: max(24px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(26px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
-}
-
-.driver-welcome::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at 50% 16%, rgba(0, 200, 120, .1), transparent 34%);
-  pointer-events: none;
-  z-index: -1;
-}
-
-.driver-welcome-media,
-.driver-welcome-gradient,
-.driver-city {
-  position: absolute;
-  inset: 0;
-}
-
-.driver-welcome-media {
-  z-index: -2;
-}
-
-.driver-city {
-  object-fit: cover;
-  object-position: center 48%;
-  opacity: .5;
-  filter: saturate(.7) contrast(1.08) brightness(.72);
-}
-
-
-.driver-welcome-gradient {
-  background:
-    linear-gradient(180deg, rgba(4, 15, 23, .94) 0%, rgba(4, 15, 23, .7) 34%, rgba(4, 15, 23, .44) 62%, rgba(4, 15, 23, .94) 100%),
-    linear-gradient(90deg, rgba(4, 15, 23, .24), transparent 55%, rgba(4, 15, 23, .35));
-}
-
-.driver-welcome-content {
-  width: min(100%, 560px);
-  min-height: calc(100svh - max(50px, env(safe-area-inset-top)) - max(52px, env(safe-area-inset-bottom)));
-  margin: 0 auto;
   display: flex;
   flex-direction: column;
+  width: 100%;
+  max-width: 640px;
+  min-height: 100svh;
+  min-height: 100dvh;
+  margin-inline: auto;
+  overflow: hidden;
+  background: #fff;
+  color: var(--biloo-deep);
+  color-scheme: light;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+.biloo-driver-welcome__photo {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 43%;
+  pointer-events: none;
+}
+.biloo-driver-welcome::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(to bottom, transparent 52%, rgba(255,255,255,.02) 63%, rgba(255,255,255,.74) 79%, #fff 94%);
+}
+.biloo-driver-welcome__actions {
   position: relative;
   z-index: 2;
-}
-
-.driver-welcome-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  animation: driverFadeDown .55s ease both;
-}
-
-.driver-welcome .nr-brand {
-  color: #fff;
-}
-
-.driver-welcome .nr-brand strong {
-  color: #fff;
-}
-
-.driver-welcome .nr-brand small {
-  color: rgba(255,255,255,.68);
-}
-
-.driver-welcome .nr-mark {
-  background: var(--driver-emerald);
-  color: #032015;
-  box-shadow: 0 0 0 5px rgba(0,200,120,.08), 0 10px 32px rgba(0,200,120,.18);
-}
-
-.driver-role-badge {
-  border: 1px solid rgba(255,255,255,.16);
-  background: rgba(3, 17, 26, .46);
-  backdrop-filter: blur(14px);
-  border-radius: 999px;
-  padding: 8px 11px;
-  font-size: 10px;
-  line-height: 1;
-  font-weight: 800;
-  letter-spacing: .16em;
-  color: #a7f5d2;
-}
-
-.driver-welcome-copy {
-  margin-top: auto;
-  padding: 10vh 0 6vh;
-  animation: driverFadeUp .7s .08s ease both;
-}
-
-.driver-mark {
-  width: 58px;
-  height: 58px;
   display: grid;
-  place-items: center;
-  margin-bottom: 22px;
-  border: 1px solid rgba(0,200,120,.4);
-  border-radius: 18px;
-  color: var(--driver-emerald);
-  background: rgba(0,200,120,.08);
-  font-size: 28px;
-  font-weight: 900;
-  box-shadow: inset 0 0 30px rgba(0,200,120,.05);
-}
-
-.driver-eyebrow {
-  margin: 0 0 13px;
-  color: #8fe9bf;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: .2em;
-}
-
-.driver-welcome h1 {
-  margin: 0;
-  max-width: 520px;
-  font-size: clamp(42px, 12vw, 72px);
-  line-height: .96;
-  letter-spacing: -.055em;
-  font-weight: 800;
-  text-wrap: balance;
-}
-
-.driver-subtitle {
-  max-width: 430px;
-  margin: 20px 0 0;
-  color: rgba(248,251,250,.76);
-  font-size: clamp(16px, 4.3vw, 19px);
-  line-height: 1.5;
-}
-
-.driver-welcome-actions {
+  gap: 12px;
   margin-top: auto;
-  animation: driverFadeUp .7s .16s ease both;
+  padding: 100px max(20px,env(safe-area-inset-right,0px)) calc(18px + env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px));
 }
-
-.driver-get-started,
-.driver-sign-in {
-  min-height: 56px;
+.biloo-driver-welcome__start,
+.biloo-driver-welcome__signin,
+.biloo-driver-welcome__register {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  border-radius: 17px;
-  text-decoration: none;
+  min-height: 56px;
+  padding: 12px 18px;
+  border-radius: 18px;
   font-size: 16px;
-  font-weight: 800;
-  -webkit-tap-highlight-color: transparent;
-  transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
-}
-
-.driver-get-started {
-  color: #032015;
-  background: var(--driver-emerald);
-  box-shadow: 0 14px 34px rgba(0, 200, 120, .2);
-}
-
-.driver-get-started:hover,
-.driver-get-started:focus-visible {
-  transform: translateY(-2px);
-  box-shadow: 0 18px 42px rgba(0, 200, 120, .28);
-}
-
-.driver-sign-in {
-  margin-top: 10px;
-  color: #fff;
-  background: rgba(255,255,255,.08);
-  border: 1px solid rgba(255,255,255,.13);
-  backdrop-filter: blur(12px);
-}
-
-.driver-sign-in:hover,
-.driver-sign-in:focus-visible {
-  background: rgba(255,255,255,.13);
-}
-
-.driver-role-note {
-  margin: 13px 0 0;
+  font-weight: 780;
+  line-height: 1.25;
   text-align: center;
-  color: rgba(255,255,255,.46);
-  font-size: 11px;
+  text-decoration: none;
+  transition: background-color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
 }
-
-.driver-welcome-loading {
-  background: var(--driver-navy);
+.biloo-driver-welcome__start {
+  background: var(--biloo-deep);
+  color: #fff;
+  box-shadow: 0 12px 28px rgba(8,41,95,.21);
 }
-
-@keyframes driverFadeUp {
-  from { opacity: 0; transform: translateY(18px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes driverFadeDown {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@media (min-width: 700px) {
-  .driver-welcome { padding-left: 40px; padding-right: 40px; }
-  .driver-welcome-content { min-height: calc(100svh - 70px); }
-  .driver-welcome-copy { padding-top: 12vh; }
-  .driver-welcome-actions { width: 390px; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .driver-welcome-top,
-  .driver-welcome-copy,
-  .driver-welcome-actions { animation: none; }
-  .driver-get-started,
-  .driver-sign-in { transition: none; }
-}
-
-
-/* Light-only Driver welcome: retain real Addis imagery with daylight overlay. */
-.nr-driver-app-shell .driver-welcome,
-.driver-welcome.driver-welcome-loading{
-  --driver-navy:#f5f7f9;
-  --driver-navy-2:#ffffff;
-  --driver-white:#102334;
-  color-scheme:light;
-  background:#f5f7f9!important;
-  color:#102334!important;
-}
-.nr-driver-app-shell .driver-city{
-  opacity:.27;
-  filter:saturate(.78) brightness(1.12);
-}
-.nr-driver-app-shell .driver-welcome-gradient{
-  background:linear-gradient(180deg,rgba(255,255,255,.95),rgba(255,255,255,.78) 40%,rgba(248,251,250,.84) 72%,rgba(255,255,255,.98));
-}
-.nr-driver-app-shell .driver-welcome .nr-brand,
-.nr-driver-app-shell .driver-welcome .nr-brand strong,
-.nr-driver-app-shell .driver-welcome h1{
-  color:#102334!important;
-}
-.nr-driver-app-shell .driver-welcome .nr-brand small,
-.nr-driver-app-shell .driver-subtitle,
-.nr-driver-app-shell .driver-role-note{
-  color:#667587!important;
-}
-.nr-driver-app-shell .driver-role-badge{
-  background:#ffffff!important;
-  color:#007448!important;
-  border:1px solid #c9e5d5!important;
-}
-.nr-driver-app-shell .driver-eyebrow{color:#007448!important}
-.nr-driver-app-shell .driver-sign-in{
-  background:#ffffff!important;
-  color:#102334!important;
-  border:1px solid #dfe7eb!important;
-  backdrop-filter:none;
-}
-.nr-driver-app-shell .driver-mark{
-  background:#eafff3;
-  color:#007448;
-}
-
-
-/* Biloo Driver campaign welcome — scoped to prevent legacy theme overrides. */
-.biloo-driver-campaign{min-height:100dvh;display:flex;flex-direction:column;position:relative;background:#041638;color:#fff;isolation:isolate;overflow:hidden}
-.biloo-driver-photo{min-height:56dvh;flex:1;background:linear-gradient(180deg,transparent 70%,rgba(3,22,56,.35)),url('/nexride/screens/assets/driver.png') center 44%/cover no-repeat}
-.biloo-driver-panel{position:relative;z-index:1;margin-top:-24px;border-radius:30px 30px 0 0;padding:24px max(20px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(20px,env(safe-area-inset-left));background:linear-gradient(160deg,#083a87,#031638 70%);text-align:center;box-shadow:0 -16px 36px rgba(3,22,56,.18)}
-.biloo-driver-logo{display:block;width:62px;height:76px;object-fit:contain;margin:0 auto 4px}
-.biloo-driver-panel h1{font-size:clamp(32px,7vw,48px);letter-spacing:-.05em;font-weight:850;line-height:1.08;color:white;margin:0}
-.biloo-driver-panel h1 span{color:#ffca46}
-.biloo-driver-panel p{font-size:clamp(13px,3.3vw,16px);line-height:1.5;color:#e2eafa;margin:12px auto 22px;max-width:420px}
-.biloo-driver-actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:530px;margin:auto}
-.biloo-driver-actions a{min-height:56px;border-radius:999px;display:flex;justify-content:center;align-items:center;gap:12px;text-decoration:none;font-size:16px;font-weight:800;transition:transform .18s ease}
-.biloo-driver-actions a:focus-visible{outline:3px solid #ffca46;outline-offset:3px}
-.biloo-driver-actions a:hover{transform:translateY(-2px)}
-.biloo-driver-signin{background:#ffca46;color:#061a3e}
-.biloo-driver-register{border:1px solid rgba(255,255,255,.82);color:#fff;background:rgba(255,255,255,.06)}
-.biloo-driver-secondary{margin-top:16px;font-size:12px}.biloo-driver-secondary a{color:#dbe7ff;text-underline-offset:3px}
-@media(min-width:700px){.biloo-driver-campaign{max-width:620px;margin:0 auto;min-height:100dvh}.biloo-driver-photo{min-height:62dvh}}
-@media(prefers-reduced-motion:reduce){.biloo-driver-actions a{transition:none}}
-
-
-/* Biloo Driver Get Started — light, static, mobile-first photo welcome. */
-.biloo-driver-campaign.biloo-driver-campaign--2026 {
-  position:relative!important; display:flex!important; flex-direction:column!important;
-  width:100%!important; max-width:620px!important; margin:0 auto!important;
-  min-height:100svh!important; min-height:100dvh!important;
-  background:#fff!important; color:#051741!important;
-  overflow:hidden!important; isolation:isolate; color-scheme:light;
-}
-.biloo-driver-campaign--2026 .biloo-driver-image {
-  position:absolute; inset:0 0 0; z-index:-1;
-  background-image:linear-gradient(180deg,rgba(255,255,255,.17) 0%,transparent 27%,transparent 65%,rgba(255,255,255,.92) 83%,#fff 96%),url('/nexride/screens/assets/driver.png');
-  background-position:center,center 41%; background-repeat:no-repeat; background-size:cover;
-}
-.biloo-driver-campaign--2026 .biloo-driver-header {
-  display:flex; align-items:center; gap:10px;
-  padding:calc(env(safe-area-inset-top,0px) + 22px) 24px 0;
-}
-.biloo-driver-campaign--2026 .biloo-driver-header-logo {
-  width:46px;height:54px;object-fit:contain;flex-shrink:0;
-}
-.biloo-driver-campaign--2026 .biloo-driver-header-name {
-  font-size:clamp(27px,6vw,36px);font-weight:850;line-height:1;letter-spacing:-.055em;color:#061643;
-}
-.biloo-driver-campaign--2026 .biloo-driver-header-name small {
-  display:block;font-size:9px;letter-spacing:.23em;font-weight:750;margin-top:6px;color:#6b7488;
-}
-.biloo-driver-campaign--2026 .biloo-driver-bottom {
-  margin-top:auto; padding:90px max(20px,env(safe-area-inset-right)) calc(env(safe-area-inset-bottom,0px) + 22px) max(20px,env(safe-area-inset-left));
-  display:grid;gap:12px;position:relative;z-index:1;
-}
-.biloo-driver-campaign--2026 .biloo-driver-primary,
-.biloo-driver-campaign--2026 .biloo-driver-secondary-action,
-.biloo-driver-campaign--2026 .biloo-driver-register-action {
-  min-height:56px; display:flex;align-items:center;justify-content:center;
-  border-radius:18px;text-decoration:none;font-size:16px;font-weight:790;
-  text-align:center;transition:transform .16s ease,box-shadow .16s ease;
-  -webkit-tap-highlight-color:transparent;
-}
-.biloo-driver-campaign--2026 .biloo-driver-primary{
-  background:#061c51;color:#fff;box-shadow:0 10px 24px rgba(4,22,61,.16);
-  position:relative;
-}
-.biloo-driver-campaign--2026 .biloo-driver-primary span{position:absolute;right:22px;font-size:24px}
-.biloo-driver-campaign--2026 .biloo-driver-action-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.biloo-driver-campaign--2026 .biloo-driver-secondary-action{
-  background:rgba(255,255,255,.97);border:1px solid #c8d0dc;color:#061643;
-}
-.biloo-driver-campaign--2026 .biloo-driver-register-action{
-  background:#ffbb12;color:#061643;border:1px solid #ffbb12;
-}
-.biloo-driver-campaign--2026 .biloo-driver-links{
-  display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:8px 24px;margin-top:6px;
-}
-.biloo-driver-campaign--2026 .biloo-driver-links a{font-size:12px;font-weight:650;color:#334b72;text-underline-offset:4px}
-.biloo-driver-campaign--2026 a:focus-visible{outline:3px solid #056bd8;outline-offset:3px}
-.biloo-driver-campaign--2026 .biloo-driver-primary:active,
-.biloo-driver-campaign--2026 .biloo-driver-action-row a:active{transform:scale(.985)}
-@media(min-width:700px){
- .biloo-driver-campaign.biloo-driver-campaign--2026{box-shadow:0 0 55px rgba(5,30,60,.09)}
-}
-@media(prefers-reduced-motion:reduce){
- .biloo-driver-campaign--2026 a{transition:none!important}
-}
-
-
-/* Ensure the real Driver photo is visible above the welcome background.
-   Keep text/buttons in separate accessible HTML, with no brand logo overlay. */
-.biloo-driver-campaign.biloo-driver-campaign--2026 {
-  position: relative !important;
-  isolation: isolate !important;
-  background: #fff !important;
-}
-.biloo-driver-campaign.biloo-driver-campaign--2026 > img.biloo-driver-image {
-  display: block !important;
-  position: absolute !important;
-  inset: 0 !important;
-  width: 100% !important;
-  height: 100% !important;
-  max-width: none !important;
-  min-height: 100% !important;
-  object-fit: cover !important;
-  object-position: center 40% !important;
-  opacity: 1 !important;
-  filter: none !important;
-  visibility: visible !important;
-  background: none !important;
-  z-index: 0 !important;
-  pointer-events: none !important;
-}
-.biloo-driver-campaign.biloo-driver-campaign--2026::after {
-  content: "" !important;
+.biloo-driver-welcome__start:hover { background: #061f49; }
+.biloo-driver-welcome__start span {
   position: absolute;
-  inset: 0;
-  background: linear-gradient(to bottom, transparent 45%, rgba(255,255,255,.1) 62%, rgba(255,255,255,.85) 82%, #fff 96%);
-  z-index: 1;
-  pointer-events: none;
+  right: 22px;
+  font-size: 23px;
 }
-.biloo-driver-campaign.biloo-driver-campaign--2026 > .biloo-driver-bottom {
-  position: relative !important;
-  z-index: 2 !important;
+.biloo-driver-welcome__auth {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 12px;
+}
+.biloo-driver-welcome__signin {
+  background: #fff;
+  color: var(--biloo-deep);
+  border: 1px solid #c9d3e1;
+}
+.biloo-driver-welcome__register {
+  background: var(--biloo-gold);
+  color: #08295f;
+  border: 1px solid var(--biloo-gold);
+}
+.biloo-driver-welcome__register:hover { background: #e9b331; }
+.biloo-driver-welcome__links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px 24px;
+  padding-block: 8px 2px;
+}
+.biloo-driver-welcome__links a {
+  color: #24456e;
+  font-size: 12px;
+  font-weight: 650;
+  text-underline-offset: 4px;
+}
+.biloo-driver-welcome a:focus-visible {
+  outline: 3px solid #1b62af;
+  outline-offset: 3px;
+}
+.biloo-driver-welcome :is(.biloo-driver-welcome__start,.biloo-driver-welcome__signin,.biloo-driver-welcome__register):active {
+  transform: scale(.985);
+}
+@media(min-width:700px) {
+  .biloo-driver-welcome { box-shadow: 0 0 50px rgba(8,41,95,.12); }
+}
+@media(max-height:640px) {
+  .biloo-driver-welcome__actions { padding-top: 40px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .biloo-driver-welcome a { transition: none; }
 }
