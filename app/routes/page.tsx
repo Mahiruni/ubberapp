@@ -197,9 +197,9 @@ export default function RouteExplorerPage() {
   }, [drawRoute]);
 
   useEffect(() => {
-    try { window.localStorage.setItem(STORAGE_KEY, mapStyle); } catch { /* Optional preference. */ }
     const map = mapRef.current;
     if (!map) return;
+    try { window.localStorage.setItem(STORAGE_KEY, mapStyle); } catch { /* Optional preference. */ }
     const current = map.getStyle();
     if (!current) return;
     const expected = MAP_STYLES[mapStyle];
@@ -310,7 +310,7 @@ export default function RouteExplorerPage() {
         <Link href="/" className="biloo-explore-back" aria-label="Back to Biloo Rider">
           <span aria-hidden="true">←</span>
         </Link>
-        <div className="biloo-explore-monogram" aria-hidden="true">B</div>
+        <img className="biloo-explore-monogram" src="/brand/biloo-mark.svg" alt="" aria-hidden="true" />
         <div className="biloo-explore-brandtext">
           <strong>BILOO <span>MAPS</span></strong>
           <small>Discover your next journey</small>
