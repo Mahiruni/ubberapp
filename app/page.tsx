@@ -214,6 +214,7 @@ function AppWorkspace({
   isAdmin: boolean;
   onReset: () => void;
 }) {
+  const router = useRouter();
   const t = useTranslation();
   const [liveSnapshot, setLiveSnapshot] = useState<TripSnapshot | null>(null);
   const riderLocation = useRiderLocation();
