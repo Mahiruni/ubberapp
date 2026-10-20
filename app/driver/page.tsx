@@ -3,9 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-
 import { RiderSplash } from "../../components/nexride/splash";
-import { useTranslation } from "../../components/nexride/ui";
 import { supabase } from "../../lib/supabase";
 import { enterDriver, explicitSignOutRole, StartupError } from "../../lib/nexride-startup";
 import { driverResumeDestination } from "../../lib/nexride-driver-verification";
@@ -15,7 +13,6 @@ import "../detail-system.css";
 
 export default function DriverWelcome() {
   const router = useRouter();
-  const t = useTranslation();
   const [checking, setChecking] = useState(true);
   const [startupError, setStartupError] = useState<StartupError | null>(null);
   const [attempt, setAttempt] = useState(0);
@@ -39,24 +36,29 @@ export default function DriverWelcome() {
         if (active && !explicitSignOutRole(window.localStorage)) router.replace(destination);
         return;
       }
-      setChecking(false);
+      if (active) setChecking(false);
     }).catch(() => { if (active) setStartupError(new StartupError("session")); });
     return () => { active = false; };
   }, [router, attempt]);
 
-  if (checking) return <RiderSplash error={startupError} onRetry={() => setAttempt(value => value + 1)}/>;
+  if (checking) return <RiderSplash error={startupError} onRetry={() => setAttempt(value => value + 1)} />;
 
-  return <main className="biloo-driver-campaign" aria-label="Biloo Driver welcome">
-    <div className="biloo-driver-photo" role="img" aria-label="Biloo Driver Addis Ababa campaign photography"/>
-    <section className="biloo-driver-panel">
-      <img className="biloo-driver-logo" src="/brand/biloo-mark.svg" alt="Biloo official logo" />
-      <h1>Biloo <span>Driver</span></h1>
-      <p>Drive with Biloo. Earn more. Drive with confidence.</p>
-      <div className="biloo-driver-actions">
-        <Link href="/driver/auth" className="biloo-driver-signin">{t("signIn")} <span aria-hidden="true">→</span></Link>
-        <Link href="/driver/onboarding" className="biloo-driver-register">{t("createAccount")} <span aria-hidden="true">→</span></Link>
+  return <main className="biloo-driver-campaign biloo-driver-campaign--2026" aria-label="Biloo Driver welcome">
+    <div className="biloo-driver-image" role="img" aria-label="Biloo driver beside a branded white car" />
+    <header className="biloo-driver-header">
+      <img src="/brand/biloo-mark.svg" alt="" className="biloo-driver-header-logo" />
+      <span className="biloo-driver-header-name">biloo <small>DRIVER</small></span>
+    </header>
+    <section className="biloo-driver-bottom" aria-label="Driver access">
+      <Link href="/driver/onboarding" className="biloo-driver-primary">Get Started <span aria-hidden="true">→</span></Link>
+      <div className="biloo-driver-action-row">
+        <Link href="/driver/auth" className="biloo-driver-secondary-action">Sign In</Link>
+        <Link href="/driver/onboarding" className="biloo-driver-register-action">Register</Link>
       </div>
-      <div className="biloo-driver-secondary"><Link href="/rider">Switch to Rider</Link></div>
+      <nav className="biloo-driver-links" aria-label="Helpful links">
+        <Link href="/support?role=driver">Help &amp; Support</Link>
+        <Link href="/rider">Rider App</Link>
+      </nav>
     </section>
   </main>;
 }
