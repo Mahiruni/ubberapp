@@ -48,8 +48,8 @@ export default function DriverWelcome() {
     <main className="biloo-driver-welcome" aria-label="Biloo Driver welcome">
       <img
         className="biloo-driver-welcome__photo"
-        src="/nexride/screens/assets/driver.png"
-        alt="Biloo driver and vehicle"
+        src="/brand/biloo-driver-get-started.webp"
+        alt="Biloo Driver welcome: an Ethiopian driver standing by his white Biloo car in Addis Ababa"
         loading="eager"
         fetchPriority="high"
         decoding="async"

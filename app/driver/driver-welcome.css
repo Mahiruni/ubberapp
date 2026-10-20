@@ -20,13 +20,16 @@
 .biloo-driver-welcome__photo {
   position: absolute;
   z-index: 0;
-  inset: 0;
+  top: 0;
+  left: 0;
   display: block;
   width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center 43%;
+  height: auto;
+  max-width: 100%;
+  object-fit: contain;
+  object-position: center top;
   pointer-events: none;
+  user-select: none;
 }
 .biloo-driver-welcome::after {
   content: "";
@@ -34,7 +37,7 @@
   z-index: 1;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(to bottom, transparent 52%, rgba(255,255,255,.02) 63%, rgba(255,255,255,.74) 79%, #fff 94%);
+  background: linear-gradient(to bottom, transparent 54%, rgba(255,255,255,.02) 64%, rgba(255,255,255,.77) 77%, #fff 90%);
 }
 .biloo-driver-welcome__actions {
   position: relative;
@@ -42,7 +45,7 @@
   display: grid;
   gap: 12px;
   margin-top: auto;
-  padding: 100px max(20px,env(safe-area-inset-right,0px)) calc(18px + env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px));
+  padding: 76px max(20px,env(safe-area-inset-right,0px)) calc(18px + env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px));
 }
 .biloo-driver-welcome__start,
 .biloo-driver-welcome__signin,
