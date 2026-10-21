@@ -28,3 +28,15 @@
  .nr-app.nr-earnings-report-page{padding:0!important;background:#fff!important}
  .nr-earnings-report-page :is(.nr-report-summary-card,.nr-report-section){break-inside:avoid}
 }
+
+/* Contrast-safe dark appearance without black backgrounds. */
+.nr-app.nr-earnings-report-page[data-theme="dark"]{background:#082337!important;color:#f3f8fb!important;color-scheme:dark}
+.nr-earnings-report-page[data-theme="dark"] :is(.nr-report-summary-card,.nr-report-section,.nr-report-ledger-item,.nr-report-note){
+ background:#103247!important;border-color:#31546b!important;color:#f4f8fb!important}
+.nr-earnings-report-page[data-theme="dark"] :is(.nr-report-summary-card strong,.nr-report-row strong,
+ .nr-report-ledger-item strong,.nr-earnings-report-head h1,.nr-report-section h2,.nr-report-ledger-item>span){color:#f4f8fb!important}
+.nr-earnings-report-page[data-theme="dark"] :is(.nr-report-summary-card span,.nr-report-summary-card small,
+ .nr-report-row span,.nr-report-ledger-item small,.nr-earnings-report-head p){color:#b5c9d4!important}
+.nr-earnings-report-page[data-theme="dark"] .nr-report-ledger-item{background:#173c52!important}
+.nr-earnings-report-page[data-theme="dark"] .nr-report-note{background:#103d39!important;color:#c0d7cc!important}
+.nr-earnings-report-page[data-theme="dark"] .nr-driver-icon-btn{background:#103247!important;color:#f4f8fb!important;border-color:#31546b!important}
