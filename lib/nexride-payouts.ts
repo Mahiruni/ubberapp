@@ -29,7 +29,7 @@ export function payoutConfiguration() {
   const provider = (process.env.PAYMENT_PROVIDER || "").trim().toLowerCase();
   const providerSecret = process.env.CHAPA_SECRET_KEY || process.env.PAYMENT_SECRET_KEY || "";
   const live = providerSecret.startsWith("CHAPA_LIVE_");
-  const keyAllowed = providerSecret.startsWith("CHAPA_TEST_") || (live && /^(1|true|yes|on)$/i.test(process.env.BILOO_LIVE_PAYOUTS_APPROVED || ""));
+  const sandboxAllowed = process.env.NODE_ENV !== "production" || /^(1|true|yes|on)$/i.test(process.env.BILOO_SANDBOX_PAYOUTS_ENABLED || "");\n  const keyAllowed = (providerSecret.startsWith("CHAPA_TEST_") && sandboxAllowed) || (live && /^(1|true|yes|on)$/i.test(process.env.BILOO_LIVE_PAYOUTS_APPROVED || ""));
   const encryptionSecret = process.env.PAYOUT_ENCRYPTION_KEY || "";
   const enabled =
     enabledFlag() &&
