@@ -18,12 +18,12 @@ export function parseEtbMinor(input: unknown): bigint {
   if (typeof value !== "string" || !/^(?:0|[1-9]\d{0,11})(?:\.\d{1,2})?$/.test(value.trim()))
     throw new Error("INVALID_ETB_AMOUNT");
   const [units, fraction = ""] = value.trim().split(".");
-  return BigInt(units) * 100n + BigInt((fraction + "00").slice(0, 2));
+  return BigInt(units) * BigInt(100) + BigInt((fraction + "00").slice(0, 2));
 }
 export function formatMinorEtb(value: bigint): string {
-  const sign = value < 0n ? "-" : "";
-  const abs = value < 0n ? -value : value;
-  return sign + (abs / 100n).toString() + "." + (abs % 100n).toString().padStart(2, "0");
+  const sign = value < BigInt(0) ? "-" : "";
+  const abs = value < BigInt(0) ? -value : value;
+  return sign + (abs / BigInt(100)).toString() + "." + (abs % BigInt(100)).toString().padStart(2, "0");
 }
 export function validateCommissionDraft(input: unknown): CommissionDraft {
   const r = input && typeof input === "object" && !Array.isArray(input) ? input as Record<string,unknown> : {};
@@ -53,9 +53,9 @@ export function previewCommission(grossFareEtb: unknown, rule: Pick<CommissionDr
   "commissionBps"|"fixedFeeMinor"|"discountBps"|"incentiveMinor"|"taxBps">) {
   if (rule.taxBps !== 0) throw new Error("TAX_REQUIRES_REVIEW");
   const gross = parseEtbMinor(grossFareEtb);
-  if (gross <= 0n) throw new Error("FARE_MUST_BE_POSITIVE");
-  const base = (gross * BigInt(rule.commissionBps) + 5000n) / 10000n + BigInt(rule.fixedFeeMinor);
-  const discount = (base * BigInt(rule.discountBps) + 5000n) / 10000n;
+  if (gross <= BigInt(0)) throw new Error("FARE_MUST_BE_POSITIVE");
+  const base = (gross * BigInt(rule.commissionBps) + BigInt(5000)) / BigInt(10000) + BigInt(rule.fixedFeeMinor);
+  const discount = (base * BigInt(rule.discountBps) + BigInt(5000)) / BigInt(10000);
   const fee = [gross, base - discount].reduce((a,b)=>a<b?a:b);
   const incentive=BigInt(rule.incentiveMinor);
   return {
