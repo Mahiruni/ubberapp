@@ -593,3 +593,228 @@ html[lang="am"] .nr-driver-menu-layer :where(strong,small) {
     transition:none!important;animation:none!important;scroll-behavior:auto!important;
   }
 }
+
+
+/* Driver-only sign-in and registration. No logo is drawn over the Get Started artwork. */
+.nr-identity-entry[data-mode="driver"] {
+  --nr-brand-primary: #08295f;
+  --nr-id-navy: #08295f;
+  --nr-id-emerald: #f9c449;
+  --nr-id-emerald-text: #08295f;
+}
+.nr-identity-entry[data-mode="driver"] .driver-auth-role {
+  color: #9c6d05;
+  font-size: 11px;
+  letter-spacing: .11em;
+  font-weight: 850;
+}
+.nr-identity-entry[data-mode="driver"] .nr-entry-form-content :is(h1,h2) {
+  color: #08295f;
+  letter-spacing: -.04em;
+  text-wrap: balance;
+}
+.nr-identity-entry[data-mode="driver"] .nr-auth-form label {
+  color: #173456;
+  font-size: 13px;
+  font-weight: 720;
+}
+.nr-identity-entry[data-mode="driver"] .nr-auth-input {
+  border: 1px solid #dce5f0;
+  border-radius: 14px;
+  background: #f7f9fc;
+  min-height: 52px;
+}
+.nr-identity-entry[data-mode="driver"] .nr-auth-input :is(input,select) {
+  min-height: 50px;
+  background: transparent;
+  color: #10294f;
+  font-size: 15px;
+}
+.nr-identity-entry[data-mode="driver"] .nr-auth-input:focus-within {
+  border-color: #3876bb;
+  box-shadow: 0 0 0 3px rgba(56,118,187,.11);
+}
+.nr-identity-entry[data-mode="driver"] .driver-auth-submit,
+.driver-onboarding-page .driver-auth-submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 54px;
+  border: 0;
+  border-radius: 15px;
+  background: #f9c449!important;
+  color: #08295f!important;
+  font-size: 15px;
+  font-weight: 830;
+  box-shadow: 0 8px 22px rgba(249,196,73,.17);
+}
+.nr-identity-entry[data-mode="driver"] :is(.nr-auth-create-link,.nr-auth-role-link,.nr-auth-inline-link) {
+  color: #08295f;
+  font-weight: 750;
+}
+.nr-identity-entry[data-mode="driver"] :is(button,a,input,select):focus-visible {
+  outline: 3px solid #3676ba!important;
+  outline-offset: 3px!important;
+}
+/* Verification is a full-width accessible form, not the older near-black panel. */
+.driver-onboarding-page {
+  min-height: 100dvh;
+  background: #f5f8fc!important;
+  color: #10294f!important;
+  padding: max(24px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(26px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
+}
+.driver-onboarding-page .driver-onboarding-card {
+  max-width: 640px;
+  padding: clamp(18px,4vw,32px);
+  margin: 0 auto;
+  border: 1px solid #dce5f0;
+  border-radius: 22px;
+  background: #fff;
+  box-shadow: 0 15px 50px rgba(8,41,95,.075);
+  color: #10294f;
+}
+.driver-onboarding-page .driver-onboarding-card :is(h1,h2,h3) { color: #08295f; letter-spacing: -.035em; }
+.driver-onboarding-page .driver-onboarding-card :is(p,small,label) { color: #536780; }
+.driver-onboarding-page .driver-auth-role { color: #9c6d05; }
+.driver-onboarding-page .driver-auth-back { color: #08295f; font-weight: 750; }
+.driver-onboarding-page :is(input,select,textarea) {
+  min-height: 48px;
+  max-width: 100%;
+  border: 1px solid #dce5f0;
+  border-radius: 13px;
+  background: #f7f9fc;
+  color: #10294f;
+  font-size: 15px;
+}
+.driver-onboarding-page .driver-auth-error {
+  background: #fff0f1;
+  border: 1px solid #e6b2b8;
+  color: #8f2c39;
+  border-radius: 12px;
+}
+.driver-onboarding-page .driver-auth-notice {
+  background: #f2faf5;
+  border: 1px solid #b8dbc6;
+  color: #165d3c;
+}
+.driver-onboarding-page .driver-auth-secondary {
+  border: 1px solid #dce5f0;
+  background: #fff;
+  color: #08295f;
+  border-radius: 13px;
+}
+.driver-onboarding-page :is(button,input,select,textarea,a):focus-visible {
+  outline: 3px solid #3975bf!important;
+  outline-offset: 3px;
+}
+/* Profile sections, vehicle information and wallet/earnings detail inherit
+   the shell surface instead of keeping a stale charcoal/green legacy layer. */
+.nr-driver-app-shell .nr-driver-profile-hero,
+.nr-driver-app-shell .nr-driver-profile-hero-v2 {
+  background: var(--driver-surface)!important;
+  border: 1px solid var(--driver-border)!important;
+  color: var(--driver-text-primary)!important;
+  border-radius: 20px!important;
+  box-shadow: var(--driver-shadow)!important;
+}
+.nr-driver-app-shell .nr-driver-profile-role { color: #a27612!important; }
+.nr-driver-app-shell[data-theme="dark"] .nr-driver-profile-role { color: #f9c449!important; }
+.nr-driver-app-shell .nr-driver-profile-identity h2,
+.nr-driver-app-shell .nr-driver-profile-menu-row,
+.nr-driver-app-shell .nr-profile-metric strong,
+.nr-driver-app-shell .nr-profile-menu-copy strong,
+.nr-driver-app-shell .nr-report-row strong {
+  color: var(--driver-text-primary)!important;
+}
+.nr-driver-app-shell .nr-profile-metric,
+.nr-driver-app-shell .nr-driver-profile-menu,
+.nr-driver-app-shell .nr-driver-profile-menu-row,
+.nr-driver-app-shell .nr-document-card,
+.nr-driver-app-shell .nr-document-meta div {
+  background: var(--driver-surface)!important;
+  border-color: var(--driver-border)!important;
+  color: var(--driver-text-primary)!important;
+}
+.nr-driver-app-shell .nr-driver-profile-menu {
+  border-radius: 18px!important;
+  overflow: hidden;
+  box-shadow: var(--driver-shadow);
+}
+.nr-driver-app-shell .nr-profile-menu-icon {
+  background: var(--driver-surface-elevated)!important;
+  color: var(--driver-text-primary)!important;
+  border-color: var(--driver-border)!important;
+}
+.nr-driver-app-shell :is(.nr-profile-menu-copy small,.nr-document-card small,.nr-document-meta span,.nr-report-row span) {
+  color: var(--driver-text-secondary)!important;
+}
+.nr-driver-app-shell .nr-driver-profile-safety {
+  border-color: var(--driver-border);
+  background: var(--driver-surface)!important;
+  color: var(--driver-text-primary)!important;
+}
+.nr-driver-app-shell :is(.nr-earnings-periods,.nr-earnings-chart-empty,.nr-earnings-state,.nr-earnings-report-action) {
+  background: var(--driver-surface)!important;
+  border-color: var(--driver-border)!important;
+  color: var(--driver-text-primary)!important;
+}
+.nr-driver-app-shell .nr-earnings-periods button {
+  color: var(--driver-text-secondary);
+  border-radius: 10px;
+}
+.nr-driver-app-shell .nr-earnings-periods button.active {
+  background: #f9c449!important;
+  color: #08295f!important;
+  box-shadow: none!important;
+}
+.nr-driver-app-shell .nr-earnings-total,
+.nr-driver-app-shell .nr-earnings-metric strong,
+.nr-driver-app-shell .nr-report-summary-card strong {
+  color: var(--driver-text-primary)!important;
+  font-variant-numeric: tabular-nums;
+}
+.nr-driver-app-shell .nr-earnings-chart-line {
+  stroke: #d5a436!important;
+  filter: none!important;
+}
+.nr-driver-app-shell .nr-earnings-chart-dot {
+  stroke: #f9c449!important;
+  fill: var(--driver-surface)!important;
+}
+.nr-driver-app-shell .nr-earnings-total-card {
+  border-top: 3px solid #f9c449!important;
+}
+.nr-driver-app-shell .nr-earnings-metric-icon {
+  background: var(--driver-surface-elevated)!important;
+  color: #9c6d05!important;
+}
+.nr-driver-app-shell[data-theme="dark"] .nr-earnings-metric-icon { color: #f9c449!important; }
+.nr-driver-app-shell .nr-driver-activity-page :is(article,.nr-driver-activity-summary) {
+  border: 1px solid var(--driver-border)!important;
+  border-radius: 17px!important;
+  background: var(--driver-surface)!important;
+  color: var(--driver-text-primary)!important;
+  box-shadow: var(--driver-shadow)!important;
+}
+.nr-driver-app-shell .nr-driver-activity-page :is(p,small,time) {
+  color: var(--driver-text-secondary)!important;
+}
+.nr-driver-app-shell .nr-driver-activity-page strong { color: var(--driver-text-primary)!important; }
+/* Critical sheets maintain contrast in both color modes even when older
+   operational styles are loaded at a different CSS-bundle boundary. */
+.nr-driver-app-shell[data-theme="dark"] :is(.nr-request-sheet,.nr-nav-bottom-card) {
+  background: #10386f!important;
+  border-color: #365d89!important;
+  color: #fff!important;
+}
+.nr-driver-app-shell[data-theme="light"] :is(.nr-request-sheet,.nr-nav-bottom-card) {
+  background: #fff!important;
+  border-color: #dce5f0!important;
+  color: #10294f!important;
+}
+@media(max-width:520px) {
+  .driver-onboarding-page .driver-form-grid {grid-template-columns:1fr;gap:12px}
+  .driver-onboarding-page .driver-onboarding-card {padding:18px 16px;border-radius:18px}
+  .nr-driver-app-shell .nr-earnings-metrics {grid-template-columns:repeat(3,minmax(0,1fr))}
+}
