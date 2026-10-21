@@ -58,6 +58,11 @@ export default function CommissionManagement(){
  },[load]);
 
  const parsed=()=>{
+  // Reject fractions below one cent or one basis point; never silently round
+  // a financial policy field on behalf of its administrator.
+  const twoDecimal=/^(?:0|[1-9]\\d*)(?:\\.\\d{1,2})?$/;
+  if(![form.percent,form.fixedFee,form.discount,form.incentive,form.tax].every(v=>twoDecimal.test(v.trim())))
+    throw Error("Use non-negative numbers with at most two decimal places.");
   const bps=Math.round(Number(form.percent)*100);
   const discount=Math.round(Number(form.discount)*100);
   const tax=Math.round(Number(form.tax)*100);
