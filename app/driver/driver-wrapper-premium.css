@@ -818,3 +818,36 @@ html[lang="am"] .nr-driver-menu-layer :where(strong,small) {
   .driver-onboarding-page .driver-onboarding-card {padding:18px 16px;border-radius:18px}
   .nr-driver-app-shell .nr-earnings-metrics {grid-template-columns:repeat(3,minmax(0,1fr))}
 }
+
+
+/* Dark authentication stays legible; registration inputs never inherit black text. */
+.nr-identity-entry[data-mode="driver"][data-theme="dark"] {
+  --nr-brand-primary:#f9c449;
+  --nr-id-navy:#08295f;
+  --nr-id-emerald:#f9c449;
+  --nr-id-emerald-text:#f9c449;
+  color-scheme:dark;
+}
+.nr-identity-entry[data-mode="driver"][data-theme="dark"] .nr-entry-form-content :is(h1,h2),
+.nr-identity-entry[data-mode="driver"][data-theme="dark"] .nr-auth-form label {
+  color:#fff!important;
+}
+.nr-identity-entry[data-mode="driver"][data-theme="dark"] .driver-auth-role {
+  color:#f9c449!important;
+}
+.nr-identity-entry[data-mode="driver"][data-theme="dark"] .nr-auth-input {
+  border-color:#365d89;
+  background:#174579;
+}
+.nr-identity-entry[data-mode="driver"][data-theme="dark"] .nr-auth-input :is(input,select) {
+  color:#fff!important;
+}
+.nr-identity-entry[data-mode="driver"][data-theme="dark"] .nr-auth-input :is(input,select)::placeholder {
+  color:#becfe3!important;
+}
+.nr-identity-entry[data-mode="driver"][data-theme="dark"] :is(.nr-auth-create-link,.nr-auth-role-link,.nr-auth-inline-link) {
+  color:#f9c449!important;
+}
+.nr-identity-entry[data-mode="driver"][data-theme="dark"] :is(button,a,input,select):focus-visible {
+  outline-color:#f9c449!important;
+}
