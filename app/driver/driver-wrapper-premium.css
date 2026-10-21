@@ -1,0 +1,595 @@
+/*
+  BILOO DRIVER | Premium mobile wrapper · October 2026
+  Scoped to the actual Driver shell and its portalled drawer.
+  The functional map, GPS, presence, booking and bottom-sheet mechanics
+  remain owned by their existing React components.
+*/
+.nr-driver-app-shell {
+  --driver-bg: #f5f8fc;
+  --driver-surface: #fff;
+  --driver-surface-elevated: #f1f5fa;
+  --driver-overlay: #fff;
+  --driver-border: #dce5f0;
+  --driver-text-primary: #10294f;
+  --driver-text-secondary: #536780;
+  --driver-accent: #f9c449;
+  --driver-success: #05875a;
+  --driver-danger: #bd4051;
+  --driver-warning: #a66b0c;
+  --driver-header-bg: rgba(255,255,255,.97);
+  --driver-nav-bg: #fff;
+  --driver-shadow: 0 12px 34px rgba(8,41,95,.085);
+  --driver-header-height: 62px;
+  --driver-menu-width: 370px;
+  --biloo-driver-radius: 20px;
+  color-scheme: light;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior-x: none;
+}
+.nr-driver-app-shell[data-theme="dark"] {
+  --driver-bg: #08295f;
+  --driver-surface: #10386f;
+  --driver-surface-elevated: #174579;
+  --driver-overlay: #10386f;
+  --driver-border: #365d89;
+  --driver-text-primary: #fff;
+  --driver-text-secondary: #d6e2f1;
+  --driver-accent: #f9c449;
+  --driver-header-bg: rgba(8,41,95,.97);
+  --driver-nav-bg: #10386f;
+  --driver-shadow: 0 16px 36px rgba(0,10,31,.24);
+  color-scheme: dark;
+}
+.nr-driver-app-shell .nr-driver-shell-content {
+  background: var(--driver-bg)!important;
+  color: var(--driver-text-primary);
+  overflow-x: clip;
+}
+/* Fixed title bar: consistent visual hierarchy across activity, earnings,
+   map, profile, subpages and on-trip navigation. Never overlay safe areas. */
+.nr-driver-app-shell .nr-driver-global-header {
+  background: var(--driver-header-bg)!important;
+  border-bottom: 1px solid var(--driver-border)!important;
+  box-shadow: 0 1px 0 rgba(8,41,95,.035);
+  backdrop-filter: blur(12px) saturate(1.12);
+  -webkit-backdrop-filter: blur(12px) saturate(1.12);
+}
+.nr-driver-app-shell .nr-driver-global-header-inner {
+  grid-template-columns: minmax(48px,1fr) minmax(0,3fr) minmax(48px,1fr);
+  gap: 6px;
+  padding-inline: max(14px,env(safe-area-inset-left,0px)) max(14px,env(safe-area-inset-right,0px));
+}
+.nr-driver-app-shell .nr-driver-global-header-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  min-width: 0;
+  text-align: center;
+}
+.nr-driver-app-shell .biloo-driver-header-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: var(--driver-text-secondary);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .1em;
+  line-height: 1;
+}
+.nr-driver-app-shell .biloo-driver-header-eyebrow img {
+  display: block;
+  width: 17px;
+  height: 17px;
+  object-fit: contain;
+}
+.nr-driver-app-shell .nr-driver-global-header-title strong {
+  color: var(--driver-text-primary)!important;
+  font-size: clamp(16px,4vw,19px);
+  line-height: 1.2;
+  font-weight: 820;
+  letter-spacing: -.035em;
+}
+.nr-driver-app-shell .nr-driver-global-header-title em {
+  font-size: 10px;
+  font-weight: 750;
+}
+.nr-driver-app-shell .nr-driver-global-icon-button,
+.nr-driver-app-shell .nr-driver-menu-trigger {
+  width: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 14px;
+  color: var(--driver-text-primary);
+  touch-action: manipulation;
+}
+.nr-driver-app-shell .nr-driver-global-icon-button:active,
+.nr-driver-app-shell .nr-driver-menu-trigger:active {
+  transform: scale(.96);
+}
+.nr-driver-app-shell .nr-driver-home-menu-host .nr-driver-menu-trigger {
+  background: rgba(255,255,255,.97)!important;
+  color: #08295f!important;
+  border: 1px solid #dce5f0!important;
+  box-shadow: 0 5px 20px rgba(8,41,95,.17)!important;
+}
+.nr-driver-app-shell .nr-driver-home-menu-host {
+  top: calc(env(safe-area-inset-top,0px) + 13px);
+  left: max(14px,env(safe-area-inset-left,0px));
+}
+/* Content density + consistent surfaces for all non-operational pages. */
+.nr-driver-app-shell :is(
+  .nr-driver-activity-page,.nr-driver-profile-subpage,.nr-earnings-report-page
+) {
+  background: var(--driver-bg)!important;
+  color: var(--driver-text-primary)!important;
+}
+.nr-driver-app-shell :is(
+  .nr-driver-page,.nr-driver-profile-subwrap,.nr-earnings-report-wrap
+) {
+  box-sizing: border-box;
+  width: min(100%,920px);
+  margin-inline: auto;
+}
+.nr-driver-app-shell:not([data-home="true"]):not([data-trip-focus="true"])
+  :is(.nr-driver-page,.nr-driver-profile-subwrap,.nr-earnings-report-wrap) {
+  padding-inline: clamp(14px,3.5vw,28px)!important;
+  padding-block: 20px calc(94px + env(safe-area-inset-bottom,0px))!important;
+}
+.nr-driver-app-shell :where(
+  .nr-driver-card,.nr-driver-operational-card,.nr-driver-metric-grid .nr-metric,
+  .nr-driver-profile-hero-v2,.nr-driver-profile-summary-v2 .nr-profile-metric,
+  .nr-driver-verification-card,.nr-driver-profile-quick,.nr-driver-profile-section,
+  .nr-profile-panel,.nr-earnings-total-card,.nr-earnings-metric,
+  .nr-earnings-report-action,.nr-report-section,.nr-report-summary-card,
+  .nr-driver-activity-summary
+) {
+  background: var(--driver-surface)!important;
+  color: var(--driver-text-primary)!important;
+  border: 1px solid var(--driver-border)!important;
+  border-radius: var(--biloo-driver-radius)!important;
+  box-shadow: var(--driver-shadow)!important;
+}
+.nr-driver-app-shell :where(
+ .nr-driver-card,.nr-driver-operational-card,.nr-profile-panel,.nr-driver-profile-section,
+ .nr-earnings-total-card,.nr-earnings-metric,.nr-report-section
+) { min-width: 0; overflow-wrap: anywhere; }
+.nr-driver-app-shell :where(
+  .nr-driver-kicker,.nr-profile-panel-head p,
+  .nr-driver-profile-section header p,.nr-driver-profile-row-copy small,
+  .nr-earnings-definition,.nr-earnings-chart-head small
+) {
+  color: var(--driver-text-secondary)!important;
+  line-height: 1.5;
+}
+.nr-driver-app-shell :where(h1,h2,h3) {
+  letter-spacing: -.035em;
+  text-wrap: pretty;
+}
+.nr-driver-app-shell :is(input,textarea,select) {
+  max-width: 100%;
+  min-height: 48px;
+  border: 1px solid var(--driver-border)!important;
+  border-radius: 13px!important;
+  background: var(--driver-surface)!important;
+  color: var(--driver-text-primary)!important;
+  font-size: 15px;
+  outline-offset: 2px;
+}
+.nr-driver-app-shell :is(input,textarea,select):focus {
+  border-color: #3975bf!important;
+  box-shadow: 0 0 0 3px rgba(57,117,191,.11);
+}
+.nr-driver-app-shell :where(button,a) {
+  -webkit-tap-highlight-color: transparent;
+  text-underline-offset: 3px;
+}
+.nr-driver-app-shell :where(button,a):focus-visible,
+.nr-driver-menu-layer :where(button,a):focus-visible {
+  outline: 3px solid #3975bf!important;
+  outline-offset: 3px!important;
+}
+.nr-driver-app-shell[data-theme="dark"] :where(button,a,input):focus-visible,
+.nr-driver-menu-layer[data-theme="dark"] :where(button,a):focus-visible {
+  outline-color: #f9c449!important;
+}
+.nr-driver-app-shell :is(
+  .nr-driver-primary,.nr-profile-form button[type="submit"],
+  .nr-earnings-report-action.primary
+) {
+  min-height: 48px;
+  border-radius: 14px;
+  font-weight: 780;
+}
+.nr-driver-app-shell :where(
+  .nr-driver-profile-row,.nr-driver-menu-utility,
+  .nr-earnings-report-action,.nr-driver-profile-quick
+) { min-height: 48px; }
+/* Home command card. Keep its swipe position/hit boundary owned by existing CSS. */
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-swipe[data-map-input-boundary="true"] {
+  border: 1px solid rgba(8,41,95,.12)!important;
+  border-radius: 23px!important;
+  background: #fff!important;
+  box-shadow: 0 18px 52px rgba(8,41,95,.19)!important;
+  color: #10294f!important;
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-control-panel {
+  padding: 15px 15px 13px;
+  gap: 12px;
+  border-radius: inherit;
+  background: #fff!important;
+  color: #10294f!important;
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-control-brand {
+  color: #08295f!important;
+  letter-spacing: .12em;
+  font-weight: 850;
+  font-size: 10px;
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-control-state strong {
+  color: #10294f!important;
+  font-size: clamp(18px,5.3vw,22px);
+  line-height: 1.2;
+  letter-spacing: -.035em;
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-control-state small {
+  color: #536780!important;
+  line-height: 1.45;
+  font-size: 11px;
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-control-online {
+  min-height: 29px;
+  font-size: 11px;
+  font-weight: 750;
+  border-radius: 99px;
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-quick-actions {
+  border-color: #dce5f0;
+  gap: 8px;
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-quick-actions button {
+  border: 1px solid #e5ebf3;
+  border-radius: 13px;
+  background: #f3f6fb!important;
+  color: #08295f!important;
+  min-height: 45px;
+  font-size: 12px;
+  font-weight: 750;
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-quick-actions button:active {transform:scale(.98)}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-profile {
+  border: 2px solid #fff!important;
+  box-shadow: 0 6px 22px rgba(8,41,95,.20)!important;
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-presence-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+/* Map: never block gestures or falsify tracking. */
+.nr-driver-app-shell .nr-driver-live-map-shell { isolation: isolate; }
+.nr-driver-app-shell .nr-driver-map-page .nr-driver-map-float {
+  border-radius: 20px;
+  background: var(--driver-surface)!important;
+  color: var(--driver-text-primary)!important;
+  border: 1px solid var(--driver-border)!important;
+  box-shadow: var(--driver-shadow);
+}
+.nr-driver-app-shell .nr-driver-map-page .nr-driver-map-float strong {
+  font-size: 15px;
+  letter-spacing: -.02em;
+}
+.nr-driver-app-shell .nr-driver-map-page .nr-driver-map-state span {
+  color: var(--driver-text-secondary);
+}
+.nr-driver-app-shell :is(.nr-driver-map-page,.nr-driver-home-map-canvas)
+  .nr-map-touch-control {
+  border: 1px solid #dce5f0!important;
+  background: #fff!important;
+  color: #08295f!important;
+  box-shadow: 0 6px 17px rgba(8,41,95,.13)!important;
+}
+/* Ride request + navigation: priority actions remain highly distinct.
+   Preserve positional, snap and pinned-action CSS from operational components. */
+.nr-driver-app-shell :is(.nr-driver-request-page,.nr-driver-navigation-page) {
+  --trip-primary: #f9c449;
+  --trip-brand: #08295f;
+  --trip-brand-strong: #061e44;
+  --trip-handle: #f9c449;
+  --trip-stroke: rgba(249,196,73,.28);
+  --trip-action-text: #08295f;
+  --trip-active-bg: #fff5d9;
+  --trip-active-text: #08295f;
+}
+.nr-driver-app-shell :is(.nr-request-sheet,.nr-nav-bottom-card) {
+  border-radius: 23px 23px 0 0!important;
+  border: 1px solid var(--driver-border)!important;
+  border-bottom: 0!important;
+  box-shadow: 0 -12px 40px rgba(8,41,95,.12)!important;
+  background: var(--driver-surface)!important;
+  color: var(--driver-text-primary)!important;
+}
+.nr-driver-app-shell :is(.nr-request-sheet,.nr-nav-bottom-card)
+  :is(.nr-request-route-copy strong,.nr-nav-current-destination h1) {
+  color: var(--driver-text-primary)!important;
+}
+.nr-driver-app-shell .nr-request-accept,
+.nr-driver-app-shell .nr-nav-stage-primary {
+  min-height: 54px!important;
+  border-radius: 15px!important;
+  background: #f9c449!important;
+  color: #08295f!important;
+  font-size: 15px!important;
+  font-weight: 830!important;
+  box-shadow: none!important;
+}
+.nr-driver-app-shell :is(.nr-request-pass,.nr-request-decline,.nr-nav-stage-secondary) {
+  min-height: 46px;
+  border-radius: 13px;
+}
+.nr-driver-app-shell :is(.nr-request-countdown,.nr-nav-guidance-distance) {
+  font-variant-numeric: tabular-nums;
+}
+.nr-driver-app-shell .nr-driver-sheet-grab > span {
+  background: #c5d1df!important;
+}
+/* Native-feeling, five-stop dock. A visible label improves clarity without
+   sacrificing small-phone tap targets. Only Driver navigation is changed. */
+@media(max-width:800px) {
+  .nr-driver-app-shell { --biloo-dock-bar-height: 70px; }
+  .nr-driver-app-shell .biloo-footer-nav[data-role="driver"] {
+    --dock-bg: var(--driver-nav-bg);
+    --dock-divider: var(--driver-border);
+    --dock-active: #08295f;
+    --dock-text: #536780;
+    z-index: 1200;
+    border-top: 1px solid var(--driver-border)!important;
+    box-shadow: 0 -5px 20px rgba(8,41,95,.035);
+  }
+  .nr-driver-app-shell[data-theme="dark"] .biloo-footer-nav[data-role="driver"] {
+    --dock-active: #f9c449;
+    --dock-text: #d6e2f1;
+  }
+  .nr-driver-app-shell .biloo-footer-nav[data-role="driver"] .biloo-footer-nav__surface {
+    grid-template-columns: repeat(5,minmax(0,1fr))!important;
+    width: 100%;
+  }
+  .nr-driver-app-shell .biloo-footer-nav[data-role="driver"] .biloo-footer-nav__item {
+    justify-content: center;
+    gap: 3px;
+    padding: 5px 0 4px;
+    min-width: 0;
+    font-size: 10px;
+    line-height: 1.15;
+    font-weight: 700;
+  }
+  .nr-driver-app-shell .biloo-footer-nav[data-role="driver"] .biloo-footer-nav__label {
+    position: static!important;
+    width: auto!important;
+    height: auto!important;
+    min-height: 12px;
+    clip: auto!important;
+    clip-path: none!important;
+    margin: 0!important;
+    overflow: visible!important;
+    white-space: nowrap!important;
+    color: inherit;
+  }
+  .nr-driver-app-shell .biloo-footer-nav[data-role="driver"] .biloo-footer-nav__symbol {
+    width: 28px;
+    flex-basis: 25px;
+    height: 25px;
+  }
+  .nr-driver-app-shell .biloo-footer-nav[data-role="driver"] .biloo-footer-nav__symbol :is(svg,.nr-icon) {
+    width: 22px!important;
+    height: 22px!important;
+  }
+  .nr-driver-app-shell .biloo-footer-nav[data-role="driver"] .biloo-footer-nav__indicator {
+    top: 0;
+    bottom: auto;
+    height: 3px;
+    border-radius: 0 0 4px 4px;
+    background: #f9c449;
+  }
+  .nr-driver-app-shell .biloo-footer-nav[data-role="driver"] .biloo-footer-nav__item.is-active {
+    color: var(--dock-active);
+    background: color-mix(in srgb,var(--driver-accent) 11%,transparent);
+  }
+  .nr-driver-app-shell .biloo-footer-nav[data-role="driver"] .biloo-footer-nav__item.is-active .biloo-footer-nav__indicator {
+    width: 28px;
+  }
+  .nr-driver-app-shell:not([data-home="true"]):not([data-trip-focus="true"]) .nr-driver-shell-content {
+    padding-bottom: calc(var(--biloo-dock-bar-height) + env(safe-area-inset-bottom,0px))!important;
+  }
+  .nr-driver-app-shell[data-home="true"] .nr-driver-home-swipe[data-map-input-boundary="true"] {
+    bottom: calc(var(--biloo-dock-bar-height) + env(safe-area-inset-bottom,0px) + 9px)!important;
+  }
+}
+/* Grouped drawer: separate portrait, navigation, account and support cleanly.
+   Portal must sit above the dock, map controls and all ordinary page layers. */
+.nr-driver-menu-layer {
+  z-index: 2100!important;
+  --driver-bg: #f5f8fc;
+  --driver-surface: #fff;
+  --driver-surface-elevated: #f1f5fa;
+  --driver-text-primary: #10294f;
+  --driver-text-secondary: #536780;
+  --driver-border: #dce5f0;
+  --driver-accent: #f9c449;
+}
+.nr-driver-menu-layer[data-theme="dark"] {
+  --driver-bg: #08295f;
+  --driver-surface: #10386f;
+  --driver-surface-elevated: #174579;
+  --driver-text-primary: #fff;
+  --driver-text-secondary: #d6e2f1;
+  --driver-border: #365d89;
+  --driver-accent: #f9c449;
+}
+.nr-driver-menu-layer .nr-driver-menu-backdrop {
+  background: rgba(6,25,58,.55)!important;
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+.nr-driver-menu-layer .nr-driver-menu-panel {
+  width: min(380px,calc(100vw - 26px));
+  max-width: 100%;
+  border: 0!important;
+  border-radius: 23px 0 0 23px!important;
+  background: var(--driver-surface)!important;
+  color: var(--driver-text-primary)!important;
+  box-shadow: -18px 0 54px rgba(4,20,48,.24)!important;
+}
+.nr-driver-menu-layer .nr-driver-menu-head {
+  padding: max(18px,env(safe-area-inset-top,0px)) 17px 17px;
+  border-bottom: 1px solid var(--driver-border);
+  background: var(--driver-surface)!important;
+}
+.nr-driver-menu-layer .nr-driver-menu-identity {
+  min-width: 0;
+  gap: 12px;
+  color: var(--driver-text-primary)!important;
+}
+.nr-driver-menu-layer .nr-driver-menu-avatar {
+  width: 54px;
+  height: 54px;
+  min-width: 54px;
+  border-radius: 17px;
+  border: 2px solid var(--driver-border);
+  box-shadow: 0 4px 14px rgba(8,41,95,.08);
+  overflow: hidden;
+}
+.nr-driver-menu-layer .nr-driver-menu-identity strong {
+  font-size: 17px!important;
+  font-weight: 800;
+  letter-spacing: -.025em;
+  overflow-wrap: anywhere;
+}
+.nr-driver-menu-layer .nr-driver-menu-close {
+  border-radius: 13px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  color: var(--driver-text-primary);
+  background: var(--driver-surface-elevated);
+}
+.nr-driver-menu-layer .nr-menu-scroll {
+  padding: 12px 13px 4px;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+.nr-driver-menu-layer .nr-menu-section-label {
+  margin: 17px 8px 7px;
+  color: var(--driver-text-secondary);
+  font-size: 10px;
+  font-weight: 840;
+  letter-spacing: .11em;
+}
+.nr-driver-menu-layer .nr-driver-menu-nav { gap: 3px; }
+.nr-driver-menu-layer .nr-driver-menu-row,
+.nr-driver-menu-layer .nr-driver-menu-utility {
+  display: flex;
+  align-items: center;
+  min-height: 50px;
+  border-radius: 13px!important;
+  padding: 8px 11px;
+  background: transparent!important;
+  color: var(--driver-text-primary)!important;
+  text-decoration: none;
+  transition: background-color 170ms ease,transform 170ms ease;
+}
+.nr-driver-menu-layer .nr-driver-menu-row:hover,
+.nr-driver-menu-layer .nr-driver-menu-utility:hover {
+  background: var(--driver-surface-elevated)!important;
+}
+.nr-driver-menu-layer .nr-driver-menu-row:active,
+.nr-driver-menu-layer .nr-driver-menu-utility:active { transform: scale(.992); }
+.nr-driver-menu-layer .nr-driver-menu-row[data-active="true"] {
+  background: color-mix(in srgb,#f9c449 18%,var(--driver-surface))!important;
+  box-shadow: inset 3px 0 #f9c449;
+}
+.nr-driver-menu-layer .nr-driver-menu-row-icon,
+.nr-driver-menu-layer .nr-driver-menu-utility-icon {
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+  border-radius: 11px!important;
+  color: #08295f!important;
+  background: #f1f5fa!important;
+  display: grid;
+  place-items: center;
+}
+.nr-driver-menu-layer[data-theme="dark"] :is(.nr-driver-menu-row-icon,.nr-driver-menu-utility-icon) {
+  background: #214d82!important;
+  color: #f9c449!important;
+}
+.nr-driver-menu-layer .nr-driver-menu-row[data-active="true"] .nr-driver-menu-row-icon {
+  background: #f9c449!important;
+  color: #08295f!important;
+}
+.nr-driver-menu-layer .nr-driver-menu-row-copy strong,
+.nr-driver-menu-layer .nr-driver-menu-utility-copy {
+  font-size: 13px;
+  font-weight: 780;
+  color: var(--driver-text-primary)!important;
+}
+.nr-driver-menu-layer .nr-driver-menu-row-copy small {
+  font-size: 10px;
+  color: var(--driver-text-secondary)!important;
+}
+.nr-driver-menu-layer .nr-driver-menu-footer {
+  margin: 11px 13px max(12px,env(safe-area-inset-bottom,0px));
+  padding: 14px;
+  border-radius: 17px!important;
+  border: 0!important;
+  background: #08295f!important;
+  color: #fff!important;
+  box-shadow: none!important;
+}
+.nr-driver-menu-layer .nr-driver-menu-footer-brand strong { color: #fff!important;font-weight: 850; }
+.nr-driver-menu-layer .nr-driver-menu-footer-brand small { color:#e1e9f7!important; }
+.nr-driver-menu-layer .nr-driver-menu-logout {
+  min-height: 46px;
+  border: 1px solid rgba(255,255,255,.22)!important;
+  background: rgba(255,255,255,.11)!important;
+  color: #fff!important;
+  border-radius: 12px!important;
+}
+/* Document, payout, account and earnings forms keep native keyboard inset. */
+.nr-driver-app-shell .nr-driver-profile-subpage,
+.nr-driver-app-shell .nr-earnings-report-page { scroll-padding-bottom: 120px; }
+.nr-driver-app-shell :is(.nr-profile-panel,.nr-driver-profile-section)
+  :is(button,a,input,select,textarea) { touch-action: manipulation; }
+.nr-driver-app-shell :is(.nr-driver-profile-loading,.nr-driver-loading) {
+  min-height: 110px;
+  color: var(--driver-text-secondary);
+}
+html[lang="am"] .nr-driver-app-shell :where(h1,h2,h3,.nr-driver-global-header-title strong),
+html[lang="am"] .nr-driver-menu-layer :where(strong,small) {
+  letter-spacing: 0!important;
+}
+@media(min-width:801px) {
+  .nr-driver-app-shell .nr-driver-shell-content { max-width: 1180px; margin-inline: auto; }
+  .nr-driver-app-shell[data-home="true"] .nr-driver-shell-content,
+  .nr-driver-app-shell[data-trip-focus="true"] .nr-driver-shell-content { max-width:none; }
+  .nr-driver-menu-layer .nr-driver-menu-panel { width:min(390px,35vw); }
+}
+@media(max-width:350px) {
+  .nr-driver-app-shell .nr-driver-global-header-title strong { font-size: 15px; }
+  .nr-driver-app-shell .biloo-footer-nav[data-role="driver"] .biloo-footer-nav__item { font-size:9px; }
+  .nr-driver-menu-layer .nr-driver-menu-panel { width:calc(100vw - 12px); }
+  .nr-driver-app-shell[data-home="true"] .nr-driver-home-control-panel{ padding:12px; }
+}
+@media(max-height:620px) and (max-width:800px) {
+  .nr-driver-app-shell { --biloo-dock-bar-height: 60px; }
+  .nr-driver-app-shell[data-home="true"] .nr-driver-home-control-state small { display:none; }
+  .nr-driver-app-shell[data-home="true"] .nr-driver-home-control-panel { gap:8px; padding-block:10px; }
+  .nr-driver-menu-layer .nr-driver-menu-head { padding-block:12px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .nr-driver-app-shell :is(a,button,.biloo-footer-nav__indicator),
+  .nr-driver-menu-layer :is(a,button,.nr-driver-menu-panel,.nr-driver-menu-backdrop) {
+    transition:none!important;animation:none!important;scroll-behavior:auto!important;
+  }
+}
