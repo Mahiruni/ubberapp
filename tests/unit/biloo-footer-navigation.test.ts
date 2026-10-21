@@ -14,12 +14,13 @@ describe("Biloo approved Rider and Driver footer menus", () => {
     const riderItems = footer.slice(footer.indexOf("export function riderFooterLinks"),footer.indexOf("export function driverFooterLinks"));
     const driverItems = footer.slice(footer.indexOf("export function driverFooterLinks"));
     expect([...riderItems.matchAll(/id: "([^"]+)"/g)].map(m => m[1])).toEqual(["home","activity","wallet","support","account"]);
-    expect([...driverItems.matchAll(/id: "([^"]+)"/g)].map(m => m[1])).toEqual(["home","trips","earnings","support","account"]);
+    expect([...driverItems.matchAll(/id: "([^"]+)"/g)].map(m => m[1])).toEqual(["home","activity","map","earnings","account"]);
     expect(footer).toContain('href: "/rider/trips"');
     expect(footer).toContain('href: "/rider/wallet"');
     expect(footer).toContain('href: "/driver/activity"');
     expect(footer).toContain('href: "/driver/earnings"');
-    expect(footer).toContain('href: "/support?role=driver"');
+    expect(footer).toContain('href: "/driver/map"');
+    expect(driver).toContain('href: "/support?role=driver"');
   });
 
   it("binds the actual Rider home and Driver shell to footer navigation", () => {

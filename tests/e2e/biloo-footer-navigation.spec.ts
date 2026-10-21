@@ -77,21 +77,22 @@ test("Rider footer matches the approved five items and leaves the map booking sh
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
 });
 
-test("Driver footer uses Trips/Earnings and hides during critical live-trip controls", async ({ page }) => {
+test("Driver footer provides Activity/Map/Earnings and hides during critical live-trip controls", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await mockDriver(page);
   await page.goto("/driver/earnings");
   const footer = page.getByRole("navigation", { name: "Driver bottom navigation" });
   await expect(footer).toBeVisible();
   await expect(footer.locator(".biloo-footer-nav__item")).toHaveCount(5);
-  for (const name of ["Home", "Trips", "Earnings", "Support", "Account"]) {
+  for (const name of ["Home", "Activity", "Map", "Earnings", "Account"]) {
     await expect(footer.getByRole("link", { name, exact: true })).toBeVisible();
   }
   await expect(footer.locator(".biloo-footer-nav__surface")).toHaveCSS("border-radius", "0px");
   await expect(footer.locator(".biloo-footer-nav__surface")).toHaveCSS("box-shadow", "none");
-  await expect(footer.getByRole("link", { name: "Trips" })).toHaveAttribute("href", "/driver/activity");
+  await expect(footer.getByRole("link", { name: "Activity" })).toHaveAttribute("href", "/driver/activity");
   await expect(footer.getByRole("link", { name: "Earnings" })).toHaveAttribute("aria-current", "page");
-  await expect(footer.getByRole("link", { name: "Support" })).toHaveAttribute("href", "/support?role=driver");
+  await expect(footer.getByRole("link", { name: "Map" })).toHaveAttribute("href", "/driver/map");
+  await expect(footer.locator(".biloo-footer-nav__label").first()).not.toHaveCSS("width", "1px");
   await page.goto("/driver/request?offer=44444444-4444-4444-8444-444444444444");
   await expect(page.locator(".nr-driver-app-shell[data-trip-focus=true]")).toBeVisible();
   await expect(page.getByRole("navigation", { name: "Driver bottom navigation" })).toHaveCount(0);
