@@ -966,6 +966,7 @@ function DataModule({
         <div className="module-tools">
           {(module === "verification" || module === "drivers") && <Link className="admin-photo-review-link" href="/admin/driver-photos" aria-label="Open Driver photo approval queue">Photo reviews ↗</Link>}
           {module === "finance" && <Link className="admin-photo-review-link" href="/admin/finance/commissions" aria-label="Open Biloo Commission Management">Commission Management ↗</Link>}
+          {module === "finance" && <Link className="admin-photo-review-link" href="/admin/finance/ledger" aria-label="Open Biloo Financial Ledger">Financial Ledger ↗</Link>}
           <input
             id="admin-module-search"
             value={query}
