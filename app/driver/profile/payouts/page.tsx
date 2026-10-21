@@ -7,6 +7,7 @@ import { Icon, LanguageContext } from "../../../../components/nexride/ui";
 import { useContext } from "react";
 import { supabase } from "../../../../lib/supabase";
 import { resolveSessionRole } from "../../../../lib/nexride-account-role";
+import { useAppearance } from "../../../../lib/nexride-appearance";
 import { loadDriverProfileData, verificationSummary } from "../../../../lib/nexride-driver-profile";
 import {
   formatEtb, loadDriverEarningsReport,
@@ -32,6 +33,7 @@ const destinations: {id:Destination;label:string;am:string}[]=[
 
 export default function DriverSettlementCenter(){
   const router=useRouter();
+  const {resolvedTheme}=useAppearance("driver");
   const language=useContext(LanguageContext);
   const am=language==="am";
   const [driverId,setDriverId]=useState("");
@@ -103,7 +105,7 @@ export default function DriverSettlementCenter(){
   const completed=useMemo(()=>report?.payoutRequests.filter(r=>r.status==="paid")||[],[report]);
   const outstanding=useMemo(()=>report?.payoutRequests.filter(r=>r.status==="requested"||r.status==="processing")||[],[report]);
 
-  return <main className="nr-app bf-driver-settlement" data-mode="driver">
+  return <main className="nr-app bf-driver-settlement" data-mode="driver" data-theme={resolvedTheme}>
     <div className="bf-settlement-wrap">
       <header className="bf-settlement-header">
         <button type="button" onClick={()=>router.push("/driver/profile")} aria-label="Back to driver profile">
