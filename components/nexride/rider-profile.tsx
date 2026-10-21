@@ -167,11 +167,12 @@ export function RiderProfile(props:Props) {
     let active=true;
     setCompletedRides(null);
     if(!account?.id)return;
-    void supabase.from('ride_requests')
-      .select('id',{count:'exact',head:true})
-      .eq('rider_id',account.id)
-      .eq('status','completed')
-      .then(({count,error})=>{
+    void Promise.resolve(
+      supabase.from('ride_requests')
+        .select('id',{count:'exact',head:true})
+        .eq('rider_id',account.id)
+        .eq('status','completed')
+    ).then(({count,error})=>{
         if(!active)return;
         setCompletedRides(error||count==null?null:count);
       })
