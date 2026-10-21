@@ -62,7 +62,14 @@ export async function POST(request:Request){
   const body=await request.json().catch(()=>null);
   if(!body||typeof body!=="object"||Array.isArray(body)||(body as Record<string,unknown>).action!=="preview_balance")
     return response({status:"invalid_action"},400);
-  const preview=checkBalancedJournal((body as Record<string,unknown>).lines);
+  const lines=(body as Record<string,unknown>).lines;
+  const preview=checkBalancedJournal(lines);
+  const requested=[...new Set((lines as Array<{account_code:string}>).map(line=>line.account_code))];
+  const accounts=await auth.db!.from("financial_accounts")
+    .select("code").eq("active",true).in("code",requested);
+  if(accounts.error)return response({status:"account_lookup_failed"},503);
+  if((accounts.data??[]).length!==requested.length)
+    return response({status:"invalid_account",reason:"One or more accounts are not active."},400);
   return response({status:"balanced_preview",...preview,
     note:"Illustrative only. No journal was posted and no financial balance has changed."});
  }catch(e){
