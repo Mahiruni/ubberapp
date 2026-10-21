@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Icon } from "../../../../components/nexride/ui";
 import { supabase } from "../../../../lib/supabase";
 import { resolveSessionRole } from "../../../../lib/nexride-account-role";
+import { useAppearance } from "../../../../lib/nexride-appearance";
 import {
   EARNINGS_PERIOD_STORAGE_KEY,
   earningsPeriodLabel,
@@ -58,6 +59,7 @@ function csvStatement(report: DriverEarningsReport){
 }
 export default function DriverEarningsReportPage() {
   const router = useRouter();
+  const {resolvedTheme}=useAppearance("driver");
   const [report, setReport] = useState<DriverEarningsReport | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -110,7 +112,7 @@ export default function DriverEarningsReportPage() {
   }, [router]);
 
   return (
-    <main className="nr-app nr-earnings-report-page" data-mode="driver">
+    <main className="nr-app nr-earnings-report-page" data-mode="driver" data-theme={resolvedTheme}>
       <div className="nr-earnings-report-wrap">
         <header className="nr-earnings-report-head">
           <button className="nr-driver-icon-btn" onClick={() => router.replace("/driver/earnings")} aria-label="Back to driver earnings">
