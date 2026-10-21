@@ -1,0 +1,128 @@
+/* Biloo Rider Payments — Phase 2: payment preferences, not online collection. */
+.nr-app.nr-support-page.nr-biloo-finance {
+  --bf-bg:#f5f7fa;--bf-panel:#fff;--bf-soft:#eef3f5;--bf-text:#102334;
+  --bf-muted:#5e7180;--bf-line:#dae5e9;--bf-accent:#087c53;--bf-hero:#052c38;
+  --bf-hero-text:#f7fffd;--bf-action:#e9f9f1;--bf-warning:#946315;
+  --bf-error:#b43b4b;
+  background:var(--bf-bg)!important;color:var(--bf-text)!important;
+  padding: max(20px,env(safe-area-inset-top)) 16px calc(116px + env(safe-area-inset-bottom))!important;
+  min-height:100dvh;color-scheme:light;
+}
+.nr-app.nr-support-page.nr-biloo-finance[data-theme="dark"]{
+  --bf-bg:#061c2b;--bf-panel:#0b2a3d;--bf-soft:#123549;
+  --bf-text:#f5f9fb;--bf-muted:#b2c4ce;--bf-line:#315166;
+  --bf-accent:#74e0ae;--bf-hero:#123b43;--bf-hero-text:#f5fffc;
+  --bf-action:#163e36;--bf-warning:#f4d596;--bf-error:#ffc2c9;
+  background:var(--bf-bg)!important;color:var(--bf-text)!important;color-scheme:dark;
+}
+.nr-biloo-finance .bf-wrap{width:min(760px,100%);max-width:760px;margin:0 auto;display:grid;gap:18px}
+.nr-biloo-finance .bf-header{margin-bottom:0;grid-template-columns:44px minmax(0,1fr) 44px}
+.nr-biloo-finance .bf-header h1{font-size:clamp(26px,4vw,34px);letter-spacing:-.045em;color:var(--bf-text)!important}
+.nr-biloo-finance .bf-header p,.nr-biloo-finance .bf-header .kicker{color:var(--bf-muted)!important;font-size:12px}
+.nr-biloo-finance .bf-header .kicker{font-size:10px;letter-spacing:.14em}
+.nr-biloo-finance .bf-help,.nr-biloo-finance .nr-support-back{
+  display:grid;place-items:center;width:44px;height:44px;
+  border:1px solid var(--bf-line)!important;border-radius:14px;background:var(--bf-panel)!important;
+  color:var(--bf-text)!important;text-decoration:none;box-shadow:none
+}
+.nr-biloo-finance .bf-hero{border-radius:26px;padding:24px;background:var(--bf-hero);color:var(--bf-hero-text);
+  box-shadow:0 15px 34px rgba(2,27,43,.15);display:grid;gap:18px;overflow:hidden}
+.nr-biloo-finance .bf-hero-top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.nr-biloo-finance .bf-kicker{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#b8eada}
+.nr-biloo-finance .bf-hero-main{display:flex;align-items:center;gap:16px}
+.nr-biloo-finance .bf-hero-icon{width:64px;height:64px;display:grid;place-items:center;flex:none;
+  background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.24);border-radius:22px;color:#baffdd}
+.nr-biloo-finance .bf-hero h2{margin:0 0 4px;font-weight:800;font-size:clamp(24px,5vw,34px);letter-spacing:-.045em;color:#fff}
+.nr-biloo-finance .bf-hero-main p{margin:0;font-size:13px;color:#d7ece7;line-height:1.55}
+.nr-biloo-finance .bf-hero-bottom{display:flex;align-items:center;gap:9px;padding-top:15px;
+  border-top:1px solid rgba(255,255,255,.18);font-size:12px;color:#cfeae3;line-height:1.5}
+.nr-biloo-finance .bf-hero-bottom svg{flex:none}
+.nr-biloo-finance .bf-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:5px;
+  background:var(--bf-soft);border:1px solid var(--bf-line);border-radius:16px}
+.nr-biloo-finance .bf-tabs button{position:relative;min-height:48px;display:flex;gap:8px;align-items:center;
+  justify-content:center;color:var(--bf-muted);border-radius:12px;font-size:13px;font-weight:750;
+  transition:background 180ms ease,color 180ms ease}
+.nr-biloo-finance .bf-tabs button.is-active{background:var(--bf-panel);color:var(--bf-text);
+  box-shadow:0 2px 8px rgba(4,28,48,.09)}
+.nr-biloo-finance .bf-count{min-width:20px;padding:1px 5px;border-radius:100px;background:var(--bf-soft);
+  font-size:11px;font-variant-numeric:tabular-nums}
+.nr-biloo-finance #bf-section{display:grid;gap:18px}
+.nr-biloo-finance .bf-section{display:grid;gap:12px}
+.nr-biloo-finance .bf-section-header{display:flex;justify-content:space-between;gap:16px;align-items:flex-end}
+.nr-biloo-finance .bf-section-header h2{font-size:17px;font-weight:800;letter-spacing:-.025em;color:var(--bf-text);margin:0}
+.nr-biloo-finance .bf-section-header p{font-size:12px;color:var(--bf-muted);line-height:1.55;margin:5px 0 0}
+.nr-biloo-finance .bf-preference{display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:14px;align-items:center;
+  padding:18px;border:1px solid var(--bf-line);border-radius:20px;background:var(--bf-panel);color:var(--bf-text)}
+.nr-biloo-finance .bf-preference-mark{width:48px;height:48px;border-radius:16px;background:var(--bf-action);
+  color:var(--bf-accent);display:grid;place-items:center}
+.nr-biloo-finance .bf-preference strong,.nr-biloo-finance .bf-method strong{display:block;font-size:14px;line-height:1.35}
+.nr-biloo-finance .bf-preference small,.nr-biloo-finance .bf-method small{display:block;color:var(--bf-muted);margin-top:3px;font-size:12px}
+.nr-biloo-finance .bf-preference>svg{color:var(--bf-accent)}
+.nr-biloo-finance .bf-method-grid{overflow:hidden;border:1px solid var(--bf-line);background:var(--bf-panel);border-radius:20px}
+.nr-biloo-finance .bf-method{display:grid;grid-template-columns:44px minmax(0,1fr) auto;align-items:center;gap:14px;
+  min-height:85px;padding:13px 16px;border-bottom:1px solid var(--bf-line)}
+.nr-biloo-finance .bf-method:last-child{border-bottom:0}
+.nr-biloo-finance .bf-method-icon{width:44px;height:44px;display:grid;place-items:center;border-radius:14px;
+  background:var(--bf-soft);color:var(--bf-text)}
+.nr-biloo-finance .bf-method.is-preferred .bf-method-icon{background:var(--bf-action);color:var(--bf-accent)}
+.nr-biloo-finance .bf-method-text{min-width:0}
+.nr-biloo-finance .bf-method-action{min-height:42px;min-width:102px;max-width:132px;display:flex;
+  align-items:center;justify-content:center;gap:5px;padding:7px 10px;border:1px solid var(--bf-line);
+  border-radius:11px;background:var(--bf-soft);color:var(--bf-text);font-size:12px;font-weight:750;text-align:center}
+.nr-biloo-finance .bf-method-action:not(:disabled):hover{background:var(--bf-action);border-color:var(--bf-accent)}
+.nr-biloo-finance .bf-method-action:disabled{opacity:.82;cursor:default}
+.nr-biloo-finance .bf-privacy{display:flex;gap:10px;align-items:flex-start;padding:15px;border:1px solid var(--bf-line);
+  border-radius:16px;color:var(--bf-muted);font-size:12px;line-height:1.5;background:var(--bf-soft)}
+.nr-biloo-finance .bf-privacy svg{flex:none;color:var(--bf-accent)}
+.nr-biloo-finance .bf-trip-list,.nr-biloo-finance .bf-attempt-list{border:1px solid var(--bf-line);
+  border-radius:20px;overflow:hidden;background:var(--bf-panel)}
+.nr-biloo-finance .bf-trip{display:grid;grid-template-columns:40px minmax(0,1fr) auto;align-items:start;gap:12px;
+  padding:17px 15px;border-bottom:1px solid var(--bf-line)}
+.nr-biloo-finance .bf-trip:last-child,.nr-biloo-finance .bf-attempt:last-child{border-bottom:0}
+.nr-biloo-finance .bf-trip-icon{display:grid;place-items:center;width:40px;height:40px;border-radius:13px;
+  background:var(--bf-soft);color:var(--bf-warning)}
+.nr-biloo-finance .bf-trip-icon.is-paid{background:var(--bf-action);color:var(--bf-accent)}
+.nr-biloo-finance .bf-trip-icon.is-failed{color:var(--bf-error)}
+.nr-biloo-finance .bf-trip-main{min-width:0;display:grid;gap:4px}
+.nr-biloo-finance .bf-trip-main strong{font-size:13px;overflow-wrap:anywhere;color:var(--bf-text);line-height:1.35}
+.nr-biloo-finance .bf-trip-main small,.nr-biloo-finance .bf-trip-aside small{font-size:11px;color:var(--bf-muted)}
+.nr-biloo-finance .bf-trip-status{color:var(--bf-warning);font-size:11px;font-weight:750}
+.nr-biloo-finance .bf-trip-status.is-paid{color:var(--bf-accent)}
+.nr-biloo-finance .bf-trip-status.is-failed{color:var(--bf-error)}
+.nr-biloo-finance .bf-trip-aside{display:grid;gap:5px;text-align:right;min-width:95px}
+.nr-biloo-finance .bf-trip-aside strong,.nr-biloo-finance .bf-attempt>strong{
+  color:var(--bf-text);font-size:13px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.nr-biloo-finance .bf-trip-aside a{display:flex;align-items:center;justify-content:flex-end;
+  color:var(--bf-accent);font-weight:750;font-size:11px;text-decoration:none;margin-top:7px}
+.nr-biloo-finance .bf-attempt{display:flex;justify-content:space-between;gap:15px;padding:15px;border-bottom:1px solid var(--bf-line)}
+.nr-biloo-finance .bf-attempt div{display:grid;gap:4px;min-width:0}
+.nr-biloo-finance .bf-attempt div strong{font-size:13px}
+.nr-biloo-finance .bf-attempt small{font-size:11px;color:var(--bf-muted);overflow-wrap:anywhere}
+.nr-biloo-finance .bf-empty,.nr-biloo-finance .bf-empty-attempts{border-radius:20px;border:1px dashed var(--bf-line);
+  background:var(--bf-panel);padding:26px 18px;color:var(--bf-muted);text-align:center}
+.nr-biloo-finance .bf-empty{display:grid;gap:8px;justify-items:center}
+.nr-biloo-finance .bf-empty strong{color:var(--bf-text);font-size:15px}
+.nr-biloo-finance .bf-empty p{font-size:12px}
+.nr-biloo-finance .bf-empty a{color:var(--bf-accent);display:flex;gap:5px;align-items:center;text-decoration:none;font-weight:750;font-size:13px}
+.nr-biloo-finance .bf-empty-attempts{font-size:12px}
+.nr-biloo-finance .bf-alert{display:flex;align-items:center;gap:10px;padding:13px 15px;border:1px solid var(--bf-error);
+  border-radius:13px;color:var(--bf-error);font-size:13px;line-height:1.5}
+.nr-biloo-finance .bf-alert-success{border-color:var(--bf-accent);color:var(--bf-accent)}
+.nr-biloo-finance .bf-loading{display:grid;gap:11px}
+.nr-biloo-finance .bf-loading span{height:65px;background:var(--bf-panel);border:1px solid var(--bf-line);border-radius:16px;
+  animation:bf-pulse 1.3s ease-in-out infinite}
+.nr-biloo-finance .bf-loading span:first-child{height:90px}
+@keyframes bf-pulse{50%{opacity:.5}}
+.nr-biloo-finance :is(button,a):focus-visible{outline:3px solid var(--bf-accent);outline-offset:3px}
+@media(max-width:430px){
+  .nr-app.nr-support-page.nr-biloo-finance{padding-left:12px!important;padding-right:12px!important}
+  .nr-biloo-finance .bf-method{gap:9px;padding:12px}
+  .nr-biloo-finance .bf-method-action{min-width:82px;max-width:112px;font-size:11px;padding:7px 8px}
+  .nr-biloo-finance .bf-trip{grid-template-columns:34px minmax(0,1fr);gap:10px}
+  .nr-biloo-finance .bf-trip-icon{width:34px;height:34px}
+  .nr-biloo-finance .bf-trip-aside{grid-column:2;text-align:left;display:flex;flex-wrap:wrap;align-items:center;gap:9px}
+}
+@media(prefers-reduced-motion:reduce){
+  .nr-biloo-finance .bf-loading span{animation:none}
+  .nr-biloo-finance .bf-tabs button{transition:none}
+}
