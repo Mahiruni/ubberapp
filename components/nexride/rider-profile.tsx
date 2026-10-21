@@ -19,6 +19,7 @@ import { NexRideFeedbackSettings } from './feedback-settings';
 import './rider-avatar-upload.css';
 import { AppVersion } from './app-version';
 import { SettingsGroups } from "./settings-groups";
+import { HOME_PLACES_KEY, restoreHomePlaces } from "../../lib/nexride-home";
 
 type Props = {
   language: Language;
@@ -113,6 +114,8 @@ export function RiderProfile(props:Props) {
   const [notice,setNotice]=useState('');
   const [photoFailed,setPhotoFailed]=useState(false);
   const [signedOutLocally,setSignedOutLocally]=useState(false);
+  const [completedRides,setCompletedRides]=useState<number|null>(null);
+  const [savedShortcuts,setSavedShortcuts]=useState<number|null>(null);
   const lock=useRef(false);
 
   useEffect(()=>{
@@ -143,6 +146,39 @@ export function RiderProfile(props:Props) {
     });
     return()=>data.subscription.unsubscribe();
   },[]);
+
+  // Account overview is intentionally backed by real sources. Booked rides are
+  // counted only from this authenticated user's RLS-protected rows; Home/Work
+  // shortcuts are explicitly device-local preview preferences.
+  useEffect(()=>{
+    const refresh=()=>{
+      try {
+        const places=restoreHomePlaces(localStorage.getItem(HOME_PLACES_KEY));
+        setSavedShortcuts(Number(Boolean(places.saved.home))+Number(Boolean(places.saved.work)));
+      } catch { setSavedShortcuts(null); }
+    };
+    refresh();
+    window.addEventListener('focus',refresh);
+    window.addEventListener('storage',refresh);
+    return ()=>{window.removeEventListener('focus',refresh);window.removeEventListener('storage',refresh)};
+  },[]);
+
+  useEffect(()=>{
+    let active=true;
+    setCompletedRides(null);
+    if(!account?.id)return;
+    void Promise.resolve(
+      supabase.from('ride_requests')
+        .select('id',{count:'exact',head:true})
+        .eq('rider_id',account.id)
+        .eq('status','completed')
+    ).then(({count,error})=>{
+        if(!active)return;
+        setCompletedRides(error||count==null?null:count);
+      })
+      .catch(()=>{if(active)setCompletedRides(null)});
+    return ()=>{active=false};
+  },[account?.id]);
 
   const shown=account?.profile || (!loading&&!loadError?profile:{name:'',phone:'',email:''});
   const initials=shown.name.trim().split(/\s+/).slice(0,2).map(v=>v[0]).join('').toUpperCase()||'BL';
@@ -259,6 +295,25 @@ export function RiderProfile(props:Props) {
         ? say('Your account details are protected with secure sign-in.','የመለያዎ መረጃ በደህንነቱ በተጠበቀ መግቢያ ይጠበቃል።')
         : say('Preview details stay on this device.','የማሳያ መረጃ በዚህ መሣሪያ ላይ ይቀመጣል።')}</span>
     </div>
+
+    {!loading&&!loadError&&<section className="biloo-rider-account-overview" aria-label={say('Account overview','የመለያ አጠቃላይ እይታ')}>
+      {account&&<button type="button" className="biloo-rider-account-stat" onClick={props.rides}>
+        <span className="biloo-rider-account-stat-icon"><Icon name="clock" size={19}/></span>
+        <span className="biloo-rider-account-stat-copy">
+          <strong>{completedRides===null?'—':completedRides.toLocaleString()}</strong>
+          <small>{say('Completed rides','የተጠናቀቁ ጉዞዎች')}</small>
+        </span>
+        <Icon name="chevron" size={15}/>
+      </button>}
+      <button type="button" className="biloo-rider-account-stat" onClick={props.saved}>
+        <span className="biloo-rider-account-stat-icon"><Icon name="star" size={19}/></span>
+        <span className="biloo-rider-account-stat-copy">
+          <strong>{savedShortcuts===null?'—':savedShortcuts}</strong>
+          <small>{say('Saved shortcuts · this device','የተቀመጡ አቋራጮች · በዚህ መሣሪያ')}</small>
+        </span>
+        <Icon name="chevron" size={15}/>
+      </button>
+    </section>}
 
     {loadError&&<div className="nr-account-inline-error" role="alert">
       <Icon name="info" size={18}/>

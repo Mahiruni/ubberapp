@@ -42,6 +42,22 @@ describe("Biloo premium Account experience", () => {
     expect(driverScreen).toContain("verificationSummary(profile)");
   });
 
+  it("counts only authenticated completed rides and labels local shortcuts truthfully", () => {
+    const rider = source("components/nexride/rider-profile.tsx");
+    const css = source("app/biloo-account-premium.css");
+    expect(rider).toContain("restoreHomePlaces(localStorage.getItem(HOME_PLACES_KEY))");
+    expect(rider).toContain(".select('id',{count:'exact',head:true})");
+    expect(rider).toContain(".eq('rider_id',account.id)");
+    expect(rider).toContain(".eq('status','completed')");
+    expect(rider).toContain("setCompletedRides(error||count==null?null:count)");
+    expect(rider).toContain("Saved shortcuts · this device");
+    expect(rider).toContain("completedRides===null?'—'");
+    expect(rider).toContain("onClick={props.rides}");
+    expect(rider).toContain("onClick={props.saved}");
+    expect(css).toContain(".biloo-rider-account-overview");
+    expect(css).toContain("@media(max-width:355px)");
+  });
+
   it("removes expired-license verified status without altering database approvals", () => {
     const expired = driver({reviewStatus:"approved", licenseDocumentPath:"private/license.pdf", licenseExpiry:"2020-01-01"});
     const result = verificationSummary(expired);

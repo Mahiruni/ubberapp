@@ -42,6 +42,9 @@ test("Rider Account uses the real five-tab Account destination with premium sect
   for(const group of ["Personal information","Rides & places","Wallet & payments","Safety & support","Preferences"])
     await expect(account.getByRole("heading",{name:group,exact:true})).toBeVisible();
   await expect(account.getByRole("button",{name:/Edit profile/}).first()).toBeVisible();
+  // Preview has local saved shortcuts only, no fabricated trip history.
+  await expect(account.getByRole("button",{name:/Saved shortcuts.*this device/})).toContainText("0");
+  await expect(account.getByRole("button",{name:/Completed rides/})).toHaveCount(0);
   await expect(footer.getByRole("button",{name:"Account"})).toHaveAttribute("aria-current","page");
   await account.getByRole("button",{name:/Appearance, language & alerts/}).click();
   await expect(page.getByRole("dialog")).toBeVisible();
