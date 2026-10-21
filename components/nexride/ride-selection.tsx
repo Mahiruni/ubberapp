@@ -474,6 +474,12 @@ export function RideSelection({
               </button>
             ))}
           </div>
+          <p className="nr-muted" style={{ marginTop: 12 }}>
+            Online payment methods will be added after Biloo completes its payment-provider integration.
+          </p>
+          <Link href="/rider/wallet" className="nr-preview-ride-link" onClick={() => setPaymentOpen(false)}>
+            Manage payment preferences <Icon name="chevron" size={16} />
+          </Link>
           <Button onClick={() => setPaymentOpen(false)}>{t("done")}</Button>
         </Dialog>
       )}
