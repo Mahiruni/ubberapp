@@ -255,7 +255,9 @@ export async function verifyChapaPayout(
       !Number.isFinite(amount) ||
       (expectedAmount !== undefined && Math.round(amount * 100) !== Math.round(expectedAmount * 100)) ||
       (expectedMerchantReference && summary.merchantReference !== expectedMerchantReference) ||
-      (summary.chapaReference !== reference && summary.merchantReference !== reference))
+      (summary.chapaReference && reference !== summary.chapaReference &&
+       reference !== summary.merchantReference) ||
+      (!summary.chapaReference && !summary.merchantReference))
     throw new Error("PAYOUT_VERIFICATION_MISMATCH");
 
   const raw = (summary.transferStatus || "").toLowerCase();
