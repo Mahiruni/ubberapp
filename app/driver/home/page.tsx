@@ -32,7 +32,10 @@ export default function DriverHomePage() {
       router.replace("/driver/profile");
       return;
     }
-    if (requestedScreen === "map") setScreen("map");
+    if (requestedScreen === "map") {
+      router.replace("/driver/map");
+      return;
+    }
 
     let active = true;
     if (explicitSignOutRole(window.localStorage)) {
@@ -82,7 +85,7 @@ export default function DriverHomePage() {
 
   const navigate = (next: DriverScreen) => {
     if (next === "home") setScreen("home");
-    else if (next === "map") setScreen("map");
+    else if (next === "map") router.push("/driver/map");
     else if (next === "earnings") router.push("/driver/earnings");
     else router.push("/driver/profile");
   };

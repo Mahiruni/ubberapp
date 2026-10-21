@@ -851,3 +851,95 @@ html[lang="am"] .nr-driver-menu-layer :where(strong,small) {
 .nr-identity-entry[data-mode="driver"][data-theme="dark"] :is(button,a,input,select):focus-visible {
   outline-color:#f9c449!important;
 }
+
+/* Driver Map: fit between safe-area header and the fixed five-tab dock.
+   In particular, do not force the legacy 420px minimum on short phones. */
+.nr-driver-app-shell:not([data-home="true"]) .nr-driver-map-page {
+  width: 100%!important;
+  max-width: none!important;
+  height: calc(100dvh - var(--driver-header-total,62px) - var(--biloo-dock-bar-height,70px) - env(safe-area-inset-bottom,0px))!important;
+  min-height: 290px!important;
+  padding: 0!important;
+  margin: 0!important;
+  background: var(--driver-bg);
+  overflow: hidden!important;
+}
+.nr-driver-app-shell .nr-driver-map-page .nr-driver-live-map-shell {
+  width: 100%!important;
+  height: 100%!important;
+  min-height: 0!important;
+  max-height: 100%!important;
+  border: none!important;
+  border-radius: 0!important;
+  box-shadow: none!important;
+}
+.nr-driver-app-shell .nr-driver-map-page .nr-driver-map-float {
+  left: max(12px,env(safe-area-inset-left,0px));
+  right: max(12px,env(safe-area-inset-right,0px));
+  bottom: max(14px,env(safe-area-inset-bottom,0px));
+  padding: 12px;
+  max-width: min(620px,calc(100% - 24px));
+  margin-inline: auto;
+  box-sizing: border-box;
+  z-index: 550;
+  gap: 10px;
+}
+.nr-driver-app-shell .nr-driver-map-page .nr-driver-map-float .nr-driver-primary {
+  min-height: 48px;
+  background: #f9c449!important;
+  color: #08295f!important;
+  font-weight: 790!important;
+  border-radius: 13px;
+}
+.nr-driver-app-shell .nr-driver-map-page .nr-map-control-stack {
+  bottom: auto;
+  top: max(12px,env(safe-area-inset-top,0px));
+}
+.biloo-driver-map-gate {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 12px;
+  min-height: min(55dvh,410px);
+  padding: 28px 20px;
+  text-align: center;
+  color: var(--driver-text-primary,#10294f);
+}
+.biloo-driver-map-gate p {
+  max-width: 300px;
+  color: var(--driver-text-secondary,#536780);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.biloo-driver-map-gate button {
+  min-height: 48px;
+  border: none;
+  border-radius: 13px;
+  padding: 0 22px;
+  background: #f9c449;
+  color: #08295f;
+  font-weight: 800;
+}
+.biloo-driver-map-gate__spinner {
+  width: 27px;
+  height: 27px;
+  border: 3px solid #d7e4f2;
+  border-top-color: #08295f;
+  border-radius: 50%;
+  animation: biloo-driver-map-spin 800ms linear infinite;
+}
+@keyframes biloo-driver-map-spin { to {transform:rotate(360deg);} }
+@media(max-width:800px) and (max-height:680px) {
+  .nr-driver-app-shell .nr-driver-map-page .nr-driver-map-float {
+    padding: 9px;
+    gap: 7px;
+    bottom: 9px;
+  }
+  .nr-driver-app-shell .nr-driver-map-page .nr-driver-map-state span:last-child {
+    font-size: 10px;
+    line-height: 1.25;
+  }
+}
+@media(prefers-reduced-motion:reduce) {
+  .biloo-driver-map-gate__spinner {animation:none;}
+}
