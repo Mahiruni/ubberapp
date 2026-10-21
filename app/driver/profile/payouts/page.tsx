@@ -7,6 +7,7 @@ import { Icon, LanguageContext } from "../../../../components/nexride/ui";
 import { useContext } from "react";
 import { supabase } from "../../../../lib/supabase";
 import { resolveSessionRole } from "../../../../lib/nexride-account-role";
+import { loadDriverProfileData, verificationSummary } from "../../../../lib/nexride-driver-profile";
 import {
   formatEtb, loadDriverEarningsReport,
   type DriverEarningsReport,
@@ -39,6 +40,7 @@ export default function DriverSettlementCenter(){
   const [destination,setDestination]=useState<Destination>("undecided");
   const [loading,setLoading]=useState(true);
   const [saving,setSaving]=useState(false);
+  const [verificationRequired,setVerificationRequired]=useState(false);
   const [error,setError]=useState("");
   const [notice,setNotice]=useState("");
 
@@ -54,6 +56,9 @@ export default function DriverSettlementCenter(){
       const role=await resolveSessionRole(session).catch(()=>"");
       if(!live)return;
       if(role!=="driver"){router.replace(role==="admin"?"/admin":"/");return;}
+      const profile=await loadDriverProfileData(session.user.id);
+      if(!live)return;
+      setVerificationRequired(verificationSummary(profile).tone !== "approved");
       setDriverId(session.user.id);
       const [finance,settings]=await Promise.all([
         loadDriverEarningsReport(session.user.id,"all"),
@@ -101,7 +106,7 @@ export default function DriverSettlementCenter(){
   return <main className="nr-app bf-driver-settlement" data-mode="driver">
     <div className="bf-settlement-wrap">
       <header className="bf-settlement-header">
-        <button type="button" onClick={()=>router.push("/driver/earnings")} aria-label="Back to driver earnings">
+        <button type="button" onClick={()=>router.push("/driver/profile")} aria-label="Back to driver profile">
           <Icon name="back" size={20}/>
         </button>
         <div><span className="bf-settlement-kicker">BILOO · DRIVER FINANCE</span>
@@ -120,6 +125,9 @@ export default function DriverSettlementCenter(){
       {loading?<div className="bf-settlement-skeleton" aria-busy="true"><span/><span/><span/></div>:<>
         {error&&<div className="bf-settlement-message error" role="alert"><Icon name="info" size={18}/>{error}</div>}
         {notice&&<div className="bf-settlement-message success" role="status"><Icon name="check" size={18}/>{notice}</div>}
+        {verificationRequired && <div className="bf-settlement-message" role="status">
+          <Icon name="shield" size={18}/>Driver documents still need approval. Settlement preferences may be saved, but payouts remain unavailable until verification and payment-provider activation.
+        </div>}
 
         <section className="bf-settlement-section">
           <div className="bf-settlement-section-head"><h2>{label("Recorded financial position","የተመዘገበ የገንዘብ ሁኔታ")}</h2><span>{label("Lifetime","እስካሁን")}</span></div>
