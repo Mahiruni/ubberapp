@@ -1,0 +1,30 @@
+/* Biloo driver earnings statement — printable mobile-first light background */
+.nr-app.nr-earnings-report-page{color-scheme:light;background:#f5f7f9!important;color:#102334!important;
+ padding:22px 16px calc(110px + env(safe-area-inset-bottom))}
+.nr-earnings-report-page .nr-earnings-report-wrap{max-width:780px}
+.nr-earnings-report-page :is(.nr-report-summary-card,.nr-report-section,.nr-report-ledger-item,.nr-report-note){
+ background:#fff!important;border:1px solid #dfe7eb!important;box-shadow:none!important;color:#102334!important}
+.nr-earnings-report-page :is(.nr-report-summary-card span,.nr-report-summary-card small,.nr-report-row span,
+  .nr-report-ledger-item small,.nr-report-note,.nr-earnings-report-head p){color:#5e7180!important}
+.nr-earnings-report-page :is(.nr-report-summary-card strong,.nr-report-row strong,.nr-report-ledger-item strong,
+ .nr-earnings-report-head h1,.nr-report-section h2){color:#102334!important}
+.nr-earnings-report-page .nr-report-row.negative strong{color:#ab3449!important}
+.nr-earnings-report-page .nr-report-row.positive strong{color:#007b4a!important}
+.nr-earnings-report-page .nr-report-summary-grid{gap:10px}
+.nr-earnings-report-page .nr-report-summary-card strong{font-size:clamp(16px,3vw,21px);font-variant-numeric:tabular-nums}
+.nr-earnings-report-page .nr-report-summary-card span{font-size:11px}
+.nr-earnings-report-page .nr-report-summary-card small{font-size:10px;line-height:1.4}
+.nr-earnings-report-page .nr-report-ledger-item>span{font-variant-numeric:tabular-nums;color:#102334!important}
+.nr-earnings-report-page .nr-report-ledger-item{background:#f8fafb!important}
+.nr-earnings-report-page .nr-report-note{font-size:12px;line-height:1.6;background:#eef5f1!important}
+.nr-earnings-report-page .nr-driver-icon-btn{background:#fff!important;color:#102334!important;border-color:#dfe7eb!important}
+.nr-earnings-report-page .bf-statement-export{display:inline-flex;gap:10px;align-items:center;justify-content:center;
+ min-height:46px;width:100%;margin-bottom:12px;padding:11px 15px;border-radius:13px;
+ background:#087a51;color:#fff;font-size:13px;font-weight:800;text-align:center}
+.nr-earnings-report-page .bf-statement-export:focus-visible{outline:3px solid #11bd78;outline-offset:3px}
+@media(min-width:650px){.nr-earnings-report-page .nr-report-summary-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media print{
+ .nr-earnings-report-page .bf-statement-export,.nr-earnings-report-page .nr-driver-icon-btn{display:none!important}
+ .nr-app.nr-earnings-report-page{padding:0!important;background:#fff!important}
+ .nr-earnings-report-page :is(.nr-report-summary-card,.nr-report-section){break-inside:avoid}
+}
