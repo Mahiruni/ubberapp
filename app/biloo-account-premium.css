@@ -1211,3 +1211,83 @@
   .nr-app[data-mode="rider"][data-theme] .nr-account-standard *,
   .nr-driver-app-shell[data-theme] .nr-driver-profile-v2 * {transition:none!important;animation:none!important;}
 }
+
+/* Rider Account: verified ride history plus explicitly local shortcuts.
+   Each metric is a working route target; unavailable data is "—", never 0. */
+.nr-app[data-mode="rider"][data-theme] .biloo-rider-account-overview{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+  margin:14px 0 6px;
+}
+.nr-app[data-mode="rider"][data-theme] .biloo-rider-account-stat{
+  display:flex;
+  align-items:center;
+  min-width:0;
+  min-height:81px;
+  gap:10px;
+  padding:11px 12px;
+  border:1px solid var(--biloo-account-border)!important;
+  border-radius:14px!important;
+  background:var(--biloo-account-surface)!important;
+  color:var(--biloo-account-ink)!important;
+  text-align:left;
+  cursor:pointer;
+  box-shadow:none!important;
+  transition:background-color 160ms ease,border-color 160ms ease;
+}
+.nr-app[data-mode="rider"][data-theme] .biloo-rider-account-stat:hover{
+  background:var(--biloo-account-soft)!important;
+}
+.nr-app[data-mode="rider"][data-theme] .biloo-rider-account-stat-icon{
+  flex:0 0 36px;
+  width:36px;
+  height:36px;
+  display:grid;
+  place-items:center;
+  border-radius:11px;
+  background:var(--biloo-account-soft);
+  color:var(--biloo-account-icon);
+}
+.nr-app[data-mode="rider"][data-theme] .biloo-rider-account-stat-copy{
+  min-width:0;
+  display:grid;
+  gap:2px;
+  flex:1;
+}
+.nr-app[data-mode="rider"][data-theme] .biloo-rider-account-stat-copy strong{
+  display:block;
+  color:var(--biloo-account-ink)!important;
+  font-size:20px!important;
+  line-height:1.2;
+  font-weight:800!important;
+  font-variant-numeric:tabular-nums;
+}
+.nr-app[data-mode="rider"][data-theme] .biloo-rider-account-stat-copy small{
+  color:var(--biloo-account-muted)!important;
+  font-size:11px!important;
+  line-height:1.4!important;
+  white-space:normal;
+  overflow-wrap:anywhere;
+}
+.nr-app[data-mode="rider"][data-theme] .biloo-rider-account-stat>svg:last-child{
+  flex:none;
+  color:var(--biloo-account-muted);
+}
+@media(max-width:355px){
+  .nr-app[data-mode="rider"][data-theme] .biloo-rider-account-overview{gap:7px}
+  .nr-app[data-mode="rider"][data-theme] .biloo-rider-account-stat{
+    gap:6px;
+    padding:10px 8px;
+    min-height:79px;
+  }
+  .nr-app[data-mode="rider"][data-theme] .biloo-rider-account-stat-icon{
+    flex-basis:30px;width:30px;height:30px;
+  }
+  .nr-app[data-mode="rider"][data-theme] .biloo-rider-account-stat-copy strong{font-size:17px!important}
+  .nr-app[data-mode="rider"][data-theme] .biloo-rider-account-stat-copy small{font-size:10px!important}
+  .nr-app[data-mode="rider"][data-theme] .biloo-rider-account-stat>svg:last-child{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+  .nr-app[data-mode="rider"][data-theme] .biloo-rider-account-stat{transition:none}
+}
