@@ -97,3 +97,21 @@ test("Driver footer provides Activity/Map/Earnings and hides during critical liv
   await expect(page.locator(".nr-driver-app-shell[data-trip-focus=true]")).toBeVisible();
   await expect(page.getByRole("navigation", { name: "Driver bottom navigation" })).toHaveCount(0);
 });
+
+
+test("Driver Map tab opens its dedicated route and keeps the active footer", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 640 });
+  await mockDriver(page);
+  await page.goto("/driver/earnings");
+  const footer = page.getByRole("navigation", { name: "Driver bottom navigation" });
+  await footer.getByRole("link", { name: "Map", exact: true }).click();
+  await expect(page).toHaveURL(/\/driver\/map$/);
+  await expect(page.locator(".nr-driver-app-shell")).toHaveAttribute("data-home", "false");
+  await expect(footer.getByRole("link", { name: "Map", exact: true })).toHaveAttribute("aria-current", "page");
+  await expect(page.locator(".nr-driver-map-page")).toBeVisible();
+  const geometry = await page.locator(".nr-driver-map-page").evaluate(el => {
+    const rect = el.getBoundingClientRect();
+    return { height: rect.height, viewport: window.innerHeight };
+  });
+  expect(geometry.height).toBeLessThan(geometry.viewport);
+});

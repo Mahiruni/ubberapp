@@ -39,7 +39,7 @@ export function BilooFooterNav({
               key={item.id}
               href={item.href}
               className={className}
-              prefetch={item.href.startsWith("/driver/") ? undefined : false}
+              prefetch={item.href === "/driver/map" ? false : item.href.startsWith("/driver/") ? undefined : false}
               aria-current={selected ? "page" : undefined}
               aria-disabled={item.disabled || undefined}
               tabIndex={item.disabled ? -1 : undefined}

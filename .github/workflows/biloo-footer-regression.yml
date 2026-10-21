@@ -12,6 +12,8 @@ on:
       - "app/rider/wallet/page.tsx"
       - "app/support/page.tsx"
       - "app/biloo-footer-navigation.css"
+      - "app/driver/map/page.tsx"
+      - "app/driver/driver-wrapper-premium.css"
       - "tests/**/biloo-footer-navigation.*"
       - ".github/workflows/biloo-footer-regression.yml"
   push:
@@ -19,6 +21,8 @@ on:
     paths:
       - "components/nexride/biloo-footer-nav.tsx"
       - "app/biloo-footer-navigation.css"
+      - "app/driver/map/page.tsx"
+      - "app/driver/driver-wrapper-premium.css"
       - "tests/**/biloo-footer-navigation.*"
   workflow_dispatch:
 permissions:

@@ -943,3 +943,15 @@ html[lang="am"] .nr-driver-menu-layer :where(strong,small) {
 @media(prefers-reduced-motion:reduce) {
   .biloo-driver-map-gate__spinner {animation:none;}
 }
+
+/* Official Biloo brand tile inside the Driver drawer footer. */
+.nr-driver-menu-layer .biloo-driver-menu-brandmark {
+  display:block;
+  width:40px;
+  height:40px;
+  padding:4px;
+  border-radius:12px;
+  object-fit:contain;
+  background:#fff;
+  border:1px solid rgba(255,255,255,.23);
+}
