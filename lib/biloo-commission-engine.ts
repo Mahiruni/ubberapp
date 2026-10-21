@@ -32,11 +32,11 @@ export function validateCommissionDraft(input: unknown): CommissionDraft {
   const category = r.rideCategory;
   if (typeof category !== "string" || !/^(\*|[a-z][a-z0-9_]{0,39})$/.test(category))
     throw new Error("INVALID_RIDE_CATEGORY");
-  if (r.commissionBps! < 0 || r.commissionBps! > 10000 ||
-      r.discountBps! < 0 || r.discountBps! > 10000 ||
-      r.taxBps! < 0 || r.taxBps! > 10000 ||
-      r.fixedFeeMinor! < 0 || r.fixedFeeMinor! > 100000000 ||
-      r.incentiveMinor! < 0 || r.incentiveMinor! > 100000000)
+  if ((r.commissionBps as number) < 0 || (r.commissionBps as number) > 10000 ||
+      (r.discountBps as number) < 0 || (r.discountBps as number) > 10000 ||
+      (r.taxBps as number) < 0 || (r.taxBps as number) > 10000 ||
+      (r.fixedFeeMinor as number) < 0 || (r.fixedFeeMinor as number) > 100000000 ||
+      (r.incentiveMinor as number) < 0 || (r.incentiveMinor as number) > 100000000)
     throw new Error("INVALID_COMMISSION_RULE");
   if (typeof r.effectiveFrom !== "string" || !Number.isFinite(Date.parse(r.effectiveFrom)))
     throw new Error("INVALID_EFFECTIVE_DATE");
