@@ -32,7 +32,7 @@ import { BilooFooterNav, driverFooterLinks } from "./biloo-footer-nav";
 
 export type DriverThemePreference = "system" | "light" | "dark";
 export type DriverResolvedTheme = "light" | "dark";
-export type DriverNavId = "home" | "requests" | "earnings" | "messages" | "account";
+export type DriverNavId = "home" | "requests" | "map" | "earnings" | "messages" | "account";
 
 
 type DriverThemeContextValue = {
@@ -64,7 +64,8 @@ function DriverThemeProvider({ children }: { children: ReactNode }) {
 
 const NAV_ITEMS: Array<{ id: DriverNavId; icon: IconName; href: string; en: string; am: string }> = [
   { id: "home", icon: "home", href: "/driver/home", en: "Home", am: "መነሻ" },
-  { id: "requests", icon: "navigation", href: "/driver/activity", en: "Requests", am: "ጥያቄዎች" },
+  { id: "requests", icon: "clock", href: "/driver/activity", en: "Activity", am: "እንቅስቃሴ" },
+  { id: "map", icon: "navigation", href: "/driver/map", en: "Map", am: "ካርታ" },
   { id: "earnings", icon: "wallet", href: "/driver/earnings", en: "Earnings", am: "ገቢ" },
   { id: "messages", icon: "chat", href: "/support?role=driver", en: "Help & Support", am: "እገዛ እና ድጋፍ" },
   { id: "account", icon: "user", href: "/driver/profile", en: "Account", am: "መለያ" },
@@ -72,6 +73,7 @@ const NAV_ITEMS: Array<{ id: DriverNavId; icon: IconName; href: string; en: stri
 
 export function driverNavForPath(pathname: string): DriverNavId {
   if (pathname.startsWith("/driver/earnings")) return "earnings";
+  if (pathname === "/driver/map") return "map";
   if (
     pathname.startsWith("/driver/request") ||
     pathname.startsWith("/driver/activity") ||
@@ -85,7 +87,8 @@ export function driverNavForPath(pathname: string): DriverNavId {
 
 const NAV_DETAILS: Record<DriverNavId, { en: string; am: string }> = {
   home: { en: "Map and availability", am: "ካርታ እና ዝግጁነት" },
-  requests: { en: "Ride requests and activity", am: "የጉዞ ጥያቄዎች እና እንቅስቃሴ" },
+  requests: { en: "Completed trips and activity", am: "የተጠናቀቁ ጉዞዎች እና እንቅስቃሴ" },
+  map: { en: "Live map and your location", am: "ቀጥታ ካርታ እና አካባቢዎ" },
   earnings: { en: "Income and payout reporting", am: "ገቢ እና የክፍያ ሪፖርት" },
   messages: { en: "Trip messages and support", am: "የጉዞ መልዕክቶች እና ድጋፍ" },
   account: { en: "Profile, vehicle and documents", am: "መለያ፣ ተሽከርካሪ እና ሰነዶች" },
@@ -230,7 +233,7 @@ function DriverHamburgerMenu({
     }
   };
 
-  const driveItems = NAV_ITEMS.filter((item) => ["home", "requests", "earnings"].includes(item.id));
+  const driveItems = NAV_ITEMS.filter((item) => ["home", "requests", "map", "earnings"].includes(item.id));
   const accountItems = NAV_ITEMS.filter((item) => item.id === "account");
   const supportItems = NAV_ITEMS.filter((item) => item.id === "messages");
 
@@ -390,7 +393,8 @@ function titleForPath(pathname: string, language: "en" | "am") {
   if (pathname.startsWith("/driver/earnings/report")) return say("Earnings report", "የገቢ ሪፖርት");
   if (pathname.startsWith("/driver/earnings")) return say("Earnings", "ገቢ");
   if (pathname.startsWith("/driver/request")) return say("Ride request", "የጉዞ ጥያቄ");
-  if (pathname.startsWith("/driver/activity")) return say("Requests", "ጥያቄዎች");
+  if (pathname.startsWith("/driver/activity")) return say("Activity", "እንቅስቃሴ");
+  if (pathname === "/driver/map") return say("Live map", "ቀጥታ ካርታ");
   if (pathname.startsWith("/driver/navigation")) return say("Trip navigation", "የጉዞ አቅጣጫ");
   if (pathname.startsWith("/driver/pickup")) return say("Pickup", "መነሻ");
   if (pathname.startsWith("/driver/profile/documents")) return say("Documents", "ሰነዶች");
@@ -486,7 +490,7 @@ function DriverHeader({
             </>
           ) : (
             <>
-              <small>{language === "am" ? "BILOO · አሽከርካሪ" : "BILOO · DRIVER"}</small>
+              <span className="biloo-driver-header-eyebrow"><img src="/brand/biloo-mark.svg" width={19} height={19} alt="" aria-hidden="true" />{language === "am" ? "BILOO · አሽከርካሪ" : "BILOO · DRIVER"}</span>
               <strong>{title}</strong>
             </>
           )}
@@ -534,7 +538,7 @@ function DriverShellChrome({ children }: { children: ReactNode }) {
         <BilooFooterNav
           role="driver"
           items={driverFooterLinks()}
-          active={driverNavForPath(pathname) === "requests" ? "trips" : driverNavForPath(pathname) === "messages" ? "support" : driverNavForPath(pathname)}
+          active={driverNavForPath(pathname) === "requests" ? "activity" : driverNavForPath(pathname) === "messages" ? "support" : driverNavForPath(pathname)}
         />
       )}
     </div>

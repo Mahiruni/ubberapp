@@ -39,6 +39,7 @@ export function BilooFooterNav({
               key={item.id}
               href={item.href}
               className={className}
+              prefetch={item.href.startsWith("/driver/") ? undefined : false}
               aria-current={selected ? "page" : undefined}
               aria-disabled={item.disabled || undefined}
               tabIndex={item.disabled ? -1 : undefined}
@@ -73,9 +74,9 @@ export function riderFooterLinks(): BilooFooterItem[] {
 export function driverFooterLinks(): BilooFooterItem[] {
   return [
     { id: "home", label: "Home", icon: "home", href: "/driver/home" },
-    { id: "trips", label: "Trips", icon: "list", href: "/driver/activity" },
-    { id: "earnings", label: "Earnings", icon: "chart", href: "/driver/earnings" },
-    { id: "support", label: "Support", icon: "headphones", href: "/support?role=driver" },
+    { id: "activity", label: "Activity", icon: "clock", href: "/driver/activity" },
+    { id: "map", label: "Map", icon: "navigation", href: "/driver/map" },
+    { id: "earnings", label: "Earnings", icon: "wallet", href: "/driver/earnings" },
     { id: "account", label: "Account", icon: "user", href: "/driver/profile" },
   ];
 }
