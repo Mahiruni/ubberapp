@@ -10,7 +10,7 @@ export function paymentConfiguration() {
   const webhookSecret = process.env.CHAPA_WEBHOOK_SECRET || process.env.PAYMENT_WEBHOOK_SECRET || "";
   const mode = secret.startsWith("CHAPA_LIVE_") ? "live" : "test";
   const liveApproved = active(process.env.BILOO_LIVE_PAYMENTS_APPROVED);
-  const keyValid = secret.startsWith("CHAPA_TEST_") || (mode === "live" && liveApproved);
+  const sandboxAllowed = process.env.NODE_ENV !== "production" || active(process.env.BILOO_SANDBOX_CHECKOUT_ENABLED);\n  const keyValid = (secret.startsWith("CHAPA_TEST_") && sandboxAllowed) || (mode === "live" && liveApproved);
   const enabled =
     active(process.env.NEXRIDE_PAYMENTS_ENABLED) &&
     provider === "chapa" &&
