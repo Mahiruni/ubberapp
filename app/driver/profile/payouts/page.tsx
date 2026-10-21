@@ -1,616 +1,174 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Icon } from "../../../../components/nexride/ui";
-import { useOperationalTranslation } from "../../../../components/nexride/operational-i18n";
-import { nexrideApiFetch } from "../../../../lib/nexride-api-auth";
+import { Icon, LanguageContext } from "../../../../components/nexride/ui";
+import { useContext } from "react";
 import { supabase } from "../../../../lib/supabase";
-import { formatEtb } from "../../../../lib/nexride-driver-earnings";
-import { loadDriverProfileData, verificationSummary } from "../../../../lib/nexride-driver-profile";
+import { resolveSessionRole } from "../../../../lib/nexride-account-role";
+import {
+  formatEtb, loadDriverEarningsReport,
+  type DriverEarningsReport,
+} from "../../../../lib/nexride-driver-earnings";
 import "../../../nexride.css";
 import "../profile.css";
 import "../../../detail-system.css";
+import "./phase3.css";
 
-type PayoutBank = {
-  code: string;
-  name: string;
-};
+type Schedule = "weekly" | "monthly" | "manual";
+type Destination = "undecided" | "bank" | "mobile_money";
+const schedules: {id:Schedule;label:string;am:string}[]=[
+  {id:"weekly",label:"Weekly",am:"በየሳምንቱ"},
+  {id:"monthly",label:"Monthly",am:"በየወሩ"},
+  {id:"manual",label:"On request",am:"ሲጠየቅ"},
+];
+const destinations: {id:Destination;label:string;am:string}[]=[
+  {id:"undecided",label:"Decide later",am:"በኋላ እወስናለሁ"},
+  {id:"bank",label:"Bank account",am:"የባንክ መለያ"},
+  {id:"mobile_money",label:"Mobile money",am:"የሞባይል ገንዘብ"},
+];
 
-type PayoutAccount = {
-  id: string;
-  bankCode: string;
-  bankName: string;
-  accountName: string;
-  accountNumberMasked: string;
-  status: string;
-  updatedAt: string;
-};
+export default function DriverSettlementCenter(){
+  const router=useRouter();
+  const language=useContext(LanguageContext);
+  const am=language==="am";
+  const [driverId,setDriverId]=useState("");
+  const [report,setReport]=useState<DriverEarningsReport|null>(null);
+  const [schedule,setSchedule]=useState<Schedule>("weekly");
+  const [destination,setDestination]=useState<Destination>("undecided");
+  const [loading,setLoading]=useState(true);
+  const [saving,setSaving]=useState(false);
+  const [error,setError]=useState("");
+  const [notice,setNotice]=useState("");
 
-type PayoutRequest = {
-  id: string;
-  amountEtb: number;
-  status: string;
-  providerReference: string;
-  failureReason: string | null;
-  createdAt: string;
-  processedAt: string | null;
-};
+  const label=(en:string,amharic:string)=>am?amharic:en;
 
-type PayoutSnapshot = {
-  status: string;
-  enabled: boolean;
-  provider: "chapa" | null;
-  eligible: boolean;
-  availableEtb: number;
-  account: PayoutAccount | null;
-  banks: PayoutBank[];
-  banksUnavailable: boolean;
-  requests: PayoutRequest[];
-};
-
-const money = (value: unknown) => {
-  const parsed = typeof value === "number" ? value : Number(value);
-  return Number.isFinite(parsed) ? parsed : 0;
-};
-
-export default function DriverPayoutsPage() {
-  const router = useRouter();
-  const op = useOperationalTranslation();
-  const [snapshot, setSnapshot] = useState<PayoutSnapshot | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [busy, setBusy] = useState<"account" | "payout" | "refresh" | "">("");
-  const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
-  const [accountRestricted, setAccountRestricted] = useState(false);
-  const [bankCode, setBankCode] = useState("");
-  const [accountName, setAccountName] = useState("");
-  const [accountNumber, setAccountNumber] = useState("");
-  const [payoutAmount, setPayoutAmount] = useState("");
-
-  async function fetchSnapshot(includeBanks = true) {
-    const response = await nexrideApiFetch(
-      "/api/driver/payouts" + (includeBanks ? "?banks=1" : ""),
-      { cache: "no-store" },
-    );
-    const body = await response.json().catch(() => null);
-    if (!response.ok || body?.status !== "ready") {
-      throw new Error(
-        body?.status === "setup_required"
-          ? "Payout setup is temporarily unavailable."
-          : body?.status === "unavailable"
-            ? "We couldn’t load your payout status."
-            : "Payout service is unavailable.",
-      );
-    }
-
-    const next = body as PayoutSnapshot;
-    setSnapshot(next);
-    setBankCode((current) => current || next.account?.bankCode || "");
-    return next;
-  }
-
-  useEffect(() => {
-    let active = true;
-
-    (async () => {
-      const { data } = await supabase.auth.getSession();
-      const session = data.session;
-      if (!active) return;
-      if (!session) {
-        router.replace("/driver/auth");
-        return;
+  useEffect(()=>{
+    let live=true;
+    (async()=>{
+      const {data}=await supabase.auth.getSession();
+      if(!live)return;
+      const session=data.session;
+      if(!session){router.replace("/driver/auth");return;}
+      const role=await resolveSessionRole(session).catch(()=>"");
+      if(!live)return;
+      if(role!=="driver"){router.replace(role==="admin"?"/admin":"/");return;}
+      setDriverId(session.user.id);
+      const [finance,settings]=await Promise.all([
+        loadDriverEarningsReport(session.user.id,"all"),
+        supabase.from("driver_settlement_preferences")
+          .select("requested_schedule,preferred_destination_type")
+          .eq("driver_id",session.user.id).maybeSingle(),
+      ]);
+      if(!live)return;
+      setReport(finance);
+      if(finance.failed||settings.error)setError("Some financial information is currently unavailable.");
+      if(settings.data){
+        const selectedSchedule=settings.data.requested_schedule;
+        const selectedDestination=settings.data.preferred_destination_type;
+        if(schedules.some(i=>i.id===selectedSchedule))setSchedule(selectedSchedule as Schedule);
+        if(destinations.some(i=>i.id===selectedDestination))setDestination(selectedDestination as Destination);
       }
-
-      const profile = await loadDriverProfileData(session.user.id);
-      if (!active) return;
-      if (profile.role !== "driver") {
-        router.replace(profile.role === "admin" ? "/admin" : "/");
-        return;
-      }
-
-      setAccountRestricted(
-        profile.accountStatus !== "active" ||
-          verificationSummary(profile).tone !== "approved",
-      );
-      setAccountName(profile.fullName);
-
-      try {
-        await fetchSnapshot(true);
-      } catch (loadError) {
-        if (active)
-          setError(
-            loadError instanceof Error
-              ? loadError.message
-              : "We couldn’t load your payout information.",
-          );
-      } finally {
-        if (active) setLoading(false);
-      }
-    })().catch(() => {
-      if (active) {
-        setError("We couldn’t load your payout information.");
-        setLoading(false);
-      }
+      setLoading(false);
+    })().catch(()=>{
+      if(live){setError("Financial records could not be loaded. Try again later.");setLoading(false);}
     });
+    return ()=>{live=false};
+  },[router]);
 
-    return () => {
-      active = false;
-    };
-  }, [router]);
-
-  const totals = useMemo(() => {
-    let paid = 0;
-    let processing = 0;
-    for (const entry of snapshot?.requests || []) {
-      if (entry.status === "paid") paid += money(entry.amountEtb);
-      if (entry.status === "requested" || entry.status === "processing")
-        processing += money(entry.amountEtb);
-    }
-    return { paid, processing };
-  }, [snapshot]);
-
-  async function saveAccount() {
-    if (!bankCode || accountName.trim().length < 2 || !accountNumber.trim()) {
-      setError("Choose a bank and enter the account holder name and account number.");
-      return;
-    }
-
-    setBusy("account");
-    setError("");
-    setNotice("");
-    try {
-      const response = await nexrideApiFetch("/api/driver/payouts", {
-        method: "PUT",
-        cache: "no-store",
-        body: JSON.stringify({
-          bankCode,
-          accountName: accountName.trim(),
-          accountNumber: accountNumber.trim(),
-        }),
-      });
-      const body = await response.json().catch(() => null);
-      if (!response.ok || body?.status !== "saved") {
-        throw new Error(
-          body?.status === "unsupported_bank"
-            ? "That payout bank is no longer supported."
-            : body?.status === "driver_not_eligible"
-              ? "Complete driver verification before configuring payouts."
-              : body?.status === "invalid_account"
-                ? "Check the account holder name and account number."
-                : "We couldn’t save this payout account.",
-        );
-      }
-      setAccountNumber("");
-      setNotice("Payout account saved.");
-      await fetchSnapshot(false);
-    } catch (saveError) {
-      setError(
-        saveError instanceof Error
-          ? saveError.message
-          : "We couldn’t save this payout account.",
-      );
-    } finally {
-      setBusy("");
-    }
+  async function save(){
+    if(!driverId||saving)return;
+    setSaving(true);setError("");setNotice("");
+    try{
+      const {error:writeError}=await supabase.from("driver_settlement_preferences")
+        .upsert({
+          driver_id:driverId,
+          requested_schedule:schedule,
+          preferred_destination_type:destination,
+          updated_at:new Date().toISOString(),
+        },{onConflict:"driver_id"});
+      if(writeError)throw writeError;
+      setNotice("Preference saved. This does not request or schedule a transfer.");
+    }catch{
+      setError("Your preference could not be saved. No payout was requested.");
+    }finally{setSaving(false)}
   }
 
-  async function requestPayout() {
-    const value = Number(payoutAmount);
-    if (!Number.isFinite(value) || value <= 0) {
-      setError("Enter a valid payout amount.");
-      return;
-    }
-    if (!snapshot?.account) {
-      setError("Save a payout account before requesting a withdrawal.");
-      return;
-    }
-    if (value > snapshot.availableEtb) {
-      setError("The payout amount is higher than your available earnings.");
-      return;
-    }
+  const completed=useMemo(()=>report?.payoutRequests.filter(r=>r.status==="paid")||[],[report]);
+  const outstanding=useMemo(()=>report?.payoutRequests.filter(r=>r.status==="requested"||r.status==="processing")||[],[report]);
 
-    setBusy("payout");
-    setError("");
-    setNotice("");
-    try {
-      const idempotencyKey =
-        "payout-" +
-        (typeof crypto !== "undefined" && crypto.randomUUID
-          ? crypto.randomUUID()
-          : Date.now().toString(36) + "-" + Math.random().toString(36).slice(2));
+  return <main className="nr-app bf-driver-settlement" data-mode="driver">
+    <div className="bf-settlement-wrap">
+      <header className="bf-settlement-header">
+        <button type="button" onClick={()=>router.push("/driver/earnings")} aria-label="Back to driver earnings">
+          <Icon name="back" size={20}/>
+        </button>
+        <div><span className="bf-settlement-kicker">BILOO · DRIVER FINANCE</span>
+          <h1>{label("Settlement center","የክፍያ ማስተካከያ")}</h1>
+          <p>{label("Your earnings and future payout preferences, clearly separated.","ገቢዎን እና የወደፊት ክፍያ ምርጫዎችዎን ይመልከቱ።")}</p></div>
+        <Link href="/driver/earnings/report" aria-label="Detailed earnings report"><Icon name="chart" size={20}/></Link>
+      </header>
 
-      const response = await nexrideApiFetch("/api/driver/payouts", {
-        method: "POST",
-        cache: "no-store",
-        headers: { "Idempotency-Key": idempotencyKey },
-        body: JSON.stringify({ amountEtb: value }),
-      });
-      const body = await response.json().catch(() => null);
-      if (
-        !response.ok &&
-        response.status !== 202
-      ) {
-        throw new Error(
-          body?.status === "insufficient_earnings"
-            ? "Your available earnings changed before the payout was reserved."
-            : body?.status === "payout_account_required"
-              ? "Save a payout account before requesting a withdrawal."
-              : body?.status === "driver_not_eligible"
-                ? "Payouts are available only to active, verified drivers."
-                : body?.status === "provider_rejected"
-                  ? "The payout provider rejected this withdrawal. Check your account details."
-                  : "We couldn’t submit this payout request.",
-        );
-      }
+      <section className="bf-settlement-hero">
+        <div className="bf-settlement-hero-top"><span>{label("Gateway transfers","በክፍያ አገልግሎት ማስተላለፍ")}</span><Icon name="shield" size={20}/></div>
+        <h2>{label("Not yet enabled","እስካሁን አልነቃም")}</h2>
+        <p>{label("No bank or mobile-money transfer can be requested from this screen. Integration and merchant approval are reserved for the final phase.",
+          "ከዚህ ገጽ የባንክ ወይም የሞባይል ገንዘብ ዝውውር መጠየቅ አይቻልም።")}</p>
+      </section>
 
-      setPayoutAmount("");
-      setNotice(
-        body?.status === "paid"
-          ? "Payout confirmed."
-          : body?.status === "verification_required"
-            ? "Payout requested. It will stay pending until the provider confirms it."
-            : "Payout submitted. Processing time can vary.",
-      );
-      await fetchSnapshot(false);
-    } catch (requestError) {
-      setError(
-        requestError instanceof Error
-          ? requestError.message
-          : "We couldn’t submit this payout request.",
-      );
-    } finally {
-      setBusy("");
-    }
-  }
+      {loading?<div className="bf-settlement-skeleton" aria-busy="true"><span/><span/><span/></div>:<>
+        {error&&<div className="bf-settlement-message error" role="alert"><Icon name="info" size={18}/>{error}</div>}
+        {notice&&<div className="bf-settlement-message success" role="status"><Icon name="check" size={18}/>{notice}</div>}
 
-  async function refreshStatuses() {
-    setBusy("refresh");
-    setError("");
-    setNotice("");
-    try {
-      const response = await nexrideApiFetch("/api/driver/payouts", {
-        method: "PATCH",
-        cache: "no-store",
-        body: JSON.stringify({}),
-      });
-      const body = await response.json().catch(() => null);
-      if (!response.ok || body?.status !== "reconciled")
-        throw new Error("We couldn’t refresh the payout status.");
-      await fetchSnapshot(false);
-      setNotice(
-        body.updated
-          ? "Payout status updated."
-          : "No payout status changes were reported.",
-      );
-    } catch (refreshError) {
-      setError(
-        refreshError instanceof Error
-          ? refreshError.message
-          : "We couldn’t refresh the payout status.",
-      );
-    } finally {
-      setBusy("");
-    }
-  }
+        <section className="bf-settlement-section">
+          <div className="bf-settlement-section-head"><h2>{label("Recorded financial position","የተመዘገበ የገንዘብ ሁኔታ")}</h2><span>{label("Lifetime","እስካሁን")}</span></div>
+          <div className="bf-settlement-metrics">
+            <Summary label="Net driver earnings" value={report?.netDriverEarningsEtb??null} note="Posted driver shares minus deductions" />
+            <Summary label="Gross ride fares" value={report?.grossFaresEtb??null} note="Fare accounting only; not cash held" />
+            <Summary label="Cash pending confirmation" value={report?.cashFaresPendingEtb??null} note="Not counted as collected or payable" />
+            <Summary label="Cash trips marked paid" value={report?.cashFaresConfirmedEtb??null} note="Recorded trip status, not bank settlement" />
+            <Summary label="Payouts marked paid" value={report?.paidOutEtb??null} note="Recorded finalized ledger entries" />
+            <Summary label="Pending payout entries" value={report?.pendingPayoutEtb??null} note="No new transfers can be initiated here" />
+          </div>
+          <p className="bf-settlement-disclosure">Commission and remittance balances are not finalized until the platform's financial rules and ledgers are reconciled. A recorded fare is never shown as money available to withdraw.</p>
+        </section>
 
-  const configured = snapshot?.enabled === true;
-  const eligible = snapshot?.eligible === true && !accountRestricted;
-  const hasPending = (snapshot?.requests || []).some((entry) =>
-    entry.status === "requested" || entry.status === "processing",
-  );
-
-  return (
-    <main
-      className="nr-app nr-driver-profile-subpage"
-      data-mode="driver"
-     
-    >
-      <div className="nr-driver-profile-subwrap">
-        <header className="nr-profile-subhead">
-          <button
-            className="nr-driver-icon-btn"
-            onClick={() => router.push("/driver/profile")}
-            aria-label={op("Back to driver profile")}
-          >
-            <Icon name="back" />
+        <section className="bf-settlement-section">
+          <div className="bf-settlement-section-head"><h2>{label("Future settlement preferences","የወደፊት ክፍያ ምርጫዎች")}</h2><span>PREPARATION ONLY</span></div>
+          <p className="bf-settlement-intro">Save how you would prefer to receive payouts after Biloo enables its approved settlement service. These settings do not authorize a transfer, register a bank account or store bank details.</p>
+          <div className="bf-settlement-form">
+            <label>{label("Preferred payout schedule","የሚመረጥ የክፍያ ጊዜ")}
+              <select value={schedule} onChange={e=>setSchedule(e.target.value as Schedule)} disabled={saving}>
+                {schedules.map(item=><option key={item.id} value={item.id}>{am?item.am:item.label}</option>)}
+              </select></label>
+            <label>{label("Preferred destination type","የሚመረጥ የክፍያ መድረሻ")}
+              <select value={destination} onChange={e=>setDestination(e.target.value as Destination)} disabled={saving}>
+                {destinations.map(item=><option key={item.id} value={item.id}>{am?item.am:item.label}</option>)}
+              </select></label>
+          </div>
+          <button type="button" className="bf-settlement-save" onClick={()=>void save()} disabled={saving||!driverId}>
+            <Icon name="check" size={18}/>{saving?label("Saving…","በማስቀመጥ ላይ…"):label("Save preferences","ምርጫዎችን አስቀምጥ")}
           </button>
-          <div>
-            <span className="nr-driver-kicker">BILOO · DRIVER</span>
-            <h1>{op("Payouts")}</h1>
-            <p>Withdraw eligible earnings and track payout status.</p>
-          </div>
-        </header>
+          <div className="bf-settlement-privacy"><Icon name="lock" size={17}/> No PIN, account number, OTP, or card details are collected.</div>
+        </section>
 
-        {loading ? (
-          <div className="nr-driver-profile-loading" aria-busy="true">
-            <span className="wide" />
-            <span className="panel" />
-          </div>
-        ) : (
-          <>
-            {error && (
-              <div className="nr-profile-alert" role="alert">
-                <Icon name="info" size={17} />
-                <span>{error}</span>
-              </div>
-            )}
-            {notice && (
-              <div className="nr-profile-alert success" role="status">
-                <Icon name="check" size={17} />
-                <span>{notice}</span>
-              </div>
-            )}
+        <section className="bf-settlement-section">
+          <div className="bf-settlement-section-head"><h2>{label("Recorded payout history","የክፍያ ታሪክ")}</h2><span>{report?.payoutRequests.length??0} records</span></div>
+          {!report?.payoutRequests.length?<div className="bf-settlement-empty"><Icon name="clock" size={22}/><strong>No payouts recorded</strong><p>Approved settlements will appear here after provider integration and verification.</p></div>:
+            <div className="bf-settlement-list">{report.payoutRequests.map(row=><article key={row.id} className="bf-settlement-row">
+              <span className="bf-settlement-row-icon"><Icon name={row.status==="paid"?"check":"clock"} size={17}/></span>
+              <div><strong>{row.status==="paid"?"Confirmed paid":row.status==="processing"?"Processing":row.status==="requested"?"Requested":row.status==="failed"?"Failed":"Cancelled"}</strong>
+                <small>{new Date(row.createdAt).toLocaleDateString("en-ET",{dateStyle:"medium"})} · Reference {row.id.slice(0,8)}</small>
+              </div><strong>{formatEtb(row.amountEtb,2)} ETB</strong>
+            </article>)}</div>}
+          <p className="bf-settlement-disclosure">{outstanding.length} unresolved requests · {completed.length} payout requests marked paid. These are historical records, not a provider balance inquiry.</p>
+        </section>
+      </>}
+    </div>
+  </main>;
+}
 
-            <section className="nr-profile-panel">
-              <div className="nr-profile-panel-head">
-                <div>
-                  <h2>Payout balance</h2>
-                  <p>
-                    Available earnings exclude payouts already reserved, processing,
-                    or paid.
-                  </p>
-                </div>
-                <span className="nr-driver-kicker">
-                  {configured ? "CHAPA" : "UNAVAILABLE"}
-                </span>
-              </div>
-
-              <div className="nr-vehicle-detail-grid">
-                <div className="nr-vehicle-detail">
-                  <span>Available to withdraw</span>
-                  <strong>
-                    {formatEtb(snapshot?.availableEtb || 0, 2)} ETB
-                  </strong>
-                </div>
-                <div className="nr-vehicle-detail">
-                  <span>Processing</span>
-                  <strong>{formatEtb(totals.processing, 2)} ETB</strong>
-                </div>
-                <div className="nr-vehicle-detail">
-                  <span>{op("Paid out")}</span>
-                  <strong>{formatEtb(totals.paid, 2)} ETB</strong>
-                </div>
-              </div>
-
-              {!configured ? (
-                <div className="nr-profile-locked-note">
-                  <Icon name="wallet" size={17} />
-                  <span>
-                    Payouts are not available right now. Your recorded earnings remain visible.
-                  </span>
-                </div>
-              ) : !eligible ? (
-                <div className="nr-profile-locked-note">
-                  <Icon name="shield" size={17} />
-                  <span>
-                    Payout setup becomes available after your driver account and
-                    documents are approved and active.
-                  </span>
-                </div>
-              ) : snapshot?.account ? (
-                <div className="nr-payout-account-summary">
-                  <div>
-                    <span>Saved payout account</span>
-                    <strong>{snapshot.account.bankName}</strong>
-                    <small>
-                      {snapshot.account.accountName} ·{" "}
-                      {snapshot.account.accountNumberMasked}
-                    </small>
-                  </div>
-                  <span className="nr-doc-status approved">SAVED</span>
-                </div>
-              ) : (
-                <div className="nr-profile-locked-note">
-                  <Icon name="info" size={17} />
-                  <span>
-                    Add a supported bank or mobile-money account before requesting
-                    your first payout.
-                  </span>
-                </div>
-              )}
-            </section>
-
-            {configured && eligible && (
-              <section className="nr-profile-panel">
-                <div className="nr-profile-panel-head">
-                  <div>
-                    <h2>
-                      {snapshot?.account
-                        ? "Update payout account"
-                        : "Add payout account"}
-                    </h2>
-                    <p>
-                      For security, your full account number is not shown again after saving.
-                    </p>
-                  </div>
-                </div>
-
-                {snapshot?.banksUnavailable && (
-                  <div className="nr-profile-alert info">
-                    <Icon name="info" size={17} />
-                    <span>
-                      The provider bank list is temporarily unavailable. Existing
-                      payout details remain unchanged.
-                    </span>
-                  </div>
-                )}
-
-                <div className="nr-profile-form nr-payout-form">
-                  <label>
-                    Bank or payout provider
-                    <select
-                      value={bankCode}
-                      onChange={(event) => setBankCode(event.target.value)}
-                      disabled={busy !== "" || snapshot?.banksUnavailable}
-                    >
-                      <option value="">Choose bank</option>
-                      {snapshot?.account &&
-                        !snapshot.banks.some(
-                          (bank) => bank.code === snapshot.account?.bankCode,
-                        ) && (
-                          <option value={snapshot.account.bankCode}>
-                            {snapshot.account.bankName}
-                          </option>
-                        )}
-                      {snapshot?.banks.map((bank) => (
-                        <option key={bank.code} value={bank.code}>
-                          {bank.name}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label>
-                    Account holder name
-                    <input
-                      value={accountName}
-                      onChange={(event) => setAccountName(event.target.value)}
-                      autoComplete="name"
-                      maxLength={120}
-                      disabled={busy !== ""}
-                    />
-                  </label>
-                  <label>
-                    Account number
-                    <input
-                      value={accountNumber}
-                      onChange={(event) => setAccountNumber(event.target.value)}
-                      inputMode="numeric"
-                      autoComplete="off"
-                      placeholder={
-                        snapshot?.account
-                          ? "Enter again only to change the account"
-                          : "Enter account number"
-                      }
-                      disabled={busy !== ""}
-                    />
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() => void saveAccount()}
-                    disabled={
-                      busy !== "" ||
-                      !bankCode ||
-                      !accountNumber.trim() ||
-                      snapshot?.banksUnavailable
-                    }
-                  >
-                    {busy === "account" ? "Saving securely…" : "Save payout account"}
-                  </button>
-                </div>
-              </section>
-            )}
-
-            {configured && eligible && snapshot?.account && (
-              <section className="nr-profile-panel">
-                <div className="nr-profile-panel-head">
-                  <div>
-                    <h2>Request payout</h2>
-                    <p>
-                      Biloo reserves the amount first, then submits the transfer
-                      to the provider using an idempotent reference.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="nr-profile-form nr-payout-request-form">
-                  <label>
-                    Amount in ETB
-                    <input
-                      value={payoutAmount}
-                      onChange={(event) => setPayoutAmount(event.target.value)}
-                      inputMode="decimal"
-                      placeholder="0.00"
-                      disabled={busy !== ""}
-                    />
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() => void requestPayout()}
-                    disabled={
-                      busy !== "" ||
-                      !payoutAmount ||
-                      (snapshot?.availableEtb || 0) <= 0
-                    }
-                  >
-                    {busy === "payout" ? "Submitting…" : "Request payout"}
-                  </button>
-                </div>
-
-                <div className="nr-profile-locked-note">
-                  <Icon name="info" size={17} />
-                  <span>
-                    A submitted transfer can remain processing while the payment
-                    provider or bank completes its approval and settlement steps.
-                  </span>
-                </div>
-              </section>
-            )}
-
-            <section className="nr-profile-panel">
-              <div className="nr-profile-panel-head">
-                <div>
-                  <h2>Recent payouts</h2>
-                  <p>Only actual payout requests and verified provider states appear here.</p>
-                </div>
-                {configured && hasPending && (
-                  <button
-                    type="button"
-                    className="nr-payout-refresh"
-                    disabled={busy !== ""}
-                    onClick={() => void refreshStatuses()}
-                  >
-                    <Icon name="arrow" size={15} />
-                    {busy === "refresh" ? "Refreshing…" : "Refresh status"}
-                  </button>
-                )}
-              </div>
-
-              <div className="nr-payout-status-list">
-                {snapshot?.requests.length ? (
-                  snapshot.requests.map((entry) => (
-                    <div className="nr-payout-status-row" key={entry.id}>
-                      <div>
-                        <span>
-                          {entry.status === "paid"
-                            ? "Paid payout"
-                            : entry.status === "failed"
-                              ? "Failed payout"
-                              : "Payout request"}
-                        </span>
-                        <small>
-                          {new Date(entry.createdAt).toLocaleDateString("en-ET")}
-                          {entry.failureReason ? " · " + entry.failureReason : ""}
-                        </small>
-                      </div>
-                      <div>
-                        <strong>
-                          {formatEtb(money(entry.amountEtb), 2)} ETB
-                        </strong>
-                        <small>{entry.status}</small>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="nr-report-ledger-empty">
-                    No payout requests have been recorded yet.
-                  </div>
-                )}
-              </div>
-
-              <div className="nr-doc-actions">
-                <button
-                  className="nr-doc-secondary"
-                  onClick={() => router.push("/driver/earnings/report")}
-                >
-                  <Icon name="money" size={16} />
-                  View detailed earnings report
-                </button>
-              </div>
-            </section>
-          </>
-        )}
-      </div>
-    </main>
-  );
+function Summary({label,value,note}:{label:string;value:number|null;note:string}){
+  return <div className="bf-settlement-metric"><span>{label}</span><strong>{value===null?"Not finalized":formatEtb(value,2)+" ETB"}</strong><small>{note}</small></div>
 }
