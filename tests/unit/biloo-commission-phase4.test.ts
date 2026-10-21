@@ -9,9 +9,9 @@ const rule={
 };
 describe("Biloo Phase 4: deterministic commission and safe activation",()=>{
  it("converts decimal ETB precisely and rejects extra decimal precision",()=>{
-  expect(parseEtbMinor("300.10")).toBe(30010n);
-  expect(parseEtbMinor("0.01")).toBe(1n);
-  expect(formatMinorEtb(-1299n)).toBe("-12.99");
+  expect(parseEtbMinor("300.10")).toBe(BigInt(30010));
+  expect(parseEtbMinor("0.01")).toBe(BigInt(1));
+  expect(formatMinorEtb(-BigInt(1299))).toBe("-12.99");
   expect(()=>parseEtbMinor("100.001")).toThrow("INVALID_ETB_AMOUNT");
   expect(()=>parseEtbMinor("-0.01")).toThrow("INVALID_ETB_AMOUNT");
   expect(()=>parseEtbMinor("not-a-number")).toThrow();
