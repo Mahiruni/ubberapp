@@ -1,0 +1,30 @@
+/* Biloo Phase 3: consistent financial information hierarchy */
+.nr-driver-app-shell .bf-driver-breakdown {margin-top:16px;}
+.nr-driver-app-shell .bf-driver-breakdown-head{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin-bottom:12px;}
+.nr-driver-app-shell .bf-driver-breakdown-head h2{font-size:clamp(18px,3vw,22px);font-weight:800;letter-spacing:-.035em;color:#102334;margin:5px 0;}
+.nr-driver-app-shell .bf-driver-breakdown-head p{max-width:460px;font-size:12px;line-height:1.55;color:#667587!important;margin:0;}
+.nr-driver-app-shell .bf-driver-kicker{letter-spacing:.12em;font-weight:850;color:#087d50;font-size:10px;}
+.nr-driver-app-shell .bf-driver-breakdown-head>a{display:inline-flex;align-items:center;gap:3px;min-height:44px;white-space:nowrap;text-decoration:none;font-size:12px;font-weight:800;color:#047b4d;}
+.nr-driver-app-shell .bf-driver-summary-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;}
+.nr-driver-app-shell .bf-driver-financial-tile{display:flex;flex-direction:column;min-width:0;gap:6px;padding:17px;
+  border:1px solid #dfe7eb;background:#fff;border-radius:18px;box-shadow:0 4px 15px rgba(16,35,52,.04);}
+.nr-driver-app-shell .bf-driver-tile-icon{display:grid;place-items:center;width:36px;height:36px;background:#e9f8f1;color:#087d50;border-radius:12px;margin-bottom:4px;}
+.nr-driver-app-shell .bf-driver-tile-label{font-size:12px;color:#566f7c;font-weight:700;line-height:1.4;}
+.nr-driver-app-shell .bf-driver-financial-tile>strong{font-size:clamp(16px,2vw,23px);font-variant-numeric:tabular-nums;letter-spacing:-.045em;line-height:1.25;color:#102334;overflow-wrap:anywhere;}
+.nr-driver-app-shell .bf-driver-financial-tile>small{font-size:11px;line-height:1.5;color:#667587;}
+.nr-driver-app-shell .bf-driver-reconcile{display:flex;align-items:flex-start;gap:10px;border:1px solid #f1dfb3;
+ background:#fff9ec;border-radius:14px;margin-top:12px;padding:14px;font-size:12px;line-height:1.6;color:#684911;}
+.nr-driver-app-shell .bf-driver-reconcile svg{flex:none;margin-top:2px}
+.nr-driver-app-shell .bf-driver-settlement-link{margin-top:13px;min-height:55px;display:flex;align-items:center;
+ justify-content:space-between;padding:12px 16px;border:1px solid #cfe4da;background:#f0fbf5;color:#076b49!important;
+ text-decoration:none;border-radius:16px;font-size:13px;font-weight:800;}
+.nr-driver-app-shell .bf-driver-settlement-link span{display:flex;gap:10px;align-items:center;}
+.nr-driver-app-shell .nr-earnings-periods{grid-template-columns:repeat(5,minmax(0,1fr));}
+.nr-driver-app-shell .bf-driver-settlement-link:focus-visible,.nr-driver-app-shell .bf-driver-breakdown a:focus-visible{outline:3px solid #00a96a;outline-offset:3px}
+@media(max-width:650px){.nr-driver-app-shell .bf-driver-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .nr-driver-app-shell .bf-driver-breakdown-head{display:block;}
+ .nr-driver-app-shell .bf-driver-breakdown-head>a{margin-top:8px;}
+ .nr-driver-app-shell .bf-driver-financial-tile{padding:13px;}
+}
+@media(max-width:360px){.nr-driver-app-shell .nr-earnings-periods button{font-size:9px!important;padding-inline:2px!important;}}
+@media(prefers-reduced-motion:reduce){.nr-driver-app-shell .bf-driver-settlement-link{transition:none}}
