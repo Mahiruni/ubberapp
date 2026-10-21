@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { Icon } from "./ui";
 import { useOperationalTranslation } from "./operational-i18n";
 import {
@@ -15,16 +16,18 @@ import {
 } from "../../lib/nexride-driver-earnings";
 import "../../app/driver/earnings/earnings.css";
 import "../../app/detail-system.css";
+import "../../app/driver/earnings/phase3.css";
 
 const PERIODS: { id: EarningsPeriod; label: string }[] = [
   { id: "today", label: "Today" },
   { id: "week", label: "Week" },
   { id: "month", label: "Month" },
   { id: "30d", label: "30 days" },
+  { id: "all", label: "Lifetime" },
 ];
 
 function isPeriod(value: string | null): value is EarningsPeriod {
-  return value === "today" || value === "week" || value === "month" || value === "30d";
+  return value === "today" || value === "week" || value === "month" || value === "30d" || value === "all";
 }
 
 function chartNet(entry: EarningsLedgerEntry) {
@@ -171,10 +174,10 @@ export function DriverEarningsScreen({
             </strong>
 
             <p className="nr-earnings-definition">
-              Net driver earnings = posted driver earnings + adjustments − deductions. This is not gross rider fare, available wallet balance, or paid-out funds.
+              Net earnings count only posted driver earnings, adjustments and deductions. Gross rider fares, unconfirmed cash and pending transfers are never counted as money available to withdraw.
             </p>
 
-            {chart && <EarningsChart report={report} values={chart.values} labels={chart.labels} />}
+            {chart && period !== "all" && <EarningsChart report={report} values={chart.values} labels={chart.labels} />}
           </section>
 
           {emptyPeriod ? (
@@ -203,12 +206,41 @@ export function DriverEarningsScreen({
             </section>
           ) : null}
 
+
+          <section className="bf-driver-breakdown" aria-label="Financial breakdown">
+            <div className="bf-driver-breakdown-head">
+              <div>
+                <span className="bf-driver-kicker">FINANCIAL OVERVIEW</span>
+                <h2>Where your fare stands</h2>
+                <p>Only existing Biloo trip and ledger records are shown. Commission rates and driver shares are not estimated.</p>
+              </div>
+              <Link href="/driver/profile/payouts">Settlement center <Icon name="chevron" size={17}/></Link>
+            </div>
+            <div className="bf-driver-summary-grid">
+              <FinancialTile label="Recorded gross fares" value={report.grossFaresEtb} detail="Trip fare entries, not net earnings" icon="money" />
+              <FinancialTile label="Cash awaiting confirmation" value={report.cashFaresPendingEtb} detail={report.cashUnconfirmedTrips === null ? "Status unavailable" : `${report.cashUnconfirmedTrips} completed cash trips not marked paid`} icon="clock" />
+              <FinancialTile label="Cash marked paid" value={report.cashFaresConfirmedEtb} detail="Trip status only; not transferred to Biloo" icon="check" />
+              <FinancialTile label="Driver deductions" value={report.deductionsEtb} detail="Only recorded deductions" icon="list" />
+              <FinancialTile label="Platform commission" value={report.commissionEtb} detail="Not configured or reconciled" icon="chart" />
+              <FinancialTile label="Payouts marked paid" value={report.paidOutEtb} detail="Only finalized ledger payout entries" icon="wallet" />
+            </div>
+            {report.finalizedDriverEarningsEntries === 0 && (report.completedTrips || 0) > 0 && (
+              <div className="bf-driver-reconcile" role="status">
+                <Icon name="info" size={19}/>
+                <span>Driver shares for these trips have not been posted to the earnings ledger. A gross fare is not an earnings balance; Biloo will show net earnings when they are reconciled.</span>
+              </div>
+            )}
+          </section>
+
           <div className="nr-earnings-metrics">
             <MetricCard label={op("Trips completed")} value={report.completedTrips === null ? "—" : String(report.completedTrips)} hint={op("Completed in period")} icon="navigation" />
             <MetricCard label={op("Online time")} value={formatOnlineTime(report.onlineSeconds)} hint={op("Recorded sessions")} icon="clock" />
             <MetricCard label={op("Avg. per trip")} value={report.averagePerTripEtb === null ? "—" : `${formatEtb(report.averagePerTripEtb)} ETB`} hint={report.earningsPartial ? "Waiting for finalized earnings" : "Net earnings"} icon="money" />
           </div>
 
+          <Link className="bf-driver-settlement-link" href="/driver/profile/payouts">
+            <span><Icon name="shield" size={19}/><strong>Settlements &amp; payout preferences</strong></span><Icon name="chevron" size={18}/>
+          </Link>
           <button className="nr-earnings-report-action" onClick={onOpenReport}>
             <span><Icon name="wallet" size={19} /><strong>{op("View detailed report")}</strong></span>
             <Icon name="chevron" size={17} />
@@ -217,6 +249,17 @@ export function DriverEarningsScreen({
       ) : null}
     </>
   );
+}
+
+function FinancialTile({label,value,detail,icon}:{
+  label:string;value:number|null;detail:string;icon:"money"|"clock"|"check"|"list"|"chart"|"wallet";
+}){
+  return <div className="bf-driver-financial-tile">
+    <span className="bf-driver-tile-icon"><Icon name={icon} size={19}/></span>
+    <span className="bf-driver-tile-label">{label}</span>
+    <strong>{value === null ? "Not finalized" : `${formatEtb(value,2)} ETB`}</strong>
+    <small>{detail}</small>
+  </div>;
 }
 
 function MetricCard({
