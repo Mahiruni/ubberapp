@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Icon } from "../../../../components/nexride/ui";
 import { supabase } from "../../../../lib/supabase";
 import { resolveSessionRole } from "../../../../lib/nexride-account-role";
+import { useAppearance } from "../../../../lib/nexride-appearance";
 import {
   EARNINGS_PERIOD_STORAGE_KEY,
   earningsPeriodLabel,
@@ -17,9 +18,10 @@ import {
 import "../../../nexride.css";
 import "../earnings.css";
 import "../../../detail-system.css";
+import "./report-phase3.css";
 
 function isPeriod(value: string | null): value is EarningsPeriod {
-  return value === "today" || value === "week" || value === "month" || value === "30d";
+  return value === "today" || value === "week" || value === "month" || value === "30d" || value === "all";
 }
 
 function entryLabel(type: string) {
@@ -30,11 +32,45 @@ function entryLabel(type: string) {
   return "Payout";
 }
 
+function csvValue(v: unknown){
+  const raw = String(v ?? "");
+  // Prevent spreadsheet formula injection when CSV is opened by office apps.
+  const safe = /^[\t\r\n ]*[=+@-]/.test(raw) ? "'" + raw : raw;
+  return '"' + safe.replace(/"/g, '""') + '"';
+}
+function csvStatement(report: DriverEarningsReport){
+  const rows: (string|number)[][] = [
+    ["Biloo driver earnings statement", report.period],
+    ["Period start", report.start.toISOString()],
+    ["Period end", report.end.toISOString()],
+    ["Important", "Statement is informational; not proof of settlement"],
+    ["Gross fare entries ETB", report.grossFaresEtb ?? "Not finalized"],
+    ["Net driver earnings ETB", report.netDriverEarningsEtb ?? "Not finalized"],
+    ["Cash fares pending confirmation ETB", report.cashFaresPendingEtb ?? "Unavailable"],
+    ["Cash trips marked paid ETB", report.cashFaresConfirmedEtb ?? "Unavailable"],
+    ["Deductions ETB", report.deductionsEtb ?? "Unavailable"],
+    ["Adjustments ETB", report.adjustmentsEtb ?? "Unavailable"],
+    ["Payout ledger paid ETB", report.paidOutEtb ?? "Unavailable"],
+    [],
+    ["Ledger entry ID","Effective date","Type","Label","Amount ETB","Status","Ride ID"],
+    ...report.ledger.map(e=>[e.id,e.effectiveAt,e.entryType,e.label,e.amountEtb.toFixed(2),e.status,e.rideRequestId??""]),
+  ];
+  return "\uFEFF" + rows.map(row=>row.map(csvValue).join(",")).join("\r\n");
+}
 export default function DriverEarningsReportPage() {
   const router = useRouter();
+  const {resolvedTheme}=useAppearance("driver");
   const [report, setReport] = useState<DriverEarningsReport | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const download = () => {
+    if (!report) return;
+    const csv=csvStatement(report);
+    const url=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));
+    const a=document.createElement("a");
+    a.href=url;a.download=`biloo-driver-earnings-${report.period}.csv`;a.click();
+    URL.revokeObjectURL(url);
+  };
 
   useEffect(() => {
     let active = true;
@@ -76,7 +112,7 @@ export default function DriverEarningsReportPage() {
   }, [router]);
 
   return (
-    <main className="nr-app nr-earnings-report-page" data-mode="driver">
+    <main className="nr-app nr-earnings-report-page" data-mode="driver" data-theme={resolvedTheme}>
       <div className="nr-earnings-report-wrap">
         <header className="nr-earnings-report-head">
           <button className="nr-driver-icon-btn" onClick={() => router.replace("/driver/earnings")} aria-label="Back to driver earnings">
@@ -108,9 +144,15 @@ export default function DriverEarningsReportPage() {
               </section>
             )}
 
+            <button type="button" className="bf-statement-export" onClick={download}>
+              <Icon name="share" size={17}/> Download CSV earnings statement
+            </button>
             <section className="nr-report-summary-grid" aria-label="Financial summary">
               <ReportCard label="Net driver earnings" value={report.netDriverEarningsEtb} note="Posted earnings + adjustments − deductions" />
               <ReportCard label="Gross fares" value={report.grossFaresEtb} note="Recorded rider fare entries only" />
+              <ReportCard label="Cash awaiting confirmation" value={report.cashFaresPendingEtb} note="Not confirmed as collected" />
+              <ReportCard label="Cash trips marked paid" value={report.cashFaresConfirmedEtb} note="Trip status only, not a bank settlement" />
+              <ReportCard label="Platform commission" value={report.commissionEtb} note="Not finalized until approved commission posting" />
               <ReportCard label="Deductions" value={report.deductionsEtb} note="Posted deductions" />
               <ReportCard label="Adjustments" value={report.adjustmentsEtb} note="Posted earnings adjustments" />
               <ReportCard label="Paid-out funds" value={report.paidOutEtb} note="Payout entries marked paid" />
@@ -146,7 +188,7 @@ export default function DriverEarningsReportPage() {
             </section>
 
             <div className="nr-report-note">
-              “Net driver earnings” is not the same as gross rider fare, available balance, or paid-out funds. Available-balance withdrawals and exports are not currently enabled in Biloo, so this screen does not show inactive payout or export controls. Online time reflects recorded availability sessions.
+              This report exports recorded internal accounting entries only. It is not a payment receipt, settlement confirmation, or withdrawable balance. A cash trip marked pending is not treated as collected. Payout transfers and external payment APIs remain disabled until the final integration phase.
             </div>
           </>
         ) : null}
