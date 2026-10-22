@@ -682,3 +682,52 @@ html[lang="am"] .nr-driver-menu-footer :where(strong,small,span,button,p){
   border-radius:14px!important;
   box-shadow:0 3px 11px rgba(4,28,48,.11);
 }
+
+
+/* Biloo Driver: honor selected dark theme for live-trip operating sheets. */
+/* Earlier light-only wrappers remain intentional for the Home availability
+   card. Live-trip request/navigation sheets must instead honor Driver theme.
+   Keep snap heights, map gestures and pinned actions unchanged. */
+.nr-driver-app-shell[data-theme="dark"] .nr-driver-shell-content
+  :is(.nr-driver-request-page,.nr-driver-navigation-page)
+  :is(.nr-request-sheet,.nr-nav-bottom-card).nr-driver-sheet {
+  --driver-surface:#10386f;
+  --driver-surface-elevated:#174579;
+  --driver-text-primary:#fff;
+  --driver-text-secondary:#d6e2f1;
+  --driver-border:#365d89;
+  --surface:#10386f;
+  --surface-alt:#174579;
+  --text:#fff;
+  --muted:#d6e2f1;
+  --nr-text:#fff;
+  --nr-border:#365d89;
+  --nr-surface:#10386f;
+  --nr-surface-raised:#174579;
+  --trip-surface:#10386f;
+  --trip-elevated:#174579;
+  --trip-subtle:#0d3266;
+  --trip-border:#365d89;
+  --trip-text:#fff;
+  --trip-muted:#d6e2f1;
+  --trip-ink:#08295f;
+  --trip-primary:#f9c449;
+  color-scheme:dark!important;
+  color:#fff!important;
+  border-color:#365d89!important;
+  background-color:#10386f!important;
+}
+.nr-driver-app-shell[data-theme="dark"] .nr-driver-shell-content
+  :is(.nr-driver-request-page,.nr-driver-navigation-page)
+  :is(.nr-request-sheet,.nr-nav-bottom-card).nr-driver-sheet
+  :is(.nr-driver-sheet-content,.nr-driver-sheet-grab,.nr-driver-sheet-footer) {
+  color:#fff!important;
+  border-color:#365d89!important;
+  background-color:#10386f!important;
+}
+.nr-driver-app-shell[data-theme="dark"] .nr-driver-shell-content
+  :is(.nr-driver-request-page,.nr-driver-navigation-page)
+  :is(.nr-request-sheet,.nr-nav-bottom-card).nr-driver-sheet
+  :is(h1,h2,h3,strong) {
+  color:inherit;
+}
