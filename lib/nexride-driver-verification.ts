@@ -21,8 +21,14 @@ export async function getDriverReviewStatus(userId: string): Promise<DriverRevie
     : "draft";
 }
 
-export async function driverResumeDestination(session: Session): Promise<DriverDestination> {
-  if ((await resolveSessionRole(session)) !== "driver") return "/driver/auth";
+export async function driverResumeDestination(
+  session: Session,
+  alreadyVerifiedRole?: string,
+): Promise<DriverDestination> {
+  // The Driver welcome gate has already fetched the authoritative role.
+  // Reuse it rather than paying for the same profile query twice.
+  const role = alreadyVerifiedRole ?? await resolveSessionRole(session);
+  if (role !== "driver") return "/driver/auth";
   if (session.user.user_metadata?.driver_onboarding_complete !== true) return "/driver/onboarding";
 
   try {
