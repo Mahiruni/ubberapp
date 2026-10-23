@@ -50,7 +50,12 @@ export default function DriverHomePage() {
         return;
       }
 
-      const role = await resolveSessionRole(session);
+      // Two independent, read-only RLS-protected checks can run concurrently.
+      // A non-driver never passes the role gate or sees Driver data.
+      const [role, reviewStatus] = await Promise.all([
+        resolveSessionRole(session),
+        getDriverReviewStatus(session.user.id).catch(() => null),
+      ]);
       if (!active || explicitSignOutRole(window.localStorage)) return;
       if (role === "admin") {
         router.replace("/admin");
@@ -65,15 +70,11 @@ export default function DriverHomePage() {
         return;
       }
 
-      try {
-        const status = await getDriverReviewStatus(session.user.id);
-        if (!active) return;
-        if (status === "draft" || status === "rejected") {
-          router.replace("/driver/verification");
-          return;
-        }
-      } catch {
-        // Keep the driver shell reachable if the verification service is temporarily unavailable.
+      // Keep the driver shell reachable if the verification service is
+      // temporarily unavailable; never invent approval from a missing result.
+      if (reviewStatus === "draft" || reviewStatus === "rejected") {
+        router.replace("/driver/verification");
+        return;
       }
       setChecking(false);
     }).catch(() => router.replace("/driver/auth"));
