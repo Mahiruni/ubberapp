@@ -39,25 +39,20 @@ test("Rider has no footer tabs; hamburger and Profile remain independent", async
   await page.goto("/");
   await expect(page.locator(".biloo-footer-nav, .nr-mobile-nav")).toHaveCount(0);
   const menuTrigger = page.locator(".biloo-home-floating-header .nr-rider-hamburger");
-  const profileTrigger = page.locator(".biloo-home-floating-profile");
   await expect(menuTrigger).toBeVisible();
-  await expect(profileTrigger).toBeVisible();
-
-  const left = (await menuTrigger.boundingBox())!;
-  const right = (await profileTrigger.boundingBox())!;
-  expect(left.x + left.width).toBeLessThan(right.x);
+  await expect(page.locator(".biloo-home-floating-profile, .nr-rider-profile-top")).toHaveCount(0);
   await expect(page.locator(".nr-rider-home-sheet")).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
 
   await menuTrigger.click();
   const menu = page.locator("#nr-rider-drawer");
   await expect(menu).toBeVisible();
+  await expect(menu.locator(".biloo-menu-profile-card")).toHaveCount(1);
   await expect(menu.getByRole("button", { name: /My rides/i })).toBeVisible();
   await expect(menu.getByRole("button", { name: /Wallet & payments/i })).toBeVisible();
   await expect(menu.locator(".nr-menu-section-label").filter({ hasText: "ACCOUNT" })).toHaveCount(0);
   await page.locator(".nr-rider-drawer-close").click();
   await expect(menu).toHaveCount(0);
-  await expect(profileTrigger).toBeVisible();
 });
 
 test("Driver pages have no tab footer and retain routes in left hamburger", async ({ page }) => {
@@ -66,18 +61,14 @@ test("Driver pages have no tab footer and retain routes in left hamburger", asyn
   await page.goto("/driver/earnings");
   await expect(page.locator(".biloo-footer-nav, .nr-mobile-nav")).toHaveCount(0);
   const menuTrigger = page.locator(".nr-driver-global-header-left .nr-driver-menu-trigger");
-  const profileTrigger = page.locator(".nr-driver-global-header-right .nr-driver-header-profile");
   await expect(menuTrigger).toBeVisible();
-  await expect(profileTrigger).toBeVisible();
-  const left = (await menuTrigger.boundingBox())!;
-  const right = (await profileTrigger.boundingBox())!;
-  expect(left.x + left.width).toBeLessThan(right.x);
+  await expect(page.locator(".nr-driver-header-profile")).toHaveCount(0);
   await menuTrigger.click();
   const menu = page.locator("#nr-driver-menu");
   await expect(menu).toBeVisible();
   await expect(menu.locator('a[href="/driver/earnings"]')).toBeVisible();
   await expect(menu.locator('a[href="/driver/map"]')).toBeVisible();
-  await expect(menu.locator('a[href="/driver/profile"]')).toHaveCount(0);
+  await expect(menu.locator('.biloo-menu-profile-card[href="/driver/profile"]')).toHaveCount(1);
   await menu.locator('a[href="/driver/map"]').click();
   await expect(page).toHaveURL(/\/driver\/map$/);
   await expect(page.locator(".biloo-footer-nav")).toHaveCount(0);
@@ -90,12 +81,11 @@ test("Driver map homepage keeps swipe and separates Profile from hamburger", asy
   await page.goto("/driver/home");
   await expect(page.locator(".nr-driver-app-shell[data-home=true]")).toBeVisible();
   const menuTrigger = page.locator(".nr-driver-home-menu-host .nr-driver-menu-trigger");
-  const profileTrigger = page.locator(".nr-driver-home-profile");
   await expect(menuTrigger).toBeVisible();
-  await expect(profileTrigger).toBeVisible();
-  const left = (await menuTrigger.boundingBox())!;
-  const right = (await profileTrigger.boundingBox())!;
-  expect(left.x + left.width).toBeLessThan(right.x);
+  await expect(page.locator(".nr-driver-home-profile")).toHaveCount(0);
+  await menuTrigger.click();
+  await expect(page.locator("#nr-driver-menu .biloo-menu-profile-card")).toHaveCount(1);
+  await page.locator(".nr-driver-menu-close").click();
   await expect(page.locator(".nr-driver-home-swipe[data-map-input-boundary=true]")).toBeVisible();
   const availabilityPanel = page.locator(".nr-driver-home-control-panel");
   await expect(availabilityPanel.locator(".nr-driver-availability-swipe")).toBeVisible();
