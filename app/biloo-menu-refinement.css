@@ -342,3 +342,92 @@
     animation:none!important;
   }
 }
+
+/* Single shared account portrait, rendered only at the top of each menu.
+ * The image is a private, short-lived signed thumbnail that was warmed on
+ * app entry; its dimensions never depend on image network readiness.
+ */
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer) .biloo-menu-profile-card {
+  box-sizing:border-box;
+  display:flex;
+  align-items:center;
+  gap:13px;
+  width:100%;
+  min-height:88px;
+  margin:10px 0 6px;
+  padding:12px;
+  border:1px solid var(--ed-line)!important;
+  border-radius:18px;
+  background:var(--ed-panel)!important;
+  color:var(--ed-ink)!important;
+  text-decoration:none!important;
+  text-align:start;
+  font:inherit;
+  cursor:pointer;
+  touch-action:manipulation;
+}
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer) .biloo-menu-profile-avatar {
+  position:relative;
+  flex:0 0 62px;
+  display:grid;
+  place-items:center;
+  width:62px;
+  height:62px;
+  overflow:hidden;
+  border:2px solid var(--biloo-menu-gold);
+  border-radius:50%;
+  background:var(--ed-bg);
+  color:var(--ed-ink);
+  font-size:17px;
+  font-weight:800;
+  letter-spacing:-.02em;
+}
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer) .biloo-menu-profile-avatar img {
+  position:absolute;
+  inset:0;
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:center;
+  border-radius:50%;
+  background:var(--ed-bg);
+}
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer) .biloo-menu-profile-copy {
+  display:grid;
+  flex:1 1 auto;
+  gap:4px;
+  min-width:0;
+}
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer) .biloo-menu-profile-copy strong {
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:15px;
+  line-height:1.2;
+  font-weight:800;
+  color:var(--ed-ink)!important;
+}
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer) .biloo-menu-profile-copy small {
+  font-size:11px;
+  line-height:1.4;
+  color:var(--ed-muted)!important;
+}
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer) .biloo-menu-profile-card>svg:last-child {
+  flex:0 0 18px;
+  color:var(--ed-muted);
+}
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer) .biloo-menu-profile-card:hover {
+  border-color:var(--biloo-menu-gold)!important;
+}
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer) .biloo-menu-profile-card:focus-visible {
+  outline:3px solid var(--ed-accent)!important;
+  outline-offset:2px;
+}
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer) .biloo-menu-profile-card:disabled {
+  opacity:.55;
+  cursor:not-allowed;
+}
+@media(prefers-reduced-motion:reduce){
+  :is(.nr-rider-drawer-layer,.nr-driver-menu-layer) .biloo-menu-profile-card {transition:none!important;}
+}
