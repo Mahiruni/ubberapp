@@ -40,6 +40,7 @@ import "./biloo-footer-navigation.css";
 import "./biloo-account-premium.css";
 import "./biloo-performance.css";
 import "./biloo-journey-experience.css";
+import "./biloo-reference-account-safety.css";
 
 const description =
   "Book reliable rides across Addis Ababa with Biloo, a rider and driver mobility platform built for Ethiopia.";
