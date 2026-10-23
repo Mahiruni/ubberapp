@@ -44,7 +44,11 @@ export function RiderSettings({language,setLanguage}: Pick<Props,'language'|'set
 
   useEffect(()=>{try{setAlerts(localStorage.getItem(ALERTS_KEY)!=='off')}catch{}},[]);
 
-  return <div className="nr-account-settings nr-account-settings-v2">
+  return <div className="nr-account-settings nr-account-settings-v2 biloo-reference-settings">
+    <header className="biloo-ref-settings-heading">
+      <h2>{say("App settings", "የመተግበሪያ ቅንብሮች")}</h2>
+      <p>{say("A simpler way to personalize your Biloo experience.", "የBiloo ልምድዎን በቀላሉ ያስተካክሉ።")}</p>
+    </header>
     <SettingsGroups groups={[
       { id: "legal", icon: "shield", title: say("Legal documents", "ሕጋዊ ሰነዶች"), summary: say("Privacy and terms", "ግላዊነት እና ውሎች"), children: <nav className="biloo-settings-links" aria-label="Legal documents"><a href="/explore/privacy">Privacy policy <span>›</span></a><a href="/explore/terms">Terms of service <span>›</span></a></nav> },
 
@@ -85,6 +89,14 @@ export function RiderSettings({language,setLanguage}: Pick<Props,'language'|'set
     </div>
       </> },
     ]}/>
+    <div className="biloo-ref-settings-meta" aria-label={say("App information", "የመተግበሪያ መረጃ")}>
+      <span><Icon name="info" size={20}/>{say("App version", "የመተግበሪያ ስሪት")}</span>
+      <AppVersion />
+    </div>
+    <a className="biloo-ref-delete-entry" href="/account/manage?role=rider#account-deletion">
+      <Icon name="info" size={19}/>{say("Request account deletion", "መለያ እንዲሰረዝ ጠይቅ")}<Icon name="chevron" size={17}/>
+    </a>
+    <p className="biloo-ref-settings-note">{say("Account deletion requires verification; nothing is deleted by opening this page.", "መለያ ለመሰረዝ ማረጋገጫ ያስፈልጋል።")}</p>
   </div>;
 }
 
@@ -280,7 +292,7 @@ export function RiderProfile(props:Props) {
       <AppVersion />
     </footer>
 
-    {panel&&<Dialog title={
+    {panel&&<Dialog className={panel==='edit'?'biloo-ref-profile-modal':panel==='settings'?'biloo-ref-settings-modal':''} title={
       panel==='edit'?say('Edit profile','መገለጫ አርትዕ')
       :panel==='settings'?t('settings')
       :panel==='privacy'?say('Privacy & your data','ግላዊነት እና ውሂብዎ')
@@ -288,10 +300,10 @@ export function RiderProfile(props:Props) {
     } onClose={()=>{if(!busy)setPanel(null)}}>
       {panel==='edit'?<form className="nr-profile-form nr-profile-form-v2" onSubmit={e=>{e.preventDefault();void save()}} aria-busy={busy}>
         <div className="nr-edit-profile-intro">
-          <div className="nr-edit-avatar">{account?.avatar&&!photoFailed?<Image src={account.avatar} width={50} height={50} alt="" unoptimized onError={()=>setPhotoFailed(true)}/>:initials}</div>
+          <div className="nr-edit-avatar" role="img" aria-label={say("Profile photo", "የመገለጫ ፎቶ")}>{account?.avatar&&!photoFailed?<Image src={account.avatar} width={50} height={50} alt="" unoptimized onError={()=>setPhotoFailed(true)}/>:initials}</div>
           <div><strong>{say('Keep your account details current','የመለያ ዝርዝሮችዎን ወቅታዊ ያድርጉ')}</strong><small>{account?say('These details are used across your Biloo rides.','እነዚህ ዝርዝሮች በBiloo ጉዞዎችዎ ላይ ይጠቀማሉ።'):t('localAccount')}</small></div>
         </div>
-        <fieldset disabled={busy}>
+        <fieldset disabled={busy} className="biloo-ref-profile-fields">
           <InputField label={t('name')} required autoComplete="name" maxLength={80} value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/>
           <InputField label={t('phone')} type="tel" autoComplete="tel" maxLength={25} value={form.phone} readOnly={!!account} onChange={e=>{if(!account)setForm({...form,phone:e.target.value})}}/>
           <InputField label={t('email')} type="email" readOnly={!!account} autoComplete="email" maxLength={254} value={form.email} onChange={e=>setForm({...form,email:e.target.value})}/>
