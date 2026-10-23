@@ -19,6 +19,10 @@ describe("Biloo navigation and image-performance safeguards", () => {
     expect(driver).toContain('src="/brand/biloo-driver-get-started.webp"');
     expect(rider).toContain('fetchPriority="high"');
     expect(driver).toContain('fetchPriority="high"');
+    expect(rider).toContain('width={750}');
+    expect(rider).toContain('height={1333}');
+    expect(driver).toContain('width={864}');
+    expect(driver).toContain('height={1230}');
   });
 
   it("keeps the same account portrait in exactly one drawer location per role", () => {
