@@ -459,19 +459,6 @@
   touch-action:none!important;
 }
 .nr-driver-home-control-panel .nr-driver-swipe-thumb{border-radius:13px!important}
-.nr-driver-home-quick-actions{
-  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;
-  border-top:1px solid var(--driver-border);padding-top:12px
-}
-.nr-driver-home-quick-actions button{
-  display:flex;align-items:center;justify-content:center;gap:7px;
-  min-height:44px;padding:7px 5px;border:0;border-radius:12px;
-  background:var(--driver-bg);color:var(--driver-text-primary);
-  font-size:11px;font-weight:760;cursor:pointer;
-}
-.nr-driver-home-quick-actions button:hover{background:color-mix(in srgb,var(--driver-accent) 12%,var(--driver-bg))}
-.nr-driver-home-quick-actions button:active{transform:scale(.98)}
-.nr-driver-home-quick-actions button:focus-visible{outline:3px solid var(--driver-accent);outline-offset:2px}
 /* The white Driver command wrapper uses Rider-light status chip contrast,
    even when the rest of the Driver app is using its dark theme. */
 .nr-driver-app-shell[data-theme="dark"] .nr-driver-home-control-online[data-online="true"]{
@@ -494,10 +481,6 @@
 @media(max-height:650px){
   .nr-driver-home-control-state small{display:none}
   .nr-driver-home-control-panel{gap:8px;padding:10px 12px}
-  .nr-driver-home-quick-actions{padding-top:8px}
-}
-@media(prefers-reduced-motion:reduce){
-  .nr-driver-home-quick-actions button{transition:none!important}
 }
 
 
@@ -581,7 +564,6 @@
 
 /* NexRide navy and emerald Driver home accent, scoped to non-semantic surfaces. */
 .nr-driver-app-shell{--driver-accent:#00c878;--driver-success:#00b77a}
-.nr-driver-home-quick-actions button:focus-visible{outline-color:#00c878}
 
 /* Live Driver availability should distinguish the user-selected Online mode
    from accurate, server-confirmed GPS. Compact and non-interactive over map. */
