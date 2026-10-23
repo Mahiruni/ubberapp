@@ -27,11 +27,12 @@ describe("Biloo Rider + Driver navigation without a footer tab bar", () => {
 
   it("keeps a usable navigation and distinct profile destination for both roles", () => {
     expect(rider).toContain("<RiderMenu");
-    expect(rider).toContain('className="biloo-home-floating-profile"');
-    expect(rider).toContain('onClick={() => navigate("profile")}');
+    expect(rider).not.toContain('className="biloo-home-floating-profile"');
+    expect(riderMenu).toContain('className="biloo-menu-profile-card"');
     expect(riderMenu).toContain('aria-label={open ? say("Close menu"');
     expect(driver).toContain("<DriverHamburgerMenu");
-    expect(driver).toContain('className="nr-driver-header-profile"');
+    expect(driver).not.toContain('className="nr-driver-header-profile"');
+    expect(driver).toContain('className="biloo-menu-profile-card"');
     expect(driver).toContain('href="/driver/profile"');
     expect(driver).toContain('href: "/driver/earnings"');
     expect(driver).toContain('href: "/driver/map"');
