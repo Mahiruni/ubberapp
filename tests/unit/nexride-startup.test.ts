@@ -163,9 +163,10 @@ describe("rider initialization", () => {
     getSession.mockResolvedValue({ data: { session }, error: null });
     const first = initializeRider();
     expect(initializeRider()).toBe(first);
-    expect(await first).toMatchObject({ destination: "/", session });
+    expect(await first).toMatchObject({ destination: "/", session, accountRole: "rider" });
     await initializeRider();
     expect(getSession).toHaveBeenCalledTimes(1);
+    expect(resolveSessionRole).toHaveBeenCalledTimes(1);
   });
   it("allows retry after a failed session restoration", async () => {
     getSession.mockResolvedValueOnce({
