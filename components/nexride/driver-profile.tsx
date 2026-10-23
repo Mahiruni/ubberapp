@@ -182,10 +182,7 @@ export function DriverProfileScreen({
           </div>
         </div>
 
-        <button className="nr-driver-profile-edit" onClick={() => router.push("/driver/profile/settings")}>
-          <Icon name="settings" size={16}/>
-          {say("Edit")}
-        </button>
+
       </section>
 
       {profile.accountStatus !== "active" && (
@@ -243,7 +240,7 @@ export function DriverProfileScreen({
 
         <div>
           <DriverSection title={say("Preferences")} subtitle={say("Make Biloo work your way")}>
-            <DriverRow icon="settings" title={say("Appearance, language & notifications")} detail={say("Theme, app permissions and preferences")} onClick={() => router.push("/driver/profile/settings")}/>
+            <DriverRow icon="settings" title={say("Profile & app settings")} detail={say("Personal details, appearance, language and alerts")} onClick={() => router.push("/driver/profile/settings")}/>
             <DriverRow icon="shield" title={say("Privacy & data")} detail={say("Read how Biloo handles your information")} onClick={() => router.push("/explore/privacy")}/>
             <DriverRow icon="info" title={say("Terms & about Biloo")} detail={say("Service terms and information")} onClick={() => router.push("/explore/terms")}/>
           </DriverSection>
