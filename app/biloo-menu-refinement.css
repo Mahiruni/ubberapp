@@ -378,3 +378,9 @@
     animation: none !important;
   }
 }
+
+/* Standalone Driver drawer on Safety/Support follows the same left-side placement. */
+.nr-driver-standalone-menu {
+  left: max(8px,env(safe-area-inset-left,0px)) !important;
+  right: auto !important;
+}
