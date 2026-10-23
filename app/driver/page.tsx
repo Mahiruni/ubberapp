@@ -49,6 +49,8 @@ export default function DriverWelcome() {
       <img
         className="biloo-driver-welcome__photo"
         src="/brand/biloo-driver-get-started.webp"
+        width={864}
+        height={1230}
         alt="Biloo Driver welcome: an Ethiopian driver standing by his white Biloo car in Addis Ababa"
         loading="eager"
         fetchPriority="high"
