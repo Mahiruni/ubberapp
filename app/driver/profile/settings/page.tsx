@@ -6,6 +6,8 @@ import { NexRideFeedbackSettings } from "../../../../components/nexride/feedback
 import { PermissionSettings } from "../../../../components/nexride/permission-settings";
 import { NativeReliabilitySettings } from "../../../../components/nexride/native-reliability-settings";
 import { SettingsGroups } from "../../../../components/nexride/settings-groups";
+import { DriverPhotoManager } from "../../../../components/nexride/driver-photo-manager";
+import { AppVersion } from "../../../../components/nexride/app-version";
 import { Icon, LanguageContext, useTranslation } from "../../../../components/nexride/ui";
 import { announceLanguage } from "../../../../components/nexride/language-provider";
 import { DriverThemeSelector } from "../../../../components/nexride/driver-app-shell";
@@ -114,12 +116,23 @@ export default function DriverProfileSettingsPage() {
     }
   }
 
-  return <main className="nr-app nr-driver-profile-subpage" data-mode="driver">
+  return <main className="nr-app nr-driver-profile-subpage biloo-reference-driver-settings" data-mode="driver">
     <div className="nr-driver-profile-subwrap">
-      <header className="nr-profile-subhead"><div><span className="nr-driver-kicker">BILOO · {t("driver")}</span><h1>{t("settings")}</h1><p>{t("entrySettingsIntro")}</p></div><button type="button" className="biloo-account-return" aria-label={say("Back to Account","ወደ መለያ ተመለስ")} onClick={()=>router.push("/driver/profile")}><Icon name="back" size={18}/></button></header>
+      <header className="nr-profile-subhead biloo-ref-driver-settings-head">
+        <button type="button" className="biloo-account-return" aria-label={say("Back to Account","ወደ መለያ ተመለስ")} onClick={()=>router.push("/driver/profile")}><Icon name="back" size={22}/></button>
+        <div><h1>{say("Profile settings", "የመገለጫ ቅንብሮች")}</h1></div>
+      </header>
       {loading ? <div className="nr-driver-profile-loading" aria-busy="true"><span className="wide"/><span className="panel"/></div> : profile ? <>
+        <section className="biloo-ref-driver-avatar-zone" aria-label={say("Profile photo", "የመገለጫ ፎቶ")}>
+          <DriverPhotoManager driverId={profile.id} fullName={profile.fullName}>
+            <span className="biloo-ref-driver-avatar">
+              {profile.avatarUrl ? <img src={profile.avatarUrl} alt={say("Your profile photo", "የእርስዎ የመገለጫ ፎቶ")} decoding="async" /> : <Icon name="user" size={46}/>}
+            </span>
+          </DriverPhotoManager>
+          <small>{say("Tap the photo to view, crop or update it", "ፎቶዎን ለማየት ወይም ለመቀየር ይንኩ")}</small>
+        </section>
         {profile.accountStatus !== "active" && <div className="nr-profile-alert" role="status"><Icon name="info" size={17}/><span>{t("entryEditingLimited")}</span></div>}
-        <SettingsGroups groups={[
+        <SettingsGroups defaultOpenId="account" groups={[
       { id: "legal", icon: "shield", title: say("Legal documents", "ሕጋዊ ሰነዶች"), summary: say("Privacy and terms", "ግላዊነት እና ውሎች"), children: <nav className="biloo-settings-links" aria-label="Legal documents"><a href="/explore/privacy">Privacy policy <span>›</span></a><a href="/explore/terms">Terms of service <span>›</span></a></nav> },
 
           { id: "account", icon: "user", title: say("Account", "መለያ"), summary: say("Personal details, documents and vehicle", "የግል መረጃ፣ ሰነዶች እና ተሽከርካሪ"), children: <>
@@ -156,6 +169,12 @@ export default function DriverProfileSettingsPage() {
         </section>
           </> },
         ]}/>
+        <div className="biloo-ref-driver-account-info">
+          <div className="biloo-ref-settings-meta"><span><Icon name="info" size={19}/>{say("App version", "የመተግበሪያ ስሪት")}</span><AppVersion/></div>
+          <button type="button" className="biloo-ref-delete-entry" onClick={()=>router.push("/account/manage?role=driver#account-deletion")}>
+            <Icon name="info" size={19}/>{say("Request account deletion", "መለያ እንዲሰረዝ ጠይቅ")}<Icon name="chevron" size={17}/>
+          </button>
+        </div>
       </> : <section className="nr-profile-state-card" role="alert"><Icon name="info" size={22}/><strong>{t("entrySettingsUnavailable")}</strong><p>{feedback || t("entryProfileLoadFailure")}</p><button type="button" onClick={() => window.location.reload()}>{t("tryAgain")}</button></section>}
     </div>
   </main>;
