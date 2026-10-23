@@ -332,17 +332,10 @@ export function RiderMenu({
             </header>
 
 
-            <button type="button" className="nr-menu-person" disabled={locked} onClick={() => navigate("profile")}><span className="nr-menu-person-avatar">{identity.avatar ? <img src={identity.avatar} alt="" onError={() => setIdentity(current => ({...current,avatar:""}))}/> : (identity.name.trim().split(/\s+/).slice(0,2).map(v=>v[0]).join("").toUpperCase() || <Icon name="user"/>)}</span><span className="nr-menu-person-copy"><strong>{identity.name || say("Welcome to Biloo", "እንኳን ወደ Biloo መጡ")}</strong><small>{say("View profile", "መገለጫ ይመልከቱ")}</small></span><Icon name="chevron" size={18}/></button>
-
-
             <div className="nr-menu-scroll" data-testid="rider-menu-scroll">
               <div className="nr-menu-section-label">{say("OVERVIEW", "አጠቃላይ")}</div>
               <nav className="nr-rider-drawer-nav" aria-label={say("Rider navigation", "የተሳፋሪ አሰሳ")}>
                 {renderRows(items.slice(0,4))}
-              </nav>
-              <div className="nr-menu-section-label">{say("ACCOUNT", "መለያ")}</div>
-              <nav className="nr-rider-drawer-nav" aria-label={say("Account and settings", "መለያ እና ቅንብሮች")}>
-                {renderRows(items.slice(6,8))}
               </nav>
               <div className="nr-menu-section-label">{say("HELP & SAFETY", "ድጋፍ እና ደህንነት")}</div>
               <nav className="nr-rider-drawer-nav" aria-label={say("Help and safety", "ድጋፍ እና ደህንነት")}>
@@ -373,19 +366,6 @@ export function RiderMenu({
                     <AppVersion />
                   </div>
                 </div>
-                <button
-                  type="button"
-                  className="nr-rider-drawer-signout"
-                  onClick={() => void signOut()}
-                  disabled={signingOut}
-                >
-                  <Icon name="power" size={18} />
-                  <span>{signingOut ? say("Logging out…", "በመውጣት ላይ…") : say("Log out", "ውጣ")}</span>
-                </button>
-                {signOutError && <p role="alert">{signOutError}</p>}
-                {!hasSession && !signOutError && (
-                  <small className="nr-rider-drawer-footer-note">{say("Exit this local Rider session.", "ይህን የተሳፋሪ ክፍለ ጊዜ ይውጡ።")}</small>
-                )}
               </div>
             </footer>
           </aside>
