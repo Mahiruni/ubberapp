@@ -289,15 +289,8 @@ function DriverHamburgerMenu({
               </nav>
             </div>
 
-            <footer className="nr-driver-menu-footer">
-              <div className="nr-driver-menu-footer-brand">
-                <img className="biloo-driver-menu-brandmark" src="/brand/biloo-mark.svg" width={40} height={40} alt="" aria-hidden="true" />
-                <div>
-                  <strong>Biloo Driver</strong>
-                  <small>{language === "am" ? "አሽከርክር። አትርፍ። እደግ።" : "Drive. Earn. Grow."}</small>
-                  <AppVersion />
-                </div>
-              </div>
+            <footer className="nr-driver-menu-footer" aria-label={language === "am" ? "የመተግበሪያ መረጃ" : "App information"}>
+              <AppVersion />
             </footer>
           </aside>
         </div>, document.body
