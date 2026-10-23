@@ -30,88 +30,72 @@ async function mockDriver(page: Page) {
   await page.routeWebSocket("**/realtime/v1/**", ws => ws.close());
 }
 
-test("Rider footer matches the approved five items and leaves the map booking sheet uncovered", async ({ page }) => {
+
+test("Rider has no footer tabs; hamburger and Profile remain independent", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.addInitScript(() => { localStorage.setItem("nexride:preview-enabled", "true"); });
   await page.route("https://tile.openstreetmap.org/**", route =>
     route.fulfill({ contentType: "image/svg+xml", body: '<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256"/>' }));
   await page.goto("/");
-  const footer = page.getByRole("navigation", { name: "Rider bottom navigation" });
-  await expect(footer).toBeVisible();
-  await expect(footer.locator(".biloo-footer-nav__item")).toHaveCount(5);
-  // X-style navigation is icon-only visually; accessible names remain available.
-  for (const name of ["Home", "Activity", "Wallet", "Support", "Account"]) {
-    await expect(footer.getByRole(name === "Home" || name === "Account" ? "button" : "link", { name, exact: true })).toBeVisible();
-  }
-  await expect(footer.locator(".biloo-footer-nav__surface")).toHaveCSS("border-radius", "0px");
-  await expect(footer.locator(".biloo-footer-nav__surface")).toHaveCSS("box-shadow", "none");
-  const navBox = (await footer.boundingBox())!;
-  expect(navBox.x).toBe(0);
-  expect(navBox.width).toBeCloseTo(390, 0);
-  expect(navBox.y + navBox.height).toBeCloseTo(844, 0);
-  await expect(footer.locator(".biloo-footer-nav__label").first()).toHaveCSS("width", "1px");
-  await expect(footer.getByRole("link", { name: "Activity" })).toHaveAttribute("href", "/rider/trips");
-  await expect(footer.getByRole("link", { name: "Wallet" })).toHaveAttribute("href", "/rider/wallet");
-  await expect(footer.getByRole("link", { name: "Support" })).toHaveAttribute("href", "/support");
-  const sheet = (await page.locator(".nr-rider-flow-panel").boundingBox())!;
-  const geometry = await page.locator(".nr-rider-flow-panel").evaluate(el => ({
-    height: getComputedStyle(el).height,
-    minHeight: getComputedStyle(el).minHeight,
-    bottom: getComputedStyle(el).bottom,
-    ratio: getComputedStyle(el.closest(".rider-map-flow")!).getPropertyValue("--nr-flow-sheet-height"),
-    host: el.closest(".rider-map-flow")?.className,
-  }));
-  expect(sheet.y, JSON.stringify(geometry)).toBeGreaterThanOrEqual(844 * 0.55);
-  const tabs = (await footer.boundingBox())!;
-  const searchBox = (await page.getByRole("button", { name: "Search destination", exact: true }).boundingBox())!;
-  expect(searchBox.y + searchBox.height).toBeLessThanOrEqual(tabs.y - 3);
-  expect(sheet.y + sheet.height).toBeGreaterThanOrEqual(tabs.y);
-  // The top of the opaque nav replaces the visible bottom edge of the Rider
-  // sheet; the sheet snap height and pointer targets remain unchanged.
-  expect(tabs.y).toBeGreaterThan(sheet.y);
-  await expect(footer).toHaveCSS("background-color", "rgb(255, 255, 255)");
+  await expect(page.locator(".biloo-footer-nav, .nr-mobile-nav")).toHaveCount(0);
+  const menuTrigger = page.locator(".biloo-home-floating-header .nr-rider-hamburger");
+  const profileTrigger = page.locator(".biloo-home-floating-profile");
+  await expect(menuTrigger).toBeVisible();
+  await expect(profileTrigger).toBeVisible();
+
+  const left = (await menuTrigger.boundingBox())!;
+  const right = (await profileTrigger.boundingBox())!;
+  expect(left.x + left.width).toBeLessThan(right.x);
   await expect(page.locator(".nr-rider-home-sheet")).toBeVisible();
-  // The drawer remains full snap-height so touch gestures do not jump when tabs appear.
-  await footer.getByRole("button", { name: "Account" }).click();
-  await expect(footer.getByRole("button", { name: "Account" })).toHaveAttribute("aria-current", "page");
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+
+  await menuTrigger.click();
+  const menu = page.locator("#nr-rider-drawer");
+  await expect(menu).toBeVisible();
+  await expect(menu.getByRole("button", { name: /My rides/i })).toBeVisible();
+  await expect(menu.getByRole("button", { name: /Wallet & payments/i })).toBeVisible();
+  await expect(menu.locator(".nr-menu-section-label").filter({ hasText: "ACCOUNT" })).toHaveCount(0);
+  await page.locator(".nr-rider-drawer-close").click();
+  await expect(menu).toHaveCount(0);
+  await expect(profileTrigger).toBeVisible();
 });
 
-test("Driver footer provides Activity/Map/Earnings and hides during critical live-trip controls", async ({ page }) => {
+test("Driver pages have no tab footer and retain routes in left hamburger", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await mockDriver(page);
   await page.goto("/driver/earnings");
-  const footer = page.getByRole("navigation", { name: "Driver bottom navigation" });
-  await expect(footer).toBeVisible();
-  await expect(footer.locator(".biloo-footer-nav__item")).toHaveCount(5);
-  for (const name of ["Home", "Activity", "Map", "Earnings", "Account"]) {
-    await expect(footer.getByRole("link", { name, exact: true })).toBeVisible();
-  }
-  await expect(footer.locator(".biloo-footer-nav__surface")).toHaveCSS("border-radius", "0px");
-  await expect(footer.locator(".biloo-footer-nav__surface")).toHaveCSS("box-shadow", "none");
-  await expect(footer.getByRole("link", { name: "Activity" })).toHaveAttribute("href", "/driver/activity");
-  await expect(footer.getByRole("link", { name: "Earnings" })).toHaveAttribute("aria-current", "page");
-  await expect(footer.getByRole("link", { name: "Map" })).toHaveAttribute("href", "/driver/map");
-  await expect(footer.locator(".biloo-footer-nav__label").first()).not.toHaveCSS("width", "1px");
-  await page.goto("/driver/request?offer=44444444-4444-4444-8444-444444444444");
-  await expect(page.locator(".nr-driver-app-shell[data-trip-focus=true]")).toBeVisible();
-  await expect(page.getByRole("navigation", { name: "Driver bottom navigation" })).toHaveCount(0);
+  await expect(page.locator(".biloo-footer-nav, .nr-mobile-nav")).toHaveCount(0);
+  const menuTrigger = page.locator(".nr-driver-global-header-left .nr-driver-menu-trigger");
+  const profileTrigger = page.locator(".nr-driver-global-header-right .nr-driver-header-profile");
+  await expect(menuTrigger).toBeVisible();
+  await expect(profileTrigger).toBeVisible();
+  const left = (await menuTrigger.boundingBox())!;
+  const right = (await profileTrigger.boundingBox())!;
+  expect(left.x + left.width).toBeLessThan(right.x);
+  await menuTrigger.click();
+  const menu = page.locator("#nr-driver-menu");
+  await expect(menu).toBeVisible();
+  await expect(menu.locator('a[href="/driver/earnings"]')).toBeVisible();
+  await expect(menu.locator('a[href="/driver/map"]')).toBeVisible();
+  await expect(menu.locator('a[href="/driver/profile"]')).toHaveCount(0);
+  await menu.locator('a[href="/driver/map"]').click();
+  await expect(page).toHaveURL(/\\/driver\\/map$/);
+  await expect(page.locator(".biloo-footer-nav")).toHaveCount(0);
+  await expect(page.locator(".nr-driver-map-page")).toBeVisible();
 });
 
-
-test("Driver Map tab opens its dedicated route and keeps the active footer", async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 640 });
+test("Driver map homepage keeps swipe and separates Profile from hamburger", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
   await mockDriver(page);
-  await page.goto("/driver/earnings");
-  const footer = page.getByRole("navigation", { name: "Driver bottom navigation" });
-  await footer.getByRole("link", { name: "Map", exact: true }).click();
-  await expect(page).toHaveURL(/\/driver\/map$/);
-  await expect(page.locator(".nr-driver-app-shell")).toHaveAttribute("data-home", "false");
-  await expect(footer.getByRole("link", { name: "Map", exact: true })).toHaveAttribute("aria-current", "page");
-  await expect(page.locator(".nr-driver-map-page")).toBeVisible();
-  const geometry = await page.locator(".nr-driver-map-page").evaluate(el => {
-    const rect = el.getBoundingClientRect();
-    return { height: rect.height, viewport: window.innerHeight };
-  });
-  expect(geometry.height).toBeLessThan(geometry.viewport);
+  await page.goto("/driver/home");
+  await expect(page.locator(".nr-driver-app-shell[data-home=true]")).toBeVisible();
+  const menuTrigger = page.locator(".nr-driver-home-menu-host .nr-driver-menu-trigger");
+  const profileTrigger = page.locator(".nr-driver-home-profile");
+  await expect(menuTrigger).toBeVisible();
+  await expect(profileTrigger).toBeVisible();
+  const left = (await menuTrigger.boundingBox())!;
+  const right = (await profileTrigger.boundingBox())!;
+  expect(left.x + left.width).toBeLessThan(right.x);
+  await expect(page.locator(".nr-driver-home-swipe[data-map-input-boundary=true]")).toBeVisible();
+  await expect(page.locator(".biloo-footer-nav, .nr-mobile-nav")).toHaveCount(0);
 });
