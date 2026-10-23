@@ -244,20 +244,6 @@
   font-weight: 750;
   border-radius: 99px;
 }
-.nr-driver-app-shell[data-home="true"] .nr-driver-home-quick-actions {
-  border-color: #dce5f0;
-  gap: 8px;
-}
-.nr-driver-app-shell[data-home="true"] .nr-driver-home-quick-actions button {
-  border: 1px solid #e5ebf3;
-  border-radius: 13px;
-  background: #f3f6fb!important;
-  color: #08295f!important;
-  min-height: 45px;
-  font-size: 12px;
-  font-weight: 750;
-}
-.nr-driver-app-shell[data-home="true"] .nr-driver-home-quick-actions button:active {transform:scale(.98)}
 .nr-driver-app-shell[data-home="true"] .nr-driver-home-profile {
   border: 2px solid #fff!important;
   box-shadow: 0 6px 22px rgba(8,41,95,.20)!important;
