@@ -12,7 +12,7 @@ export function validateProfile(profile: PreviewProfile): 'name' | 'phone' | 'em
 }
 // Brief, user-scoped cache prevents repeat profile and signed-URL fetches during tab navigation.
 // Never cache payment, verification, dispatch, or live-trip state here.
-const ACCOUNT_CACHE_MS = 30_000;
+const ACCOUNT_CACHE_MS = 4 * 60_000; // Signed private URLs expire at 60 minutes.
 let accountCache: { userId: string; expiresAt: number; value: RiderAccount } | null = null;
 let accountPending: { userId: string; promise: Promise<RiderAccount> } | null = null;
 export function invalidateRiderAccountCache() { accountCache = null; accountPending = null; }
@@ -71,6 +71,7 @@ export async function saveAccount(account: RiderAccount, profile: PreviewProfile
 export async function uploadRiderAvatar(
   account: RiderAccount,
   file: File,
+  thumbnail?: Blob | null,
 ): Promise<{ avatar: string | null; avatarPath: string }> {
   const invalid = riderAvatarValidation(file);
   if (invalid) throw new Error(invalid === 'type' ? 'avatar_invalid_type' : 'avatar_invalid_size');
@@ -84,34 +85,48 @@ export async function uploadRiderAvatar(
   const storage = supabase.storage.from('profile-photos');
   const uploaded = await storage.upload(path, file, {
     contentType: file.type,
-    cacheControl: '3600',
+    cacheControl: '31536000',
     upsert: false,
   });
   if (uploaded.error) throw uploaded.error;
 
+  // New uploads have one private high-resolution master and an inexpensive
+  // 256px WebP for navigation. Legacy photos continue working unchanged.
+  const thumbnailPath = thumbnail?.type === 'image/webp'
+    ? path.replace(/\\.[^.]+$/, '.thumb.webp') : '';
+  let avatarPath = path;
+  if (thumbnailPath) {
+    const small = await storage.upload(thumbnailPath, thumbnail!, {
+      contentType: 'image/webp', cacheControl: '31536000', upsert: false,
+    });
+    if (!small.error) avatarPath = thumbnailPath;
+  }
+
   const updated = await supabase.from('profiles')
-    .update({ avatar_path: path })
+    .update({ avatar_path: avatarPath })
     .eq('id', account.id)
     .select('avatar_path')
     .single();
 
-  if (updated.error || updated.data?.avatar_path !== path) {
+  if (updated.error || updated.data?.avatar_path !== avatarPath) {
     // Best-effort cleanup; do not strand a visible photo when the profile
     // update was not committed successfully.
-    await storage.remove([path]).catch(() => {});
+    await storage.remove([path, ...(avatarPath !== path ? [avatarPath] : [])]).catch(() => {});
     throw updated.error || new Error('avatar_save_failed');
   }
 
   invalidateRiderAccountCache();
-  const signed = await storage.createSignedUrl(path, 3600);
+  const signed = await storage.createSignedUrl(avatarPath, 3600);
   // A successful profile update must never be reported as failed solely
   // because URL generation was temporarily unavailable.
   const avatar = signed.data?.signedUrl || null;
 
   if (account.avatarPath && !account.avatarPath.startsWith('https://') &&
-      account.avatarPath.startsWith(`${account.id}/`) && account.avatarPath !== path) {
-    void storage.remove([account.avatarPath]).catch(() => {});
+      account.avatarPath.startsWith(`${account.id}/`) && account.avatarPath !== avatarPath) {
+    const previousMaster = account.avatarPath.endsWith('.thumb.webp')
+      ? account.avatarPath.replace(/\\.thumb\\.webp$/, '.jpg') : null;
+    void storage.remove([account.avatarPath, ...(previousMaster ? [previousMaster] : [])]).catch(() => {});
   }
 
-  return { avatar, avatarPath: path };
+  return { avatar, avatarPath };
 }
