@@ -1,7 +1,8 @@
 'use client';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { compressPortraitCanvas, photoSizeLabel } from '../../lib/nexride-photo-processing';
+import { compressPortraitCanvas, compressPortraitThumbnail, photoSizeLabel } from '../../lib/nexride-photo-processing';
+import { readAccount, uploadRiderAvatar } from '../../lib/nexride-account';
 import { cleanupRetiredPortraits, DRIVER_PHOTO_BUCKET, portraitCrop, useDriverPortrait, validateDriverPhoto } from '../../lib/nexride-driver-portrait';
 import { Dialog, useTranslation } from './ui';
 import './driver-photo-manager.css';
@@ -57,6 +58,7 @@ export function DriverPhotoManager({ driverId, fullName, children }: { driverId:
     if (busy || (!remove && (!source || !cropReady))) return;
     if (!navigator.onLine) { setError(t('photoOffline')); return; }
     setBusy(true); setStep(0); setError(''); let uploadedPath = ''; let compressedBytes = 0;
+    let sharedSource: Blob | null = null;
     try {
       const { data, error: authError } = await supabase.auth.getUser();
       if (authError || data.user?.id !== driverId) throw Error('Authentication required');
@@ -64,6 +66,7 @@ export function DriverPhotoManager({ driverId, fullName, children }: { driverId:
         const canvas = canvasRef.current;
         if (!canvas) throw Error('Image preview unavailable');
         const blob = await compressPortraitCanvas(canvas);
+        sharedSource = blob;
         compressedBytes = blob.size;
         setStep(1); uploadedPath = `${driverId}/${crypto.randomUUID()}.jpg`;
         const { error: uploadError } = await supabase.storage.from(DRIVER_PHOTO_BUCKET).upload(uploadedPath, blob, { contentType: 'image/jpeg', upsert: false });
@@ -73,8 +76,22 @@ export function DriverPhotoManager({ driverId, fullName, children }: { driverId:
       const { data: retired, error: saveError } = await supabase.rpc('set_driver_profile_photo', { p_storage_path: remove ? null : uploadedPath });
       if (saveError) throw saveError;
       setStep(3); await portrait.refresh();
+      // Driver verification photo records stay separate. Only the identity
+      // avatar used by Rider/Driver menus is updated in profiles.avatar_path.
+      let identitySynced = true;
+      if (!remove && sharedSource && canvasRef.current) {
+        try {
+          const account = await readAccount();
+          if (!account || account.id !== driverId) throw Error('Account unavailable');
+          const thumbnail = await compressPortraitThumbnail(canvasRef.current).catch(() => null);
+          await uploadRiderAvatar(account, new File([sharedSource], 'biloo-account.jpg', { type: 'image/jpeg' }), thumbnail);
+          window.dispatchEvent(new Event('nexride:profile-change'));
+        } catch { identitySynced = false; }
+      }
       const cleaned = await cleanupRetiredPortraits((retired || []) as string[]);
-      setNotice(!cleaned ? t('photoCleanup') : remove ? t('photoRemoved') : `${t('photoSaved')} · ${photoSizeLabel(compressedBytes)}`);
+      setNotice(!identitySynced
+        ? 'Driver photo saved, but shared account portrait could not sync. Change it again from Rider Account.'
+        : !cleaned ? t('photoCleanup') : remove ? t('photoRemoved') : `${t('photoSaved')} · ${photoSizeLabel(compressedBytes)}`);
       setOpen(false); setSource(''); setConfirm(false);
     } catch {
       if (uploadedPath) await cleanupRetiredPortraits([uploadedPath]); // RLS refuses deleting an active portrait if a response was lost.
@@ -85,8 +102,7 @@ export function DriverPhotoManager({ driverId, fullName, children }: { driverId:
   const url = portrait.url && failedURL !== portrait.url ? portrait.url : '';
   return <div className="nr-driver-photo-editor">
     <button type="button" className="nr-photo-trigger" onClick={() => { setOpen(true); setError(''); }} aria-label={t('photoTitle')}>
-      {children}<span className="nr-photo-approved-overlay">{url ? <img src={url} alt={`${fullName} ${t('photoTitle')}`} onError={() => { setFailedURL(url); void portrait.refresh(); }}/> : <span>{initials}</span>}</span>
-      <span className="nr-photo-edit-mark" aria-hidden="true">✎</span>
+      {children}<span className="nr-photo-edit-mark" aria-hidden="true">✎</span>
     </button>
     {portrait.stale && <small role="status">{t('photoOffline')}</small>}
     {notice && <small role="status">{notice}</small>}
