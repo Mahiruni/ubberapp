@@ -78,6 +78,11 @@ test("permission denial keeps destination search usable without a fake location 
   await page.addInitScript(() => {
     Object.defineProperty(navigator, "geolocation", {
       value: {
+        watchPosition: (
+          _ok: unknown,
+          error: (e: { code: number }) => void,
+        ) => { setTimeout(() => error({ code: 1 }), 0); return 1; },
+        clearWatch: () => {},
         getCurrentPosition: (
           _ok: unknown,
           error: (e: { code: number }) => void,
@@ -86,7 +91,7 @@ test("permission denial keeps destination search usable without a fake location 
     });
   });
   await page.goto("/");
-  await page.getByRole("button", { name: "Recenter on my location" }).click();
+  // Location is requested automatically on opening, without a button press.
   await expect(page.locator(".nr-home-location")).toContainText(
     "Location permission is off",
   );
@@ -104,6 +109,11 @@ test("loading and unavailable location states remain recoverable", async ({
   await page.addInitScript(() => {
     Object.defineProperty(navigator, "geolocation", {
       value: {
+        watchPosition: (
+          _ok: unknown,
+          error: (e: { code: number }) => void,
+        ) => { setTimeout(() => error({ code: 2 }), 500); return 1; },
+        clearWatch: () => {},
         getCurrentPosition: (
           _ok: unknown,
           error: (e: { code: number }) => void,
@@ -112,7 +122,7 @@ test("loading and unavailable location states remain recoverable", async ({
     });
   });
   await page.goto("/");
-  await page.getByRole("button", { name: "Recenter on my location" }).click();
+  // Startup geolocation must begin without waiting for locate control.
   await expect(page.locator(".nr-home-location")).toContainText(
     "Finding your location",
   );
