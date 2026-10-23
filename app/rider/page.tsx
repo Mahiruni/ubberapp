@@ -145,6 +145,8 @@ function RiderWelcome() {
       <img
         className="biloo-rider-photo"
         src="/brand/biloo-rider-get-started.jpg"
+        width={750}
+        height={1333}
         alt="A woman approaches a white Biloo car in Addis Ababa with a welcoming driver"
         loading="eager"
         fetchPriority="high"
