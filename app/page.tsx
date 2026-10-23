@@ -38,7 +38,6 @@ import { useJourney } from "../lib/nexride-journey";
 import { useRiderLocation } from "../lib/nexride-location";
 
 import { RiderMenu, type RiderMenuId } from "../components/nexride/rider-menu";
-import { BilooFooterNav, riderFooterLinks } from "../components/nexride/biloo-footer-nav";
 import type { DriverScreen } from "../components/nexride/driver";
 import type { Language } from "../lib/nexride-i18n";
 import { LANGUAGE_EVENT } from "../components/nexride/language-provider";
@@ -821,22 +820,6 @@ function AppWorkspace({
           </div>
         )}
 
-        {mode === "rider" && !riderSearch && !riderTripView && !["rides", "finding"].includes(riderScreen) && (
-          <BilooFooterNav
-            role="rider"
-            active={riderScreen === "profile" ? "account" : riderScreen === "wallet" ? "wallet" : riderScreen === "trips" ? "activity" : "home"}
-            items={riderFooterLinks().map(item =>
-              item.id === "home" ? { ...item, onClick: () => navigate("home"), href: undefined } :
-              item.id === "account" ? { ...item, onClick: () => navigate("profile"), href: undefined } : item
-            )}
-          />
-        )}
-
-        {mode === "driver" && (
-          <div className="nr-mobile-nav" aria-label="Primary driver navigation">
-            <Navigation items={navItems} active={screen} onNavigate={navigate} />
-          </div>
-        )}
       </section>
       {toast && (
         <div className="nr-toast" role="status">
