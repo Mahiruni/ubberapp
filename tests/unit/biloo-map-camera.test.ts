@@ -35,7 +35,9 @@ describe("Biloo Rider default location camera framing", () => {
     expect(map).toContain("getBoundingClientRect()");
     expect(map).toContain('home.querySelector<HTMLElement>(".nr-home-panel-host")');
     expect(map).toContain("occludedBottomPx");
-    expect(map.match(/offset: deviceLocationCameraOffset\(/g)).toHaveLength(5);
+    expect(map.match(/padding: deviceLocationCameraPadding\(/g)).toHaveLength(5);
+    expect(map.match(/retainPadding: false/g)).toHaveLength(5);
+    expect(map).not.toContain("offset: deviceLocationCameraOffset(");
     expect(map).toContain("!manualView.current && !planned");
     expect(map).toContain("if (!manualView.current && (!plannedRoute || recenterChanged))");
     expect(map).toContain('map.on("dragstart", markManual)');
