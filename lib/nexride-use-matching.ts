@@ -87,7 +87,10 @@ export function useMatching() {
     };
 
     const read = async () => {
-      if (!active || lock.current) return;
+      if (!active) return;
+      if (lock.current || document.visibilityState === 'hidden' || !navigator.onLine) {
+        schedule(); return;
+      }
 
       controller?.abort();
       const localController = new AbortController();
@@ -119,7 +122,7 @@ export function useMatching() {
         ) {
           failedReads += 1;
           const offline =
-            typeof navigator !== "undefined" && navigator.onLine === false;
+            typeof navigator !== "undefined" && !Boolean(navigator.onLine);
           setConnectionLost(offline);
           setSyncFailed(!offline);
           setReconnecting(false);

@@ -9,7 +9,8 @@ export type TripSnapshot = {
   tracking: null | (Point & { driverId: string; updatedAt: number; accuracyMeters?: number; etaMinutes?: number; etaUpdatedAt?: number; route?: Point[] });
   route?: { id: string; points: Point[] }; metrics?: { arrivalAt?: number; remainingMeters?: number; updatedAt: number };
   delayedArrival?: boolean; fare?: { amount: number; currency: string }; finalAmount?: { amount: number; currency: string };
-  completedAt?: number; payment: { status: 'paid' | 'pending' | 'failed' | 'unknown'; method?: string }; rating?: { status: 'submitted'; score: number };
+  completedAt?: number; startedAt?: number; arrivedAt?: number; estimatedDistanceMeters?: number;
+  payment: { status: 'paid' | 'pending' | 'failed' | 'unknown'; method?: string }; rating?: { status: 'submitted'; score: number };
 };
 export const textValue = (v: unknown) => typeof v === 'string' && v.trim() ? v.trim() : undefined;
 const numberValue = (v: unknown) => typeof v === 'number' && Number.isFinite(v) ? v : undefined;

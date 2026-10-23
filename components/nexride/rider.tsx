@@ -1,5 +1,5 @@
 "use client";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { places, type Place } from "../../lib/nexride-places";
 import { type PreviewTrip } from "../../lib/nexride-preview";
 import {
@@ -26,7 +26,7 @@ import { RideSelection } from "./ride-selection";
 import { DriverMatching } from "./matching";
 import type { Matching } from "../../lib/nexride-use-matching";
 import type { RideCategory, RideFare } from "../../lib/nexride-booking";
-import { placeKey } from "../../lib/nexride-search";
+import { placeKey, validPoint, type Endpoint } from "../../lib/nexride-search";
 import type { Journey } from "../../lib/nexride-journey";
 import type { RiderLocation, LocationStatus } from "../../lib/nexride-location";
 import { emitNexRideFeedback } from "../../lib/nexride-feedback";
@@ -57,7 +57,11 @@ export function RiderWorkspace({
   matching,
   onTripSource,
   onTripSnapshot,
+  tripSelection,
+  setTripSelection,
 }: {
+  tripSelection: { id: string; userId: string } | null;
+  setTripSelection: (value: { id: string; userId: string } | null) => void;
   onTripSnapshot?: (snapshot: TripSnapshot | null) => void;
   screen: RiderScreen;
   navigate: (s: RiderScreen) => void;
@@ -92,13 +96,43 @@ export function RiderWorkspace({
     } catch {}
   };
   const realTrips = useRiderTrips();
-  const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
+  const selectedTripId = tripSelection && (!realTrips.userId || tripSelection.userId === realTrips.userId)
+    ? tripSelection.id : null;
+  const setSelectedTripId = (id: string | null) => setTripSelection(id && realTrips.userId
+    ? { id, userId: realTrips.userId } : null);
   const openRealTrip = (id: string, state: unknown) => {
     setSelectedTripId(id);
     const status = tripStatus(state);
     navigate(status === "completed" ? "summary" : status === "in_trip" ? "live" : "trip");
   };
-  useEffect(() => { setSelectedTripId(null); }, [realTrips.userId]);
+  const restoredAccount = useRef<string | null>(null);
+  useEffect(() => {
+    if (!realTrips.userId) { restoredAccount.current = null; return; }
+    if (realTrips.loading || realTrips.cached || realTrips.error ||
+      restoredAccount.current === realTrips.userId) return;
+    // Restore once from a fresh, owned backend record. Account-scoped offline
+    // data remains read-only and never starts matching or creates a booking.
+    restoredAccount.current = realTrips.userId;
+    if (screen !== 'home' || matching.request) return;
+    const active = realTrips.rows.find(row => ['pending','accepted','arrived_pickup','in_trip'].includes(String(row.state)));
+    if (!active) return;
+    if (active.state !== 'pending') { openRealTrip(String(active.id), active.state); return; }
+    const pickup: Endpoint = { lat: active.pickup_lat as number, lng: active.pickup_lng as number,
+      name: String(active.pickup_address || ''), address: '', confirmed: true, source: 'provider' };
+    const destination: Endpoint = { lat: active.destination_lat as number, lng: active.destination_lng as number,
+      name: String(active.destination_address || ''), address: '', confirmed: true, source: 'provider' };
+    const category = active.service_type;
+    if (!validPoint(pickup) || !validPoint(destination) ||
+      (category !== 'economy' && category !== 'comfort' && category !== 'xl')) return;
+    journey.select('pickup', pickup); journey.select('destination', destination);
+    matching.start({ requestId: String(active.id), source: 'service',
+      journey: { pickup, destination, routeState: { key: '', status: 'idle' } },
+      fare: { id: `restored:${active.id}`, category, seats: category === 'xl' ? 6 : 4,
+        availability: 'available', pickupMinutes: null,
+        amount: typeof active.total_minor === 'number' ? active.total_minor / 100 : null,
+        currency: 'ETB', priceType: 'estimate', charges: [] } });
+    navigate('finding');
+  }, [realTrips.userId, realTrips.loading, realTrips.cached, realTrips.error, realTrips.rows, screen, matching, journey, navigate]);
   useEffect(() => {
     if (
       screen !== "finding" ||

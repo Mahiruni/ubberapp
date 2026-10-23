@@ -23,7 +23,7 @@ export function liveFareSet(journey: BookingJourney, now = Date.now()): FareSet 
       pickupMinutes: null,
       amount: priced.amount,
       currency: "ETB",
-      priceType: "confirmed",
+      priceType: "estimate",
       charges: [],
     },
     {

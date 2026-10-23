@@ -33,5 +33,5 @@ export function riderHomeLocationCameraOffset(
 
   // A negative Mapbox pixel offset places the actual GPS point higher
   // on-screen, at 50% of the unobstructed portion of the map.
-  return [0, -Math.round(covered / 2)];
+  return [0, covered > 0 ? -Math.round(covered / 2) : 0];
 }

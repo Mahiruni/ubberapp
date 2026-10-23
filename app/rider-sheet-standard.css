@@ -287,7 +287,7 @@
   }
 
   .nr-app[data-mode="rider"] .rider-map-flow[data-keyboard="true"].rider-search-view
-    .nr-destination-panel footer {
+    .nr-destination-panel:not([data-can-continue="true"]) footer {
     display:none!important;
   }
 
@@ -2106,7 +2106,7 @@
   }
 
   .nr-app[data-mode="rider"] .rider-map-flow.rider-search-view[data-search-open="true"]
-    .nr-destination-panel footer {
+    .nr-destination-panel:not([data-can-continue="true"]) footer {
     display: none!important;
   }
 

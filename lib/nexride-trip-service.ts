@@ -1,6 +1,6 @@
 import { supabase } from './supabase';
 import { nexrideApiFetch } from './nexride-api-auth';
-import { textValue, timestamp, type Row, type TripSnapshot } from './nexride-trip-data';
+import { textValue, timestamp, validPoint, type Row, type TripSnapshot } from './nexride-trip-data';
 
 const activeStates = ['accepted', 'arrived_pickup', 'in_trip'];
 
@@ -21,7 +21,7 @@ const point = (lat: unknown, lng: unknown) => {
 export async function riderTripList(userId: string) {
   const { data, error } = await supabase
     .from('ride_requests')
-    .select('id,status,pickup_location,destination_location,ride_category,estimated_trip_fare_etb,final_fare_etb,payment_method,payment_status,created_at,completed_at,cancelled_at')
+    .select('id,status,pickup_location,destination_location,pickup_lat,pickup_lng,destination_lat,destination_lng,ride_category,estimated_trip_fare_etb,final_fare_etb,payment_method,payment_status,created_at,completed_at,cancelled_at')
     .eq('rider_id', userId)
     .order('created_at', { ascending: false })
     .limit(30);
@@ -33,6 +33,8 @@ export async function riderTripList(userId: string) {
     state: row.status,
     pickup_address: row.pickup_location,
     destination_address: row.destination_location,
+    pickup_lat: row.pickup_lat, pickup_lng: row.pickup_lng,
+    destination_lat: row.destination_lat, destination_lng: row.destination_lng,
     service_type: row.ride_category,
     total_minor: numeric(row.final_fare_etb ?? row.estimated_trip_fare_etb) != null
       ? Math.round((numeric(row.final_fare_etb ?? row.estimated_trip_fare_etb) || 0) * 100)
@@ -64,7 +66,7 @@ export async function readRiderTrip(
 ): Promise<TripSnapshot> {
   const { data: ride, error } = await supabase
     .from('ride_requests')
-    .select('id,rider_id,assigned_driver_id,pickup_location,destination_location,pickup_lat,pickup_lng,destination_lat,destination_lng,ride_category,estimated_trip_fare_etb,final_fare_etb,payment_method,payment_status,status,created_at,updated_at,completed_at,estimated_trip_duration_minutes,estimated_trip_distance_km')
+    .select('id,rider_id,assigned_driver_id,pickup_location,destination_location,pickup_lat,pickup_lng,destination_lat,destination_lng,ride_category,estimated_trip_fare_etb,final_fare_etb,payment_method,payment_status,status,created_at,updated_at,completed_at,started_at,pickup_arrived_at,pickup_instructions,estimated_trip_duration_minutes,estimated_trip_distance_km')
     .eq('id', tripId)
     .eq('rider_id', userId)
     .single();
@@ -145,6 +147,7 @@ export async function readRiderTrip(
     pickup: {
       ...point(ride.pickup_lat, ride.pickup_lng),
       name: textValue(ride.pickup_location),
+      instructions: textValue(ride.pickup_instructions),
     },
     destination: {
       ...point(ride.destination_lat, ride.destination_lng),
@@ -155,7 +158,10 @@ export async function readRiderTrip(
       driverId &&
       numeric(location.latitude) != null &&
       numeric(location.longitude) != null &&
-      timestamp(location.recorded_at) != null
+      validPoint({ lat: numeric(location.latitude), lng: numeric(location.longitude) }) &&
+      timestamp(location.recorded_at) != null &&
+      timestamp(location.recorded_at)! <= Date.now() + 5000 &&
+      timestamp(location.recorded_at)! >= (timestamp(ride.created_at) || 0)
         ? {
             driverId,
             lat: numeric(location.latitude)!,
@@ -170,6 +176,10 @@ export async function readRiderTrip(
         ? { amount: finalFare, currency: 'ETB' }
         : undefined,
     completedAt: timestamp(ride.completed_at),
+    startedAt: timestamp(ride.started_at),
+    arrivedAt: timestamp(ride.pickup_arrived_at),
+    estimatedDistanceMeters: numeric(ride.estimated_trip_distance_km) != null
+      ? numeric(ride.estimated_trip_distance_km)! * 1000 : undefined,
     payment: {
       status:
         ride.payment_status === 'paid'
@@ -240,6 +250,14 @@ export async function submitRiderRating(input: {
     .select('score')
     .single();
 
+  if (result.error?.code === '23505') {
+    const confirmed = await supabase.from('ride_ratings').select('score')
+      .eq('ride_request_id', input.tripId).eq('rater_id', user.data.user.id).single();
+    if (!confirmed.error && confirmed.data) return {
+      tripId: input.tripId, status: 'already_rated',
+      rating: { status: 'submitted', score: confirmed.data.score },
+    };
+  }
   if (result.error || !result.data) throw result.error || Error('Rating not confirmed');
 
   return {

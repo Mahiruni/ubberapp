@@ -12,7 +12,7 @@ import type { Journey } from "../../lib/nexride-journey";
 import type { LocationStatus, RiderLocation } from "../../lib/nexride-location";
 import { riderHomeLocationCameraOffset } from "../../lib/biloo-map-camera";
 import { nexrideApiFetch } from "../../lib/nexride-api-auth";
-import type { TripSnapshot } from '../../lib/nexride-trip-data';
+import { validPoint as validTripPoint, type TripSnapshot } from '../../lib/nexride-trip-data';
 import { withinNearbyDriverRadius } from "../../lib/nexride-nearby-vehicles";
 import { driverRadarCollection, driverGpsQuality } from "../../lib/nexride-driver-radar";
 import {
@@ -536,6 +536,11 @@ function fitJourney(
           [destination.lat, destination.lng],
         ];
 
+  fitMapPoints(map, points as [number, number][], rideLabel);
+}
+
+function fitMapPoints(map: MapboxMap, points: [number, number][], rideLabel: boolean) {
+  if (!points.length) return;
   let west = Infinity;
   let south = Infinity;
   let east = -Infinity;
@@ -573,6 +578,25 @@ function fitJourney(
         : 320,
     },
   );
+}
+
+function syncLiveTripRoute(map: MapboxMap, snapshot: TripSnapshot | null | undefined) {
+  if (!map.isStyleLoaded()) return;
+  const points = snapshot?.route?.points || [];
+  const data = { type: 'FeatureCollection' as const, features: points.length > 1 ? [{
+    type: 'Feature' as const, properties: {}, geometry: {
+      type: 'LineString' as const, coordinates: points.map(point => [point.lng, point.lat]),
+    },
+  }] : [] };
+  const source = map.getSource('biloo-live-journey') as GeoJSONSource | undefined;
+  if (source) source.setData(data);
+  else if (points.length > 1) map.addSource('biloo-live-journey', { type: 'geojson', data });
+  if (points.length > 1 && !map.getLayer('biloo-live-journey-line')) {
+    map.addLayer({ id: 'biloo-live-journey-casing', type: 'line', source: 'biloo-live-journey',
+      layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': '#fff', 'line-width': 9 } });
+    map.addLayer({ id: 'biloo-live-journey-line', type: 'line', source: 'biloo-live-journey',
+      layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': '#07996b', 'line-width': 5 } });
+  }
 }
 
 const normalizedBearing = (bearing: number) => {
@@ -689,6 +713,7 @@ export function RiderMap({
   const assignedDrivers: NearbyDriver[] = assignedFix && (!assignedTrip?.driver || assignedFix.driverId === assignedTrip.driver.id)
     ? [{ key: assignedFix.driverId, lat: assignedFix.lat, lng: assignedFix.lng, updatedAt: new Date(assignedFix.updatedAt).toISOString(), distanceMeters: 0 }] : [];
   const displayedDrivers = assignedTrip ? assignedDrivers : nearbyDrivers;
+  const liveFrame = useRef('');
   trafficVisibleRef.current = trafficVisible;
   driverRadarRef.current = showDriverRadar;
 
@@ -696,8 +721,14 @@ export function RiderMap({
     journey?.routeState.status === "ready"
       ? journey.routeState.route
       : undefined;
-  const pickup = journey?.pickup;
-  const destination = journey?.destination;
+  const assignedPickupName = assignedTrip?.pickup.name;
+  const assignedDestinationName = assignedTrip?.destination.name;
+  const pickup = assignedTrip && validTripPoint(assignedTrip.pickup)
+    ? { ...assignedTrip.pickup, source: 'provider' as const, confirmed: true, name: assignedPickupName || '', address: '' }
+    : journey?.pickup;
+  const destination = assignedTrip && validTripPoint(assignedTrip.destination)
+    ? { ...assignedTrip.destination, source: 'provider' as const, confirmed: true, name: assignedDestinationName || '', address: '' }
+    : journey?.destination;
   const geometry = route?.geometry;
   const trafficLabel = route?.traffic
     ? t(
@@ -1590,17 +1621,17 @@ export function RiderMap({
   useEffect(() => {
     const map = mapRef.current;
     if (!mounted || !map || !map.isStyleLoaded()) return;
-    syncRoutes(map, journey);
+    syncRoutes(map, assignedTrip ? undefined : journey);
 
     if (
-      !manualView.current &&
+      !assignedTrip && !manualView.current &&
       pickup?.confirmed &&
       destination?.confirmed
     ) {
       fitJourney(map, journey, rideLabel);
     }
   }, [
-    geometry,
+    assignedTrip, geometry,
     pickup?.lat,
     pickup?.lng,
     pickup?.confirmed,
@@ -1610,6 +1641,29 @@ export function RiderMap({
     rideLabel,
     mounted,
   ]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!mounted || !map) return;
+    const sync = () => {
+      syncLiveTripRoute(map, assignedTrip);
+      if (!assignedTrip) { liveFrame.current = ''; return; }
+      syncRoutes(map, undefined);
+      const key = `${assignedTrip.id}:${assignedTrip.status}`;
+      const end = assignedTrip.status === 'in_trip' ? assignedTrip.destination : assignedTrip.pickup;
+      const points = assignedTrip.route?.points ||
+        [assignedTrip.tracking, end].filter((p): p is { lat: number; lng: number } =>
+          !!p && typeof p.lat === 'number' && Number.isFinite(p.lat) &&
+          typeof p.lng === 'number' && Number.isFinite(p.lng));
+      if (points.length > 1 && liveFrame.current !== key && !manualView.current) {
+        fitMapPoints(map, points.map(p => [p.lat, p.lng]), false);
+        liveFrame.current = key;
+      }
+    };
+    sync();
+    map.on('style.load', sync);
+    return () => { map.off('style.load', sync); };
+  }, [assignedTrip, mounted]);
 
   useEffect(() => {
     const state = journey?.routeState;

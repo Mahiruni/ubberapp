@@ -24,3 +24,108 @@
 @media(hover:hover) and (prefers-reduced-motion:no-preference){.nr-ride-card:hover:not(:disabled){border-color:#8ed2b3!important;box-shadow:0 8px 20px rgba(5,76,52,.06)}}
 @media(prefers-reduced-motion:reduce){.nr-ride-card{transition:none!important}}
 @media(max-width:380px){.nr-ride-selection h1,.nr-matching-heading h1{font-size:22px}.nr-ride-card{min-height:98px}}
+
+/* Connected journey components. These surfaces never animate the map canvas. */
+.biloo-journey-eyebrow{display:block;color:#087d59;font-size:11px;font-weight:750;letter-spacing:.1em;line-height:1.5}
+.biloo-booking-review{padding:18px 20px 6px;color:#172d27}
+.nr-dialog .biloo-booking-fares>.total{display:flex;justify-content:space-between;gap:14px}
+.nr-dialog .biloo-booking-fares>.total strong:last-child{white-space:nowrap;font-variant-numeric:tabular-nums}
+.biloo-journey-stops{display:grid;gap:20px;padding:16px 0;min-width:0}
+.biloo-journey-stops>div{position:relative;display:flex;gap:13px;align-items:flex-start;min-width:0}
+.biloo-journey-stops>div:first-child:after{position:absolute;content:"";left:5px;top:17px;bottom:-18px;width:1px;background:#d4e3dc}
+.biloo-journey-stops>div>div{display:grid;gap:4px;min-width:0}
+.biloo-journey-stops small{font-size:11px;color:#677a72}
+.biloo-journey-stops strong{font-size:14px;line-height:1.45;font-weight:650;overflow-wrap:anywhere}
+.biloo-stop-dot{flex:0 0 11px;height:11px;border:3px solid #07996b;background:#fff;border-radius:50%;margin-top:5px}
+.biloo-stop-dot.destination{border-color:#243d33;border-radius:3px}
+.biloo-journey-metrics{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;padding:10px 0;font-size:12px;font-variant-numeric:tabular-nums;color:#415e51}
+.biloo-journey-metrics>span{display:flex;align-items:center;gap:6px}
+.biloo-pickup-note{display:grid;gap:8px;margin:16px 20px;color:#213e31;font-size:13px;font-weight:650}
+.biloo-pickup-note>span{display:flex;align-items:center;gap:8px}
+.biloo-pickup-note small{font-size:11px;font-weight:450;color:#65786e}
+.biloo-pickup-note textarea{width:100%;resize:vertical;min-height:76px;padding:12px 14px;border:1px solid #dbe5df;border-radius:14px;outline:none;background:#f8faf9;color:#172d27;font:inherit;font-size:14px;font-weight:450;line-height:1.5}
+.biloo-pickup-note textarea:focus{border-color:#07996b;box-shadow:0 0 0 3px #07996b15}
+.biloo-booking-assurance{display:flex;align-items:flex-start;gap:8px;padding:0 20px 16px;font-size:12px;line-height:1.55;color:#64786d}
+.biloo-booking-assurance svg{flex-shrink:0;margin-top:2px;color:#087d59}
+.biloo-matching-live-meta{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;margin:12px 0;color:#526b5f;font-size:12px}
+.biloo-matching-live-meta>span{display:inline-flex;gap:6px;align-items:center}
+.biloo-matching-live-meta b{font-variant-numeric:tabular-nums;font-weight:650}
+.nr-accepted-driver-card{background:#fcfdfc;color:#172d27}
+.nr-accepted-driver-card .nr-identity-status h2{font-size:clamp(23px,5.5vw,28px);font-weight:750;letter-spacing:-.04em;line-height:1.15}
+.nr-accepted-driver-card .nr-identity-person h3{font-size:19px;font-weight:700}
+.nr-accepted-driver-card .nr-identity-person{margin:16px 0}
+.nr-accepted-driver-card .nr-identity-portrait{width:58px;height:58px;background:#eaf3ed;color:#244c36}
+.nr-accepted-driver-card .nr-identity-eta{background:#eaf7ef;color:#126142;font-size:11px;border:1px solid #d5ebdc}
+.nr-accepted-driver-card .nr-identity-vehicle,.nr-accepted-driver-card .nr-identity-actions button{background:#f1f5f2;color:#172d27;border:1px solid #e6ede8}
+.nr-accepted-driver-card .nr-identity-actions button{min-height:58px;border-radius:16px}
+.biloo-journey-progress{display:flex;list-style:none;margin:18px 0 12px;padding:0;gap:8px}
+.biloo-journey-progress li{display:flex;align-items:center;gap:6px;flex:1;color:#7a8c82;min-width:0}
+.biloo-journey-progress li>span{width:21px;height:21px;flex:0 0 21px;display:grid;place-items:center;border:1px solid #dde6df;border-radius:50%;font-size:10px}
+.biloo-journey-progress li small{font-size:10px;line-height:1.25}
+.biloo-journey-progress li[data-complete=true]{color:#087d59}
+.biloo-journey-progress li[data-complete=true]>span{background:#07996b;color:#fff;border-color:#07996b}
+.biloo-tracking-status{display:flex;align-items:center;gap:6px;color:#79632e;font-size:11px;line-height:1.6;flex-wrap:wrap;margin:0 0 14px;font-variant-numeric:tabular-nums}
+.biloo-tracking-status>span{width:6px;height:6px;background:#b38832;border-radius:50%;flex:0 0 6px}
+.biloo-tracking-status[data-fresh=true]{color:#557565}
+.biloo-tracking-status[data-fresh=true]>span{background:#07996b}
+.biloo-pickup-status{display:flex;align-items:center;gap:12px;border-radius:16px;background:#eaf7ef;border:1px solid #d2e9da;padding:14px;color:#14613f;margin:12px 0}
+.biloo-pickup-status strong{font-size:14px}.biloo-pickup-status p{font-size:12px;margin:4px 0 0;font-variant-numeric:tabular-nums}
+.biloo-pickup-instructions{display:flex;align-items:flex-start;gap:8px;padding:12px 14px;border-radius:14px;background:#f2f7f3;color:#3a5948;font-size:13px;line-height:1.5;overflow-wrap:anywhere}
+.biloo-pickup-instructions svg{flex-shrink:0;margin-top:2px}
+.biloo-completion-card,.biloo-completion-pending{overflow-y:auto;overscroll-behavior:contain;flex:1;min-height:0;padding:22px 22px max(24px,env(safe-area-inset-bottom));background:#fcfdfc;color:#172d27}
+.biloo-completion-card>header{text-align:center;padding:4px 0 18px}
+.biloo-arrival-mark{width:56px;height:56px;border-radius:50%;background:#e6f6ed;color:#07835a;display:grid;place-items:center;margin:0 auto 14px}
+.biloo-completion-card h1{font-size:28px;font-weight:750;letter-spacing:-.05em;line-height:1.2;margin:7px 0}
+.biloo-completion-card header p{font-size:13px;color:#657c6d;margin:8px 0 0}
+.biloo-receipt-fare{background:#f0f7f2;border:1px solid #deebe1;padding:20px 16px;text-align:center;border-radius:22px;display:grid;justify-items:center;gap:8px}
+.biloo-receipt-fare>small{font-size:12px;color:#557361}
+.biloo-receipt-fare>strong{font-size:38px;line-height:1.2;letter-spacing:-.045em;font-weight:750;font-variant-numeric:tabular-nums;color:#153e28}
+.biloo-receipt-fare>strong>span{font-size:14px;font-weight:650;letter-spacing:0}
+.biloo-payment-state{display:flex;align-items:center;gap:5px;border-radius:100px;padding:5px 9px;background:#fff7e7;color:#80601f;font-size:11px;font-weight:650}
+.biloo-payment-state[data-status=paid]{background:#d9f1e4;color:#10613a}
+.biloo-receipt-fare>p{font-size:11px;color:#65786a;margin:0;line-height:1.5}
+.biloo-receipt-meta{display:grid;gap:12px;border-top:1px solid #e1eae3;border-bottom:1px solid #e1eae3;padding:16px 0;margin:0;font-size:12px}
+.biloo-receipt-meta>div{display:flex;justify-content:space-between;gap:16px}
+.biloo-receipt-meta dt{color:#65796c}.biloo-receipt-meta dd{margin:0;font-weight:650;font-variant-numeric:tabular-nums}
+.biloo-rating{padding:22px 0 8px;text-align:center}
+.biloo-rating h2{font-size:18px;font-weight:700;letter-spacing:-.025em;margin:0 0 12px}
+.biloo-rating-stars{display:flex;justify-content:center;gap:6px;margin:0 0 16px}
+.biloo-rating-stars button{display:grid;place-items:center;min-width:44px;min-height:48px;padding:5px;color:#c2cec5;background:transparent;border:0;border-radius:12px;cursor:pointer;transition:color 120ms,transform 120ms}
+.biloo-rating-stars button[aria-pressed=true]{color:#07996b}.biloo-rating-stars button[aria-pressed=true] svg{fill:#e0f2e6}
+.biloo-rating-stars button:active{transform:scale(.94)}.biloo-rating-stars button:focus-visible{outline:2px solid #07996b}
+.biloo-rating .biloo-pickup-note{margin:12px 0;text-align:left}.biloo-rating>.nr-button{width:100%}
+.biloo-rating>p{display:flex;justify-content:center;align-items:center;gap:6px;font-size:12px;color:#087d59}
+.biloo-trip-reference{font-size:10px;color:#6c8072;text-align:center;padding:14px 0;line-height:1.7;margin:0;overflow-wrap:anywhere}
+.biloo-trip-reference span{display:block;font-variant-numeric:tabular-nums}
+.biloo-completion-actions{display:grid;gap:10px}.biloo-completion-actions .nr-button{width:100%}
+.nr-app.biloo-driver-completion{height:calc(100dvh - var(--driver-header-total,56px));overflow:auto;background:#f6faf7;padding:18px 0 max(0px,env(safe-area-inset-bottom))}
+.biloo-driver-completion .biloo-completion-card{max-width:500px;margin:0 auto;border-radius:24px}
+.nr-app :is(.biloo-completion-card,.biloo-completion-pending) .nr-primary,
+.nr-app .nr-ride-selection .nr-primary{background:#07996b!important;border-color:#07996b!important;color:#fff!important}
+.nr-driver-request-page .nr-request-road-car{animation:none!important;transform:none!important;position:static;color:#07996b}
+.nr-driver-request-page .nr-request-road-track{display:flex;align-items:center;justify-content:center;gap:8px}
+.nr-app[data-mode=rider] .rider-map-flow.nr-polished-wrapper .nr-trip-experience[data-native-journey=true] .nr-trip-toolbar{display:flex!important;flex-direction:row;align-items:center;justify-content:space-between;padding:6px 18px!important;gap:8px!important;border-bottom:1px solid #e8eee9}
+.nr-app[data-mode=rider] .rider-map-flow.nr-polished-wrapper .nr-trip-experience[data-native-journey=true] .nr-trip-toolbar>button{width:auto!important;min-height:36px!important;padding:5px 10px!important;font-size:11px}
+.nr-app[data-mode=rider] .rider-map-flow.nr-polished-wrapper .nr-trip-experience[data-native-journey=true] .nr-trip-toolbar>span{flex:1;font-size:10px;color:#64796c}
+.nr-app[data-mode=rider] .rider-map-flow.nr-polished-wrapper .nr-trip-experience[data-native-identity=true] .nr-trip-toolbar>.nr-trip-cancel-trigger{background:#fff!important;color:#8a4855!important;border:1px solid #eadfe2!important;box-shadow:none!important;font-size:11px!important;font-weight:600!important}
+@media(prefers-reduced-motion:no-preference){
+ .biloo-booking-review,.biloo-completion-card>header,.nr-accepted-driver-card .nr-identity-status h2{animation:biloo-journey-content 220ms cubic-bezier(.22,1,.36,1) both}
+ .biloo-arrival-mark{animation:biloo-arrival-confirm 280ms cubic-bezier(.22,1,.36,1) both}
+}
+@keyframes biloo-journey-content{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes biloo-arrival-confirm{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+@media(max-width:380px){.biloo-completion-card{padding:18px 16px}.biloo-journey-progress{gap:4px}.biloo-journey-progress li{gap:4px}.biloo-journey-progress li small{font-size:9px}}
+@media(prefers-reduced-motion:reduce){.biloo-rating-stars button{transition:none;transform:none}}
+.biloo-admin-journey{padding:18px 20px 24px;color:#1c342a;background:#fff;font-size:13px}
+.biloo-admin-journey-head{display:flex;align-items:center;gap:12px;justify-content:space-between}
+.biloo-admin-journey-head>span{font-size:10px;overflow-wrap:anywhere;color:#667a6d}
+.biloo-admin-journey-head .nr-button{min-height:36px;font-size:11px;padding:5px 10px}
+.biloo-admin-journey-status{display:flex;justify-content:space-between;gap:12px;padding:16px 0 0;text-transform:capitalize}
+.biloo-admin-journey h3{font-size:16px;font-weight:700;margin:24px 0 10px;display:flex;align-items:center;gap:8px}
+.biloo-admin-journey h3 small{font-size:11px;font-weight:450;color:#667a6d}
+.biloo-audit-timeline{list-style:none;margin:0;padding:0 0 0 12px;border-left:2px solid #d4e8da}
+.biloo-audit-timeline li{display:flex;justify-content:space-between;gap:14px;padding:10px 0;font-size:12px;text-transform:capitalize}
+.biloo-audit-timeline time{font-size:10px;color:#667a6d;text-transform:none;text-align:right;font-variant-numeric:tabular-nums}
+.biloo-admin-offers{display:grid;gap:8px}.biloo-admin-offers>div{display:grid;grid-template-columns:1fr auto;gap:6px;padding:12px;border:1px solid #dfe9e2;border-radius:14px}
+.biloo-admin-offers strong{font-size:12px;text-transform:capitalize}.biloo-admin-offers small{grid-column:1/-1;overflow-wrap:anywhere;font-size:10px;color:#667a6d}
+.biloo-admin-offers time{font-size:10px;color:#667a6d}.biloo-admin-audit-note{font-size:11px;color:#667a6d;line-height:1.6}

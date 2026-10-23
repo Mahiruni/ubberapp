@@ -12,6 +12,9 @@ import { Button, Dialog, useTranslation } from './ui';
 import type { PreviewTrip } from '../../lib/nexride-preview';
 import type { RiderScreen } from './rider';
 import { RiderSheetHandle } from './rider-sheet';
+import { TripCompletionCard } from './trip-completion-card';
+import { useLiveJourneyRoute } from '../../lib/biloo-use-live-route';
+import { useRouter } from 'next/navigation';
 
 // Scope saved trip views to the authenticated Rider; old unscoped keys are
 // invalidated so two accounts on the same phone cannot read each other's trips.
@@ -50,6 +53,7 @@ export function TripExperience({ screen, tripId, userId, preview, navigate, setP
   screen: 'trip' | 'live' | 'summary'; tripId: string | null; userId: string | null; preview: PreviewTrip | null;
   navigate: (s: RiderScreen) => void; setPreview: (p: PreviewTrip) => void; safety: () => void; onCancelled?: () => void; onSnapshot?: (snapshot: TripSnapshot | null) => void;
 }) {
+  const router = useRouter();
   const frame = useRef<HTMLIFrameElement>(null), latest = useRef<TripSnapshot | null>(null), ready = useRef(false);
   const callbacks = useRef({ navigate, setPreview, safety, preview }); callbacks.current = { navigate, setPreview, safety, preview };
   const [connection, setConnection] = useState('Loading trip…');
@@ -61,7 +65,8 @@ export function TripExperience({ screen, tripId, userId, preview, navigate, setP
   const [confirmedStatus, setConfirmedStatus] = useState<TripSnapshot['status'] | null>(null);
   const [tripSnapshot, setTripSnapshot] = useState<TripSnapshot | null>(null);
   const [embeddedReady, setEmbeddedReady] = useState(false);
-  useEffect(() => { onSnapshot?.(tripSnapshot); }, [tripSnapshot, onSnapshot]);
+  const displaySnapshot = useLiveJourneyRoute(tripSnapshot);
+  useEffect(() => { onSnapshot?.(displaySnapshot); }, [displaySnapshot, onSnapshot]);
   const cancelLock = useRef(false);
   const cancelRide = async () => {
     if (!tripId || !live || cancelLock.current) return;
@@ -133,7 +138,7 @@ export function TripExperience({ screen, tripId, userId, preview, navigate, setP
     let failures = 0, pollTimer: number | null = null, reconnectTimer: number | null = null;
     let channel: ReturnType<typeof supabase.channel> | null = null;
     ready.current = false;
-    setEmbeddedReady(nativeIdentity);
+    setEmbeddedReady(live);
     latest.current = tripId ? readCachedTrip(tripId, userId) : null;
     revision = latest.current?.revision || 0;
     setTripSnapshot(latest.current);
@@ -358,7 +363,7 @@ export function TripExperience({ screen, tripId, userId, preview, navigate, setP
     : tripSnapshot?.status === 'reassigning' ? 'Finding your driver'
     : tripSnapshot?.status === 'cancelled' ? 'Ride cancelled'
     : screen === 'live' ? 'Active trip' : screen === 'summary' ? 'Trip summary' : 'Your driver';
-  return <section className="nr-trip-experience" data-native-identity={nativeIdentity ? 'true' : 'false'} data-embedded-ready={embeddedReady ? 'true' : 'false'} aria-label={screen === 'summary' ? 'Trip receipt and rating' : 'Your trip'}>
+  return <section className="nr-trip-experience" data-native-journey={live ? 'true' : undefined} data-native-identity={nativeIdentity ? 'true' : 'false'} data-embedded-ready={embeddedReady ? 'true' : 'false'} aria-label={screen === 'summary' ? 'Trip receipt and rating' : 'Your trip'}>
     <RiderSheetHandle
       label={screen === 'summary' ? 'Resize trip summary panel' : screen === 'live' ? 'Resize active trip panel' : 'Resize driver panel'}
       defaultRatio={defaultRatio}
@@ -366,12 +371,9 @@ export function TripExperience({ screen, tripId, userId, preview, navigate, setP
       storageKey={`nexride.rider.sheet.${screen}`}
     />
     <div className="nr-trip-toolbar">
-      {screen === 'summary' && <button onClick={() => window.location.assign('/rider/trips')}>Activity</button>}
-      <span role="status" aria-live="polite">{live ? connection : 'Preview ride'}</span>
+      {screen === 'summary' && <button onClick={() => router.push('/rider/trips')}>Activity</button>}
+      <span role="status" aria-live="polite">{live ? tripSnapshot?.status === 'completed' ? 'Trip completed' : connection : 'Preview ride'}</span>
       {screen !== 'summary' && !nativeIdentity && <button onClick={openSafety}>Safety</button>}
-      {live && tripId && screen !== "summary" && confirmedStatus !== "completed" && confirmedStatus !== "cancelled" &&
-       <button type="button" onClick={() => window.location.assign("/safety?role=rider&trip="+encodeURIComponent(tripId))}
-         aria-label="Share live trip with a trusted contact">Share trip</button>}
       {live && screen !== 'summary' && confirmedStatus !== 'completed' && confirmedStatus !== 'cancelled' &&
         <button type="button" className="nr-trip-cancel-trigger" disabled={cancelBusy} onClick={() => { setCancelError(''); setCancelConfirm(true); }}><span aria-hidden="true">×</span>{t('matchingCancel')}</button>}
       {!live && screen !== 'summary' && <button onClick={() => { if (screen === 'live' && preview) setPreview({ ...preview, completed: true }); navigate(screen === 'trip' ? 'live' : 'summary'); }}>{screen === 'trip' ? 'Start trip' : 'Complete trip'}</button>}
@@ -386,7 +388,9 @@ export function TripExperience({ screen, tripId, userId, preview, navigate, setP
         <Button variant="danger" disabled={cancelBusy} loading={cancelBusy} onClick={() => void cancelRide()}>{t('matchingConfirmCancel')}</Button>
       </div>
     </Dialog>}
-    {nativeIdentity ? <AcceptedDriverCard snapshot={tripSnapshot} photo={approvedDriverPhoto} photoStale={portrait.stale} tripId={tripId!} safety={openSafety} onPhotoError={() => { setFailedPhoto(approvedDriverPhoto); void portrait.refresh(); }}/> : <div className="nr-trip-frame-shell" data-ready={embeddedReady ? 'true' : 'false'}>
+    {live && screen === 'summary' ? <TripCompletionCard snapshot={tripSnapshot}
+      onDone={() => navigate('home')} onHistory={() => router.push('/rider/trips')}/>
+      : nativeIdentity ? <AcceptedDriverCard snapshot={displaySnapshot} photo={approvedDriverPhoto} photoStale={portrait.stale} tripId={tripId!} safety={openSafety} onPhotoError={() => { setFailedPhoto(approvedDriverPhoto); void portrait.refresh(); }}/> : <div className="nr-trip-frame-shell" data-ready={embeddedReady ? 'true' : 'false'}>
       <iframe
         ref={frame}
         key={`${file}:${tripId || 'preview'}`}

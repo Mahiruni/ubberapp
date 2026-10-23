@@ -229,6 +229,7 @@ function AppWorkspace({
   const router = useRouter();
   const t = useTranslation();
   const [liveSnapshot, setLiveSnapshot] = useState<TripSnapshot | null>(null);
+  const [riderTripSelection, setRiderTripSelection] = useState<{ id: string; userId: string } | null>(null);
   const riderLocation = useRiderLocation();
   const journey = useJourney(riderLocation.position, language);
   const matching = useMatching();
@@ -617,6 +618,8 @@ function AppWorkspace({
                   matching={matching}
                   onTripSource={setLiveTripShown}
                   onTripSnapshot={setLiveSnapshot}
+                  tripSelection={riderTripSelection}
+                  setTripSelection={setRiderTripSelection}
                 />
               </div>
             )}
@@ -680,7 +683,9 @@ function AppWorkspace({
                 onBookingPending={onBookingPending}
                 matching={matching}
                 onTripSource={setLiveTripShown}
-                  onTripSnapshot={setLiveSnapshot}
+                onTripSnapshot={setLiveSnapshot}
+                tripSelection={riderTripSelection}
+                setTripSelection={setRiderTripSelection}
               />
             </div>
           </div>

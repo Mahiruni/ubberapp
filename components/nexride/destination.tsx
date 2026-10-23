@@ -291,6 +291,7 @@ export function DestinationPanel({
       className="nr-destination-panel"
       aria-label={t("destinationSearch")}
       data-search-active={searchActive || undefined}
+      data-can-continue={j.canContinue}
     >
       <RiderSheetHandle
         label={t("resizeSheet")}
@@ -586,7 +587,7 @@ export function DestinationPanel({
         )}
         {!picking && j.valid && <RouteReview journey={j} />}
       </div>
-      {!keyboardOpen && !shortcut && (!searchActive || j.canContinue || picking) && (
+      {(!keyboardOpen || j.canContinue || picking) && !shortcut && (!searchActive || j.canContinue || picking) && (
         <footer>
           {picking ? (
             <Button disabled={!pin} onClick={() => j.confirm(picking)}>

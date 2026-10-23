@@ -5,6 +5,7 @@ import { endpointName } from './destination';
 import { RiderSheetHandle } from './rider-sheet';
 import { fareTotal } from '../../lib/nexride-booking';
 import type { Matching } from '../../lib/nexride-use-matching';
+import { elapsedLabel } from '../../lib/biloo-journey';
 export function DriverMatching({ model, changeCategory, previewAssigned, home }: {
   model: Matching; changeCategory: () => void; previewAssigned: () => void; home: () => void;
 }) {
@@ -19,9 +20,19 @@ export function DriverMatching({ model, changeCategory, previewAssigned, home }:
   useEffect(() => { if (status === 'assigned') heading.current?.focus(); }, [status]);
   // Close stale terms if dispatch changes while a confirmation is open.
   useEffect(() => { setConfirmVersion(null); }, [snapshot?.version]);
+  const searching = !connectionLost && !degraded && (status === 'searching' || status === 'delayed');
+  const [now, setNow] = useState(0);
+  useEffect(() => {
+    if (!searching) return;
+    setNow(Date.now());
+    const timer = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, [searching]);
+  const progress = snapshot?.progress;
+  const startedAt = Date.parse(progress?.requestedAt || '');
+  const say = (en: string, am: string) => language === 'am' ? am : en;
   if (!request) return null;
   const preview = request.source === 'preview';
-  const searching = !connectionLost && !degraded && (status === 'searching' || status === 'delayed');
   const terms = snapshot?.cancellation;
   const total = fareTotal(request.fare);
   const money = (n: number) => new Intl.NumberFormat(language === 'am' ? 'am-ET' : 'en-ET', { maximumFractionDigits: 2 }).format(n);
@@ -68,7 +79,11 @@ export function DriverMatching({ model, changeCategory, previewAssigned, home }:
       <span className="nr-sr-only" role="status" aria-live="polite" aria-atomic="true">{t(title)}</span>
       {searching && <div className="nr-match-progress" aria-label={t('matchingProgress')}>
         <span><Icon name="check" size={16} />{t('matchingRequestSent')}</span><span className="nr-match-progress-line" />
-        <span><i className="nr-match-dots" aria-hidden="true"><b/><b/><b/></i>{t('matchingAcceptance')}</span>
+        <span><i className="nr-match-dots" aria-hidden="true"><b/><b/><b/></i>{progress?.phase === 'waiting' ? say('Waiting for driver response', 'የአሽከርካሪ ምላሽ በመጠባበቅ ላይ') : t('matchingAcceptance')}</span>
+      </div>}
+      {!preview && searching && progress && <div className="biloo-matching-live-meta" data-phase={progress.phase}>
+        {Number.isFinite(startedAt) && now >= startedAt && <span><Icon name="clock" size={15}/>{say('Searching', 'በመፈለግ ላይ')} <b>{elapsedLabel((now - startedAt) / 1000)}</b></span>}
+        {progress.deliveredAt && <span><Icon name="check" size={15}/>{say('Request sent to an eligible driver', 'ጥያቄው ለብቁ አሽከርካሪ ተልኳል')}</span>}
       </div>}
       {status === 'assigned' && snapshot?.driver && <div className="nr-confirmed-driver nr-confirmed-driver-v2">
         <span className="nr-confirmed-driver-avatar"><Icon name="user" size={28}/></span>

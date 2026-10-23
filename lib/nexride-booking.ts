@@ -203,6 +203,7 @@ export const bookingAdapter = {
     fare: RideFare,
     revision: string,
     idempotencyKey: string,
+    pickupInstructions = "",
   ): Promise<BookingResult> {
     const { nexrideApiFetch } = await import("./nexride-api-auth");
     const response = await nexrideApiFetch("/api/rider/requests", {
@@ -216,6 +217,7 @@ export const bookingAdapter = {
         category: fare.category,
         revision,
         paymentMethod: "cash",
+        pickupInstructions,
       }),
     });
     const result = await response.json();

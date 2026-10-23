@@ -1,6 +1,7 @@
 // Confirmed snapshots are the only source of live matching/driver state.
 import type { RideFare } from './nexride-booking';
 import type { Journey } from './nexride-journey';
+import type { MatchingProgress } from './biloo-journey';
 export type MatchStatus = 'searching' | 'delayed' | 'no_drivers' | 'cancelled' | 'assigned';
 export type MatchSnapshot = {
   requestId: string;
@@ -9,6 +10,7 @@ export type MatchSnapshot = {
   cancellation: { allowed: boolean; requiresConfirmation: boolean; fee: number | null; reason: string | null };
   canRetry: boolean;
   canChangeCategory: boolean;
+  progress?: MatchingProgress;
   driver?: { name: string; vehicle: string; plate: string; pickupMinutes: number | null };
 };
 export type MatchRequest = {
@@ -51,7 +53,10 @@ export function normalizeMatch(value: unknown, requestId: string): MatchSnapshot
 }
 export function newerMatch(current: MatchSnapshot | null, next: MatchSnapshot) {
   if (!current) return next;
-  if (next.requestId !== current.requestId || next.version <= current.version || current.status === 'cancelled') return current;
+  if (next.requestId !== current.requestId || next.version < current.version || current.status === 'cancelled') return current;
+  if (next.version === current.version) return next.status === current.status && next.progress &&
+    next.progress.observedAt > (current.progress?.observedAt || 0)
+    ? { ...current, progress: next.progress } : current;
   // Assignment cannot regress to searching because of a stale dispatch response.
   if (current.status === 'assigned' && next.status !== 'assigned' && next.status !== 'cancelled') return current;
   return next;

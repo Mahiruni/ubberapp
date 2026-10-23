@@ -1,5 +1,6 @@
 import { authorizedRequestSupabase } from "../../../../../lib/nexride-server-supabase";
 import { serverAdminSupabase } from "../../../../../lib/nexride-server-admin";
+import { matchingProgress } from "../../../../../lib/biloo-journey";
 
 const reply = (body: unknown, status = 200) =>
   Response.json(body, { status, headers: { "Cache-Control": "no-store" } });
@@ -48,7 +49,25 @@ export async function GET(request: Request, context: RouteContext) {
       return reply({ status: "unavailable" }, error.message?.includes("REQUEST_NOT_FOUND") ? 404 : 503);
     }
     if (!data) return reply({ status: "unavailable" }, 503);
-    return reply(stableSnapshot(data));
+    // Progress is derived from persisted dispatch records, not a local timer
+    // or fabricated nearby Drivers. A missing optional progress read must not
+    // hide the authoritative matching/cancellation snapshot.
+    let progress;
+    try {
+      const admin = serverAdminSupabase();
+      const [rideResult, offersResult] = await Promise.all([
+        admin.from('ride_requests').select('created_at,status,dispatch_state,match_version')
+          .eq('id', requestId).eq('rider_id', authorized.user.id).maybeSingle(),
+        admin.from('ride_request_offers').select('status,created_at,expires_at')
+          .eq('request_id', requestId).order('created_at', { ascending: false }).limit(100),
+      ]);
+      if (!rideResult.error && !offersResult.error && rideResult.data &&
+        rideResult.data.match_version === (data as { version: number }).version)
+        progress = matchingProgress(rideResult.data, offersResult.data || []);
+    } catch { /* Preserve the verified snapshot if optional metadata fails. */ }
+    const snapshot = stableSnapshot(data);
+    return reply(progress && snapshot && typeof snapshot === 'object'
+      ? { ...snapshot, progress } : snapshot);
   } catch {
     console.error("rider_matching_snapshot_service_unavailable");
     return reply({ status: "unavailable" }, 503);

@@ -48,6 +48,7 @@ type RideRequest = {
   estimated_trip_duration_minutes: number | null;
   status: string;
   assigned_driver_id: string | null;
+  pickup_instructions?: string;
 };
 
 const DECLINE_REASONS = [
@@ -263,7 +264,7 @@ export default function DriverRideRequestPage() {
 
     const { data: ride, error: rideError } = await supabase
       .from("ride_requests")
-      .select("id,pickup_location,destination_location,pickup_lat,pickup_lng,destination_lat,destination_lng,ride_category,estimated_trip_fare_etb,estimated_driver_payout_etb,estimated_trip_distance_km,estimated_trip_duration_minutes,status,assigned_driver_id")
+      .select("id,pickup_location,destination_location,pickup_lat,pickup_lng,destination_lat,destination_lng,ride_category,estimated_trip_fare_etb,estimated_driver_payout_etb,estimated_trip_distance_km,estimated_trip_duration_minutes,status,assigned_driver_id,pickup_instructions")
       .eq("id", nextOffer.request_id)
       .maybeSingle();
 
@@ -645,7 +646,7 @@ export default function DriverRideRequestPage() {
               <button type="button" className="nr-request-accept"
                 disabled={Boolean(submitting) || secondsRemaining === 0} onClick={() => void acceptRide()}>
                 <Icon name="check" size={22} />
-                {submitting === "accept" ? op("Accepting…") : op("Accept")}
+                {submitting === "accept" ? op("Accepting…") : op("Accept Ride")}
               </button>
               <div className="nr-request-actions-secondary">
                 <button type="button" className="nr-request-pass"
@@ -757,7 +758,7 @@ export default function DriverRideRequestPage() {
               <div className="nr-request-road">
                 <span className="nr-request-road-endpoint pickup" aria-hidden="true" />
                 <div className="nr-request-road-track">
-                  <span className="nr-request-road-car" aria-hidden="true">🚗</span>
+                  <span className="nr-request-road-car" aria-hidden="true"><Icon name="navigation" size={18}/></span>
                   <span className="nr-request-road-distance">
                     {request.estimated_trip_distance_km !== null && Number.isFinite(request.estimated_trip_distance_km)
                       ? `${request.estimated_trip_distance_km.toFixed(1)} km`
@@ -809,6 +810,8 @@ export default function DriverRideRequestPage() {
                 <div><small>Estimated trip time</small><strong>{Math.max(1, Math.round(request.estimated_trip_duration_minutes))} min</strong></div>
               )}
             </div>
+
+            {request.pickup_instructions && <p className="biloo-pickup-instructions"><Icon name="info" size={17}/><span>{request.pickup_instructions}</span></p>}
 
             {acceptFailure && (
               <div className="nr-request-error" role="alert">

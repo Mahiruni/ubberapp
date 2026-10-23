@@ -9,7 +9,7 @@ import {
   serviceBounds,
   validPoint,
 } from "../../../../lib/nexride-search";
-import { haversineMeters } from "../../../../lib/location";
+import { haversineMeters, routeBetween } from "../../../../lib/location";
 
 const reply = (body: unknown, status = 200) =>
   Response.json(body, { status, headers: { "Cache-Control": "no-store" } });
@@ -42,6 +42,7 @@ export async function POST(request: Request) {
       category,
       revision,
       paymentMethod,
+      pickupInstructions = "",
     } = body || {};
 
     const area = serviceBounds(process.env.NEXRIDE_SERVICE_BOUNDS);
@@ -57,20 +58,11 @@ export async function POST(request: Request) {
       return reply({ status: "unavailable" }, 422);
     if (!rideCategories.includes(category) || paymentMethod !== "cash")
       return reply({ status: "failed" }, 400);
+    if (typeof pickupInstructions !== "string" || pickupInstructions.length > 280)
+      return reply({ status: "failed" }, 400);
 
     const fares = liveFareSet({ pickup, destination });
     const current = fares.offers.find((offer) => offer.category === category);
-
-    if (
-      revision !== fares.revision ||
-      !current ||
-      current.id !== quoteId ||
-      current.availability !== "available" ||
-      fareTotal(current) === null ||
-      Date.parse(fares.expiresAt) <= Date.now()
-    ) {
-      return reply({ status: "price_changed", fares }, 409);
-    }
 
     // Create the request directly on the trusted server after verifying the
     // Rider JWT above. This keeps booking aligned with the app's current
@@ -101,6 +93,14 @@ export async function POST(request: Request) {
       return reply({ status: "accepted", requestId: existing.id }, 200);
     }
 
+    // An uncertain network retry must resolve its original booking even when
+    // its quote expired in the meantime. Reprice only genuinely new requests.
+    if (
+      revision !== fares.revision || !current || current.id !== quoteId ||
+      current.availability !== "available" || fareTotal(current) === null ||
+      Date.parse(fares.expiresAt) <= Date.now()
+    ) return reply({ status: "price_changed", fares }, 409);
+
     const { data: active, error: activeError } = await admin
       .from("ride_requests")
       .select("id,status,dispatch_state")
@@ -117,36 +117,55 @@ export async function POST(request: Request) {
       return reply({ status: "failed" }, 500);
     }
 
-    if (active?.id) {
-      if (active.status === "pending" && active.dispatch_state === "no_drivers") {
-        const { error: cancelOldError } = await admin
-          .from("ride_requests")
-          .update({
-            status: "cancelled",
-            cancellation_reason: "superseded_by_new_request",
-          })
-          .eq("id", active.id)
-          .eq("rider_id", authorized.user.id);
-
-        if (cancelOldError) {
-          console.error("nexride_booking_supersede_failed", {
-            code: cancelOldError.code || "unknown",
-          });
-          return reply({ status: "failed" }, 500);
-        }
-      } else {
-        // A Rider must never get a generic failure just because an earlier
-        // request is still active. Resume that authoritative request instead.
-        return reply({ status: "accepted", requestId: active.id }, 200);
-      }
+    if (active?.id && !(active.status === "pending" && active.dispatch_state === "no_drivers")) {
+      return reply({ status: "accepted", requestId: active.id }, 200);
     }
 
-    const directKm = haversineMeters(pickup, destination) / 1000;
-    const roadKm = Math.max(0.5, directKm * 1.28);
-    const durationMinutes = Math.max(4, Math.ceil((roadKm / 22) * 60));
+    let route;
+    try {
+      route = await routeBetween([pickup, destination], {
+        profile: "driving-traffic", requireProvider: true,
+        signal: AbortSignal.timeout(8000),
+      });
+      if (route.provider !== "mapbox" || !Number.isFinite(route.distanceMeters) ||
+        !Number.isFinite(route.durationSeconds)) throw new Error("route_invalid");
+    } catch {
+      return reply({ status: "route_unavailable" }, 503);
+    }
+    const roadKm = route.distanceMeters / 1000;
+    const durationMinutes = Math.max(1, Math.ceil(route.durationSeconds / 60));
+    const freshFares = liveFareSet({ pickup, destination });
+    if (freshFares.revision !== revision)
+      return reply({ status: "price_changed", fares: freshFares }, 409);
     const quotedFare = fareTotal(current);
     if (quotedFare === null) return reply({ status: "failed" }, 400);
 
+    // Validate the replacement route before touching a previous search.
+    if (active?.id) {
+      const { data: superseded, error: cancelOldError } = await admin
+        .from("ride_requests")
+        .update({
+          status: "cancelled",
+          cancellation_reason: "superseded_by_new_request",
+        })
+        .eq("id", active.id)
+        .eq("rider_id", authorized.user.id)
+        .eq("status", "pending")
+        .eq("dispatch_state", "no_drivers")
+        .is("assigned_driver_id", null)
+        .select("id")
+        .maybeSingle();
+
+      if (cancelOldError) {
+        console.error("nexride_booking_supersede_failed", {
+          code: cancelOldError.code || "unknown",
+        });
+        return reply({ status: "failed" }, 500);
+      }
+      // A Driver can accept between lookup and cancellation. The guarded
+      // UPDATE must not cancel that assignment or create a second booking.
+      if (!superseded) return reply({ status: "accepted", requestId: active.id });
+    }
     const { data: created, error: createError } = await admin
       .from("ride_requests")
       .insert({
@@ -168,6 +187,7 @@ export async function POST(request: Request) {
         dispatch_started_at: new Date().toISOString(),
         client_request_key: idempotencyKey,
         pricing_revision: revision,
+        pickup_instructions: pickupInstructions.trim(),
       })
       .select("id")
       .single();

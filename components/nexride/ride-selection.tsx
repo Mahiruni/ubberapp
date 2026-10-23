@@ -32,6 +32,8 @@ export function RideSelection({
   const model = useRideOffers(journey, onPending, onCreated);
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pickupInstructions, setPickupInstructions] = useState("");
+  const say = (en: string, am: string) => language === "am" ? am : en;
   useEffect(() => {
     if (!model.canRequest) setConfirmOpen(false);
   }, [model.canRequest]);
@@ -337,7 +339,7 @@ export function RideSelection({
             if (model.canRequest) setConfirmOpen(true);
           }}
           disabled={!model.canRequest}
-          aria-label={language === "am" ? t("requestRide") : `Request ${t(model.selected)}`}
+          aria-label={say("Continue to review ride", "ጉዞውን ለመገምገም ይቀጥሉ")}
         >
           {busy ? (
             <>
@@ -347,7 +349,7 @@ export function RideSelection({
           ) : accepted ? (
             t("requestReceived")
           ) : (
-            language === "am" ? t("requestRide") : `Request ${t(model.selected)}`
+            say("Continue", "ቀጥል")
           )}
           {!busy && !accepted && total !== null && (
             <span className="nr-request-total">ETB {money(total)}</span>
@@ -398,6 +400,18 @@ export function RideSelection({
           title={t("reviewRequest")}
           onClose={() => setConfirmOpen(false)}
         >
+          <div className="biloo-booking-review">
+            <span className="biloo-journey-eyebrow">{say("YOUR JOURNEY", "የእርስዎ ጉዞ")}</span>
+            <div className="biloo-journey-stops">
+              <div><span className="biloo-stop-dot"/><div><small>{t("pickup")}</small><strong>{journey.pickup && endpointName(journey.pickup, language, t)}</strong></div></div>
+              <div><span className="biloo-stop-dot destination"/><div><small>{t("dropoff")}</small><strong>{journey.destination && endpointName(journey.destination, language, t)}</strong></div></div>
+            </div>
+            {journey.routeState.status === "ready" && journey.routeState.route && <div className="biloo-journey-metrics">
+              <span><Icon name="navigation" size={16}/>{(journey.routeState.route.distanceMeters / 1000).toFixed(1)} {t("kilometers")}</span>
+              <span><Icon name="clock" size={16}/>{Math.max(1, Math.ceil(journey.routeState.route.durationSeconds / 60))} {t("minutes")}</span>
+              <span><Icon name="user" size={16}/>{model.chosen.seats} {t("seats")}</span>
+            </div>}
+          </div>
           <p className="nr-muted">
             {t(
               model.chosen.priceType === "confirmed"
@@ -405,7 +419,7 @@ export function RideSelection({
                 : "estimatePriceNote",
             )}
           </p>
-          <div className="nr-fare-breakdown">
+          <div className="nr-fare-breakdown biloo-booking-fares">
             <div>
               <strong>{t(model.selected)}</strong>
               <span>
@@ -423,23 +437,30 @@ export function RideSelection({
             ))}
             {!model.chosen.charges.length && <p>{t("noQuotedCharges")}</p>}
             <div className="total">
-              <strong>{t("totalQuote")}</strong>
+              <strong>{model.chosen.priceType === "confirmed" ? t("totalQuote") : say("Estimated total", "ግምታዊ ጠቅላላ ዋጋ")}</strong>
               <strong>ETB {total === null ? "—" : money(total)}</strong>
             </div>
             <p>
               {t("payment")}: {t("cash")}
             </p>
           </div>
+          <label className="biloo-pickup-note">
+            <span>{say("Pickup instructions", "የመነሻ መመሪያ")} <small>{say("Optional", "አማራጭ")}</small></span>
+            <textarea value={pickupInstructions} maxLength={280} rows={2}
+              placeholder={say("Entrance, landmark, or where to meet", "መግቢያ፣ ምልክት ወይም የመገናኛ ቦታ")}
+              onChange={event => setPickupInstructions(event.target.value)} />
+          </label>
+          <p className="biloo-booking-assurance"><Icon name="shield" size={16}/>{say("Your ride is confirmed after a driver accepts. Payment is not collected now.", "ጉዞዎ የሚረጋገጠው አሽከርካሪ ሲቀበል ነው። አሁን ክፍያ አይሰበሰብም።")}</p>
           <Button
             disabled={!model.canRequest}
             onClick={() => {
               if (model.canRequest) {
                 setConfirmOpen(false);
-                void model.request();
+                void model.request(pickupInstructions.trim());
               }
             }}
           >
-            {t("confirmRequest")}
+            {t("requestRide")}
           </Button>
         </Dialog>
       )}

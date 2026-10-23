@@ -7,6 +7,7 @@ import { ADMIN_NAVIGATION, ADMIN_AUX_NAVIGATION, type AdminNavigationId } from "
 import { Brand, Icon, type IconName } from "../../components/nexride/ui";
 import { supabase } from "../../lib/supabase";
 import { AdminAccountIdentities } from "../../components/nexride/admin-account-identities";
+import { AdminJourneyDetails } from "../../components/nexride/admin-journey-details";
 import "./admin.css";
 import "../detail-system.css";
 
@@ -836,6 +837,8 @@ function DataModule({
   refresh: () => void;
 }) {
   const title = nav.find((item) => item[0] === module)?.[1] || "Records";
+  const [inspectedRide, setInspectedRide] = useState<string | null>(null);
+  useEffect(() => setInspectedRide(null), [module]);
 
   const columns =
     module === "rides"
@@ -906,6 +909,7 @@ function DataModule({
 
   return (
     <main className="admin-content">
+      {inspectedRide && <AdminJourneyDetails rideId={inspectedRide} onClose={() => setInspectedRide(null)}/>}
       <div className="module-head">
         <div>
           <p className="admin-kicker">BILOO · ADMIN</p>
@@ -1036,6 +1040,7 @@ function DataModule({
 
                     {module === "rides" && (
                       <td className="actions">
+                        <button onClick={() => setInspectedRide(String(row.id))}>Journey details</button>
                         {!["completed", "cancelled", "withdrawn"].includes(
                           row.status,
                         ) && (

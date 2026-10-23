@@ -13,6 +13,8 @@ import { updateNexRideLiveTrip,clearNexRideLiveTrip } from "../../../lib/nexride
 import { resolveSessionRole } from "../../../lib/nexride-account-role";
 import { emitNexRideFeedback } from "../../../lib/nexride-feedback";
 import { nextNexRideManeuver } from "../../../lib/nexride-navigation-guidance";
+import { TripCompletionCard } from "../../../components/nexride/trip-completion-card";
+import type { TripSnapshot } from "../../../lib/nexride-trip-data";
 import "../../nexride.css";
 import "./navigation.css";
 import "../../detail-system.css";
@@ -126,6 +128,8 @@ export default function DriverNavigationPage() {
   const [nativeRoute, setNativeRoute] = useState<NativeRoute | null>(null);
   const [nativeRouteNotice, setNativeRouteNotice] = useState("");
   const [confirmAction, setConfirmAction] = useState<"in_trip" | "completed" | null>(null);
+  const [completion, setCompletion] = useState<TripSnapshot | null>(null);
+  const mutationLock = useRef(false);
 
   const loadTrip = useCallback(async (userId: string, offerId: string) => {
     const { data: offer, error: offerError } = await supabase
@@ -138,7 +142,7 @@ export default function DriverNavigationPage() {
 
     const { data: ride, error: rideError } = await supabase
       .from("ride_requests")
-      .select("id,rider_id,pickup_location,destination_location,pickup_lat,pickup_lng,destination_lat,destination_lng,ride_category,status,assigned_driver_id,estimated_trip_duration_minutes,estimated_trip_distance_km")
+      .select("id,rider_id,pickup_location,destination_location,pickup_lat,pickup_lng,destination_lat,destination_lng,ride_category,status,assigned_driver_id,estimated_trip_duration_minutes,estimated_trip_distance_km,final_fare_etb,payment_method,payment_status,started_at,completed_at")
       .eq("id", offer.request_id).maybeSingle();
 
     if (rideError || !ride) throw new Error("The active trip could not be loaded.");
@@ -161,6 +165,16 @@ export default function DriverNavigationPage() {
       tripDurationMinutes: asNumber(ride.estimated_trip_duration_minutes),
     };
     setTrip(next);
+    if (status === 'completed') setCompletion({
+      id: ride.id, revision: 1, status: 'completed', driver: null, category: ride.ride_category,
+      pickup: { name: ride.pickup_location }, destination: { name: ride.destination_location }, tracking: null,
+      startedAt: ride.started_at ? Date.parse(ride.started_at) : undefined,
+      completedAt: ride.completed_at ? Date.parse(ride.completed_at) : undefined,
+      estimatedDistanceMeters: asNumber(ride.estimated_trip_distance_km) != null ? ride.estimated_trip_distance_km * 1000 : undefined,
+      finalAmount: asNumber(ride.final_fare_etb) != null ? { amount: ride.final_fare_etb, currency: 'ETB' } : undefined,
+      payment: { status: ['paid', 'pending', 'failed'].includes(ride.payment_status) ? ride.payment_status : 'unknown',
+        method: ride.payment_method === 'cash' ? 'Cash' : undefined },
+    });
     setShowingSavedTrip(false);
     setSafeToUpdate(typeof navigator !== "undefined" && navigator.onLine);
     try {
@@ -666,7 +680,7 @@ export default function DriverNavigationPage() {
             : 0;
 
   async function transition(next: "arrived_pickup" | "in_trip" | "completed") {
-    if (!trip || !driverId || busy) return;
+    if (!trip || !driverId || busy || mutationLock.current) return;
     if (!safeToUpdate || !navigator.onLine) {
       setMessage("Trip actions are paused until Biloo confirms the latest stage online.");
       return;
@@ -680,6 +694,7 @@ export default function DriverNavigationPage() {
       return;
     }
 
+    mutationLock.current = true;
     setBusy(true);
     setMessage("");
     setSafeToUpdate(false);
@@ -700,13 +715,19 @@ export default function DriverNavigationPage() {
       errorMessage = "network_unavailable";
     }
     if (!changed) {
+      const blocked = errorMessage.includes('DRIVER_NOT_AUTHORIZED_FOR_PICKUP');
       setMessage(errorMessage.includes("INVALID_TRIP_STAGE_TRANSITION")
         ? "The trip stage changed before this action completed. Rechecking…"
         : "The action could not be confirmed. Checking the latest trip stage before retry is allowed.");
       if (navigator.onLine) {
-        try { await loadTrip(driverId, trip.offerId); setMessage(""); } catch {}
+        try { await loadTrip(driverId, trip.offerId); if (!blocked) setMessage(""); } catch {}
+      }
+      if (blocked) {
+        setSafeToUpdate(false);
+        setMessage('Your Driver approval or account status changed. Contact Biloo support before continuing pickup.');
       }
       setBusy(false);
+      mutationLock.current = false;
       return;
     }
     const status = normalizeStatus(changed.status);
@@ -739,6 +760,10 @@ export default function DriverNavigationPage() {
       });
     }
     setBusy(false);
+    mutationLock.current = false;
+    if (status === 'completed') void loadTrip(driverId, trip.offerId).catch(() => {
+      setMessage('Trip completed. Open earnings to refresh the confirmed fare and payment status.');
+    });
   }
 
   if (loading) return <main className="nr-app nr-driver-navigation-page" data-mode="driver"><div className="nr-nav-loading" aria-busy="true"><span /><span /><span /></div></main>;
@@ -753,6 +778,10 @@ export default function DriverNavigationPage() {
   );
 
   if (!trip || !stage) return null;
+  if (trip.status === 'completed') return <main className="nr-app biloo-driver-completion" data-mode="driver">
+    <TripCompletionCard snapshot={completion} role="driver"
+      onDone={() => router.replace('/driver/home')} onHistory={() => router.push('/driver/earnings')}/>
+  </main>;
   if (trip.status === 'cancelled' || trip.status === 'withdrawn') return (
     <main className="nr-app nr-driver-navigation-page" data-mode="driver">
       <section className="nr-nav-unavailable" role="status" aria-live="polite">
