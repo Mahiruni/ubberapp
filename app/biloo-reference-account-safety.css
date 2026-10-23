@@ -1,0 +1,627 @@
+/* Biloo 2026 — Profile, Safety & App Settings refinement.
+ * Original Biloo navy/gold identity with a clean, mobile-first reference layout.
+ * Content and actions remain supplied by their original React owners. */
+
+/* ── SAFETY: two immediate tiles, one unmistakable emergency pathway. ── */
+main.nr-safety-page {
+  --biloo-ref-ink:#112940;
+  --biloo-ref-muted:#607184;
+  --biloo-ref-card:#f2f3f0;
+  --biloo-ref-brand:#08295f;
+  background:#ffffff!important;
+  color:var(--biloo-ref-ink)!important;
+  min-height:100dvh;
+  padding:calc(12px + env(safe-area-inset-top,0px)) 18px calc(42px + env(safe-area-inset-bottom,0px))!important;
+}
+main.nr-safety-page[data-mode="driver"]{background:#fff!important;color:var(--biloo-ref-ink)!important}
+.nr-safety-page .nr-safety-wrap{width:100%;max-width:760px;margin-inline:auto}
+.nr-safety-page .nr-safety-head{
+  display:grid;
+  grid-template-columns:52px 1fr 52px;
+  align-items:center;
+  gap:8px;
+  min-height:66px;
+  padding:2px 0;
+  margin-bottom:20px;
+}
+.nr-safety-page .nr-safety-head>div{min-width:0;text-align:center}
+.nr-safety-page .nr-safety-head>div>span{display:none}
+.nr-safety-page .nr-safety-head h1{
+  font-size:clamp(23px,5vw,29px)!important;
+  line-height:1.12;
+  letter-spacing:-.045em;
+  color:var(--biloo-ref-ink)!important;
+  font-weight:800;
+}
+.nr-safety-page .nr-safety-head .nr-safety-back{
+  grid-column:1;grid-row:1;
+  width:48px;height:48px;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  color:var(--biloo-ref-ink)!important;
+  border-radius:50%!important;
+}
+.nr-safety-page .nr-safety-head .nr-safety-network{
+  grid-column:3;grid-row:1;
+  min-width:0;justify-content:center;
+  border-radius:999px!important;
+  padding:5px 4px;
+  font-size:10px;
+  background:#f2f7f4!important;
+  border:1px solid #e2ebe7!important;
+}
+.nr-safety-page .nr-safety-intro{
+  margin:20px 0 10px;
+  padding:12px 14px!important;
+  background:#f5f8fb!important;
+  border:1px solid #e6edf3!important;
+  border-radius:16px!important;
+  box-shadow:none!important;
+}
+.nr-safety-page .nr-safety-intro strong{font-size:13px!important;color:var(--biloo-ref-ink)!important}
+.nr-safety-page .nr-safety-intro p{font-size:11px!important}
+.nr-safety-page .nr-safety-shield{color:#0e7559!important;background:#e9f5ee!important}
+.nr-safety-page .nr-safety-actions.biloo-safety-quick-actions{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:12px!important;
+  margin:0 0 14px!important;
+}
+.nr-safety-page .biloo-safety-quick-actions>.nr-safety-action{
+  min-width:0;
+  min-height:138px!important;
+  display:flex!important;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  gap:10px!important;
+  padding:17px 12px!important;
+  text-align:center!important;
+  background:var(--biloo-ref-card)!important;
+  border:1px solid transparent!important;
+  border-radius:24px!important;
+  box-shadow:none!important;
+  color:#18262f!important;
+  touch-action:manipulation;
+}
+.nr-safety-page .biloo-safety-quick-actions>.nr-safety-action>.nr-safety-action-icon{
+  display:grid!important;
+  place-items:center!important;
+  flex:0 0 43px;
+  grid-column:auto!important;
+  width:43px!important;height:43px!important;
+  margin:0!important;
+  padding:0!important;
+  background:transparent!important;
+  color:#152536!important;
+  border:0!important;
+}
+.nr-safety-page .biloo-safety-quick-actions>.nr-safety-action>.nr-safety-action-icon svg{width:29px;height:29px}
+.nr-safety-page .biloo-safety-quick-actions>.nr-safety-action>span:nth-child(2){
+  display:grid!important;
+  gap:5px;
+  grid-column:auto!important;
+  min-width:0;
+  width:100%;
+}
+.nr-safety-page .biloo-safety-quick-actions>.nr-safety-action strong{
+  font-size:15px!important;line-height:1.28!important;
+  font-weight:725!important;color:inherit!important;
+  overflow-wrap:anywhere;
+}
+.nr-safety-page .biloo-safety-quick-actions>.nr-safety-action small{
+  font-size:10px!important;
+  line-height:1.35!important;
+  color:#5c6b74!important;
+  text-wrap:balance;
+}
+.nr-safety-page .biloo-safety-quick-actions>.nr-safety-action>svg:last-child{display:none!important}
+.nr-safety-page .biloo-safety-quick-actions>.nr-safety-action:nth-child(3){
+  grid-column:1/-1!important;
+  min-height:94px!important;
+  flex-direction:row!important;
+  gap:16px!important;
+  justify-content:center!important;
+  background:#f20745!important;
+  border-color:#df0b43!important;
+  color:#fff!important;
+  border-radius:21px!important;
+  box-shadow:0 7px 20px rgba(203,14,64,.12)!important;
+}
+.nr-safety-page .biloo-safety-quick-actions>.nr-safety-action:nth-child(3)>.nr-safety-action-icon{
+  width:35px!important;flex-basis:35px;color:#fff!important;
+}
+.nr-safety-page .biloo-safety-quick-actions>.nr-safety-action:nth-child(3)>span:nth-child(2){
+  display:flex!important;flex:0 1 auto;flex-direction:column;width:auto;
+  align-items:flex-start;text-align:left;
+}
+.nr-safety-page .biloo-safety-quick-actions>.nr-safety-action:nth-child(3) strong{
+  font-size:20px!important;line-height:1.18!important;color:#fff!important;
+}
+.nr-safety-page .biloo-safety-quick-actions>.nr-safety-action:nth-child(3) small{
+  max-width:250px;color:#fff!important;opacity:.93;
+}
+.nr-safety-page .biloo-safety-quick-actions>.nr-safety-action:nth-child(4){
+  grid-column:1/-1!important;
+  min-height:66px!important;
+  flex-direction:row!important;
+  text-align:left!important;
+  justify-content:flex-start!important;
+  border:1px solid #e7e9e7!important;
+  background:#f6f7f6!important;
+  border-radius:17px!important;
+}
+.nr-safety-page .biloo-safety-quick-actions>.nr-safety-action:nth-child(4)>.nr-safety-action-icon{
+  flex-basis:36px;width:36px!important;height:36px!important;
+}
+.nr-safety-page .biloo-safety-quick-actions>.nr-safety-action:nth-child(4)>span:nth-child(2){
+  text-align:left;flex:1;
+}
+.nr-safety-page .biloo-safety-protection{margin:28px 0 0}
+.nr-safety-page .biloo-safety-protection h2{
+  font-size:clamp(22px,5vw,27px)!important;
+  margin:0 0 16px!important;
+  font-weight:830!important;
+  letter-spacing:-.045em;
+}
+.nr-safety-page .biloo-safety-protection-grid{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px!important;
+}
+.nr-safety-page .biloo-safety-protection-grid>button{
+  position:relative;
+  min-height:158px!important;
+  padding:17px 15px!important;
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:9px!important;
+  overflow:hidden;
+  background:#f2f3f0!important;
+  border:0!important;
+  border-radius:23px!important;
+  box-shadow:none!important;
+  color:var(--biloo-ref-ink)!important;
+}
+.nr-safety-page .biloo-safety-protection-grid>button strong{
+  max-width:100%;
+  font-size:14px!important;
+  line-height:1.35!important;
+  font-weight:700!important;
+  color:var(--biloo-ref-ink)!important;
+}
+.nr-safety-page .biloo-safety-protection-grid>button small{
+  font-size:10px!important;
+  line-height:1.34!important;
+  color:#596a70!important;
+}
+.nr-safety-page .biloo-safety-protection-grid>button svg{
+  align-self:flex-end;
+  width:48px;height:48px;
+  padding:11px;
+  flex:none;
+  color:#092d58!important;
+  background:#f9c449;
+  transform:rotate(-9deg);
+  border-radius:12px;
+}
+.nr-safety-page .biloo-safety-protection-grid>button:nth-child(2) svg{background:#c9ecbd}
+.nr-safety-page .biloo-safety-protection-grid>button:nth-child(3) svg{background:#d5e7ff}
+.nr-safety-page .biloo-safety-protection-grid>button:nth-child(4) svg{background:#ffe2cc}
+.nr-safety-page .biloo-safety-protection-grid>button:nth-child(5) svg{background:#ffddaa}
+.nr-safety-page .nr-safety-context{
+  margin-top:20px;
+  padding:15px!important;
+  border:1px solid #e7edf1!important;
+  border-radius:16px!important;
+  background:#f8fafb!important;
+  color:var(--biloo-ref-ink)!important;
+}
+.nr-safety-page :is(.nr-sos-panel,.nr-help-panel,.nr-report-panel,.nr-share-panel){
+  border:1px solid #e1e9ed!important;
+  border-radius:22px!important;
+  background:#fff!important;
+  color:var(--biloo-ref-ink)!important;
+  padding:18px!important;
+}
+.nr-safety-page :is(button,a):focus-visible{outline:3px solid #1978af!important;outline-offset:3px}
+
+/* ── RIDER: full-screen, easy-to-read account editing and grouped settings. ── */
+dialog.nr-dialog.biloo-ref-profile-modal[open],
+dialog.nr-dialog.biloo-ref-settings-modal[open]{
+  border:0!important;
+  background:#fff!important;
+  color:#12283c!important;
+  box-shadow:0 16px 64px rgba(5,29,58,.13)!important;
+}
+dialog.nr-dialog.biloo-ref-profile-modal .nr-dialog-head,
+dialog.nr-dialog.biloo-ref-settings-modal .nr-dialog-head{
+  position:sticky;top:0;z-index:3;
+  background:#fff!important;
+  border-bottom:0!important;
+  min-height:76px;
+  padding:14px 20px!important;
+}
+dialog.nr-dialog.biloo-ref-profile-modal .nr-dialog-head h2,
+dialog.nr-dialog.biloo-ref-settings-modal .nr-dialog-head h2{
+  margin:0;flex:1;
+  font-size:20px!important;font-weight:790!important;
+  text-align:center;letter-spacing:-.04em;
+}
+dialog.nr-dialog.biloo-ref-profile-modal .nr-dialog-head>button,
+dialog.nr-dialog.biloo-ref-settings-modal .nr-dialog-head>button{
+  order:-1;width:42px;height:42px;flex:none;
+  border-radius:50%;
+  background:transparent!important;
+  color:#14283a!important;
+}
+dialog.nr-dialog.biloo-ref-profile-modal .nr-profile-form-v2{
+  display:flex;flex-direction:column;
+  flex:1;min-height:0;
+  padding:15px 22px 32px!important;
+  background:#fff!important;
+  color:#14283a!important;
+  overflow:auto;
+  overscroll-behavior:contain;
+}
+dialog.nr-dialog.biloo-ref-profile-modal .nr-edit-profile-intro{
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:center!important;
+  align-items:center!important;
+  gap:11px!important;
+  min-height:185px!important;
+  padding:18px 0 26px!important;
+  background:transparent!important;
+  border:0!important;
+  text-align:center;
+}
+dialog.nr-dialog.biloo-ref-profile-modal .nr-edit-avatar{
+  width:144px!important;
+  height:144px!important;
+  min-width:144px!important;
+  border-radius:50%!important;
+  overflow:hidden!important;
+  display:grid!important;
+  place-items:center;
+  background:#e3ecf3!important;
+  color:#08295f!important;
+  font-size:34px!important;
+  font-weight:700;
+  border:3px solid #fff!important;
+  box-shadow:0 0 0 2px #e2e9ed!important;
+}
+dialog.nr-dialog.biloo-ref-profile-modal .nr-edit-avatar img{
+  width:100%!important;height:100%!important;
+  object-fit:cover!important;
+  border-radius:50%!important;
+}
+dialog.nr-dialog.biloo-ref-profile-modal .nr-edit-profile-intro strong{
+  color:#112b40!important;font-size:15px!important;font-weight:750;
+}
+dialog.nr-dialog.biloo-ref-profile-modal .nr-edit-profile-intro small{color:#66788a!important;font-size:12px!important}
+dialog.nr-dialog.biloo-ref-profile-modal .biloo-ref-profile-fields{display:grid;gap:14px;border:0;padding:0;margin:0 0 15px}
+dialog.nr-dialog.biloo-ref-profile-modal .biloo-ref-profile-fields .nr-input-field{
+  display:grid!important;gap:5px!important;
+  padding:15px 17px!important;
+  border:1px solid #e7e8e5!important;
+  border-radius:15px!important;
+  background:#f2f3f0!important;
+  color:#6b737b!important;
+}
+dialog.nr-dialog.biloo-ref-profile-modal .biloo-ref-profile-fields .nr-input-field span{
+  color:#65717b!important;
+  font-size:12px!important;
+  font-weight:550!important;
+}
+dialog.nr-dialog.biloo-ref-profile-modal .biloo-ref-profile-fields input{
+  min-height:32px!important;
+  padding:2px 0!important;
+  margin:0!important;
+  border:0!important;
+  outline:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  font-size:17px!important;
+  font-weight:650!important;
+  line-height:1.4!important;
+  background:transparent!important;
+  color:#152a3c!important;
+}
+dialog.nr-dialog.biloo-ref-profile-modal .biloo-ref-profile-fields input[readonly]{
+  color:#536576!important;
+  background:transparent!important;
+}
+dialog.nr-dialog.biloo-ref-profile-modal .nr-profile-form-v2>.nr-button[type="submit"]{
+  width:100%;
+  min-height:56px!important;
+  flex:none;
+  border-radius:16px!important;
+  margin-top:auto;
+  background:#f9c449!important;
+  color:#092c54!important;
+  border-color:#f9c449!important;
+  font-size:18px!important;
+  font-weight:800!important;
+  box-shadow:none!important;
+}
+dialog.nr-dialog.biloo-ref-profile-modal .nr-profile-form-v2>.nr-account-edit{
+  display:flex;min-height:44px;justify-content:center;
+}
+dialog.nr-dialog.biloo-ref-settings-modal .biloo-reference-settings{
+  padding:4px 20px 25px;
+  overflow:auto;
+  max-height:calc(100dvh - 85px);
+}
+.biloo-reference-settings .biloo-ref-settings-heading h2{
+  font-size:26px!important;
+  font-weight:830!important;
+  line-height:1.15;
+  letter-spacing:-.045em;
+  color:#0d2d47!important;
+  margin:8px 0 5px;
+}
+.biloo-reference-settings .biloo-ref-settings-heading p{
+  color:#667789!important;
+  font-size:12px!important;
+  line-height:1.5;
+  margin:0 0 20px;
+}
+.biloo-reference-settings .nr-settings-groups,
+.biloo-reference-driver-settings .nr-settings-groups{
+  display:grid!important;gap:12px!important;
+  width:100%;
+}
+.biloo-reference-settings .nr-settings-group,
+.biloo-reference-driver-settings .nr-settings-group{
+  overflow:hidden;
+  border:1px solid #e5eae8!important;
+  border-radius:21px!important;
+  background:#fff!important;
+  box-shadow:none!important;
+}
+.biloo-reference-settings .nr-settings-group-heading>button,
+.biloo-reference-driver-settings .nr-settings-group-heading>button{
+  display:flex;min-height:75px!important;
+  padding:14px 17px!important;
+  gap:14px;
+  background:#fff!important;
+  color:#122e43!important;
+  border-radius:0!important;
+}
+.biloo-reference-settings .nr-settings-group-icon,
+.biloo-reference-driver-settings .nr-settings-group-icon{
+  border-radius:12px!important;
+  background:#f2f3f0!important;
+  color:#08295f!important;
+  flex-basis:42px;
+  width:42px;height:42px;
+}
+.biloo-reference-settings .nr-settings-group-label strong,
+.biloo-reference-driver-settings .nr-settings-group-label strong{
+  color:#1a303f!important;
+  font-size:15px!important;
+  font-weight:710!important;
+}
+.biloo-reference-settings .nr-settings-group-label small,
+.biloo-reference-driver-settings .nr-settings-group-label small{
+  font-size:12px!important;
+  color:#6c7a83!important;
+}
+.biloo-reference-settings .nr-settings-group-content,
+.biloo-reference-driver-settings .nr-settings-group-content{
+  padding:8px 16px 20px!important;
+  background:#fff!important;
+  color:#162a3e!important;
+}
+.biloo-reference-settings .biloo-ref-settings-meta,
+.biloo-reference-driver-settings .biloo-ref-settings-meta{
+  display:flex;align-items:center;justify-content:space-between;gap:14px;
+  margin-top:13px;
+  padding:17px;
+  min-height:66px;
+  background:#fff;
+  border:1px solid #e5eae8;
+  border-radius:19px;
+  color:#183348;
+  font-size:14px;
+}
+.biloo-ref-settings-meta>span{display:flex;align-items:center;gap:13px;font-weight:650}
+.biloo-ref-settings-meta>span svg{color:#08295f}
+.biloo-ref-delete-entry{
+  display:flex!important;
+  width:100%;min-height:64px!important;
+  align-items:center;gap:13px;
+  padding:14px 17px!important;
+  margin-top:13px;
+  border:1px solid #eceded!important;
+  border-radius:19px!important;
+  background:#fff!important;
+  color:#713b3b!important;
+  text-decoration:none!important;
+  font-size:14px;
+  font-weight:720;
+  cursor:pointer;
+}
+.biloo-ref-delete-entry>svg:last-child{margin-left:auto}
+.biloo-ref-settings-note{padding:4px 5px;color:#72818c;font-size:11px;line-height:1.5}
+
+/* ── DRIVER: portrait-first personal editor, open initially. ── */
+main.biloo-reference-driver-settings{
+  color-scheme:light;
+  min-height:100dvh!important;
+  padding:calc(8px + env(safe-area-inset-top,0px)) 18px calc(66px + env(safe-area-inset-bottom,0px))!important;
+  background:#fff!important;
+  color:#162b3f!important;
+}
+.biloo-reference-driver-settings .nr-driver-profile-subwrap{max-width:680px;margin:0 auto}
+.biloo-reference-driver-settings .nr-profile-subhead.biloo-ref-driver-settings-head{
+  display:grid;
+  grid-template-columns:56px 1fr 56px;
+  align-items:center;
+  gap:4px;
+  min-height:68px;
+  margin:0 0 16px;
+  padding:0;
+}
+.biloo-reference-driver-settings .biloo-ref-driver-settings-head .biloo-account-return{
+  grid-column:1;grid-row:1;
+  width:48px;height:48px;
+  padding:0;
+  border:0!important;
+  border-radius:50%!important;
+  background:transparent!important;
+  color:#132c42!important;
+}
+.biloo-reference-driver-settings .biloo-ref-driver-settings-head>div{grid-column:2;grid-row:1;text-align:center}
+.biloo-reference-driver-settings .biloo-ref-driver-settings-head h1{
+  font-size:clamp(20px,5vw,24px)!important;
+  margin:0;
+  color:#122b42!important;
+  font-weight:800!important;
+  letter-spacing:-.045em;
+}
+.biloo-reference-driver-settings .biloo-ref-driver-avatar-zone{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  min-height:211px;
+  gap:14px;
+  padding:17px 0 23px;
+}
+.biloo-reference-driver-settings .biloo-ref-driver-avatar-zone .nr-photo-trigger{
+  padding:0!important;
+  border:0!important;
+  border-radius:50%!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+.biloo-reference-driver-settings .biloo-ref-driver-avatar{
+  display:grid;place-items:center;
+  width:154px;height:154px;
+  overflow:hidden;
+  border-radius:50%;
+  background:#ecf1f3;
+  border:3px solid #fff;
+  outline:2px solid #e0e8eb;
+  color:#08295f;
+}
+.biloo-reference-driver-settings .biloo-ref-driver-avatar img{
+  width:100%;height:100%;object-fit:cover;
+}
+.biloo-reference-driver-settings .biloo-ref-driver-avatar-zone .nr-photo-edit-mark{
+  right:0;bottom:7px;
+  width:46px;height:46px;
+  display:grid;place-items:center;
+  border-radius:50%;
+  background:#f9c449!important;
+  border:4px solid #fff!important;
+  color:#09295a!important;
+  box-shadow:0 4px 13px rgba(0,0,0,.1);
+}
+.biloo-reference-driver-settings .biloo-ref-driver-avatar-zone>small{
+  font-size:11px;
+  color:#647889!important;
+  text-align:center;
+}
+.biloo-reference-driver-settings .nr-profile-panel{
+  padding:10px 6px!important;
+  background:#fff!important;
+  border:0!important;
+  box-shadow:none!important;
+  color:#142c40!important;
+}
+.biloo-reference-driver-settings .nr-profile-panel-head h2{font-size:15px!important;color:#142c40!important}
+.biloo-reference-driver-settings .nr-profile-panel-head p{font-size:11px!important;color:#64758a!important}
+.biloo-reference-driver-settings .nr-profile-form{
+  display:grid!important;
+  gap:13px!important;
+  margin-top:13px;
+}
+.biloo-reference-driver-settings .nr-profile-form>label{
+  display:grid!important;gap:4px!important;
+  padding:12px 17px!important;
+  margin:0!important;
+  border:1px solid #e7e9e7!important;
+  border-radius:15px!important;
+  background:#f2f3f0!important;
+  color:#667584!important;
+  font-size:12px!important;
+}
+.biloo-reference-driver-settings .nr-profile-form input{
+  min-height:30px!important;
+  width:100%;
+  padding:3px 0!important;
+  background:transparent!important;
+  color:#172f41!important;
+  border:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+  border-radius:0!important;
+  font-size:17px!important;
+  font-weight:650!important;
+}
+.biloo-reference-driver-settings .nr-profile-form input[readonly]{color:#596a79!important}
+.biloo-reference-driver-settings .nr-profile-form>small{font-size:11px;color:#74818a!important;padding-inline:4px}
+.biloo-reference-driver-settings .biloo-profile-form-actions{
+  display:flex;gap:10px;
+  align-items:stretch;
+  margin-top:14px;
+}
+.biloo-reference-driver-settings .biloo-profile-form-actions button{
+  min-height:56px!important;
+  border-radius:15px!important;
+  font-size:15px!important;
+  font-weight:750!important;
+}
+.biloo-reference-driver-settings .biloo-profile-form-actions button[type="submit"]{
+  flex:1.4;
+  background:#f9c449!important;
+  color:#092b55!important;
+  border:1px solid #f9c449!important;
+}
+.biloo-reference-driver-settings .biloo-profile-form-actions .biloo-account-cancel{
+  flex:.6;
+  background:#f1f3f5!important;
+  color:#40566d!important;
+  border:1px solid #e1e6eb!important;
+}
+.biloo-reference-driver-settings .biloo-ref-driver-account-info{margin:18px 0 0}
+.biloo-reference-driver-settings :is(.nr-driver-preference-label strong,.nr-profile-panel-head h2){color:#152b40!important}
+.biloo-reference-driver-settings .nr-driver-preference-block{background:#f5f7f8!important;border-color:#e2e9ec!important;color:#162b3f!important}
+.biloo-reference-driver-settings .nr-driver-language-selector button{min-height:42px}
+
+@media(max-width:760px){
+  dialog.nr-dialog.biloo-ref-profile-modal[open],
+  dialog.nr-dialog.biloo-ref-settings-modal[open]{
+    width:100vw!important;
+    max-width:none!important;
+    height:100dvh!important;
+    max-height:100dvh!important;
+    inset:0!important;
+    margin:0!important;
+    border-radius:0!important;
+    display:flex!important;
+    flex-direction:column!important;
+    overflow:hidden!important;
+  }
+  dialog.nr-dialog.biloo-ref-profile-modal .nr-profile-form-v2{padding:6px 20px calc(25px + env(safe-area-inset-bottom,0px))!important}
+  dialog.nr-dialog.biloo-ref-settings-modal .biloo-reference-settings{max-height:none;flex:1;min-height:0;overscroll-behavior:contain}
+  .nr-safety-page .biloo-safety-protection-grid>button{min-height:145px!important}
+}
+@media(max-width:370px){
+  .nr-safety-page .nr-safety-actions.biloo-safety-quick-actions{gap:9px!important}
+  .nr-safety-page .biloo-safety-quick-actions>.nr-safety-action{padding:11px 8px!important}
+  .nr-safety-page .biloo-safety-quick-actions>.nr-safety-action strong{font-size:13px!important}
+  .nr-safety-page .biloo-safety-quick-actions>.nr-safety-action:nth-child(3) strong{font-size:18px!important}
+  .nr-safety-page .biloo-safety-protection-grid{gap:9px!important}
+  .nr-safety-page .biloo-safety-protection-grid>button{padding:12px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .nr-safety-page *, .biloo-reference-driver-settings *,
+  dialog.nr-dialog.biloo-ref-profile-modal *,dialog.nr-dialog.biloo-ref-settings-modal *{
+    animation:none!important;transition:none!important;
+  }
+}
