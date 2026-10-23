@@ -261,7 +261,7 @@ export function RiderMenu({
                   <Icon name="chevron" size={16}/>
                 </button>
                 {isAdmin && <button type="button" onClick={() => {setOpen(false);router.push("/admin");}}>
-                  <Icon name="shield" size={20}/>
+                  <Icon name="users" size={20}/>
                   <span><strong>Admin Control Center</strong><small>Operations and platform management</small></span>
                   <Icon name="chevron" size={16}/>
                 </button>}
