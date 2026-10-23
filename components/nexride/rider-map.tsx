@@ -721,10 +721,11 @@ export function RiderMap({
       // A GPS fix may predate Mapbox's first render; give it the same
       // clear-map offset as later live updates and the locate control.
       if (positionRef.current && statusRef.current === "ready") {
-        map.jumpTo({
+        map.easeTo({
           center: [positionRef.current.lng, positionRef.current.lat],
           zoom: Math.max(INITIAL_ZOOM, 16),
           offset: deviceLocationCameraOffset(map),
+          duration: 0,
         });
       }
 
@@ -848,13 +849,14 @@ export function RiderMap({
           statusRef.current === "ready"
         ) {
           if (!manualView.current) {
-            map.jumpTo({
+            map.easeTo({
               center: [
                 positionRef.current.lng,
                 positionRef.current.lat,
               ],
               zoom: Math.max(map.getZoom(), 16),
               offset: deviceLocationCameraOffset(map),
+              duration: 0,
             });
           }
         }
@@ -948,9 +950,10 @@ export function RiderMap({
           !manualView.current && !planned &&
           container.current?.closest(".rider-home-view")
         ) {
-          map.jumpTo({
+          map.easeTo({
             center: [fix.lng, fix.lat],
             offset: deviceLocationCameraOffset(map),
+            duration: 0,
           });
         }
       });
