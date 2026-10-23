@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { translate, type Language } from '../../lib/nexride-i18n';
 import { uploadRiderAvatar, type RiderAccount } from '../../lib/nexride-account';
 import { riderAvatarValidation } from '../../lib/nexride-rider-avatar';
-import { compressPortraitCanvas, photoSizeLabel, portraitCrop, PHOTO_CROP_SIZE, PHOTO_OUTPUT_TARGET_BYTES } from '../../lib/nexride-photo-processing';
+import { compressPortraitCanvas, compressPortraitThumbnail, photoSizeLabel, portraitCrop, PHOTO_CROP_SIZE, PHOTO_OUTPUT_TARGET_BYTES } from '../../lib/nexride-photo-processing';
 import { Dialog, Icon, useTranslation } from './ui';
 import './driver-photo-manager.css';
 import './rider-avatar-upload.css';
@@ -94,7 +94,8 @@ export function RiderPhotoEditor({
       if (!canvas) throw Error('photo_compression_failed');
       const optimized = await compressPortraitCanvas(canvas);
       const upload = new File([optimized], 'nexride-profile.jpg', { type: 'image/jpeg' });
-      const result = await uploadRiderAvatar(account, upload);
+      const thumbnail = await compressPortraitThumbnail(canvas).catch(() => null);
+      const result = await uploadRiderAvatar(account, upload, thumbnail);
       onSaved(result, optimized.size);
       setSource('');
       setOpen(false);
@@ -116,7 +117,7 @@ export function RiderPhotoEditor({
   };
 
   return (
-    <div className="nr-account-avatar-wrap nr-rider-photo-editor">
+    <div className="nr-account-avatar-wrap nr-rider-photo-editor" data-edit-action="true">
       <button
         type="button"
         className="nr-account-avatar"
@@ -124,9 +125,7 @@ export function RiderPhotoEditor({
         onClick={() => { setError(''); setOpen(true); }}
         aria-label={say('Change profile photo', 'የመገለጫ ፎቶ ቀይር')}
       >
-        {account?.avatar && !photoFailed
-          ? <Image src={account.avatar} alt={say('Your profile photo', 'የመገለጫዎ ፎቶ')} width={72} height={72} unoptimized onError={onImageError}/>
-          : <span aria-label={say('Profile initials', 'የስም መጀመሪያ ፊደላት')}>{initials}</span>}
+        <Icon name="user" size={27}/>
       </button>
       {account && <span className="nr-rider-avatar-change" aria-hidden="true"><Icon name="plus" size={16}/></span>}
       {open && account && (
