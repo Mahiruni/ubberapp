@@ -279,7 +279,7 @@ function DriverHamburgerMenu({
 
 
             <div className="nr-menu-scroll" data-testid="driver-menu-scroll">
-              <div className="nr-menu-section-label">{language === "am" ? "አጠቃላይ" : "OVERVIEW"}</div>
+              <div className="nr-menu-section-label">{language === "am" ? "ዋና ምናሌ" : "MAIN NAVIGATION"}</div>
               <nav className="nr-driver-menu-nav" aria-label={language === "am" ? "የመንዳት አሰሳ" : "Drive navigation"}>
                 {menuRows(driveItems)}
               </nav>
@@ -287,6 +287,14 @@ function DriverHamburgerMenu({
               <nav className="nr-driver-menu-nav" aria-label={language === "am" ? "ድጋፍ እና ደህንነት" : "Help and safety"}>
                 {menuRows(supportItems)}
               </nav>
+              <div className="nr-menu-section-label">{language === "am" ? "ተጨማሪ" : "MORE"}</div>
+              <div className="nr-driver-menu-secondary">
+                <Link href="/" onClick={() => setOpen(false)} aria-label={language === "am" ? "ወደ Biloo ተሳፋሪ ቀይር" : "Switch to Biloo Rider"}>
+                  <Icon name="navigation" size={20}/>
+                  <span><strong>{language === "am" ? "በBiloo ይጓዙ" : "Ride with Biloo"}</strong><small>{language === "am" ? "የተሳፋሪ ገጽን ይክፈቱ" : "Open Rider experience"}</small></span>
+                  <Icon name="chevron" size={16}/>
+                </Link>
+              </div>
             </div>
 
             <footer className="nr-driver-menu-footer" aria-label={language === "am" ? "የመተግበሪያ መረጃ" : "App information"}>
