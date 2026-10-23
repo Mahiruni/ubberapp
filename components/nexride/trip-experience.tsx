@@ -8,7 +8,7 @@ import { readRiderTrip, sendTripMessage, submitRiderRating } from '../../lib/nex
 import { emitNexRideFeedback } from '../../lib/nexride-feedback';
 import { nexrideApiFetch } from '../../lib/nexride-api-auth';
 import { updateNexRideLiveTrip,clearNexRideLiveTrip,freshNexRideEta } from '../../lib/nexride-live-trip';
-import { Button, Dialog, useTranslation } from './ui';
+import { Button, Dialog, Icon, useTranslation } from './ui';
 import type { PreviewTrip } from '../../lib/nexride-preview';
 import type { RiderScreen } from './rider';
 import { RiderSheetHandle } from './rider-sheet';
@@ -57,6 +57,7 @@ export function TripExperience({ screen, tripId, userId, preview, navigate, setP
   const [cancelConfirm, setCancelConfirm] = useState(false);
   const [cancelBusy, setCancelBusy] = useState(false);
   const [cancelError, setCancelError] = useState('');
+  const [shareNotice, setShareNotice] = useState('');
   const [cancelled, setCancelled] = useState(false);
   const [confirmedStatus, setConfirmedStatus] = useState<TripSnapshot['status'] | null>(null);
   const [tripSnapshot, setTripSnapshot] = useState<TripSnapshot | null>(null);
@@ -96,6 +97,31 @@ export function TripExperience({ screen, tripId, userId, preview, navigate, setP
   };
   const file = screen === 'summary' ? 'completion.html' : screen === 'live' ? 'trip.html' : 'index.html';
   const live = !!tripId && !!userId;
+  const shareTrip = async () => {
+    const details = tripSnapshot;
+    if (!live || !tripId || !details?.driver) return;
+    setShareNotice('');
+    // Share confirmed trip details, not a fabricated live tracking link.
+    const message = [
+      details.status === 'in_trip' ? t('identityOnTrip') : t('identityOnWay'),
+      details.driver.name || t('identityDriver'),
+      [details.driver.vehicle.model, details.driver.vehicle.color, details.driver.vehicle.plate].filter(Boolean).join(' · '),
+      (details.pickup.name || '') + ' → ' + (details.destination.name || ''),
+      'Biloo · ' + tripId,
+    ].filter(Boolean).join('\n');
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: 'Biloo', text: message });
+      } else if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(message);
+        setShareNotice('Trip details copied');
+      } else {
+        setShareNotice(t('identityUnavailable'));
+      }
+    } catch (error) {
+      if (!(error instanceof Error && error.name === 'AbortError')) setShareNotice(t('identityUnavailable'));
+    }
+  };
   const portrait = useDriverPortrait(live ? tripSnapshot?.driver?.id : null);
   const [failedPhoto, setFailedPhoto] = useState('');
   const approvedDriverPhoto = portrait.url === failedPhoto ? '' : portrait.url;
@@ -365,17 +391,13 @@ export function TripExperience({ screen, tripId, userId, preview, navigate, setP
       snaps={snaps}
       storageKey={`nexride.rider.sheet.${screen}`}
     />
-    <div className="nr-trip-toolbar">
+    {nativeIdentity && <span className="nr-trip-live-status" role="status" aria-live="polite">{connection}</span>}
+    {!nativeIdentity && <div className="nr-trip-toolbar">
       {screen === 'summary' && <button onClick={() => window.location.assign('/rider/trips')}>Activity</button>}
       <span role="status" aria-live="polite">{live ? connection : 'Preview ride'}</span>
-      {screen !== 'summary' && !nativeIdentity && <button onClick={openSafety}>Safety</button>}
-      {live && tripId && screen !== "summary" && confirmedStatus !== "completed" && confirmedStatus !== "cancelled" &&
-       <button type="button" onClick={() => window.location.assign("/safety?role=rider&trip="+encodeURIComponent(tripId))}
-         aria-label="Share live trip with a trusted contact">Share trip</button>}
-      {live && screen !== 'summary' && confirmedStatus !== 'completed' && confirmedStatus !== 'cancelled' &&
-        <button type="button" className="nr-trip-cancel-trigger" disabled={cancelBusy} onClick={() => { setCancelError(''); setCancelConfirm(true); }}><span aria-hidden="true">×</span>{t('matchingCancel')}</button>}
+      {screen !== 'summary' && <button onClick={openSafety}>Safety</button>}
       {!live && screen !== 'summary' && <button onClick={() => { if (screen === 'live' && preview) setPreview({ ...preview, completed: true }); navigate(screen === 'trip' ? 'live' : 'summary'); }}>{screen === 'trip' ? 'Start trip' : 'Complete trip'}</button>}
-    </div>
+    </div>}
     {cancelError && <p role="alert" className="nr-trip-cancel-error">{cancelError}</p>}
     {cancelConfirm && <Dialog title={t('matchingCancelConfirm')} onClose={() => { if (!cancelBusy) setCancelConfirm(false); }}>
       <p className="nr-cancel-dialog-note">{t('matchingCancelWarning')}</p>
@@ -386,7 +408,25 @@ export function TripExperience({ screen, tripId, userId, preview, navigate, setP
         <Button variant="danger" disabled={cancelBusy} loading={cancelBusy} onClick={() => void cancelRide()}>{t('matchingConfirmCancel')}</Button>
       </div>
     </Dialog>}
-    {nativeIdentity ? <AcceptedDriverCard snapshot={tripSnapshot} photo={approvedDriverPhoto} photoStale={portrait.stale} tripId={tripId!} safety={openSafety} onPhotoError={() => { setFailedPhoto(approvedDriverPhoto); void portrait.refresh(); }}/> : <div className="nr-trip-frame-shell" data-ready={embeddedReady ? 'true' : 'false'}>
+    {nativeIdentity ? <>
+      <AcceptedDriverCard snapshot={tripSnapshot} photo={approvedDriverPhoto} photoStale={portrait.stale} tripId={tripId!} safety={openSafety} onPhotoError={() => { setFailedPhoto(approvedDriverPhoto); void portrait.refresh(); }}/>
+      {confirmedStatus !== 'completed' && confirmedStatus !== 'cancelled' && (
+        <footer className="nr-trip-action-dock" aria-label="Trip actions">
+          <button type="button" className="nr-trip-action-cancel"
+            disabled={cancelBusy}
+            onClick={() => { setCancelError(''); setCancelConfirm(true); }}>
+            <span aria-hidden="true">×</span>
+            <span>{t('matchingCancel')}</span>
+          </button>
+          <button type="button" className="nr-trip-action-share" aria-label={t('identityShare')}
+            title={t('identityShare')} disabled={!tripSnapshot?.driver}
+            onClick={() => void shareTrip()}>
+            <Icon name="share" size={22}/>
+          </button>
+          {shareNotice && <span className="nr-trip-action-feedback" role="status">{shareNotice}</span>}
+        </footer>
+      )}
+    </> : <div className="nr-trip-frame-shell" data-ready={embeddedReady ? 'true' : 'false'}>
       <iframe
         ref={frame}
         key={`${file}:${tripId || 'preview'}`}
