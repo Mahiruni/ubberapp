@@ -197,3 +197,148 @@
     transition: none!important;
   }
 }
+
+/* Biloo Rider: inDrive-inspired navigation discipline with original Biloo branding.
+   One circular menu trigger; one independently owned profile avatar on the map. */
+@media(max-width:800px) {
+  .nr-app[data-mode="rider"] .nr-rider-hamburger {
+    box-sizing:border-box;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:center!important;
+    justify-content:center!important;
+    width:50px!important;
+    height:50px!important;
+    min-width:50px!important;
+    min-height:50px!important;
+    padding:0!important;
+    gap:5px!important;
+    border:1px solid #dce5ef!important;
+    border-radius:50%!important;
+    background:#fff!important;
+    color:#0b2b50!important;
+    box-shadow:0 5px 17px rgba(8,41,95,.13)!important;
+    transform-origin:center!important;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .nr-app[data-mode="rider"] .nr-rider-hamburger:focus-visible {
+    border-radius:50%!important;
+    outline:3px solid #2972b4!important;
+    outline-offset:3px!important;
+  }
+  .nr-app[data-mode="rider"] .nr-rider-hamburger .nr-rider-hamburger-line {
+    background:#0b2b50!important;
+  }
+  .nr-app[data-mode="rider"] .nr-rider-hamburger:hover {
+    background:#f3f6fb!important;
+  }
+}
+.nr-rider-drawer-layer .nr-rider-drawer {
+  box-sizing:border-box;
+  width:min(88vw,360px)!important;
+  max-width:100vw;
+  padding:calc(18px + env(safe-area-inset-top,0px)) 15px max(16px,env(safe-area-inset-bottom,0px));
+  background:var(--ed-bg)!important;
+  color:var(--ed-ink)!important;
+  border:0!important;
+  border-right:1px solid var(--ed-line)!important;
+  border-radius:0 22px 22px 0!important;
+  box-shadow:16px 0 48px rgba(4,25,59,.19)!important;
+}
+.nr-rider-drawer-layer .nr-rider-drawer-head {
+  min-height:75px;
+  padding:0 4px 14px;
+  margin-bottom:4px;
+  border-bottom:1px solid var(--ed-line);
+  align-items:center;
+}
+.nr-rider-drawer-layer .biloo-rider-drawer-heading {
+  display:grid;
+  min-width:0;
+  gap:5px;
+}
+.nr-rider-drawer-layer .biloo-rider-drawer-heading span {
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.13em;
+  color:var(--ed-muted);
+}
+.nr-rider-drawer-layer .biloo-rider-drawer-heading strong {
+  font-size:25px;
+  line-height:1.05;
+  font-weight:820;
+  letter-spacing:-.05em;
+  color:var(--ed-ink);
+}
+.nr-rider-drawer-layer .nr-rider-drawer-close {
+  width:44px;
+  height:44px;
+  min-width:44px;
+  min-height:44px;
+  border-radius:50%!important;
+  background:var(--ed-panel)!important;
+  color:var(--ed-ink)!important;
+}
+.nr-rider-drawer-layer .nr-menu-section-label {
+  padding-top:18px!important;
+  padding-bottom:7px!important;
+}
+.nr-rider-drawer-layer .nr-rider-drawer-nav>button {
+  min-height:56px!important;
+  border-radius:13px!important;
+}
+.nr-rider-drawer-layer .nr-rider-drawer-secondary>button {
+  box-sizing:border-box;
+  min-height:58px;
+  width:100%;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:8px 12px;
+  border:1px solid var(--ed-line);
+  border-radius:14px;
+  color:var(--ed-ink);
+  background:var(--ed-panel);
+  text-align:left;
+}
+.nr-rider-drawer-layer .nr-rider-drawer-secondary>button>span {
+  flex:1 1 auto;
+  min-width:0;
+}
+.nr-rider-drawer-layer .nr-rider-drawer-secondary>button:focus-visible,
+.nr-rider-drawer-layer .nr-rider-drawer-close:focus-visible {
+  outline:3px solid var(--ed-accent)!important;
+  outline-offset:2px!important;
+}
+.nr-rider-drawer-layer .nr-rider-drawer-footer {
+  margin-top:auto;
+  border-top:1px solid var(--ed-line)!important;
+  padding-top:12px;
+}
+.nr-rider-drawer-layer .nr-rider-drawer-footer-card {
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  padding:6px 10px!important;
+}
+.nr-rider-drawer-layer .nr-rider-drawer-footer-brand strong {
+  color:var(--ed-ink)!important;
+}
+.nr-rider-drawer-layer .nr-rider-drawer-footer-brand small {
+  color:var(--ed-muted)!important;
+}
+@media(max-width:360px) {
+  .nr-rider-drawer-layer .nr-rider-drawer {
+    width:min(92vw,340px)!important;
+    border-radius:0 17px 17px 0!important;
+    padding-left:10px;
+    padding-right:10px;
+  }
+}
+@media(prefers-reduced-motion:reduce) {
+  .nr-rider-drawer-layer .nr-rider-drawer,
+  .nr-app[data-mode="rider"] .nr-rider-hamburger {
+    transition:none!important;
+    animation:none!important;
+  }
+}
