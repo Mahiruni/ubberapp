@@ -30,7 +30,8 @@ describe("Biloo live device markers", () => {
   it("uses the person on Rider maps and the vehicle on both Driver maps", () => {
     expect(map).toContain('markerRole = "rider"');
     expect(map).toContain("markerRole?: BilooLocationMarkerRole");
-    expect(rider.match(/markerRole=\{mode === "driver" \? "driver" : "rider"\}/g)).toHaveLength(2);
+    expect(rider.match(/markerRole="rider"/g)).toHaveLength(1);
+    expect(rider.match(/markerRole=\{mode === "driver" \? "driver" : "rider"\}/g)).toHaveLength(1);
     expect(driver.match(/markerRole="driver"/g)).toHaveLength(2);
   });
 
