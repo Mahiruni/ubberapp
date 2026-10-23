@@ -29,23 +29,22 @@ async function mockAuthenticatedDriver(page: Page) {
   await page.routeWebSocket("**/realtime/v1/**",ws=>ws.close());
 }
 
-test("Rider Account uses the real five-tab Account destination with premium sections",async({page})=>{
+test("Rider Account opens only from hamburger portrait and does not duplicate ride navigation",async({page})=>{
   await page.setViewportSize({width:390,height:844});
   await page.addInitScript(()=>localStorage.setItem("nexride:preview-enabled","true"));
   await page.route("https://tile.openstreetmap.org/**",route=>route.fulfill({contentType:"image/svg+xml",body:'<svg xmlns="http://www.w3.org/2000/svg"/>'}));
   await page.goto("/");
-  const footer=page.getByRole("navigation",{name:"Rider bottom navigation"});
-  await footer.getByRole("button",{name:"Account"}).click();
+  await page.locator(".biloo-home-floating-header .nr-rider-hamburger").click();
+  await page.locator("#nr-rider-drawer .biloo-menu-profile-card").click();
   const account=page.locator(".nr-account-standard");
   await expect(account).toBeVisible();
   await expect(account.getByRole("heading",{name:"Account",exact:true})).toBeVisible();
-  for(const group of ["Personal information","Rides & places","Wallet & payments","Safety & support","Preferences"])
+  for(const group of ["Personal information","Preferences"])
     await expect(account.getByRole("heading",{name:group,exact:true})).toBeVisible();
+  for(const duplicate of [/My rides & receipts/i,/Wallet & payment methods/i,/Saved places/i,/Help & support/i,/Safety Center/i])
+    await expect(account.getByRole("button",{name:duplicate})).toHaveCount(0);
   await expect(account.getByRole("button",{name:/Edit profile/}).first()).toBeVisible();
-  // Preview has local saved shortcuts only, no fabricated trip history.
-  await expect(account.getByRole("button",{name:/Saved shortcuts.*this device/})).toContainText("0");
-  await expect(account.getByRole("button",{name:/Completed rides/})).toHaveCount(0);
-  await expect(footer.getByRole("button",{name:"Account"})).toHaveAttribute("aria-current","page");
+  await expect(account.getByRole("button",{name:/Account & security/})).toHaveCount(1);
   await account.getByRole("button",{name:/Appearance, language & alerts/}).click();
   await expect(page.getByRole("dialog")).toBeVisible();
   await page.keyboard.press("Escape");
@@ -60,11 +59,12 @@ test("Driver Account shows verified data status and all real destinations",async
   await expect(account).toBeVisible();
   await expect(account.locator(".nr-driver-profile-heading h1")).toHaveText(/account|መለያ/i);
   await expect(account.locator(".nr-driver-profile-identity h2")).toContainText(/Biloo Driver/i);
-  for(const group of ["Personal information","Driver verification","Trips & earnings","Safety & support","Preferences"])
+  for(const group of ["Personal information","Vehicle & payouts","Preferences"])
     await expect(account.getByRole("heading",{name:group,exact:true})).toBeVisible();
+  for(const duplicate of [/Trip activity/i,/Earnings report/i,/Safety Center/i,/Help & support/i])
+    await expect(account.getByRole("button",{name:duplicate})).toHaveCount(0);
   await expect(account.locator(".nr-driver-verification-card strong")).toContainText(/verification|review/i);
-  const footer=page.getByRole("navigation",{name:"Driver bottom navigation"});
-  await expect(footer.getByRole("link",{name:"Account"})).toHaveAttribute("aria-current","page");
+  await expect(page.locator(".biloo-footer-nav, .admin-mobile-nav")).toHaveCount(0);
   await account.getByRole("button",{name:/Edit profile/}).first().click();
   await expect(page).toHaveURL(/\/driver\/profile\/settings/);
   const returnToAccount=page.locator(".biloo-account-return");
