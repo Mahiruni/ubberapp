@@ -73,3 +73,38 @@ export async function compressPortraitThumbnail(source: HTMLCanvasElement): Prom
     }, 'image/webp', 0.84);
   });
 }
+
+/** Preserve a high-detail *cropped* master on capable devices, up to 3840px.
+ * Never upscale a smaller photograph. Limit compressed files to 3 MiB so a
+ * private Storage upload does not require transferring a massive raw 4K file.
+ * Mobile browsers use a lower safe ceiling to avoid memory-related crashes.
+ * The separately generated 256px WebP is still used for every menu avatar.
+ */
+export async function compressPortraitMaster(
+  image: HTMLImageElement, zoom: number, x: number, y: number,
+): Promise<Blob> {
+  const crop = portraitCrop(image.naturalWidth, image.naturalHeight, zoom, x, y);
+  const device = navigator as Navigator & { deviceMemory?: number };
+  const memoryGB = device.deviceMemory ?? 4;
+  const isTouch = window.matchMedia?.('(pointer:coarse)').matches ?? true;
+  const safeLimit = isTouch ? (memoryGB >= 8 ? 3072 : 2048) : 3840;
+  const maxSide = Math.min(safeLimit, 3840, Math.floor(crop.side));
+  if (maxSide < PHOTO_CROP_SIZE) throw new Error('master_too_small');
+  for (const side of [...new Set([maxSide, 2048, 1536, 1024, PHOTO_CROP_SIZE])].filter(n => n <= maxSide)) {
+    const canvas = document.createElement('canvas');
+    canvas.width = side;
+    canvas.height = side;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('master_canvas_unavailable');
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, side, side);
+    ctx.drawImage(image, crop.x, crop.y, crop.side, crop.side, 0, 0, side, side);
+    for (const quality of [0.90, 0.84, 0.76, 0.67]) {
+      const blob = await encodeJpeg(canvas, quality);
+      if (blob.size <= 3 * 1024 * 1024) return blob;
+    }
+  }
+  throw new Error('master_compression_failed');
+}
