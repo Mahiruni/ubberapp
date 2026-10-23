@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useOperationalTranslation } from "./operational-i18n";
 import { DriverPhotoManager } from "./driver-photo-manager";
 import { useEffect, useState } from "react";
@@ -10,7 +9,6 @@ import { supabase } from "../../lib/supabase";
 import { signOutNexRide } from "../../lib/nexride-sign-out";
 import { nexrideApiFetch } from "../../lib/nexride-api-auth";
 import {
-  initialsFor,
   loadDriverProfileData,
   verificationSummary,
   type DriverProfileData,
@@ -96,7 +94,6 @@ export function DriverProfileScreen({
   }
 
   const verification = verificationSummary(profile);
-  const initials = initialsFor(profile.fullName);
   const verified = verification.tone === "approved";
 
   async function signOutDriver() {
@@ -164,11 +161,7 @@ export function DriverProfileScreen({
       <section className="nr-driver-profile-hero nr-driver-profile-hero-v2">
         <DriverPhotoManager driverId={driverId} fullName={profile.fullName}>
         <span className="nr-driver-profile-photo">
-          {profile.avatarUrl ? (
-            <Image src={profile.avatarUrl} alt={profile.fullName + " · " + say("Driver profile photo")} width={88} height={88} unoptimized />
-          ) : (
-            <span aria-label={say("Profile initials")}>{initials}</span>
-          )}
+          <Icon name="user" size={28} />
           {verified && <i className="nr-driver-photo-badge"><Icon name="check" size={13}/></i>}
         </span>
         </DriverPhotoManager>
