@@ -14,7 +14,6 @@ import { Button, Dialog, Icon, InputField, useTranslation, type IconName } from 
 import { AppearanceSelector } from "./appearance-selector";
 import { PermissionSettings } from "./permission-settings";
 import { NativeReliabilitySettings } from "./native-reliability-settings";
-import { AppLockSettings } from "./app-lock-settings";
 import { NexRideFeedbackSettings } from './feedback-settings';
 import './rider-avatar-upload.css';
 import { AppVersion } from './app-version';
@@ -47,10 +46,8 @@ export function RiderSettings({language,setLanguage}: Pick<Props,'language'|'set
 
   return <div className="nr-account-settings nr-account-settings-v2">
     <SettingsGroups groups={[
-      { id: "security", icon: "shield", title: say("Security & App Lock", "ደህንነት እና የመተግበሪያ ቁልፍ"), summary: say("App lock, sessions and permissions", "የመተግበሪያ ቁልፍ፣ መግቢያ እና ፈቃዶች"), children: <>
-        <AppLockSettings/><PermissionSettings/>
-      </> },
       { id: "notifications", icon: "bell", title: say("Notifications", "ማሳወቂያዎች"), summary: say("Trip alerts, sounds and haptics", "የጉዞ ማሳወቂያ፣ ድምፅ እና ንዝረት"), children: <>
+    <PermissionSettings/>
     <label className="nr-account-toggle">
       <span>
         <strong>{say('In-app trip alerts','የጉዞ ማሳወቂያዎች')}</strong>
