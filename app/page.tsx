@@ -561,30 +561,6 @@ function AppWorkspace({
                     onClick={() => setPanel("personal")}
                   />
                   <ListRow
-                    icon="clock"
-                    title={t("trips")}
-                    onClick={() =>
-                      navigate(mode === "rider" ? "trips" : "history")
-                    }
-                  />
-                  <ListRow
-                    icon="wallet"
-                    title={t(mode === "rider" ? "wallet" : "earnings")}
-                    onClick={() =>
-                      navigate(mode === "rider" ? "wallet" : "earnings")
-                    }
-                  />
-                  <ListRow
-                    icon="shield"
-                    title={t("safety")}
-                    onClick={() => openSafety(mode)}
-                  />
-                  <ListRow
-                    icon="chat"
-                    title={t("help")}
-                    onClick={() => setPanel("support")}
-                  />
-                  <ListRow
                     icon="settings"
                     title={t("settings")}
                     onClick={() => setPanel("settings")}
