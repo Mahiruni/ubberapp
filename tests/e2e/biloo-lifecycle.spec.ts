@@ -61,6 +61,33 @@ test("approval refresh unlocks the dashboard from authoritative status", async (
   await expect(page).toHaveURL(/\/driver\/home$/);
   await expect(page.locator(".nr-splash-error")).toHaveCount(0);
 });
+
+test("approved Driver gets map-first bottom sheet without Activity, Earnings or Settings tiles", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await account(page, "approved");
+  await page.goto("/driver/home");
+  const map = page.locator(".nr-driver-home-map-canvas");
+  const sheet = page.locator(".nr-driver-home-swipe[data-map-input-boundary=true]");
+  await expect(map).toBeVisible();
+  await expect(sheet).toBeVisible();
+  await expect(sheet.locator(".nr-driver-home-quick-actions")).toHaveCount(0);
+  await expect(sheet.getByRole("switch", { name: /Driver (?:online|offline)/i })).toBeVisible();
+  await expect(sheet.getByText("BILOO · DRIVER")).toBeVisible();
+  const mapBounds = (await map.boundingBox())!;
+  const sheetBounds = (await sheet.boundingBox())!;
+  expect(Math.abs(sheetBounds.x - mapBounds.x)).toBeLessThan(3);
+  expect(Math.abs(sheetBounds.width - mapBounds.width)).toBeLessThan(3);
+  expect(Math.abs((sheetBounds.y + sheetBounds.height) - (mapBounds.y + mapBounds.height))).toBeLessThan(3);
+  await page.getByRole("button", { name: "Open driver menu" }).click();
+  const drawer = page.locator("#nr-driver-menu");
+  await expect(drawer).toBeVisible();
+  await expect(drawer.locator('a[href="/driver/activity"]')).toBeVisible();
+  await expect(drawer.locator('a[href="/driver/earnings"]')).toBeVisible();
+  await expect(drawer.locator('a[href="/driver/profile/settings"]')).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(drawer).toHaveCount(0);
+});
+
 test("a failed status lookup offers retry instead of opening home or logging out", async ({ page }) => {
   const backend = await account(page, "pending");
   backend.fail(true);
