@@ -79,7 +79,7 @@ test("Driver pages have no tab footer and retain routes in left hamburger", asyn
   await expect(menu.locator('a[href="/driver/map"]')).toBeVisible();
   await expect(menu.locator('a[href="/driver/profile"]')).toHaveCount(0);
   await menu.locator('a[href="/driver/map"]').click();
-  await expect(page).toHaveURL(/\\/driver\\/map$/);
+  await expect(page).toHaveURL(/\/driver\/map$/);
   await expect(page.locator(".biloo-footer-nav")).toHaveCount(0);
   await expect(page.locator(".nr-driver-map-page")).toBeVisible();
 });
