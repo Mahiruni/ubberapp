@@ -14,10 +14,12 @@ type SettingsGroup = {
 
 /** Show one section at a time. Keep visited sections mounted so switching
  * groups preserves profile drafts, feedback and device preference state. */
-export function SettingsGroups({ groups }: { groups: SettingsGroup[] }) {
+export function SettingsGroups({ groups, defaultOpenId = null }: { groups: SettingsGroup[]; defaultOpenId?: string | null }) {
   const scope = useId();
-  const [open, setOpen] = useState<string | null>(null);
-  const [visited, setVisited] = useState<Record<string, boolean>>({});
+  const [open, setOpen] = useState<string | null>(defaultOpenId);
+  const [visited, setVisited] = useState<Record<string, boolean>>(
+    defaultOpenId ? { [defaultOpenId]: true } : {},
+  );
   return <div className="nr-settings-groups">
     {groups.map(group => {
       const expanded = open === group.id;
