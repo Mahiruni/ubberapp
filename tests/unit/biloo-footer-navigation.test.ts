@@ -12,6 +12,7 @@ const support = read("app/support/page.tsx");
 const css = read("app/biloo-footer-navigation.css");
 const premiumDriver = read("app/driver/driver-wrapper-premium.css");
 const riderMenu = read("components/nexride/rider-menu.tsx");
+const registry = read("lib/biloo-navigation-registry.ts");
 
 describe("Biloo Rider + Driver navigation without a footer tab bar", () => {
   it("does not mount footer tabs or the legacy mobile driver dock", () => {
@@ -34,8 +35,9 @@ describe("Biloo Rider + Driver navigation without a footer tab bar", () => {
     expect(driver).not.toContain('className="nr-driver-header-profile"');
     expect(driver).toContain('className="biloo-menu-profile-card"');
     expect(driver).toContain('href="/driver/profile"');
-    expect(driver).toContain('href: "/driver/earnings"');
-    expect(driver).toContain('href: "/driver/map"');
+    expect(driver).toContain("DRIVER_NAVIGATION.map");
+    expect(registry).toContain('href:"/driver/earnings"');
+    expect(registry).toContain('href:"/driver/map"');
   });
 
   it("keeps Driver availability swipe but removes all three embedded quick-action buttons", () => {
