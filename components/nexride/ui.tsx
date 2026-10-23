@@ -232,10 +232,13 @@ export function Dialog({
   title,
   children,
   onClose,
+  className = "",
 }: {
   title: string;
   children: ReactNode;
   onClose: () => void;
+  /** Optional visual variant; focus, escape handling and modal semantics stay shared. */
+  className?: string;
 }) {
   const t = useTranslation();
   const dialog = useRef<HTMLDialogElement>(null);
@@ -254,7 +257,7 @@ export function Dialog({
   return (
     <dialog
       ref={dialog}
-      className="nr-dialog m-auto w-[min(92vw,500px)] rounded-[20px] border border-[var(--nr-border)] bg-[var(--nr-surface-raised)] p-0 text-[var(--nr-text)] shadow-[var(--nr-shadow-lg)] backdrop:bg-black/45"
+      className={`nr-dialog m-auto w-[min(92vw,500px)] rounded-[20px] border border-[var(--nr-border)] bg-[var(--nr-surface-raised)] p-0 text-[var(--nr-text)] shadow-[var(--nr-shadow-lg)] backdrop:bg-black/45 ${className}`}
       aria-labelledby="nr-dialog-title"
       onCancel={(event) => { if (event.target === event.currentTarget) { event.preventDefault(); onClose(); } }}
       onClick={(e) => {
