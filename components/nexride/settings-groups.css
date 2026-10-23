@@ -17,3 +17,18 @@
 .nr-settings-group-content .nr-settings-legal>a{display:block;padding:13px 0;min-height:44px}
 .nr-settings-group-content .nr-settings-security-link{min-height:48px}
 @media(prefers-reduced-motion:reduce){.nr-settings-group-chevron{transition:none}}
+
+/* Biloo App Settings — quiet white grouped rows inspired by the approved reference. */
+.nr-settings-groups{display:grid;gap:12px;color:#152a2b}
+.nr-settings-group{background:#fff;border:1px solid #e3eae7!important;border-radius:20px;overflow:hidden}
+.nr-settings-groups .nr-settings-group-heading>button{min-height:70px;padding:14px 16px;border-radius:0}
+.nr-settings-group-icon{background:#e9f8f0;color:#008e62;border-radius:14px}
+.nr-settings-group-label strong{font-size:14px;font-weight:800;color:#152a2b}
+.nr-settings-group-label small{font-size:11px;color:#657779}
+.nr-settings-group-chevron{color:#526b6b}
+.nr-settings-group-content{padding:6px 16px 18px}
+.biloo-settings-links{display:grid}
+.biloo-settings-links a{display:flex;justify-content:space-between;align-items:center;min-height:52px;border-bottom:1px solid #e7eeeb;color:#18312d;text-decoration:none;font-size:13px;font-weight:700}
+.biloo-settings-links a:last-child{border-bottom:0}
+.biloo-settings-links a span{font-size:24px;color:#728985}
+.nr-settings-group-heading>button:focus-visible,.biloo-settings-links a:focus-visible{outline:3px solid #00a86b;outline-offset:-3px}
