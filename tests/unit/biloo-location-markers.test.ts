@@ -42,7 +42,7 @@ describe("Biloo live device markers", () => {
     expect(map).toContain("markerRole,");
   });
 
-  it("eliminates the green accuracy-circle display and new-marker pulses", () => {
+  it("keeps the green Mapbox accuracy fill hidden; only the Rider marker owns the heartbeat", () => {
     expect(map).toContain('"fill-opacity": 0');
     expect(map).toContain('"line-opacity": 0');
     expect(styles).toContain(".nr-live-location-marker.nr-location-identity");
@@ -50,5 +50,32 @@ describe("Biloo live device markers", () => {
     expect(styles).toContain('data-marker-role="driver"');
     expect(styles).toContain("border-radius:0!important");
     expect(styles).toContain("background:transparent!important");
+  });
+
+  it("pulses two green rings outward and inward behind the Rider person icon", () => {
+    expect(styles).toContain('data-marker-role="rider"]::before');
+    expect(styles).toContain('data-marker-role="rider"]::after');
+    expect(styles).toContain("animation:biloo-rider-location-heartbeat 2.8s ease-in-out infinite");
+    expect(styles).toContain("animation-delay:-1.4s");
+    expect(styles).toContain("scale(2.35)");
+    expect(styles).toContain("scale(2.55)");
+    expect(styles).toContain("scale(.66)");
+    expect(styles).toContain("contain:layout style!important");
+    expect(styles).toContain("overflow:visible!important");
+    expect(styles).toContain('[data-marker-role="rider"] > .nr-location-identity-glyph');
+    expect(styles).toContain("z-index:1");
+  });
+
+  it("leaves Driver car unpulsed and stops animations on stale GPS or reduced motion", () => {
+    const pulseStyles = styles.slice(styles.indexOf("/* Rider-only GPS heartbeat"));
+    expect(pulseStyles).toContain('[data-marker-role="rider"]');
+    expect(pulseStyles).not.toContain('[data-marker-role="driver"]');
+    expect(pulseStyles).toContain(".is-stale::before");
+    expect(pulseStyles).toContain(".is-paused::before");
+    expect(pulseStyles).toContain("html[data-nr-data-saver]");
+    expect(pulseStyles).toContain("@media(prefers-reduced-motion:reduce)");
+    expect(pulseStyles).toContain("animation:none!important");
+    expect(pulseStyles).toContain("will-change:auto");
+    expect(styles).toContain('[data-marker-role="driver"] .nr-location-identity-glyph');
   });
 });
