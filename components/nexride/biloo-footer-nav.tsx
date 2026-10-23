@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Icon, type IconName } from "./ui";
+import { useContext } from "react";
+import { Icon, LanguageContext, type IconName } from "./ui";
 
 export type BilooFooterItem = {
   id: string;
@@ -21,6 +22,8 @@ export function BilooFooterNav({
   items: BilooFooterItem[];
   active: string;
 }) {
+  const language = useContext(LanguageContext);
+  const amharic: Record<string, string> = { home: "መነሻ", activity: "እንቅስቃሴ", wallet: "ዋሌት", earnings: "ገቢ", map: "ካርታ", account: "መለያ" };
   return (
     <nav className="biloo-footer-nav" data-role={role} aria-label={role === "rider" ? "Rider bottom navigation" : "Driver bottom navigation"}>
       <div className="biloo-footer-nav__surface">
@@ -29,7 +32,7 @@ export function BilooFooterNav({
           const label = (
             <>
               <span className="biloo-footer-nav__symbol"><Icon name={item.icon} size={21} /></span>
-              <span className="biloo-footer-nav__label">{item.label}</span>
+              <span className="biloo-footer-nav__label">{language === "am" ? amharic[item.id] || item.label : item.label}</span>
               <span className="biloo-footer-nav__indicator" aria-hidden="true" />
             </>
           );
@@ -66,7 +69,6 @@ export function riderFooterLinks(): BilooFooterItem[] {
     { id: "home", label: "Home", icon: "home", href: "/" },
     { id: "activity", label: "Activity", icon: "clock", href: "/rider/trips" },
     { id: "wallet", label: "Wallet", icon: "wallet", href: "/rider/wallet" },
-    { id: "support", label: "Support", icon: "headphones", href: "/support" },
     { id: "account", label: "Account", icon: "user", href: "/?screen=profile" },
   ];
 }
@@ -74,9 +76,8 @@ export function riderFooterLinks(): BilooFooterItem[] {
 export function driverFooterLinks(): BilooFooterItem[] {
   return [
     { id: "home", label: "Home", icon: "home", href: "/driver/home" },
-    { id: "activity", label: "Activity", icon: "clock", href: "/driver/activity" },
-    { id: "map", label: "Map", icon: "navigation", href: "/driver/map" },
     { id: "earnings", label: "Earnings", icon: "wallet", href: "/driver/earnings" },
+    { id: "map", label: "Map", icon: "navigation", href: "/driver/map" },
     { id: "account", label: "Account", icon: "user", href: "/driver/profile" },
   ];
 }

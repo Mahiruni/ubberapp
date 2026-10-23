@@ -202,7 +202,7 @@ export function useRideOffers(
     chosen?.availability === "available" &&
     Date.parse(fares.expiresAt) > Date.now();
   const canPreview = ready && fares?.source === "preview";
-  const request = async () => {
+  const request = async (pickupInstructions = "") => {
     if (
       lock.current ||
       !canRequest ||
@@ -219,7 +219,8 @@ export function useRideOffers(
     lock.current = true;
     onPending(true);
     setRequestState("pending");
-    const signature = `${key};${fares.revision};${chosen.id};cash`;
+    const instructions = pickupInstructions.trim().slice(0, 300);
+    const signature = `${key};${fares.revision};${chosen.id};cash;${instructions}`;
     if (attempt.current?.signature !== signature)
       attempt.current = { signature, key: crypto.randomUUID() };
     try {
@@ -228,6 +229,7 @@ export function useRideOffers(
         chosen,
         fares.revision,
         attempt.current.key,
+        instructions,
       );
       if (!mounted.current) return;
       if (result.status === "price_changed") {

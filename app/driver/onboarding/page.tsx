@@ -11,6 +11,8 @@ import { resolveSessionRole } from "../../../lib/nexride-account-role";
 import { authErrorKey } from "../../../lib/nexride-auth-errors";
 import { VEHICLE_COLOR_OPTIONS } from "../../../lib/nexride-vehicle";
 import { normalizeEthiopianPhone } from "../../../lib/nexride-identity";
+import { driverResumeDestination } from "../../../lib/nexride-driver-verification";
+import { withOperationTimeout } from "../../../lib/nexride-operation";
 import "../auth/driver-auth.css";
 import "./driver-onboarding.css";
 import "../../auth-experience.css";
@@ -33,10 +35,17 @@ export default function DriverOnboarding() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [existingAccount, setExistingAccount] = useState(false);
+  const [checking, setChecking] = useState(true);
+  const [sessionFailed, setSessionFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+  const [sharedPhone, setSharedPhone] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   useEffect(() => {
     let active = true;
-    supabase.auth.getSession().then(async ({ data, error: sessionError }) => {
+    setChecking(true);
+    setSessionFailed(false);
+    withOperationTimeout(supabase.auth.getSession()).then(async ({ data, error: sessionError }) => {
       if (sessionError) throw sessionError;
       if (!active || !data.session) return;
       setExistingAccount(true);
@@ -54,25 +63,29 @@ export default function DriverOnboarding() {
           .eq("id",data.session.user.id).maybeSingle();
         if (!active) return;
         if(owner.data?.full_name)setName(owner.data.full_name);
-        if(owner.data?.phone)setPhone(owner.data.phone);
+        if(owner.data?.phone) { setPhone(owner.data.phone); setSharedPhone(true); }
+        const metadata = data.session.user.user_metadata || {};
+        setVehicle(String(metadata.vehicle || ""));
+        setVehicleColor(String(metadata.vehicle_color || ""));
+        setPlate(String(metadata.vehicle_plate || ""));
       }
       if (role !== "driver") return;
-      if (data.session.user.user_metadata?.driver_onboarding_complete === true) {
-        router.replace("/driver/verification");
-      }
-    }).catch(() => { if (active) setError(t("authNetworkFailure")); });
+      const destination = await driverResumeDestination(data.session, role);
+      if (active && destination !== "/driver/onboarding") router.replace(destination);
+    }).catch(() => { if (active) { setSessionFailed(true); setError(t("authNetworkFailure")); } })
+      .finally(() => { if (active) setChecking(false); });
     return () => { active = false; };
-  }, [router]);
+  }, [router, attempt]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (busy) return;
+    if (busy || checking || sessionFailed || !acceptedTerms) return;
     setBusy(true);
     setError("");
     setNotice("");
 
     try {
-    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    const { data: sessionData, error: sessionError } = await withOperationTimeout(supabase.auth.getSession());
     if (sessionError) throw sessionError;
     const existing = sessionData.session;
     const existingRole = existing ? await resolveSessionRole(existing) : "";
@@ -168,7 +181,7 @@ export default function DriverOnboarding() {
             <form onSubmit={submit} className="nr-auth-form nr-auth-signup-form" aria-busy={busy}>
               <div className="driver-form-grid">
                 <label><span>{t("fullName")}</span><div className="nr-auth-input"><Icon name="user" size={19}/><input value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" placeholder={t("fullName")} required /></div></label>
-                <label><span>{t("phoneNumber")}</span><div className="nr-auth-input"><Icon name="phone" size={19}/><input value={phone} onChange={(e) => setPhone(e.target.value)} autoComplete="tel" inputMode="tel" placeholder="+251…" required={!existingAccount} readOnly={existingAccount && Boolean(phone)} /></div></label>
+                <label><span>{t("phoneNumber")}</span><div className="nr-auth-input"><Icon name="phone" size={19}/><input value={phone} onChange={(e) => setPhone(e.target.value)} autoComplete="tel" inputMode="tel" placeholder="+251…" required readOnly={sharedPhone} /></div></label>
               </div>
               <label><span>{t("authEmail")}</span><div className="nr-auth-input"><Icon name="user" size={19}/><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" inputMode="email" placeholder={t("authEmail")} required={!existingAccount} readOnly={existingAccount} /></div></label>
               <label><span>{t("password")}</span><div className="nr-auth-input nr-auth-password-row"><Icon name="shield" size={19}/><input type={showPassword ? "text" : "password"} aria-label={t("password")} value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" minLength={6} placeholder={existingAccount ? "Existing account — no new password" : t("password")} aria-describedby="driver-password-help" required={!existingAccount} disabled={existingAccount} /><button type="button" className="nr-auth-password-toggle" onClick={() => setShowPassword((value) => !value)} aria-pressed={showPassword}>{t(showPassword ? "entryHide" : "entryShow")}</button></div></label>
@@ -196,9 +209,10 @@ export default function DriverOnboarding() {
                 <label><span>{say("Plate number", "የሰሌዳ ቁጥር")}</span><div className="nr-auth-input"><Icon name="card" size={19}/><input value={plate} onChange={(e) => setPlate(e.target.value)} placeholder="2-A12345" required /></div></label>
               </div>
 
-              {error && <div className="driver-auth-error" role="alert">{error}</div>}
+              <label className="biloo-driver-terms"><input type="checkbox" checked={acceptedTerms} onChange={event => setAcceptedTerms(event.target.checked)} required /><span>{say("I agree to the", "ተስማምቻለሁ፦")} <Link href="/explore/terms">{say("Terms", "ውሎች")}</Link> {say("and", "እና")} <Link href="/explore/privacy">{say("Privacy Policy", "የግላዊነት ፖሊሲ")}</Link>.</span></label>
+              {error && <div className="driver-auth-error" role="alert">{error}{sessionFailed && <button type="button" onClick={() => setAttempt(value => value + 1)}>{say("Try again", "እንደገና ይሞክሩ")}</button>}</div>}
               {notice && <div className="driver-auth-notice" role="status">{notice}<Link href="/driver/auth">Sign in as Driver</Link></div>}
-              <div className="nr-auth-cta-dock"><button className="driver-auth-submit" type="submit" disabled={busy}>{busy ? t("creatingAccount") : existingAccount ? say("Continue verification","ማረጋገጫውን ቀጥል") : t("createAccount")}</button></div>
+              <div className="nr-auth-cta-dock"><button className="driver-auth-submit" type="submit" disabled={busy || checking || sessionFailed}>{checking ? say("Checking your account…", "መለያዎን በማረጋገጥ ላይ…") : busy ? t("creatingAccount") : existingAccount ? say("Continue verification","ማረጋገጫውን ቀጥል") : t("createAccount")}</button></div>
             </form>
 
             <div className="nr-auth-divider"><span>{t("entryOr")}</span></div>

@@ -19,6 +19,7 @@ const driver = {
   rejection_reason: null,
   rating: 4.9,
   vehicle: "Toyota Corolla",
+  vehicle_color: "white",
   vehicle_plate: "ET-1234",
 };
 

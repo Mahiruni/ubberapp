@@ -2243,3 +2243,44 @@
   backdrop-filter:none!important;
   -webkit-backdrop-filter:none!important;
 }
+
+/* Biloo Rider wrapper parity — one calm map-first sheet system across stages.
+   InDrive-inspired solid lower sheet, original Biloo identity and interactions.
+   Geometry/drag ratios remain owned by the existing sheet motion controller. */
+@media(max-width:800px) {
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-rider-flow-panel > .nr-rider-persistent-wrapper {
+    border-radius: 24px 24px 0 0 !important;
+    border: 0 !important;
+    border-top: 1px solid #e4eaf0 !important;
+    box-shadow: 0 -7px 24px rgba(4,28,48,.11) !important;
+    background: #fff !important;
+    overflow: hidden !important;
+  }
+  .nr-app[data-mode="rider"] .rider-map-flow :is(
+    .nr-rider-home-sheet,.nr-destination-panel,.nr-ride-selection,
+    .nr-driver-matching,.nr-trip-experience
+  ) {
+    border-radius: 24px 24px 0 0 !important;
+    border-left: 0 !important;
+    border-right: 0 !important;
+    border-bottom: 0 !important;
+    background: #fff !important;
+  }
+  .nr-app[data-mode="rider"] .rider-map-flow :is(
+    .nr-flow-sheet-handle > span,
+    .nr-home-sheet-grab-area > span
+  ) {
+    width: 38px !important;
+    height: 4px !important;
+    border-radius: 999px !important;
+    background: #b9c6cf !important;
+  }
+  .nr-app[data-mode="rider"] .rider-map-flow :is(
+    .nr-destination-panel footer,.nr-ride-selection footer,
+    .nr-driver-matching footer
+  ) {
+    background: #fff !important;
+    border-top-color: #edf0f3 !important;
+    box-shadow: 0 -4px 15px rgba(4,28,48,.045) !important;
+  }
+}

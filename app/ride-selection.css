@@ -592,3 +592,5 @@
     height:31px;
   }
 }
+.biloo-pickup-instructions { display:grid; gap:8px; margin:14px 0; color:var(--nr-text,#08295f); font-size:12px; font-weight:650; }
+.biloo-pickup-instructions textarea { width:100%; box-sizing:border-box; padding:12px; border:1px solid var(--nr-border,#cbd6e6); border-radius:12px; background:var(--nr-surface,#fff); color:inherit; font:inherit; resize:vertical; }

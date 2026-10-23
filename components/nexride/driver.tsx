@@ -738,7 +738,7 @@ export function DriverWorkspace({
                 <span className="nr-driver-home-control-brand">BILOO · DRIVER</span>
                 <strong>{state.online ? say("Ready for rides", "ለጉዞ ዝግጁ") : say("You're offline", "ከመስመር ውጭ ነዎት")}</strong>
                 <small>{state.online
-                  ? say("Online stays active when minimized. Android may pause GPS and delay alerts until you reopen Biloo.", "መተግበሪያው ሲቀነስ የመስመር ላይ ሁኔታዎ ይቀጥላል። Android GPSን እና ማሳወቂያዎችን ሊያዘገይ ይችላል።")
+                  ? say("Android can pause GPS and alerts in the background.", "Android ከበስተጀርባ GPSን እና ማሳወቂያዎችን ሊያቆም ይችላል።")
                   : say("Swipe to start receiving ride requests", "ጉዞ ለመቀበል ያንሸራትቱ")}</small>
               </div>
               <div className="nr-driver-home-control-tools">
@@ -771,11 +771,6 @@ export function DriverWorkspace({
               labelOverride={swipeFeedback}
               onToggle={toggleAvailability}
             />
-            <nav className="nr-driver-home-quick-actions" aria-label={say("Driver quick actions", "የአሽከርካሪ ፈጣን አማራጮች")}>
-              <button type="button" onClick={() => router.push("/driver/activity")}><Icon name="clock" size={16} />{say("Activity", "እንቅስቃሴ")}</button>
-              <button type="button" onClick={() => router.push("/driver/earnings")}><Icon name="wallet" size={16} />{say("Earnings", "ገቢ")}</button>
-              <button type="button" onClick={() => router.push("/driver/profile/settings")}><Icon name="settings" size={16} />{say("Settings", "ቅንብሮች")}</button>
-            </nav>
           </div>
         </div>
       </section>

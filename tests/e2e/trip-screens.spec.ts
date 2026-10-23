@@ -185,6 +185,20 @@ test("live rider sees assignment, real trip transition and receipt, then retries
   await expect(assigned).toContainText('ETA unavailable');
   await expect(assigned.getByRole('button', { name: 'Call Driver' })).toBeEnabled();
   await expect(assigned).toContainText('235 ETB');
+  // Live actions belong at the bottom of the sheet, never above Driver details.
+  const dock = page.locator('.nr-trip-action-dock');
+  await expect(page.locator('.nr-trip-toolbar')).toHaveCount(0);
+  await expect(dock).toBeVisible();
+  await expect(dock.getByRole('button', { name: 'Cancel ride' })).toBeVisible();
+  const shareIcon = dock.getByRole('button', { name: 'Share Trip' });
+  await expect(shareIcon).toBeVisible();
+  await expect(shareIcon.locator('svg')).toHaveCount(1);
+  await expect(shareIcon).toHaveText('');
+  await expect(assigned.locator('.nr-identity-actions button')).toHaveCount(3);
+  await dock.getByRole('button', { name: 'Cancel ride' }).click();
+  await expect(page.getByRole('dialog', { name: 'Cancel this ride?' })).toBeVisible();
+  await page.getByRole('button', { name: 'No, Keep Ride' }).click();
+  await expect(page.getByRole('dialog', { name: 'Cancel this ride?' })).toHaveCount(0);
   await page.screenshot({path: `/tmp/nexride-accepted-${test.info().project.name}.png`});
   api.change('arrived_pickup');
   await page.evaluate(() => window.dispatchEvent(new Event('online')));

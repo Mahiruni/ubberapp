@@ -5,6 +5,8 @@ import Link from "next/link";
 import type { Session } from "@supabase/supabase-js";
 import { Brand, Icon, type IconName } from "../../components/nexride/ui";
 import { supabase } from "../../lib/supabase";
+import { AdminOperationDetails } from "../../components/nexride/admin-operation-details";
+import { AdminDriverReview } from "../../components/nexride/admin-driver-review";
 import { AdminAccountIdentities } from "../../components/nexride/admin-account-identities";
 import "./admin.css";
 import "../detail-system.css";
@@ -964,6 +966,7 @@ function DataModule({
           </p>
         </div>
         <div className="module-tools">
+          {module === "finance" && <AdminOperationDetails kind="finance" />}
           {(module === "verification" || module === "drivers") && <Link className="admin-photo-review-link" href="/admin/driver-photos" aria-label="Open Driver photo approval queue">Photo reviews ↗</Link>}
           <input
             id="admin-module-search"
@@ -1016,61 +1019,14 @@ function DataModule({
                             Registration
                           </button>
                         )}
-                        {row.review_status === "pending" && (
-                          <>
-                            <button
-                              onClick={() =>
-                                action(
-                                  "admin_driver_review",
-                                  {
-                                    p_driver_id: row.id,
-                                    p_status: "approved",
-                                  },
-                                  "Driver approved",
-                                )
-                              }
-                            >
-                              Approve
-                            </button>
-                            <button
-                              className="danger-action"
-                              onClick={() =>
-                                action(
-                                  "admin_driver_review",
-                                  {
-                                    p_driver_id: row.id,
-                                    p_status: "rejected",
-                                  },
-                                  "Driver rejected",
-                                )
-                              }
-                            >
-                              Reject
-                            </button>
-                          </>
-                        )}
-                        {row.review_status === "approved" && (
-                          <button
-                            className="danger-action"
-                            onClick={() =>
-                              action(
-                                "admin_driver_review",
-                                {
-                                  p_driver_id: row.id,
-                                  p_status: "suspended",
-                                },
-                                "Driver suspended",
-                              )
-                            }
-                          >
-                            Suspend
-                          </button>
-                        )}
+                        <AdminOperationDetails id={row.id} kind="driver" />
+                        <AdminDriverReview id={row.id} status={row.review_status} onChanged={refresh} />
                       </td>
                     )}
 
                     {module === "rides" && (
                       <td className="actions">
+                        <AdminOperationDetails id={row.id} kind="ride" />
                         {!["completed", "cancelled", "withdrawn"].includes(
                           row.status,
                         ) && (

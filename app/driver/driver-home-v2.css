@@ -610,3 +610,23 @@
 @media(prefers-reduced-motion:reduce){
   .nr-driver-home-cockpit .nr-driver-presence-label{transition:none!important}
 }
+
+/* Final Driver home override: loaded after shared wrapper styles.
+   Zero lateral inset, no floating card, preserve map gestures outside panel. */
+@media (max-width:759px) {
+  .nr-driver-app-shell[data-home="true"] .nr-driver-home-map-canvas > .nr-driver-home-swipe[data-map-input-boundary="true"] {
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    transform: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-top: 1px solid #e4eaf0 !important;
+    border-radius: 24px 24px 0 0 !important;
+    background: #fff !important;
+    box-shadow: 0 -7px 24px rgba(4,28,48,.11) !important;
+  }
+}

@@ -48,6 +48,7 @@ type NavigationData = {
   status: TripStatus;
   rideCategory: string;
   pickup: string;
+  pickupInstructions?: string;
   destination: string;
   pickupCoordinate: NavigationCoordinate | null;
   destinationCoordinate: NavigationCoordinate | null;
@@ -138,7 +139,7 @@ export default function DriverNavigationPage() {
 
     const { data: ride, error: rideError } = await supabase
       .from("ride_requests")
-      .select("id,rider_id,pickup_location,destination_location,pickup_lat,pickup_lng,destination_lat,destination_lng,ride_category,status,assigned_driver_id,estimated_trip_duration_minutes,estimated_trip_distance_km")
+      .select("id,rider_id,pickup_location,pickup_instructions,destination_location,pickup_lat,pickup_lng,destination_lat,destination_lng,ride_category,status,assigned_driver_id,estimated_trip_duration_minutes,estimated_trip_distance_km")
       .eq("id", offer.request_id).maybeSingle();
 
     if (rideError || !ride) throw new Error("The active trip could not be loaded.");
@@ -152,6 +153,7 @@ export default function DriverNavigationPage() {
       status,
       rideCategory: ride.ride_category || "Ride",
       pickup: ride.pickup_location,
+      pickupInstructions: ride.pickup_instructions || "",
       destination: ride.destination_location,
       pickupCoordinate: coordinate(ride.pickup_lat, ride.pickup_lng),
       destinationCoordinate: coordinate(ride.destination_lat, ride.destination_lng),
@@ -832,6 +834,7 @@ export default function DriverNavigationPage() {
             <button type="button" disabled aria-label={op("Rider phone number unavailable")} title={op("Rider phone number unavailable")}><Icon name="phone" size={17} /> {op("Call")}</button>
           )}
         </div>
+        {stage.target === "pickup" && trip.pickupInstructions && <p className="nr-nav-pickup-instructions"><strong>{op("Pickup instructions")}</strong><br/>{trip.pickupInstructions}</p>}
         <div className="nr-nav-trip-progress" aria-label={op("Trip progress")}>
           {[
             { label: op("Pickup"), icon: "pin" as const },

@@ -33,7 +33,7 @@ test("Rider hamburger has non-expandable Account and Help links with consistent 
   expect(await rows.evaluateAll(elements => elements.every(element =>
     Boolean(element.querySelector(".nr-rider-drawer-icon svg"))
   ))).toBe(true);
-  await expect(account.getByRole("button", { name: /^Account/ })).toHaveCSS("min-height", "57px");
+  await expect(account.getByRole("button", { name: /^Account/ })).toHaveCSS("min-height", "56px");
 
   await support.getByRole("button", { name: /^Support/ }).click();
   await expect(page).toHaveURL(/\/support/);

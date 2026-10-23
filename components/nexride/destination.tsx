@@ -99,6 +99,7 @@ export function DestinationPanel({
   status,
   position,
   locate,
+  previewMode = true,
 }: {
   journey: Journey;
   back: () => void;
@@ -109,6 +110,7 @@ export function DestinationPanel({
   status: LocationStatus;
   position: RiderLocation | null;
   locate: () => void;
+  previewMode?: boolean;
 }) {
   const t = useTranslation(),
     language = useContext(LanguageContext);
@@ -601,7 +603,7 @@ export function DestinationPanel({
               )}
             </Button>
           )}
-          <small>{t("previewBookingBoundary")}</small>
+          <small>{previewMode ? t("previewBookingBoundary") : language === "am" ? "ከማረጋገጥዎ በፊት መንገዱን እና ዋጋውን ይመልከቱ።" : "Review your route and fare before confirming."}</small>
         </footer>
       )}
     </section>

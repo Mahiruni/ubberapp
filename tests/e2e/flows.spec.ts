@@ -14,7 +14,7 @@ test("rider can complete an explicitly labeled preview and save a rating", async
   await page
     .getByRole("button", { name: /Bole International Airport/ })
     .click();
-  await page.getByLabel("Pickup location", { exact: true }).fill("Bole Atlas");
+  await page.getByLabel('Pickup', { exact: true }).fill("Bole Atlas");
   await page
     .locator(".nr-place-suggestion")
     .filter({ hasText: "Bole Atlas" })
@@ -153,10 +153,10 @@ test("small screens keep map, navigation and sheets within the viewport", async 
     .first()
     .click();
   await expect(
-    page.getByLabel("Pickup location", { exact: true }),
+    page.getByLabel('Pickup', { exact: true }),
   ).toBeVisible();
   await expect(
-    page.getByRole("button", { name: "Continue to ride options" }),
+    page.getByRole("button", { name: 'Choose a ride' }),
   ).toBeDisabled();
   expect(
     await page.evaluate(

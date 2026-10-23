@@ -14,9 +14,9 @@ test.beforeEach(async ({ page }) => {
 async function openRides(page: Page) {
   await page.goto('/');
   await page.getByRole('button', { name: /Bole International Airport/ }).click();
-  await page.getByLabel('Pickup location', { exact: true }).fill('Bole Atlas');
+  await page.getByLabel('Pickup', { exact: true }).fill('Bole Atlas');
   await page.locator('.nr-place-suggestion').first().click();
-  await page.getByRole('button', { name: 'Continue to ride options', exact: true }).click();
+  await page.getByRole('button', { name: 'Choose a ride', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Choose a ride' })).toBeVisible();
 }
 async function liveQuotes(page: Page) {
@@ -25,7 +25,7 @@ async function liveQuotes(page: Page) {
 async function submit(page: Page) {
   await openRides(page);
   await page.getByRole('button', { name: /^Request Ride/ }).click();
-  await page.getByRole('button', { name: 'Confirm ride request', exact: true }).click();
+  await page.getByRole('button', { name: 'Request ride', exact: true }).click();
   await expect(page.locator('.nr-driver-matching')).toBeVisible();
 }
 const reconnect = (page: Page) => page.evaluate(() => window.dispatchEvent(new Event('online')));

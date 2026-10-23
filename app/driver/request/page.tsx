@@ -36,6 +36,7 @@ type RideOffer = {
 type RideRequest = {
   id: string;
   pickup_location: string;
+  pickup_instructions?: string;
   destination_location: string;
   pickup_lat: number | null;
   pickup_lng: number | null;
@@ -263,7 +264,7 @@ export default function DriverRideRequestPage() {
 
     const { data: ride, error: rideError } = await supabase
       .from("ride_requests")
-      .select("id,pickup_location,destination_location,pickup_lat,pickup_lng,destination_lat,destination_lng,ride_category,estimated_trip_fare_etb,estimated_driver_payout_etb,estimated_trip_distance_km,estimated_trip_duration_minutes,status,assigned_driver_id")
+      .select("id,pickup_location,pickup_instructions,destination_location,pickup_lat,pickup_lng,destination_lat,destination_lng,ride_category,estimated_trip_fare_etb,estimated_driver_payout_etb,estimated_trip_distance_km,estimated_trip_duration_minutes,status,assigned_driver_id")
       .eq("id", nextOffer.request_id)
       .maybeSingle();
 
@@ -748,6 +749,7 @@ export default function DriverRideRequestPage() {
                 <div className="nr-request-route-stop pickup">
                   <small>{op("Pickup")}</small>
                   <strong>{request.pickup_location}</strong>
+                  {request.pickup_instructions && <p>{request.pickup_instructions}</p>}
                 </div>
                 <div className="nr-request-route-stop destination">
                   <small>{op("Destination")}</small>

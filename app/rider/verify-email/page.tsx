@@ -7,6 +7,11 @@ import { EntryShell } from "../../../components/nexride/entry";
 import { Button, InputField, PasswordField, useTranslation } from "../../../components/nexride/ui";
 import { supabase } from "../../../lib/supabase";
 import { nexrideAuthRedirectUrl } from "../../../lib/nexride-auth-url";
+import { clearExplicitSignOut, enterRider, ONBOARDING_KEY } from "../../../lib/nexride-startup";
+import { resolveSessionRole } from "../../../lib/nexride-account-role";
+import { driverResumeDestination } from "../../../lib/nexride-driver-verification";
+import { ensureRiderProfile, RiderProfileBootstrapError } from "../../../lib/nexride-rider-profile-bootstrap";
+import { withOperationTimeout } from "../../../lib/nexride-operation";
 import "../../../app/nexride.css";
 
 type Purpose = "signup" | "recovery";
@@ -48,19 +53,31 @@ export default function EmailVerification() {
     if (busy || !validEmail(email) || !/^\d{6}$/.test(code)) { setError(t("entryCodeMissing")); return; }
     setBusy(true); setError("");
     try {
-      const result = await supabase.auth.verifyOtp({email: email.trim().toLowerCase(), token: code, type: purpose === "signup" ? "signup" : "recovery"});
+      const result = await withOperationTimeout(supabase.auth.verifyOtp({email: email.trim().toLowerCase(), token: code, type: purpose === "signup" ? "signup" : "recovery"}));
       if (result.error) { setError(t("entryCodeInvalid")); return; }
       try { window.sessionStorage.removeItem("nexride:verification-target"); } catch { /* Storage is optional. */ }
       if (purpose === "recovery") { setVerified(true); setMessage(t("entryRecoveryConfirmed")); }
       else {
-        // verifyOtp establishes a session. End only this device's temporary
-        // confirmation session so verification does not silently sign users in.
-        const { error: signOutError } = await supabase.auth.signOut({ scope: "local" });
-        if (signOutError) { setError(t("entryVerificationSignOut")); return; }
-        setMessage(t("entryConfirmNotice"));
-        router.replace(returnRole === "driver" ? "/driver/auth?confirmed=1" : "/rider/sign-in?confirmed=1");
+        const session = result.data.session;
+        if (!session) { setError(t("entryVerificationFailure")); return; }
+        // The person explicitly verified this code. Reuse that authenticated
+        // identity and continue the unfinished journey without another login.
+        clearExplicitSignOut();
+        const role = await resolveSessionRole(session);
+        if (role === "admin") { router.replace("/admin"); return; }
+        if (returnRole === "driver" || role === "driver") {
+          router.replace(await driverResumeDestination(session, role));
+          return;
+        }
+        await ensureRiderProfile(session);
+        try { localStorage.setItem(ONBOARDING_KEY, "true"); } catch {}
+        enterRider(session);
+        router.replace("/");
       }
-    } catch { setError(t("entryVerificationFailure")); }
+    } catch (cause) {
+      if (cause instanceof RiderProfileBootstrapError && cause.code === "rider_profile_incomplete") router.replace("/rider/complete-profile");
+      else setError(t("entryVerificationFailure"));
+    }
     finally { setBusy(false); }
   }
   async function resend() {
@@ -68,8 +85,8 @@ export default function EmailVerification() {
     setBusy(true); setError(""); setMessage("");
     try {
       const result = purpose === "signup"
-        ? await supabase.auth.resend({type:"signup",email:email.trim().toLowerCase(),options:{emailRedirectTo:nexrideAuthRedirectUrl(returnRole === "driver" ? "/driver/auth?confirmed=1" : "/rider/sign-in?confirmed=1")}})
-        : await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(),{redirectTo:nexrideAuthRedirectUrl("/rider/reset-password")});
+        ? await withOperationTimeout(supabase.auth.resend({type:"signup",email:email.trim().toLowerCase(),options:{emailRedirectTo:nexrideAuthRedirectUrl(returnRole === "driver" ? "/driver/auth?confirmed=1" : "/rider/sign-in?confirmed=1")}}))
+        : await withOperationTimeout(supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(),{redirectTo:nexrideAuthRedirectUrl("/rider/reset-password")}));
       if (result.error) { setError(t("entryEmailFailure")); return; }
       try { window.sessionStorage.setItem("nexride:verification-target", JSON.stringify({ email: email.trim().toLowerCase(), role: returnRole, purpose })); } catch { /* Confirmation links remain usable without saved context. */ }
       setLastSent(Date.now());
@@ -83,7 +100,7 @@ export default function EmailVerification() {
     if (password.length < 12 || password !== confirm) { setError(t("entryPassword12Mismatch")); return; }
     setBusy(true); setError("");
     try {
-      const result = await supabase.auth.updateUser({password});
+      const result = await withOperationTimeout(supabase.auth.updateUser({password}));
       if (result.error) { setError(t("passwordUpdateFailure")); return; }
       const { error: signOutError } = await supabase.auth.signOut({ scope: "local" });
       if (signOutError) { setMessage(t("entryPasswordSignOut")); return; }

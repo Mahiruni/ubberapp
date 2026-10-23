@@ -1,21 +1,23 @@
+import { withOperationTimeout } from "./nexride-operation";
+
 async function sessionToken(forceRefresh = false) {
   if (typeof window === "undefined") return "";
 
   const { supabase } = await import("./supabase");
 
   if (forceRefresh) {
-    const refreshed = await supabase.auth.refreshSession();
+    const refreshed = await withOperationTimeout(supabase.auth.refreshSession());
     return refreshed.data.session?.access_token || "";
   }
 
-  const current = await supabase.auth.getSession();
+  const current = await withOperationTimeout(supabase.auth.getSession());
   let session = current.data.session;
 
   const expiresAt = session?.expires_at ? session.expires_at * 1000 : 0;
   const expiresSoon = expiresAt > 0 && expiresAt <= Date.now() + 60_000;
 
   if (!session?.access_token || expiresSoon) {
-    const refreshed = await supabase.auth.refreshSession();
+    const refreshed = await withOperationTimeout(supabase.auth.refreshSession());
     session = refreshed.data.session;
   }
 
@@ -51,7 +53,8 @@ export async function nexrideApiFetch(
       headers.set("Content-Type", "application/json");
     }
 
-    return fetch(input, { ...init, headers });
+    const signal = AbortSignal.any([AbortSignal.timeout(20_000), ...(init.signal ? [init.signal] : [])]);
+    return fetch(input, { ...init, signal, headers });
   };
 
   let response = await makeRequest(false);

@@ -5,9 +5,11 @@ import { useRouter } from "next/navigation";
 import { DriverWorkspace, type DriverScreen } from "../../../components/nexride/driver";
 import { registerNexRideBackHandler } from "../../../lib/nexride-native-navigation";
 import { supabase } from "../../../lib/supabase";
-import { explicitSignOutRole } from "../../../lib/nexride-startup";
-import { getDriverReviewStatus } from "../../../lib/nexride-driver-verification";
+import { explicitSignOutRole, StartupError } from "../../../lib/nexride-startup";
+import { driverResumeDestination } from "../../../lib/nexride-driver-verification";
 import { resolveSessionRole } from "../../../lib/nexride-account-role";
+import { withOperationTimeout } from "../../../lib/nexride-operation";
+import { RiderSplash } from "../../../components/nexride/splash";
 import "../../../app/nexride.css";
 import "../../../app/driver/driver-dashboard.css";
 import "../../detail-system.css";
@@ -21,6 +23,8 @@ export default function DriverHomePage() {
     return true;
   }, 20), [screen]);
   const [checking, setChecking] = useState(true);
+  const [error, setError] = useState<StartupError | null>(null);
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     const requestedScreen = new URLSearchParams(window.location.search).get("screen");
@@ -38,11 +42,14 @@ export default function DriverHomePage() {
     }
 
     let active = true;
+    setChecking(true);
+    setError(null);
     if (explicitSignOutRole(window.localStorage)) {
       router.replace("/driver/auth?logged_out=1");
       return () => { active = false; };
     }
-    supabase.auth.getSession().then(async ({ data }) => {
+    withOperationTimeout(supabase.auth.getSession()).then(async ({ data, error: sessionError }) => {
+      if (sessionError) throw sessionError;
       if (!active || explicitSignOutRole(window.localStorage)) return;
       const session = data.session;
       if (!session) {
@@ -52,36 +59,19 @@ export default function DriverHomePage() {
 
       const role = await resolveSessionRole(session);
       if (!active || explicitSignOutRole(window.localStorage)) return;
-      if (role === "admin") {
-        router.replace("/admin");
+      const destination = await driverResumeDestination(session, role);
+      if (!active || explicitSignOutRole(window.localStorage)) return;
+      if (destination !== "/driver/home") {
+        router.replace(destination);
         return;
-      }
-      if (role !== "driver") {
-        router.replace("/");
-        return;
-      }
-      if (session.user.user_metadata?.driver_onboarding_complete !== true) {
-        router.replace("/driver/onboarding");
-        return;
-      }
-
-      try {
-        const status = await getDriverReviewStatus(session.user.id);
-        if (!active) return;
-        if (status === "draft" || status === "rejected") {
-          router.replace("/driver/verification");
-          return;
-        }
-      } catch {
-        // Keep the driver shell reachable if the verification service is temporarily unavailable.
       }
       setChecking(false);
-    }).catch(() => router.replace("/driver/auth"));
+    }).catch(() => { if (active) setError(new StartupError("session")); });
 
     return () => { active = false; };
-  }, [router]);
+  }, [router, attempt]);
 
-  if (checking) return <main data-nr-startup-pending="true" className="nr-app nr-driver-shell"><div className="nr-driver-page"><div className="nr-driver-card nr-driver-loading"><span className="nr-driver-skeleton wide" /><span className="nr-driver-skeleton" /><span className="nr-driver-skeleton" /></div></div></main>;
+  if (checking) return <RiderSplash error={error} onRetry={() => setAttempt(value => value + 1)} />;
 
   const navigate = (next: DriverScreen) => {
     if (next === "home") setScreen("home");
