@@ -3,57 +3,45 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const read = (file: string) => readFileSync(join(process.cwd(), file), "utf8");
-const footer = read("components/nexride/biloo-footer-nav.tsx");
 const rider = read("app/page.tsx");
 const driver = read("components/nexride/driver-app-shell.tsx");
+const trips = read("app/rider/trips/page.tsx");
+const wallet = read("app/rider/wallet/page.tsx");
+const support = read("app/support/page.tsx");
 const css = read("app/biloo-footer-navigation.css");
-const layout = read("app/layout.tsx");
+const premiumDriver = read("app/driver/driver-wrapper-premium.css");
+const riderMenu = read("components/nexride/rider-menu.tsx");
 
-describe("Biloo approved Rider and Driver footer menus", () => {
-  it("contains the five Rider items and the five Driver items in approved order", () => {
-    const riderItems = footer.slice(footer.indexOf("export function riderFooterLinks"),footer.indexOf("export function driverFooterLinks"));
-    const driverItems = footer.slice(footer.indexOf("export function driverFooterLinks"));
-    expect([...riderItems.matchAll(/id: "([^"]+)"/g)].map(m => m[1])).toEqual(["home","activity","wallet","support","account"]);
-    expect([...driverItems.matchAll(/id: "([^"]+)"/g)].map(m => m[1])).toEqual(["home","activity","map","earnings","account"]);
-    expect(footer).toContain('href: "/rider/trips"');
-    expect(footer).toContain('href: "/rider/wallet"');
-    expect(footer).toContain('href: "/driver/activity"');
-    expect(footer).toContain('href: "/driver/earnings"');
-    expect(footer).toContain('href: "/driver/map"');
-    expect(driver).toContain('href: "/support?role=driver"');
+describe("Biloo Rider + Driver navigation without a footer tab bar", () => {
+  it("does not mount footer tabs or the legacy mobile driver dock", () => {
+    for (const page of [rider, driver, trips, wallet, support]) {
+      expect(page).not.toContain("<BilooFooterNav");
+      expect(page).not.toContain('from "../components/nexride/biloo-footer-nav"');
+      expect(page).not.toContain('from "./biloo-footer-nav"');
+    }
+    expect(rider).not.toContain('<div className="nr-mobile-nav"');
+    expect(css).not.toContain("display: flex;\n    align-items: stretch;");
+    expect(premiumDriver).not.toContain("--biloo-dock-bar-height");
   });
 
-  it("binds the actual Rider home and Driver shell to footer navigation", () => {
-    expect(rider).toContain('<BilooFooterNav');
-    expect(rider).toContain('role="rider"');
-    expect(rider).toContain('() => navigate("profile")');
-    expect(driver).toContain('<BilooFooterNav');
-    expect(driver).toContain('role="driver"');
-    expect(driver).toContain('!tripFocus && (');
-    expect(rider).toContain('!riderSearch && !riderTripView');
-    expect(rider).toContain('!["rides", "finding"].includes(riderScreen)');
+  it("keeps a usable navigation and distinct profile destination for both roles", () => {
+    expect(rider).toContain("<RiderMenu");
+    expect(rider).toContain('className="biloo-home-floating-profile"');
+    expect(rider).toContain('onClick={() => navigate("profile")}');
+    expect(riderMenu).toContain('aria-label={open ? say("Close menu"');
+    expect(driver).toContain("<DriverHamburgerMenu");
+    expect(driver).toContain('className="nr-driver-header-profile"');
+    expect(driver).toContain('href="/driver/profile"');
+    expect(driver).toContain('href: "/driver/earnings"');
+    expect(driver).toContain('href: "/driver/map"');
   });
 
-  it("preserves booking swipe, safe areas, active states and reduced motion", () => {
-    expect(layout).toContain('import "./biloo-footer-navigation.css";');
-    expect(css).toContain("repeat(5,minmax(0,1fr))");
-    expect(css).toContain(".nr-driver-home-swipe[data-map-input-boundary=\"true\"]");
-    expect(css).not.toContain("height: max(120px");
-    expect(css).toContain(".rider-map-flow.rider-home-view");
-    expect(css).toContain(".nr-home-sheet-scroll");
-    expect(css).toContain("scroll-padding-bottom: calc(var(--biloo-dock-bar-height)");
+  it("preserves map sheets and safe areas without leaving an empty footer gap", () => {
+    expect(css).toContain('bottom: 0!important;');
     expect(css).toContain("env(safe-area-inset-bottom,0px)");
-    expect(css).toContain('prefers-reduced-motion: reduce');
-    expect(footer).toContain('aria-current={selected ? "page" : undefined}');
-    expect(footer).toContain("biloo-footer-nav__indicator");
-    expect(css).toContain("border-radius: 0;");
-    expect(css).toContain("box-shadow: none;");
-    expect(css).toContain("clip-path: inset(50%)");
-    expect(css).toContain("bottom: 0!important;");
-    expect(css).toContain("scroll-padding-bottom: calc(var(--biloo-dock-bar-height)");
-    expect(css).toContain("padding-bottom: calc(var(--biloo-dock-bar-height)");
-    expect(css).not.toContain("min-height: 66px;");
-    expect(css).not.toContain("border-radius: 20px;");
-
+    expect(css).toContain(".nr-home-sheet-scroll");
+    expect(css).toContain(".nr-driver-home-swipe");
+    expect(css).not.toContain(".biloo-footer-nav__item");
+    expect(premiumDriver).toContain("height: calc(100dvh - var(--driver-header-total,62px) - env(safe-area-inset-bottom,0px))!important;");
   });
 });
