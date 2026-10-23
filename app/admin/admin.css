@@ -296,3 +296,13 @@
 .admin-app .admin-sidebar nav button.active i{color:#f9c449!important}
 .admin-app .admin-brand .nr-brand strong{color:#fff!important}
 .admin-app .admin-sidebar nav button:focus-visible,.admin-login :is(button,input):focus-visible{outline:3px solid #f9c449!important;outline-offset:3px}
+
+/* 2026 single-navigation ownership: Admin uses the same drawer on mobile,
+   desktop uses the same sidebar. No second footer menu or reserved dock. */
+.admin-app .admin-mobile-nav{display:none!important}
+@media(max-width:650px){
+  .admin-app .admin-main{padding-bottom:env(safe-area-inset-bottom,0px)!important}
+  .admin-app .admin-content{padding-bottom:calc(20px + env(safe-area-inset-bottom,0px))}
+  .admin-app .admin-toast{bottom:calc(16px + env(safe-area-inset-bottom,0px))!important}
+  .admin-app .admin-sidebar nav a.admin-campaign-link{min-height:44px;font-size:12px}
+}
