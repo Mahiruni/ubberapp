@@ -130,7 +130,9 @@ export function RiderPhotoEditor({
         onClick={() => { setError(''); setOpen(true); }}
         aria-label={say('Change profile photo', 'የመገለጫ ፎቶ ቀይር')}
       >
-        <Icon name="user" size={27}/>
+        {account?.avatar && !photoFailed
+          ? <Image src={account.avatar} alt="" width={128} height={128} unoptimized onError={onImageError} />
+          : <Icon name="user" size={27}/>}
       </button>
       {account && <span className="nr-rider-avatar-change" aria-hidden="true"><Icon name="plus" size={16}/></span>}
       {open && account && (
