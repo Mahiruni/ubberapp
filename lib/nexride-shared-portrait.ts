@@ -13,7 +13,7 @@ function warmImage(url: string) {
   const img = new window.Image();
   img.decoding = 'async';
   img.src = url;
-  void img.decode().catch(() => {});
+  void img.decode().catch(() => { if (lastUrl === url) lastUrl = ''; });
 }
 
 /** The signed account portrait is shared by Rider and Driver hamburger drawers.
@@ -67,11 +67,14 @@ export function useSharedAccountPortrait() {
     });
     window.addEventListener('nexride:profile-change', changed);
     window.addEventListener('focus', focused);
+    const online = () => { lastUrl = ''; void refresh(); };
+    window.addEventListener('online', online);
     return () => {
       live = false; ++request;
       auth.subscription.unsubscribe();
       window.removeEventListener('nexride:profile-change', changed);
       window.removeEventListener('focus', focused);
+      window.removeEventListener('online', online);
     };
   }, []);
   return portrait;
