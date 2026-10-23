@@ -75,6 +75,7 @@ export async function saveAccount(account: RiderAccount, profile: PreviewProfile
     .eq('id', account.id).select('id,full_name,phone').single();
   if (error || !data || data.id !== account.id) throw error || Error('Save not confirmed');
   invalidateRiderAccountCache();
+  if (typeof window !== 'undefined') window.dispatchEvent(new Event('nexride:profile-change'));
   return { name: data.full_name || '', phone: data.phone || '', email: auth.data.user.email || '' };
 }
 
