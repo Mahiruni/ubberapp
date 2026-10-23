@@ -135,7 +135,7 @@
 .nr-driver-app-shell:not([data-home="true"]):not([data-trip-focus="true"])
   :is(.nr-driver-page,.nr-driver-profile-subwrap,.nr-earnings-report-wrap) {
   padding-inline: clamp(14px,3.5vw,28px)!important;
-  padding-block: 20px calc(94px + env(safe-area-inset-bottom,0px))!important;
+  padding-block: 20px calc(28px + env(safe-area-inset-bottom,0px))!important;
 }
 .nr-driver-app-shell :where(
   .nr-driver-card,.nr-driver-operational-card,.nr-driver-metric-grid .nr-metric,
@@ -334,78 +334,6 @@
 .nr-driver-app-shell .nr-driver-sheet-grab > span {
   background: #c5d1df!important;
 }
-/* Native-feeling, five-stop dock. A visible label improves clarity without
-   sacrificing small-phone tap targets. Only Driver navigation is changed. */
-@media(max-width:800px) {
-  .nr-driver-app-shell { --biloo-dock-bar-height: 70px; }
-  .nr-driver-app-shell .biloo-footer-nav[data-role="driver"] {
-    --dock-bg: var(--driver-nav-bg);
-    --dock-divider: var(--driver-border);
-    --dock-active: #08295f;
-    --dock-text: #536780;
-    z-index: 1200;
-    border-top: 1px solid var(--driver-border)!important;
-    box-shadow: 0 -5px 20px rgba(8,41,95,.035);
-  }
-  .nr-driver-app-shell[data-theme="dark"] .biloo-footer-nav[data-role="driver"] {
-    --dock-active: #f9c449;
-    --dock-text: #d6e2f1;
-  }
-  .nr-driver-app-shell .biloo-footer-nav[data-role="driver"] .biloo-footer-nav__surface {
-    grid-template-columns: repeat(5,minmax(0,1fr))!important;
-    width: 100%;
-  }
-  .nr-driver-app-shell .biloo-footer-nav[data-role="driver"] .biloo-footer-nav__item {
-    justify-content: center;
-    gap: 3px;
-    padding: 5px 0 4px;
-    min-width: 0;
-    font-size: 10px;
-    line-height: 1.15;
-    font-weight: 700;
-  }
-  .nr-driver-app-shell .biloo-footer-nav[data-role="driver"] .biloo-footer-nav__label {
-    position: static!important;
-    width: auto!important;
-    height: auto!important;
-    min-height: 12px;
-    clip: auto!important;
-    clip-path: none!important;
-    margin: 0!important;
-    overflow: visible!important;
-    white-space: nowrap!important;
-    color: inherit;
-  }
-  .nr-driver-app-shell .biloo-footer-nav[data-role="driver"] .biloo-footer-nav__symbol {
-    width: 28px;
-    flex-basis: 25px;
-    height: 25px;
-  }
-  .nr-driver-app-shell .biloo-footer-nav[data-role="driver"] .biloo-footer-nav__symbol :is(svg,.nr-icon) {
-    width: 22px!important;
-    height: 22px!important;
-  }
-  .nr-driver-app-shell .biloo-footer-nav[data-role="driver"] .biloo-footer-nav__indicator {
-    top: 0;
-    bottom: auto;
-    height: 3px;
-    border-radius: 0 0 4px 4px;
-    background: #f9c449;
-  }
-  .nr-driver-app-shell .biloo-footer-nav[data-role="driver"] .biloo-footer-nav__item.is-active {
-    color: var(--dock-active);
-    background: color-mix(in srgb,var(--driver-accent) 11%,transparent);
-  }
-  .nr-driver-app-shell .biloo-footer-nav[data-role="driver"] .biloo-footer-nav__item.is-active .biloo-footer-nav__indicator {
-    width: 28px;
-  }
-  .nr-driver-app-shell:not([data-home="true"]):not([data-trip-focus="true"]) .nr-driver-shell-content {
-    padding-bottom: calc(var(--biloo-dock-bar-height) + env(safe-area-inset-bottom,0px))!important;
-  }
-  .nr-driver-app-shell[data-home="true"] .nr-driver-home-swipe[data-map-input-boundary="true"] {
-    bottom: calc(var(--biloo-dock-bar-height) + env(safe-area-inset-bottom,0px) + 9px)!important;
-  }
-}
 /* Grouped drawer: separate portrait, navigation, account and support cleanly.
    Portal must sit above the dock, map controls and all ordinary page layers. */
 .nr-driver-menu-layer {
@@ -577,7 +505,6 @@ html[lang="am"] .nr-driver-menu-layer :where(strong,small) {
 }
 @media(max-width:350px) {
   .nr-driver-app-shell .nr-driver-global-header-title strong { font-size: 15px; }
-  .nr-driver-app-shell .biloo-footer-nav[data-role="driver"] .biloo-footer-nav__item { font-size:9px; }
   .nr-driver-menu-layer .nr-driver-menu-panel { width:calc(100vw - 12px); }
   .nr-driver-app-shell[data-home="true"] .nr-driver-home-control-panel{ padding:12px; }
 }
@@ -852,12 +779,12 @@ html[lang="am"] .nr-driver-menu-layer :where(strong,small) {
   outline-color:#f9c449!important;
 }
 
-/* Driver Map: fit between safe-area header and the fixed five-tab dock.
+/* Driver Map: reclaim the former footer navigation area below the header.
    In particular, do not force the legacy 420px minimum on short phones. */
 .nr-driver-app-shell:not([data-home="true"]) .nr-driver-map-page {
   width: 100%!important;
   max-width: none!important;
-  height: calc(100dvh - var(--driver-header-total,62px) - var(--biloo-dock-bar-height,70px) - env(safe-area-inset-bottom,0px))!important;
+  height: calc(100dvh - var(--driver-header-total,62px) - env(safe-area-inset-bottom,0px))!important;
   min-height: 290px!important;
   padding: 0!important;
   margin: 0!important;
