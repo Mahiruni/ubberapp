@@ -65,7 +65,7 @@ test("Driver Account shows verified data status and all real destinations",async
     await expect(account.getByRole("button",{name:duplicate})).toHaveCount(0);
   await expect(account.locator(".nr-driver-verification-card strong")).toContainText(/verification|review/i);
   await expect(page.locator(".biloo-footer-nav, .admin-mobile-nav")).toHaveCount(0);
-  await account.getByRole("button",{name:/Edit profile/}).first().click();
+  await account.getByRole("button",{name:/Profile & app settings/}).click();
   await expect(page).toHaveURL(/\/driver\/profile\/settings/);
   const returnToAccount=page.locator(".biloo-account-return");
   await expect(page.locator(".nr-driver-profile-subpage")).toBeVisible();
