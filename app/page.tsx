@@ -758,17 +758,27 @@ function AppWorkspace({
         </div>
 
         {riderHome && (
-          <div className="biloo-home-floating-header" aria-label="Biloo home navigation">
-            <RiderMenu
-              className="biloo-home-floating-menu"
-              active="home"
-              onNavigate={(id) => navigate(id)}
-              onSettings={() => setPanel("settings")}
-              isAdmin={isAdmin}
-              locked={requestPending || matching.active}
-            />
-            <Brand />
-          </div>
+          <>
+            <div className="biloo-home-floating-header" aria-label="Biloo home navigation">
+              <RiderMenu
+                className="biloo-home-floating-menu"
+                active="home"
+                onNavigate={(id) => navigate(id)}
+                onSettings={() => setPanel("settings")}
+                isAdmin={isAdmin}
+                locked={requestPending || matching.active}
+              />
+              <Brand />
+            </div>
+            <button type="button" className="biloo-home-floating-profile"
+              aria-label={t("profile")}
+              onClick={() => navigate("profile")}>
+              {riderAvatar && !riderAvatarFailed
+                ? <Image src={riderAvatar} alt="" width={44} height={44} unoptimized
+                    onError={() => setRiderAvatarFailed(true)} />
+                : headerInitials === "NR" ? <Icon name="user" size={21} /> : headerInitials}
+            </button>
+          </>
         )}
 
         {mode === "rider" && riderMapView && (
