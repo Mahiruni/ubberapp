@@ -237,7 +237,7 @@ export function RiderMenu({
             </button>
 
             <div className="nr-menu-scroll" data-testid="rider-menu-scroll">
-              <div className="nr-menu-section-label">{say("OVERVIEW", "አጠቃላይ")}</div>
+              <div className="nr-menu-section-label">{say("MAIN NAVIGATION", "ዋና ምናሌ")}</div>
               <nav className="nr-rider-drawer-nav" aria-label={say("Rider navigation", "የተሳፋሪ አሰሳ")}>
                 {renderRows(items.filter(item => item.group === "journeys"))}
               </nav>
