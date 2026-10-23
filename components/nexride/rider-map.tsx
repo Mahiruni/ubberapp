@@ -87,15 +87,30 @@ const endpointElement = (kind: "pickup" | "destination") => {
   return root;
 };
 
-const heartbeatElement = (label: string) => {
+/** Small, original black location glyphs — never a colored GPS dot.
+ * The person represents a Rider; the top-down car represents a Driver.
+ * Only trusted, hard-coded SVG markup enters the Mapbox DOM element.
+ */
+export type BilooLocationMarkerRole = "rider" | "driver";
+
+const locationMarkerElement = (label: string, role: BilooLocationMarkerRole) => {
   const root = document.createElement("div");
-  root.className = "nr-live-location-marker";
+  root.className = "nr-live-location-marker nr-location-identity";
+  root.dataset.markerRole = role;
   root.setAttribute("role", "img");
   root.setAttribute("aria-label", label);
-  root.innerHTML =
-    '<span class="nr-live-location-pulse nr-live-location-pulse-one" aria-hidden="true"></span>' +
-    '<span class="nr-live-location-pulse nr-live-location-pulse-two" aria-hidden="true"></span>' +
-    '<span class="nr-live-location-dot" aria-hidden="true"></span>';
+  root.innerHTML = role === "rider"
+    ? '<svg class="nr-location-identity-glyph" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">' +
+      '<circle cx="24" cy="9" r="6.2" fill="#111111" stroke="white" stroke-width="1.4"/>' +
+      '<path d="M19 18h10c2.4 0 4.3 1.8 4.8 4.2l2.3 11.3-5 1.1-2.7-10.1V34h-2.9v10h-5V34h-2.9v-9.5l-2.7 10.1-5-1.1 2.3-11.3c.5-2.4 2.4-4.2 4.8-4.2Z" fill="#111111" stroke="white" stroke-width="1.4" stroke-linejoin="round"/>' +
+      '</svg>'
+    : '<svg class="nr-location-identity-glyph" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">' +
+      '<path d="M17 6.5h14c3.1 0 5.5 2.7 5.5 5.8v23.4c0 3.1-2.4 5.8-5.5 5.8H17c-3.1 0-5.5-2.7-5.5-5.8V12.3c0-3.1 2.4-5.8 5.5-5.8Z" fill="#111111" stroke="white" stroke-width="1.7"/>' +
+      '<path d="M17.5 13.1h13l2.1 8.1H15.4l2.1-8.1Z" fill="white"/>' +
+      '<path d="M15 30.5h18v4H15v-4Z" fill="white"/>' +
+      '<path d="M11.5 24h5v9h-5v-9Zm20 0h5v9h-5v-9Z" fill="#111111" stroke="white" stroke-width="1.1"/>' +
+      '<path d="M17 38h14" stroke="white" stroke-width="1.7" stroke-linecap="round"/>' +
+      '</svg>';
   return root;
 };
 
@@ -535,6 +550,7 @@ export function RiderMap({
   showNearbyDrivers = false,
   assignedTrip,
   showDriverRadar = false,
+  markerRole = "rider",
   onStartRoute,
 }: {
   position: RiderLocation | null;
@@ -558,6 +574,8 @@ export function RiderMap({
   assignedTrip?: TripSnapshot | null;
   /** Real GPS-centered 500 m and 1 km rings, never simulated Rider positions. */
   showDriverRadar?: boolean;
+  /** Your own device marker: Rider = black person, Driver = black car. */
+  markerRole?: BilooLocationMarkerRole;
   onStartRoute?: () => void;
 }) {
   const t = useTranslation();
@@ -565,6 +583,7 @@ export function RiderMap({
   const container = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapboxMap | null>(null);
   const liveMarker = useRef<MapboxMarker | null>(null);
+  const liveMarkerRole = useRef<BilooLocationMarkerRole | null>(null);
   const liveMarkerAnimation = useRef<number | null>(null);
   const liveMarkerLngLat = useRef<[number, number] | null>(null);
   const pickupMarker = useRef<MapboxMarker | null>(null);
@@ -912,6 +931,7 @@ export function RiderMap({
       pickupMarker.current = null;
       destinationMarker.current = null;
       liveMarker.current = null;
+      liveMarkerRole.current = null;
       searchMarker.current = null;
       mapRef.current?.remove();
       mapRef.current = null;
@@ -1067,6 +1087,7 @@ export function RiderMap({
       }
       liveMarker.current?.remove();
       liveMarker.current = null;
+      liveMarkerRole.current = null;
       liveMarkerLngLat.current = null;
       return;
     }
@@ -1076,11 +1097,20 @@ export function RiderMap({
       if (!currentMap) return;
 
       const target: [number, number] = [position.lng, position.lat];
+      // Switch Rider/Driver symbols without ever duplicating the live marker.
+      if (liveMarkerRole.current !== markerRole) {
+        liveMarker.current?.remove();
+        liveMarker.current = null;
+        liveMarkerLngLat.current = null;
+      }
       const isNew = !liveMarker.current;
 
       if (!liveMarker.current) {
-        const markerElement = heartbeatElement(
-          language === "am" ? "የእርስዎ አካባቢ" : "Your location",
+        const markerElement = locationMarkerElement(
+          markerRole === "driver"
+            ? (language === "am" ? "የእርስዎ መኪና" : "Your vehicle")
+            : (language === "am" ? "የእርስዎ አካባቢ" : "Your location"),
+          markerRole,
         );
         markerElement.classList.toggle("is-stale", gpsStale);
         markerElement.classList.toggle(
@@ -1096,6 +1126,7 @@ export function RiderMap({
           .setLngLat(target)
           .addTo(currentMap);
         liveMarkerLngLat.current = target;
+        liveMarkerRole.current = markerRole;
       } else {
         const from = liveMarkerLngLat.current || target;
         if (liveMarkerAnimation.current !== null) {
@@ -1173,6 +1204,7 @@ export function RiderMap({
     language,
     gpsStale,
     showDriverRadar,
+    markerRole,
   ]);
 
   useEffect(() => {
