@@ -955,3 +955,109 @@ html[lang="am"] .nr-driver-menu-layer :where(strong,small) {
   background:#fff;
   border:1px solid rgba(255,255,255,.23);
 }
+
+
+/* Biloo navigation/profile split · October 2026.
+   The hamburger belongs left, the profile belongs right, with a protected
+   safe-area gutter on both sides of the operational map. */
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-menu-host {
+  position:fixed!important;
+  top:calc(env(safe-area-inset-top,0px) + 13px)!important;
+  left:max(14px,env(safe-area-inset-left,0px))!important;
+  right:auto!important;
+  z-index:var(--driver-z-header,70)!important;
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-profile {
+  position:absolute!important;
+  top:calc(env(safe-area-inset-top,0px) + 13px)!important;
+  right:max(14px,env(safe-area-inset-right,0px))!important;
+  left:auto!important;
+  z-index:var(--driver-z-header,70)!important;
+  width:46px!important;height:46px!important;min-width:46px!important;min-height:46px!important;
+  border:1px solid #dce5f0!important;border-radius:16px!important;
+  background:#fff!important;color:#08295f!important;
+  display:grid;place-items:center;overflow:hidden;
+  box-shadow:0 5px 20px rgba(8,41,95,.16)!important;
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-profile img {
+  width:100%;height:100%;object-fit:cover;object-position:center;
+}
+.nr-driver-app-shell .nr-driver-global-header-inner {
+  grid-template-columns:minmax(93px,auto) minmax(0,1fr) 48px;
+  gap:8px;
+}
+.nr-driver-app-shell .nr-driver-global-header-left {
+  display:flex;align-items:center;justify-content:flex-start;gap:2px;
+}
+.nr-driver-app-shell .nr-driver-global-header-right {
+  display:flex;align-items:center;justify-content:flex-end;
+}
+.nr-driver-app-shell .nr-driver-header-back {width:42px;min-width:42px;}
+.nr-driver-app-shell .nr-driver-header-profile {
+  box-sizing:border-box;
+  display:grid;place-items:center;
+  width:44px;height:44px;min-width:44px;
+  text-decoration:none;border-radius:15px;
+  border:1px solid var(--driver-border);
+  background:var(--driver-surface);
+  color:var(--driver-text-primary);
+  box-shadow:0 3px 12px rgba(8,41,95,.07);
+  transition:background-color 160ms ease,transform 160ms ease;
+}
+.nr-driver-app-shell .nr-driver-header-profile[aria-current="page"] {
+  border-color:var(--driver-accent);
+  box-shadow:inset 0 0 0 1px var(--driver-accent);
+}
+.nr-driver-app-shell .nr-driver-header-profile:active {transform:scale(.96)}
+.nr-driver-menu-layer {justify-content:flex-start!important;}
+.nr-driver-menu-layer .nr-driver-menu-panel {
+  border-radius:0 23px 23px 0!important;
+  border-right:1px solid var(--driver-border)!important;
+  border-left:0!important;
+  box-shadow:18px 0 54px rgba(4,20,48,.24)!important;
+  animation:bilooDriverMenuFromLeft 210ms cubic-bezier(.2,.8,.2,1);
+}
+@keyframes bilooDriverMenuFromLeft {
+  from {transform:translateX(-24px);opacity:.78}
+  to {transform:none;opacity:1}
+}
+.nr-driver-menu-layer .nr-driver-menu-brand-head {
+  display:flex;align-items:center;gap:12px;min-width:0;
+}
+.nr-driver-menu-layer .nr-driver-menu-brand-head>img {
+  width:46px;height:46px;min-width:46px;object-fit:contain;
+  padding:6px;border-radius:15px;background:var(--driver-surface-elevated);
+}
+.nr-driver-menu-layer .nr-driver-menu-brand-head>div {
+  display:grid;gap:4px;min-width:0;
+}
+.nr-driver-menu-layer .nr-driver-menu-brand-head small {
+  font-size:9px;letter-spacing:.12em;font-weight:800;
+  color:var(--driver-text-secondary);
+}
+.nr-driver-menu-layer .nr-driver-menu-brand-head strong {
+  font-size:19px;letter-spacing:-.035em;line-height:1.1;
+  color:var(--driver-text-primary);
+}
+.nr-driver-menu-layer .nr-driver-menu-brand-head span {
+  font-size:11px;color:var(--driver-text-secondary);
+}
+.nr-driver-menu-layer .nr-driver-menu-footer {
+  margin-top:auto;
+}
+.nr-driver-menu-layer .nr-driver-menu-footer-brand {margin-bottom:0!important;}
+.nr-driver-app-shell :where(.nr-driver-header-profile,.nr-driver-home-profile,.nr-driver-menu-trigger):focus-visible {
+  outline:3px solid #3975bf!important;outline-offset:3px;
+}
+@media(max-width:390px){
+  .nr-driver-app-shell .nr-driver-global-header-inner {
+    grid-template-columns:91px minmax(0,1fr) 44px;gap:4px;
+    padding-inline:max(9px,env(safe-area-inset-left,0px)) max(9px,env(safe-area-inset-right,0px));
+  }
+  .nr-driver-app-shell .nr-driver-global-header-title strong {font-size:15px!important;}
+  .nr-driver-app-shell .nr-driver-header-back {width:40px;min-width:40px;}
+}
+@media(prefers-reduced-motion:reduce) {
+  .nr-driver-menu-layer .nr-driver-menu-panel {animation:none!important;}
+  .nr-driver-app-shell .nr-driver-header-profile {transition:none!important;}
+}
