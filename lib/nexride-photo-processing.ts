@@ -52,3 +52,24 @@ export async function compressPortraitCanvas(source: HTMLCanvasElement): Promise
   }
   throw new Error('photo_compression_failed');
 }
+
+/** Small separately stored WebP for 48–72px avatars. The high-quality master
+ * remains private and is never downloaded just to render the menu portrait.
+ * Browser-only: called when editing an image, not during navigation.
+ */
+export async function compressPortraitThumbnail(source: HTMLCanvasElement): Promise<Blob> {
+  const canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = 256;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('thumbnail_compression_failed');
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(source, 0, 0, 256, 256);
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(blob => {
+      if (blob && blob.size > 0 && blob.type === 'image/webp') resolve(blob);
+      else reject(new Error('thumbnail_compression_failed'));
+    }, 'image/webp', 0.84);
+  });
+}
