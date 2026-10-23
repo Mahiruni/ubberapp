@@ -1,4 +1,4 @@
-const VERSION = "biloo-fast-navigation-20261021-v1";
+const VERSION = "biloo-connected-lifecycle-20261023-v2";
 const CORE_CACHE = VERSION + "-core";
 const RUNTIME_CACHE = VERSION + "-runtime";
 // Keep install lightweight: large images, fonts, and audio cache on first demand.
