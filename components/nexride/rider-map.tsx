@@ -93,6 +93,15 @@ function deviceLocationCameraOffset(map: MapboxMap): [number, number] {
   );
 }
 
+/** Mapbox GL's typed CameraOptions uses padding rather than an offset.
+ * Apply the shift for this animation only so route fitting and free panning
+ * keep their original global map padding.
+ */
+function deviceLocationCameraPadding(map: MapboxMap) {
+  const [, dy] = deviceLocationCameraOffset(map);
+  return { top: 0, right: 0, bottom: Math.max(0, -2 * dy), left: 0 };
+}
+
 const accuracyPolygon = (
   lat: number,
   lng: number,
@@ -746,7 +755,8 @@ export function RiderMap({
         map.easeTo({
           center: [positionRef.current.lng, positionRef.current.lat],
           zoom: Math.max(INITIAL_ZOOM, 16),
-          offset: deviceLocationCameraOffset(map),
+          padding: deviceLocationCameraPadding(map),
+          retainPadding: false,
           duration: 0,
         });
       }
@@ -877,7 +887,8 @@ export function RiderMap({
                 positionRef.current.lat,
               ],
               zoom: Math.max(map.getZoom(), 16),
-              offset: deviceLocationCameraOffset(map),
+              padding: deviceLocationCameraPadding(map),
+          retainPadding: false,
               duration: 0,
             });
           }
@@ -974,7 +985,8 @@ export function RiderMap({
         ) {
           map.easeTo({
             center: [fix.lng, fix.lat],
-            offset: deviceLocationCameraOffset(map),
+            padding: deviceLocationCameraPadding(map),
+          retainPadding: false,
             duration: 0,
           });
         }
@@ -1263,7 +1275,8 @@ export function RiderMap({
       if (!manualView.current && (!plannedRoute || recenterChanged)) {
         currentMap.easeTo({
           center: target,
-          offset: deviceLocationCameraOffset(currentMap),
+          padding: deviceLocationCameraPadding(currentMap),
+          retainPadding: false,
           zoom:
             isNew || recenterChanged
               ? Math.max(currentMap.getZoom(), 16)
@@ -1660,7 +1673,8 @@ export function RiderMap({
             if (position && mapRef.current)
               mapRef.current.easeTo({
                 center: [position.lng, position.lat],
-                offset: deviceLocationCameraOffset(mapRef.current),
+                padding: deviceLocationCameraPadding(mapRef.current),
+          retainPadding: false,
                 zoom: Math.max(mapRef.current.getZoom(), 16),
                 duration: 280,
               });
