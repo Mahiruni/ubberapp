@@ -197,3 +197,184 @@
     transition: none!important;
   }
 }
+
+/* InDrive-inspired navigation hierarchy with original Biloo identity.
+ * Both apps: clean LEFT slide-out drawer, accessible rows, portrait first.
+ */
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer) {
+  --ed-bg: #ffffff;
+  --ed-ink: #192b40;
+  --ed-muted: #66778a;
+  --ed-line: #edf0f3;
+  --ed-panel: #f7f9fb;
+  --ed-active: #edf5f5;
+  --ed-accent: #087b67;
+  --biloo-menu-icon-bg: transparent;
+  --biloo-menu-icon-fg: #334c5d;
+  --biloo-menu-hover: #f4f7f8;
+}
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer)[data-theme="dark"] {
+  --ed-bg: #08295f;
+  --ed-ink: #ffffff;
+  --ed-muted: #d3e0ef;
+  --ed-line: #244e80;
+  --ed-panel: #123b70;
+  --ed-active: #1a4f77;
+  --ed-accent: #f9c449;
+  --biloo-menu-icon-bg: transparent;
+  --biloo-menu-icon-fg: #e4ecf6;
+  --biloo-menu-hover: #174478;
+}
+.nr-rider-drawer-layer,
+.nr-driver-menu-layer {
+  justify-content: flex-start !important;
+}
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer)
+  :is(.nr-rider-drawer,.nr-driver-menu-panel) {
+  width: min(350px,calc(100vw - 38px)) !important;
+  max-width: 100% !important;
+  border: 0 !important;
+  border-radius: 0 20px 20px 0 !important;
+  background: var(--ed-bg) !important;
+  color: var(--ed-ink) !important;
+  box-shadow: 20px 0 64px rgba(5,24,43,.18) !important;
+  animation: bilooDrawerLeft 220ms cubic-bezier(.2,.8,.2,1) both !important;
+}
+@keyframes bilooDrawerLeft {
+  from { transform: translateX(-28px); opacity: .6; }
+  to { transform: translateX(0); opacity: 1; }
+}
+/* Compact brand masthead and large, immediately identifiable profile. */
+.nr-rider-drawer-layer .nr-rider-drawer-head {
+  min-height: 48px !important;
+  padding: 2px 8px 5px !important;
+}
+.nr-rider-drawer-layer .nr-menu-person,
+.nr-driver-menu-layer .nr-driver-menu-head .nr-driver-menu-identity {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.nr-rider-drawer-layer .nr-menu-person {
+  margin: 0 0 11px !important;
+  padding: 13px 9px 15px !important;
+  border-bottom: 1px solid var(--ed-line) !important;
+  border-radius: 0 !important;
+}
+.nr-driver-menu-layer .nr-driver-menu-head {
+  min-height: 88px !important;
+  border-bottom: 1px solid var(--ed-line) !important;
+  padding: 8px 8px 16px !important;
+}
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer)
+  :is(.nr-menu-person-avatar,.nr-driver-menu-avatar) {
+  width: 52px !important;
+  height: 52px !important;
+  min-width: 52px !important;
+  border-radius: 50% !important;
+  color: var(--ed-ink) !important;
+  background: var(--ed-panel) !important;
+  border: 1px solid var(--ed-line) !important;
+}
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer)
+  :is(.nr-menu-person strong,.nr-driver-menu-identity strong) {
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  letter-spacing: -.025em;
+}
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer) .nr-menu-scroll {
+  padding: 0 7px 12px !important;
+  scrollbar-gutter: auto;
+}
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer) .nr-menu-section-label {
+  padding: 16px 13px 5px !important;
+  margin: 0 !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  color: var(--ed-muted) !important;
+  letter-spacing: .07em !important;
+}
+.nr-rider-drawer-layer .nr-rider-drawer-nav > button,
+.nr-driver-menu-layer .nr-driver-menu-nav > :is(.nr-driver-menu-row,.nr-driver-menu-utility) {
+  min-height: 56px !important;
+  padding: 9px 11px !important;
+  gap: 10px !important;
+  border: 0 !important;
+  border-radius: 10px !important;
+  background: transparent !important;
+  color: var(--ed-ink) !important;
+}
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer)
+  :is(.nr-rider-drawer-icon,.nr-driver-menu-row-icon,.nr-driver-menu-utility-icon) {
+  width: 29px !important;
+  height: 29px !important;
+  min-width: 29px !important;
+  flex-basis: 29px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: var(--biloo-menu-icon-fg) !important;
+}
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer)
+  :is(.nr-rider-drawer-nav strong,.nr-driver-menu-row-copy strong,.nr-driver-menu-utility-copy) {
+  font-size: 14px !important;
+  font-weight: 725 !important;
+}
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer)
+  :is(.nr-rider-drawer-nav small,.nr-driver-menu-row-copy small) {
+  font-size: 10px !important;
+}
+.nr-rider-drawer-layer .nr-rider-drawer-nav button.active,
+.nr-driver-menu-layer .nr-driver-menu-nav .nr-driver-menu-row[data-active="true"] {
+  background: var(--ed-active) !important;
+  border-color: transparent !important;
+}
+.nr-rider-drawer-layer .nr-rider-drawer-nav button.active .nr-rider-drawer-icon,
+.nr-driver-menu-layer .nr-driver-menu-nav .nr-driver-menu-row[data-active="true"] .nr-driver-menu-row-icon {
+  background: transparent !important;
+  color: var(--ed-accent) !important;
+}
+.nr-driver-menu-layer .nr-driver-menu-role-switch,
+.nr-rider-drawer-layer .nr-rider-drawer-secondary > button:first-child {
+  display: flex !important;
+  align-items: center !important;
+  width: calc(100% - 8px);
+  min-height: 60px !important;
+  margin: 15px 4px 6px !important;
+  padding: 11px 14px !important;
+  gap: 12px !important;
+  border: 0 !important;
+  border-radius: 14px !important;
+  background: #f9c449 !important;
+  color: #122d44 !important;
+  text-decoration: none !important;
+  text-align: start;
+  box-sizing: border-box;
+}
+.nr-rider-drawer-layer .nr-rider-drawer-secondary > button:first-child :is(strong,small,svg),
+.nr-driver-menu-layer .nr-driver-menu-role-switch :is(strong,small,svg) {
+  color: #122d44 !important;
+}
+.nr-driver-menu-layer .nr-driver-menu-role-switch > span:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+.nr-driver-menu-layer .nr-driver-menu-role-switch strong { font-size: 13px; font-weight: 820; }
+.nr-driver-menu-layer .nr-driver-menu-role-switch small { font-size: 10px; }
+.nr-driver-menu-layer .nr-driver-menu-role-switch:focus-visible {
+  outline: 3px solid #087b67 !important;
+  outline-offset: 2px !important;
+}
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer)
+  :is(.nr-rider-drawer-footer,.nr-driver-menu-footer) {
+  border-top: 1px solid var(--ed-line) !important;
+  padding-top: 8px !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  :is(.nr-rider-drawer-layer,.nr-driver-menu-layer)
+    :is(.nr-rider-drawer,.nr-driver-menu-panel) {
+    animation: none !important;
+  }
+}
