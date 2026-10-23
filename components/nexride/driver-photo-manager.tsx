@@ -1,7 +1,7 @@
 'use client';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { compressPortraitCanvas, compressPortraitThumbnail, photoSizeLabel } from '../../lib/nexride-photo-processing';
+import { compressPortraitCanvas, compressPortraitThumbnail, compressPortraitMaster, photoSizeLabel } from '../../lib/nexride-photo-processing';
 import { readAccount, uploadRiderAvatar } from '../../lib/nexride-account';
 import { cleanupRetiredPortraits, DRIVER_PHOTO_BUCKET, portraitCrop, useDriverPortrait, validateDriverPhoto } from '../../lib/nexride-driver-portrait';
 import { Dialog, useTranslation } from './ui';
@@ -84,7 +84,10 @@ export function DriverPhotoManager({ driverId, fullName, children }: { driverId:
           const account = await readAccount();
           if (!account || account.id !== driverId) throw Error('Account unavailable');
           const thumbnail = await compressPortraitThumbnail(canvasRef.current).catch(() => null);
-          await uploadRiderAvatar(account, new File([sharedSource], 'biloo-account.jpg', { type: 'image/jpeg' }), thumbnail);
+          const master = decoded?.src === source
+            ? await compressPortraitMaster(decoded.image, zoom, position.x, position.y).catch(() => null)
+            : null;
+          await uploadRiderAvatar(account, new File([master ?? sharedSource], 'biloo-account.jpg', { type: 'image/jpeg' }), thumbnail);
           window.dispatchEvent(new Event('nexride:profile-change'));
         } catch { identitySynced = false; }
       }
