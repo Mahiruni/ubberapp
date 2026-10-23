@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 const read = (file: string) => readFileSync(join(process.cwd(), file), "utf8");
 const rider = read("app/page.tsx");
 const driver = read("components/nexride/driver-app-shell.tsx");
+const driverHome = read("components/nexride/driver.tsx");
 const trips = read("app/rider/trips/page.tsx");
 const wallet = read("app/rider/wallet/page.tsx");
 const support = read("app/support/page.tsx");
@@ -34,6 +35,16 @@ describe("Biloo Rider + Driver navigation without a footer tab bar", () => {
     expect(driver).toContain('href="/driver/profile"');
     expect(driver).toContain('href: "/driver/earnings"');
     expect(driver).toContain('href: "/driver/map"');
+  });
+
+  it("keeps Driver availability swipe but removes all three embedded quick-action buttons", () => {
+    expect(driverHome).toContain("<DriverAvailabilitySwipe");
+    expect(driverHome).toContain("onToggle={toggleAvailability}");
+    expect(driverHome).toContain('className="nr-driver-home-control-panel"');
+    expect(driverHome).not.toContain("nr-driver-home-quick-actions");
+    expect(driverHome).not.toContain('router.push("/driver/activity")}><Icon name="clock"');
+    expect(driverHome).not.toContain('router.push("/driver/earnings")}><Icon name="wallet"');
+    expect(driverHome).not.toContain('router.push("/driver/profile/settings")}><Icon name="settings"');
   });
 
   it("preserves map sheets and safe areas without leaving an empty footer gap", () => {
