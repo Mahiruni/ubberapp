@@ -17,6 +17,7 @@ import {
   storedLanguage,
 } from "../lib/nexride-startup";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { RIDER_NAVIGATION, DRIVER_NAVIGATION } from "../lib/biloo-navigation-registry";
 import {
   Brand,
   Button,
@@ -312,22 +313,13 @@ function AppWorkspace({
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
   }, [screen, mode]);
+  // Desktop rail and mobile drawers share the same canonical destination set.
   const navItems: { id: string; label: string; icon: IconName }[] =
-    mode === "rider"
-      ? [
-          { id: "home", label: t("home"), icon: "home" },
-          { id: "trips", label: t("activity"), icon: "clock" },
-          { id: "safety", label: t("safety"), icon: "shield" },
-          { id: "messages", label: t("messages"), icon: "chat" },
-          { id: "profile", label: t("account"), icon: "user" },
-        ]
-      : [
-          { id: "home", label: t("home"), icon: "home" },
-          { id: "request", label: t("requests"), icon: "navigation" },
-          { id: "earnings", label: t("earnings"), icon: "money" },
-          { id: "messages", label: t("messages"), icon: "chat" },
-          { id: "profile", label: t("account"), icon: "user" },
-        ];
+    (mode === "rider" ? RIDER_NAVIGATION : DRIVER_NAVIGATION).map(item => ({
+      id:item.id,
+      label:language === "am" ? item.label.am : item.label.en,
+      icon:item.icon,
+    }));
   const navigate = (id: string) => {
     if (bookingLock.current && id !== "safety") return;
     if (mode === "rider" && id === "trips") {
@@ -346,12 +338,16 @@ function AppWorkspace({
     }
     if (mode === "rider" && id === "messages") {
       setPanel(null);
-      router.push("/support");
+      router.push("/support?role=rider");
       return;
     }
-    if (mode === "driver" && id === "request") {
+    if (mode === "driver" && id === "requests") {
       setPanel(null);
       router.push("/driver/activity");
+      return;
+    }
+    if (mode === "driver" && id === "safety") {
+      openSafety("driver");
       return;
     }
     if (mode === "driver" && id === "messages") {
@@ -421,46 +417,7 @@ function AppWorkspace({
           <Icon name="pin" size={16} />
           {t("city")}
         </span>
-        <div className="nr-mode-control" role="group" aria-label="Biloo">
-          <button
-            className={mode === "rider" ? "selected" : ""}
-            onClick={() => switchMode("rider")}
-          >
-            {t("rider")}
-          </button>
-          <button
-            className={mode === "driver" ? "selected" : ""}
-            onClick={() => switchMode("driver")}
-          >
-            {t("driver")}
-          </button>
-        </div>
         <Navigation items={navItems} active={screen} onNavigate={navigate} />
-        <div className="nr-sidebar-bottom">
-          <button onClick={() => openSafety(mode)}>
-            <Icon name="shield" />
-            {t("safety")}
-          </button>
-          <button onClick={() => setPanel("settings")}>
-            <Icon name="settings" />
-            {t("settings")}
-          </button>
-          <button onClick={() => setLanguage(language === "en" ? "am" : "en")}>
-            <Icon name="globe" />
-            {language === "en" ? "አማርኛ" : "English"}
-          </button>
-          <button onClick={() => router.push("/discover")}>
-            <Icon name="star" />
-            Discover Biloo
-          </button>
-          {isAdmin && (
-            <button onClick={() => router.push("/admin")}>
-              <Icon name="shield" />
-              Admin Control Center
-            </button>
-          )}
-          <p>{t("brandTagline")}</p>
-        </div>
       </aside>
       <section className="nr-main">
         <header className="nr-topbar">
@@ -470,7 +427,6 @@ function AppWorkspace({
                 className="nr-rider-hamburger-inline"
                 active={riderScreen === "wallet" ? "wallet" : (["destination", "rides", "finding", "trip", "live", "summary"].includes(riderScreen) ? "home" : riderScreen) as RiderMenuId}
                 onNavigate={(id) => navigate(id)}
-                onSettings={() => setPanel("settings")}
                 isAdmin={isAdmin}
                 locked={requestPending || matching.active}
               />
@@ -484,24 +440,6 @@ function AppWorkspace({
           <div className="nr-topbar-place">
             <Icon name="pin" size={17} />
             <span>{t("city")}</span>
-          </div>
-          <div className="nr-topbar-actions">
-            <button
-              className="nr-language-button"
-              onClick={() => setLanguage(language === "en" ? "am" : "en")}
-            >
-              <Icon name="globe" size={17} />
-              <span>{language === "en" ? "አማርኛ" : "EN"}</span>
-            </button>
-            {mode === "driver" && (
-              <button
-                className="nr-avatar-button"
-                aria-label={t("profile")}
-                onClick={() => navigate("profile")}
-              >
-                {initials}
-              </button>
-            )}
           </div>
         </header>
         {!authenticated && !liveTripShown && !profileView && <div className="nr-preview-banner">
@@ -704,7 +642,6 @@ function AppWorkspace({
                 className="biloo-home-floating-menu"
                 active="home"
                 onNavigate={(id) => navigate(id)}
-                onSettings={() => setPanel("settings")}
                 isAdmin={isAdmin}
                 locked={requestPending || matching.active}
               />
