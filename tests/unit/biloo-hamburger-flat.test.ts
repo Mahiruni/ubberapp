@@ -82,6 +82,28 @@ describe("Biloo zero-duplication navigation ownership", () => {
     expect(driverSettings).toContain('router.push("/driver/profile")');
   });
 
+  it("matches the approved comfortable, circular and left-docked Rider/Driver drawer design", () => {
+    const css=read("app/biloo-menu-refinement.css");
+    const rider=read("components/nexride/rider-menu.tsx");
+    const driver=read("components/nexride/driver-app-shell.tsx");
+    const riderEntry=read("app/rider/page.tsx");
+    expect(css).toContain("BILOO APPROVED CONFIGURATION");
+    expect(css).toContain(".nr-driver-menu-trigger");
+    expect(css).toContain("border-radius:50%!important");
+    expect(css).toContain("justify-content:flex-start!important");
+    expect(css).toContain("min-height:60px!important");
+    expect(css).toContain("border-radius:0 22px 22px 0!important");
+    expect(css).toContain("min-height:94px!important");
+    expect(rider).toContain('className="biloo-menu-profile-card"');
+    expect(driver).toContain('className="biloo-menu-profile-card"');
+    expect(rider.match(/className="biloo-menu-profile-card"/g)).toHaveLength(1);
+    expect(driver.match(/className="biloo-menu-profile-card"/g)).toHaveLength(1);
+    expect(rider).not.toContain('id: "profile"');
+    expect(driver).not.toContain('id: "account"');
+    expect(driver).toContain('href="/rider" className="nr-driver-menu-role-switch"');
+    expect(riderEntry).toContain("account_activate_rider_role");
+  });
+
   it("keeps Admin sidebar and menu accessible without duplicate mobile footer", () => {
     const admin = read("app/admin/page.tsx");
     const css = read("app/admin/admin.css");
