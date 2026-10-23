@@ -6,7 +6,6 @@ import type {
   Map as MapboxMap,
   Marker as MapboxMarker,
 } from "mapbox-gl";
-import MapboxGeocoder from "@mapbox/mapbox-gl-geocoder";
 import { Icon, LanguageContext, Spinner, useTranslation } from "./ui";
 import { endpointName } from "./destination";
 import type { Journey } from "../../lib/nexride-journey";
@@ -793,7 +792,11 @@ export function RiderMap({
       map.addControl(scale, "bottom-left");
 
       if (showSearch) {
-        const geocoder = new MapboxGeocoder({
+        // Search UI is secondary to rendering the map and current location.
+        // Download the geocoder chunk without blocking Mapbox event handlers.
+        void import("@mapbox/mapbox-gl-geocoder").then(({ default: MapboxGeocoder }) => {
+          if (cancelled || mapRef.current !== map) return;
+          const geocoder = new MapboxGeocoder({
           accessToken: token,
           mapboxgl:
             mapboxgl.default as unknown as typeof import("mapbox-gl"),
@@ -842,6 +845,14 @@ export function RiderMap({
             source: "provider",
             confirmed: true,
           });
+        });
+          const input = container.current
+            ?.closest(".nr-rider-map-surface")
+            ?.querySelector<HTMLInputElement>(".mapboxgl-ctrl-geocoder--input");
+          input?.setAttribute("aria-label", language === "am" ? "ቦታ ይፈልጉ" : "Search places");
+        }).catch(() => {
+          // Mapbox map and ride booking remain fully available if search
+          // tooling cannot be downloaded on a slow/offline connection.
         });
       }
 
