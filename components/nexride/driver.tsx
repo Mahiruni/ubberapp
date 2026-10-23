@@ -216,7 +216,18 @@ export function DriverWorkspace({
         return;
       }
 
-      const accountRole = await resolveSessionRole(data.session);
+      const id = data.session.user.id;
+      // Fetch only this session's own RLS-protected Driver record while
+      // verifying the server-backed role. No personalized UI is revealed
+      // until role verification has completed successfully.
+      const [accountRole, driverResult] = await Promise.all([
+        resolveSessionRole(data.session),
+        supabase
+          .from("drivers")
+          .select("review_status,rejection_reason,is_online,rating")
+          .eq("id", id)
+          .maybeSingle(),
+      ]);
       if (!active) return;
 
       if (accountRole !== "driver") {
@@ -230,17 +241,8 @@ export function DriverWorkspace({
         name: str(metadata.full_name) || str(metadata.name) || "Driver",
         avatarUrl: str(metadata.avatar_url) || str(metadata.avatarUrl),
       };
-
-      const id = data.session.user.id;
       setDriverId(id);
-
-      const { data: driver, error: driverError } = await supabase
-        .from("drivers")
-        .select("review_status,rejection_reason,is_online,rating")
-        .eq("id", id)
-        .maybeSingle();
-
-      if (!active) return;
+      const { data: driver, error: driverError } = driverResult;
 
       if (driverError) {
         setError("Unable to load your live driver status.");
