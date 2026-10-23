@@ -131,6 +131,13 @@ export function useRiderLocation() {
     let permission: PermissionStatus | null = null;
     let cancelled = false;
 
+    // Opening the Rider or Driver map starts location acquisition immediately.
+    // The browser/Android WebView asks for permission if it was not granted
+    // already. A denied request never blocks access to the map or booking UI.
+    // The first valid GPS fix centers the map through RiderMap's marker logic;
+    // explicit recenter remains reserved for the locate button.
+    startWatch(false);
+
     const syncPermission = () => {
       if (cancelled || !active.current || !permission) return;
 
@@ -141,8 +148,10 @@ export function useRiderLocation() {
         setStatus("denied");
       } else if (permission.state === "granted") {
         startWatch(false);
-      } else if (!latest.current) {
-        setStatus("idle");
+      } else if (!latest.current && watchId.current === null) {
+        // Browsers may report "prompt" until the user answers. Keep loading
+        // while a GPS watch is active instead of reporting a false idle state.
+        setStatus("loading");
       }
     };
 
@@ -155,8 +164,8 @@ export function useRiderLocation() {
         result.addEventListener("change", syncPermission);
       })
       .catch(() => {
-        // Browsers without Permissions API support still start location
-        // tracking when the user taps the locate control.
+        // Location acquisition was started above. This API is optional; Safari
+        // and Android WebViews can still resolve their GPS permission prompt.
       });
 
     return () => {
