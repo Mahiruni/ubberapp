@@ -268,16 +268,8 @@ export function RiderMenu({
               </div>
             </div>
 
-            <footer className="nr-rider-drawer-footer">
-              <div className="nr-rider-drawer-footer-card">
-                <div className="nr-rider-drawer-footer-brand">
-                  <div>
-                    <strong>Biloo</strong>
-                    <small>{say("Better Rides. A Brighter Tomorrow.", "የተሻለ ጉዞ። ብሩህ ነገ።")}</small>
-                    <AppVersion />
-                  </div>
-                </div>
-              </div>
+            <footer className="nr-rider-drawer-footer" aria-label={say("App information","የመተግበሪያ መረጃ")}>
+              <AppVersion />
             </footer>
           </aside>
         </div>, document.body
