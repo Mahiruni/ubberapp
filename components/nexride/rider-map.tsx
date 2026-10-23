@@ -980,6 +980,12 @@ export function RiderMap({
         }
       });
       resizeObserver.current.observe(container.current);
+      // Observe the sheet as well: some screen sizes overlay it without
+      // changing the underlying Mapbox canvas dimensions.
+      const homePanel = container.current
+        .closest(".rider-home-view")
+        ?.querySelector<HTMLElement>(".nr-home-panel-host");
+      if (homePanel) resizeObserver.current.observe(homePanel);
     };
 
     void boot().catch(() => {
