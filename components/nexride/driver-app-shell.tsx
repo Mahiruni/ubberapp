@@ -19,7 +19,8 @@ import {
 import { usePathname, useRouter } from "next/navigation";
 import { useAppearance } from "../../lib/nexride-appearance";
 import { AppearanceSelector } from "./appearance-selector";
-import { Icon, LanguageContext, type IconName } from "./ui";
+import { Icon, LanguageContext } from "./ui";
+import { DRIVER_NAVIGATION, type DriverNavigationId } from "../../lib/biloo-navigation-registry";
 import { announceLanguage } from "./language-provider";
 import { useSharedAccountPortrait } from '../../lib/nexride-shared-portrait';
 import { supabase } from "../../lib/supabase";
@@ -31,7 +32,7 @@ import { signOutNexRide } from "../../lib/nexride-sign-out";
 
 export type DriverThemePreference = "system" | "light" | "dark";
 export type DriverResolvedTheme = "light" | "dark";
-export type DriverNavId = "home" | "requests" | "map" | "earnings" | "messages" | "account";
+export type DriverNavId = DriverNavigationId | "account";
 
 
 type DriverThemeContextValue = {
@@ -61,14 +62,10 @@ function DriverThemeProvider({ children }: { children: ReactNode }) {
   return <DriverThemeContext.Provider value={value}>{children}</DriverThemeContext.Provider>;
 }
 
-const NAV_ITEMS: Array<{ id: DriverNavId; icon: IconName; href: string; en: string; am: string }> = [
-  { id: "home", icon: "home", href: "/driver/home", en: "Home", am: "መነሻ" },
-  { id: "requests", icon: "clock", href: "/driver/activity", en: "Activity", am: "እንቅስቃሴ" },
-  { id: "map", icon: "navigation", href: "/driver/map", en: "Map", am: "ካርታ" },
-  { id: "earnings", icon: "wallet", href: "/driver/earnings", en: "Earnings", am: "ገቢ" },
-  { id: "messages", icon: "chat", href: "/support?role=driver", en: "Help & Support", am: "እገዛ እና ድጋፍ" },
-  { id: "account", icon: "user", href: "/driver/profile", en: "Account", am: "መለያ" },
-];
+const NAV_ITEMS = DRIVER_NAVIGATION.map(item => ({
+  id: item.id, href: item.href, icon: item.icon, en: item.label.en, am: item.label.am,
+  detail: item.detail, group: item.group,
+}));
 
 export function driverNavForPath(pathname: string): DriverNavId {
   if (pathname.startsWith("/driver/earnings")) return "earnings";
@@ -83,15 +80,6 @@ export function driverNavForPath(pathname: string): DriverNavId {
   if (pathname.startsWith("/support") || pathname.startsWith("/trip/chat")) return "messages";
   return "home";
 }
-
-const NAV_DETAILS: Record<DriverNavId, { en: string; am: string }> = {
-  home: { en: "Map and availability", am: "ካርታ እና ዝግጁነት" },
-  requests: { en: "Completed trips and activity", am: "የተጠናቀቁ ጉዞዎች እና እንቅስቃሴ" },
-  map: { en: "Live map and your location", am: "ቀጥታ ካርታ እና አካባቢዎ" },
-  earnings: { en: "Income and payout reporting", am: "ገቢ እና የክፍያ ሪፖርት" },
-  messages: { en: "Trip messages and support", am: "የጉዞ መልዕክቶች እና ድጋፍ" },
-  account: { en: "Profile, vehicle and documents", am: "መለያ፣ ተሽከርካሪ እና ሰነዶች" },
-};
 
 function DriverHamburgerMenu({
   activeOverride,
@@ -209,14 +197,14 @@ function DriverHamburgerMenu({
     }
   };
 
-  const driveItems = NAV_ITEMS.filter((item) => ["home", "requests", "map", "earnings"].includes(item.id));
-  const supportItems = NAV_ITEMS.filter((item) => item.id === "messages");
+  const driveItems = NAV_ITEMS.filter((item) => item.group === "journeys");
+  const supportItems = NAV_ITEMS.filter((item) => item.group === "assistance");
 
   const menuRows = (items: typeof NAV_ITEMS) =>
     items.map((item) => {
       const selected = active === item.id;
       const label = language === "am" ? item.am : item.en;
-      const detail = language === "am" ? NAV_DETAILS[item.id].am : NAV_DETAILS[item.id].en;
+      const detail = language === "am" ? item.detail.am : item.detail.en;
       return (
         <Link
           key={item.id}
@@ -298,11 +286,6 @@ function DriverHamburgerMenu({
               <div className="nr-menu-section-label">{language === "am" ? "ድጋፍ እና ደህንነት" : "HELP & SAFETY"}</div>
               <nav className="nr-driver-menu-nav" aria-label={language === "am" ? "ድጋፍ እና ደህንነት" : "Help and safety"}>
                 {menuRows(supportItems)}
-                <Link href="/safety?role=driver" className="nr-driver-menu-utility" onClick={() => setOpen(false)}>
-                  <span className="nr-driver-menu-utility-icon"><Icon name="shield" size={20}/></span>
-                  <span className="nr-driver-menu-utility-copy">{language === "am" ? "የደህንነት ማዕከል" : "Safety Center"}</span>
-                  <Icon name="chevron" size={16}/>
-                </Link>
               </nav>
             </div>
 
