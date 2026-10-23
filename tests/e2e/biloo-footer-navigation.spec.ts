@@ -62,14 +62,14 @@ test("Driver has no bottom dock; its hamburger slides from left with Earnings, M
   const drawer = page.locator("#nr-driver-menu");
   await expect(drawer).toBeVisible();
   const nav = drawer.getByRole("navigation", { name: "Drive navigation" });
-  for (const name of ["Home", "Activity", "Map", "Earnings"]) {
-    await expect(nav.getByRole("link", { name: new RegExp(name) })).toBeVisible();
+  for (const href of ["/driver/home", "/driver/activity", "/driver/map", "/driver/earnings"]) {
+    await expect(nav.locator(`a[href="${href}"]`)).toBeVisible();
   }
   await expect(drawer.getByRole("link", { name: /Account.*Profile/ })).toBeVisible();
   await expect(drawer.getByRole("link", { name: /Switch to Rider/ })).toBeVisible();
   const bounds = (await drawer.boundingBox())!;
   expect(bounds.x).toBeLessThan(3);
-  await nav.getByRole("link", { name: /Map/ }).click();
+  await nav.locator('a[href="/driver/map"]').click();
   await expect(page).toHaveURL(/\/driver\/map$/);
   await expect(drawer).toHaveCount(0);
 });
