@@ -355,3 +355,36 @@
     bottom: auto!important;
   }
 }
+
+
+/* Dedicated Rider profile control, opposite the hamburger and outside map gestures. */
+.nr-app[data-mode="rider"] .rider-map-flow.rider-home-view .biloo-home-floating-profile {
+  box-sizing:border-box;
+  position:absolute;
+  z-index:112;
+  top:calc(env(safe-area-inset-top,0px) + 13px);
+  right:max(14px,env(safe-area-inset-right,0px));
+  left:auto;
+  display:grid;place-items:center;
+  width:46px;height:46px;min-width:46px;
+  overflow:hidden;
+  padding:0;border-radius:16px;
+  border:1px solid #dce5f0;
+  background:#fff;color:#08295f;
+  font-size:15px;font-weight:850;
+  box-shadow:0 5px 20px rgba(8,41,95,.16);
+  cursor:pointer;
+  touch-action:manipulation;
+}
+.nr-app[data-mode="rider"] .rider-map-flow.rider-home-view .biloo-home-floating-profile img {
+  width:100%;height:100%;object-fit:cover;object-position:center;
+}
+.nr-app[data-mode="rider"] .rider-map-flow.rider-home-view .biloo-home-floating-profile:focus-visible {
+  outline:3px solid #3975bf;outline-offset:3px;
+}
+@media(min-width:801px){
+  .nr-app[data-mode="rider"] .rider-map-flow.rider-home-view .biloo-home-floating-profile {display:none!important;}
+}
+@media(prefers-reduced-motion:reduce){
+  .nr-app[data-mode="rider"] .rider-map-flow.rider-home-view .biloo-home-floating-profile {transition:none!important;animation:none!important;}
+}
