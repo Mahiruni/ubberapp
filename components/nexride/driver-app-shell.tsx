@@ -21,7 +21,7 @@ import { useAppearance } from "../../lib/nexride-appearance";
 import { AppearanceSelector } from "./appearance-selector";
 import { Icon, LanguageContext, type IconName } from "./ui";
 import { announceLanguage } from "./language-provider";
-import { useDriverPortrait } from '../../lib/nexride-driver-portrait';
+import { useSharedAccountPortrait } from '../../lib/nexride-shared-portrait';
 import { supabase } from "../../lib/supabase";
 import { nexrideApiFetch } from "../../lib/nexride-api-auth";
 import { DriverCancellationNotice } from "./driver-cancellation-notice";
@@ -114,8 +114,7 @@ function DriverHamburgerMenu({
     if (onOpenChange) onOpenChange(next);
     else setStandaloneOpen(next);
   }, [onOpenChange, open]);
-  const [identity, setIdentity] = useState({ name: "Driver", avatarUrl: "", id: "" });
-  const portrait = useDriverPortrait(identity.id);
+  const portrait = useSharedAccountPortrait();
   const [signingOut, setSigningOut] = useState(false);
   const [signOutError, setSignOutError] = useState("");
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -123,28 +122,6 @@ function DriverHamburgerMenu({
   const panelRef = useRef<HTMLElement>(null);
   const panelTouchStart = useRef<{x:number;y:number}|null>(null);
   const active = activeOverride || driverNavForPath(pathname);
-
-  useEffect(() => {
-    let mounted = true;
-    const refresh = () => { void supabase.auth.getSession().then(async ({ data, error }) => {
-      if (error) return;
-      if (!mounted || !data.session) return;
-      const metadata = data.session.user.user_metadata || {};
-      const name =
-        (typeof metadata.full_name === "string" && metadata.full_name.trim()) ||
-        (typeof metadata.name === "string" && metadata.name.trim()) ||
-        "Driver";
-      const avatarUrl =
-        (typeof metadata.avatar_url === "string" && metadata.avatar_url) ||
-        (typeof metadata.avatarUrl === "string" && metadata.avatarUrl) ||
-        "";
-      const profile = await supabase.from("profiles").select("full_name").eq("id", data.session.user.id).maybeSingle();
-      if (mounted) setIdentity({ name: profile.data?.full_name || name, avatarUrl, id: data.session.user.id });
-    }).catch(() => {}); };
-    refresh();
-    window.addEventListener("nexride:profile-change", refresh);
-    return () => { mounted = false; window.removeEventListener("nexride:profile-change", refresh); };
-  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -175,8 +152,8 @@ function DriverHamburgerMenu({
   }, [open, setOpen]);
 
   const initials = useMemo(
-    () => identity.name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "DR",
-    [identity.name],
+    () => portrait.name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "DR",
+    [portrait.name],
   );
 
   const signOutDriver = async () => {
@@ -300,6 +277,16 @@ function DriverHamburgerMenu({
                 <Icon name="close" size={21} />
               </button>
             </div>
+            <Link href="/driver/profile" className="biloo-menu-profile-card" onClick={() => setOpen(false)}>
+              <span className="biloo-menu-profile-avatar">
+                {portrait.url ? <img src={portrait.url} alt="" width={62} height={62} decoding="async" onError={event => { event.currentTarget.style.display = 'none'; }}/> : <span aria-hidden="true">{initials}</span>}
+              </span>
+              <span className="biloo-menu-profile-copy">
+                <strong>{portrait.name || (language === "am" ? "የእኔ መገለጫ" : "My profile")}</strong>
+                <small>{language === "am" ? "መገለጫ እና የመለያ ቅንብሮች" : "View account & edit photo"}</small>
+              </span>
+              <Icon name="chevron" size={18}/>
+            </Link>
 
 
             <div className="nr-menu-scroll" data-testid="driver-menu-scroll">
@@ -457,9 +444,7 @@ function DriverHeader({
         </div>
 
         <div className="nr-driver-global-header-side nr-driver-global-header-right">
-          <Link href="/driver/profile" className="nr-driver-header-profile" aria-label={language === "am" ? "መገለጫዬን ክፈት" : "Open my profile"} aria-current={pathname.startsWith("/driver/profile") ? "page" : undefined}>
-            <Icon name="user" size={21}/>
-          </Link>
+          <span className="nr-driver-global-header-spacer" aria-hidden="true" />
         </div>
       </div>
     </header>
