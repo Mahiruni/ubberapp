@@ -12,48 +12,22 @@ import {
   useState,
   type KeyboardEvent as ReactKeyboardEvent,
 } from "react";
-import {
-  PREVIEW_ENABLED_KEY,
-  PREVIEW_STORAGE_KEY,
-  retryStartup,
-} from "../../lib/nexride-startup";
-import { signOutNexRide } from "../../lib/nexride-sign-out";
 import { resolveSessionRole } from "../../lib/nexride-account-role";
+import { RIDER_NAVIGATION, type RiderNavigationId } from "../../lib/biloo-navigation-registry";
 import { useAppearance } from "../../lib/nexride-appearance";
 import { useSharedAccountPortrait } from "../../lib/nexride-shared-portrait";
 import { supabase } from "../../lib/supabase";
 import {
   Icon,
   LanguageContext,
-  type IconName,
 } from "./ui";
 
-export type RiderMenuId =
-  | "home"
-  | "trips"
-  | "wallet"
-  | "saved"
-  | "safety"
-  | "messages"
-  | "profile"
-  | "settings";
-
+export type RiderMenuId = RiderNavigationId | "profile" | "settings";
 type RiderTheme = "light" | "dark";
 
 export function usePersistedRiderTheme(): RiderTheme {
   return useAppearance("rider").resolvedTheme;
 }
-
-const hrefs: Record<RiderMenuId, string> = {
-  home: "/",
-  trips: "/rider/trips",
-  wallet: "/rider/wallet",
-  saved: "/?screen=saved",
-  safety: "/safety?role=rider",
-  messages: "/support?role=rider",
-  profile: "/?screen=profile",
-  settings: "/?screen=profile&panel=settings",
-};
 
 export function RiderMenu({
   active = "home",
@@ -78,8 +52,6 @@ export function RiderMenu({
   const [isAdmin, setIsAdmin] = useState(Boolean(adminOverride));
   const portrait = useSharedAccountPortrait();
   const initials = portrait.name.trim().split(/\s+/).slice(0,2).map(part => part[0]).join("").toUpperCase() || "BL";
-  const [signingOut, setSigningOut] = useState(false);
-  const [signOutError, setSignOutError] = useState("");
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const drawerRef = useRef<HTMLElement | null>(null);
   const drawerTouchStart = useRef<{x:number;y:number}|null>(null);
@@ -151,61 +123,13 @@ export function RiderMenu({
     return registerNexRideBackHandler(() => { setOpen(false); return true; }, 110);
   }, [open]);
 
-  const items: {
-    id: RiderMenuId;
-    label: string;
-    detail: string;
-    icon: IconName;
-  }[] = [
-    {
-      id: "home",
-      label: say("Home", "መነሻ"),
-      detail: say("Book a ride", "ጉዞ ይያዙ"),
-      icon: "home",
-    },
-    {
-      id: "trips",
-      label: say("My rides", "ጉዞዎቼ"),
-      detail: say("Trips and receipts", "ጉዞዎች እና ደረሰኞች"),
-      icon: "clock",
-    },
-    {
-      id: "wallet",
-      label: say("Wallet & payments", "ቦርሳ እና ክፍያዎች"),
-      detail: say("Payment methods and status", "የክፍያ መንገዶች እና ሁኔታ"),
-      icon: "wallet",
-    },
-    {
-      id: "saved",
-      label: say("Saved places", "የተቀመጡ ቦታዎች"),
-      detail: say("Home, work and favorites", "ቤት፣ ስራ እና ተወዳጆች"),
-      icon: "star",
-    },
-    {
-      id: "safety",
-      label: say("Safety", "ደህንነት"),
-      detail: say("Safety tools and trip sharing", "የደህንነት መሳሪያዎች"),
-      icon: "shield",
-    },
-    {
-      id: "messages",
-      label: say("Support", "ድጋፍ"),
-      detail: say("Help with rides and your account", "ለጉዞና መለያ እገዛ"),
-      icon: "chat",
-    },
-    {
-      id: "profile",
-      label: say("Account", "መለያ"),
-      detail: say("Your profile and personal details", "መገለጫዎ እና የግል ዝርዝሮች"),
-      icon: "user",
-    },
-    {
-      id: "settings",
-      label: say("Settings", "ቅንብሮች"),
-      detail: say("Appearance, language and preferences", "ገጽታ፣ ቋንቋ እና ምርጫዎች"),
-      icon: "settings",
-    },
-  ];
+  const items = RIDER_NAVIGATION.map(entry => ({
+    id: entry.id,
+    label: language === "am" ? entry.label.am : entry.label.en,
+    detail: language === "am" ? entry.detail.am : entry.detail.en,
+    icon: entry.icon,
+    group: entry.group,
+  }));
 
   const navigate = (id: RiderMenuId) => {
     if (locked && !["safety", "messages"].includes(id)) return;
@@ -218,7 +142,10 @@ export function RiderMenu({
       onNavigate(id);
       return;
     }
-    router.push(hrefs[id]);
+    const destination = RIDER_NAVIGATION.find(item => item.id === id);
+    if (destination) router.push(destination.href);
+    else if (id === "profile") router.push("/?screen=profile");
+    else if (id === "settings") router.push("/?screen=profile&panel=settings");
   };
 
   const renderRows = (subset: typeof items) => subset.map(item => {
@@ -232,29 +159,6 @@ export function RiderMenu({
       {selected ? <span className="nr-menu-active-dot" aria-hidden="true"/> : <Icon name="chevron" size={16} />}
     </button>;
   });
-
-  const signOut = async () => {
-    if (signingOut) return;
-    setSigningOut(true);
-    setSignOutError("");
-
-    try {
-      // The shared sign-out helper sets a persistent restoration barrier
-      // BEFORE Supabase fires SIGNED_OUT or any in-flight auth callback.
-      await signOutNexRide("rider");
-      try {
-        localStorage.removeItem(PREVIEW_ENABLED_KEY);
-        localStorage.removeItem(PREVIEW_STORAGE_KEY);
-        localStorage.removeItem("nexride-state");
-      } catch {}
-      retryStartup(true);
-      setOpen(false);
-      window.location.replace("/rider/sign-in?logged_out=1");
-    } catch {
-      setSignOutError(say("Log out could not be completed. Please try again.", "መውጣት አልተቻለም። እንደገና ይሞክሩ።"));
-      setSigningOut(false);
-    }
-  };
 
   const onTriggerKeyDown = (event: ReactKeyboardEvent<HTMLButtonElement>) => {
     if (event.key === "ArrowRight" || event.key === "ArrowDown") {
@@ -342,11 +246,11 @@ export function RiderMenu({
             <div className="nr-menu-scroll" data-testid="rider-menu-scroll">
               <div className="nr-menu-section-label">{say("OVERVIEW", "አጠቃላይ")}</div>
               <nav className="nr-rider-drawer-nav" aria-label={say("Rider navigation", "የተሳፋሪ አሰሳ")}>
-                {renderRows(items.slice(0,4))}
+                {renderRows(items.filter(item => item.group === "journeys"))}
               </nav>
               <div className="nr-menu-section-label">{say("HELP & SAFETY", "ድጋፍ እና ደህንነት")}</div>
               <nav className="nr-rider-drawer-nav" aria-label={say("Help and safety", "ድጋፍ እና ደህንነት")}>
-                {renderRows(items.slice(4,6))}
+                {renderRows(items.filter(item => item.group === "assistance"))}
               </nav>
               <div className="nr-menu-section-label">{say("MORE", "ተጨማሪ")}</div>
               <div className="nr-rider-drawer-secondary">
