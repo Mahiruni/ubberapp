@@ -335,7 +335,7 @@
   background: #c5d1df!important;
 }
 /* Grouped drawer: separate portrait, navigation, account and support cleanly.
-   Portal must sit above the dock, map controls and all ordinary page layers. */
+   Portal must sit above map controls and all ordinary page layers. */
 .nr-driver-menu-layer {
   z-index: 2100!important;
   --driver-bg: #f5f8fc;
@@ -509,13 +509,12 @@ html[lang="am"] .nr-driver-menu-layer :where(strong,small) {
   .nr-driver-app-shell[data-home="true"] .nr-driver-home-control-panel{ padding:12px; }
 }
 @media(max-height:620px) and (max-width:800px) {
-  .nr-driver-app-shell { --biloo-dock-bar-height: 60px; }
   .nr-driver-app-shell[data-home="true"] .nr-driver-home-control-state small { display:none; }
   .nr-driver-app-shell[data-home="true"] .nr-driver-home-control-panel { gap:8px; padding-block:10px; }
   .nr-driver-menu-layer .nr-driver-menu-head { padding-block:12px; }
 }
 @media(prefers-reduced-motion:reduce) {
-  .nr-driver-app-shell :is(a,button,.biloo-footer-nav__indicator),
+  .nr-driver-app-shell :is(a,button),
   .nr-driver-menu-layer :is(a,button,.nr-driver-menu-panel,.nr-driver-menu-backdrop) {
     transition:none!important;animation:none!important;scroll-behavior:auto!important;
   }
