@@ -31,7 +31,7 @@ export default function DriverWelcome() {
       const role = session ? await resolveSessionRole(session) : "";
       if (session && role === "driver") {
         enterDriver(session);
-        const destination = await driverResumeDestination(session);
+        const destination = await driverResumeDestination(session, role);
         if (active && !explicitSignOutRole(window.localStorage)) router.replace(destination);
         return;
       }
