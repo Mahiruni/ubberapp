@@ -290,7 +290,7 @@ function DriverHamburgerMenu({
               <div className="nr-menu-section-label">{language === "am" ? "ተጨማሪ" : "MORE"}</div>
               <div className="nr-driver-menu-secondary">
                 <Link href="/rider" className="nr-driver-menu-role-switch" onClick={() => setOpen(false)} aria-label={language === "am" ? "ወደ Biloo ተሳፋሪ ቀይር" : "Switch to Biloo Rider"}>
-                  <Icon name="navigation" size={20}/>
+                  <Icon name="users" size={20}/>
                   <span><strong>{language === "am" ? "በBiloo ይጓዙ" : "Ride with Biloo"}</strong><small>{language === "am" ? "የተሳፋሪ ገጽን ይክፈቱ" : "Open Rider experience"}</small></span>
                   <Icon name="chevron" size={16}/>
                 </Link>
