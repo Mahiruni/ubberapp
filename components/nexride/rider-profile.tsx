@@ -19,7 +19,6 @@ import { NexRideFeedbackSettings } from './feedback-settings';
 import './rider-avatar-upload.css';
 import { AppVersion } from './app-version';
 import { SettingsGroups } from "./settings-groups";
-import { HOME_PLACES_KEY, restoreHomePlaces } from "../../lib/nexride-home";
 
 type Props = {
   language: Language;
@@ -48,13 +47,8 @@ export function RiderSettings({language,setLanguage}: Pick<Props,'language'|'set
 
   return <div className="nr-account-settings nr-account-settings-v2">
     <SettingsGroups groups={[
-      { id: "account", icon: "user", title: say("Account", "መለያ"), summary: say("Personal details and verification", "የግል መረጃ እና ማረጋገጫ"), children: <>
-        <a className="nr-settings-security-link" href="/account/manage"><Icon name="user" size={20}/><span>{say("Manage account & verification", "መለያ እና ማረጋገጫ አስተዳድር")}</span><Icon name="chevron" size={17}/></a>
-        <a className="nr-settings-security-link" href="/account/manage#account-deletion"><span>{say("Account deletion", "መለያ መሰረዝ")}</span><Icon name="chevron" size={17}/></a>
-      </> },
       { id: "security", icon: "shield", title: say("Security & App Lock", "ደህንነት እና የመተግበሪያ ቁልፍ"), summary: say("App lock, sessions and permissions", "የመተግበሪያ ቁልፍ፣ መግቢያ እና ፈቃዶች"), children: <>
         <AppLockSettings/><PermissionSettings/>
-    <a className="nr-settings-security-link" href="/account/manage#account-security"><Icon name="shield" size={20}/><span>{t("entryAccountSecurity")}</span><Icon name="chevron" size={17}/></a>
       </> },
       { id: "notifications", icon: "bell", title: say("Notifications", "ማሳወቂያዎች"), summary: say("Trip alerts, sounds and haptics", "የጉዞ ማሳወቂያ፣ ድምፅ እና ንዝረት"), children: <>
     <label className="nr-account-toggle">
@@ -91,9 +85,6 @@ export function RiderSettings({language,setLanguage}: Pick<Props,'language'|'set
       </div>
     </div>
       </> },
-      { id: "help", icon: "info", title: say("Help & About", "እገዛ እና ስለ እኛ"), summary: say("Support, legal and app information", "ድጋፍ፣ ሕጋዊ መረጃ እና ስለ መተግበሪያው"), children: <>
-    <nav className="nr-settings-legal" aria-label={say("Help & legal", "እገዛ እና ሕጋዊ መረጃ")}><a href="/support?role=rider">{say("Help & support", "እገዛ እና ድጋፍ")}</a><a href="/explore/terms">{t("entryTerms")}</a><a href="/explore/privacy">{t("entryPrivacy")}</a><a href="/explore/about">{say("About Biloo", "ስለ Biloo")}</a></nav><AppVersion/>
-      </> },
     ]}/>
   </div>;
 }
@@ -114,8 +105,6 @@ export function RiderProfile(props:Props) {
   const [notice,setNotice]=useState('');
   const [photoFailed,setPhotoFailed]=useState(false);
   const [signedOutLocally,setSignedOutLocally]=useState(false);
-  const [completedRides,setCompletedRides]=useState<number|null>(null);
-  const [savedShortcuts,setSavedShortcuts]=useState<number|null>(null);
   const lock=useRef(false);
 
   useEffect(()=>{
@@ -146,39 +135,6 @@ export function RiderProfile(props:Props) {
     });
     return()=>data.subscription.unsubscribe();
   },[]);
-
-  // Account overview is intentionally backed by real sources. Booked rides are
-  // counted only from this authenticated user's RLS-protected rows; Home/Work
-  // shortcuts are explicitly device-local preview preferences.
-  useEffect(()=>{
-    const refresh=()=>{
-      try {
-        const places=restoreHomePlaces(localStorage.getItem(HOME_PLACES_KEY));
-        setSavedShortcuts(Number(Boolean(places.saved.home))+Number(Boolean(places.saved.work)));
-      } catch { setSavedShortcuts(null); }
-    };
-    refresh();
-    window.addEventListener('focus',refresh);
-    window.addEventListener('storage',refresh);
-    return ()=>{window.removeEventListener('focus',refresh);window.removeEventListener('storage',refresh)};
-  },[]);
-
-  useEffect(()=>{
-    let active=true;
-    setCompletedRides(null);
-    if(!account?.id)return;
-    void Promise.resolve(
-      supabase.from('ride_requests')
-        .select('id',{count:'exact',head:true})
-        .eq('rider_id',account.id)
-        .eq('status','completed')
-    ).then(({count,error})=>{
-        if(!active)return;
-        setCompletedRides(error||count==null?null:count);
-      })
-      .catch(()=>{if(active)setCompletedRides(null)});
-    return ()=>{active=false};
-  },[account?.id]);
 
   const shown=account?.profile || (!loading&&!loadError?profile:{name:'',phone:'',email:''});
   const initials=shown.name.trim().split(/\s+/).slice(0,2).map(v=>v[0]).join('').toUpperCase()||'BL';
@@ -296,25 +252,6 @@ export function RiderProfile(props:Props) {
         : say('Preview details stay on this device.','የማሳያ መረጃ በዚህ መሣሪያ ላይ ይቀመጣል።')}</span>
     </div>
 
-    {!loading&&!loadError&&<section className="biloo-rider-account-overview" aria-label={say('Account overview','የመለያ አጠቃላይ እይታ')}>
-      {account&&<button type="button" className="biloo-rider-account-stat" onClick={props.rides}>
-        <span className="biloo-rider-account-stat-icon"><Icon name="clock" size={19}/></span>
-        <span className="biloo-rider-account-stat-copy">
-          <strong>{completedRides===null?'—':completedRides.toLocaleString()}</strong>
-          <small>{say('Completed rides','የተጠናቀቁ ጉዞዎች')}</small>
-        </span>
-        <Icon name="chevron" size={15}/>
-      </button>}
-      <button type="button" className="biloo-rider-account-stat" onClick={props.saved}>
-        <span className="biloo-rider-account-stat-icon"><Icon name="star" size={19}/></span>
-        <span className="biloo-rider-account-stat-copy">
-          <strong>{savedShortcuts===null?'—':savedShortcuts}</strong>
-          <small>{say('Saved shortcuts · this device','የተቀመጡ አቋራጮች · በዚህ መሣሪያ')}</small>
-        </span>
-        <Icon name="chevron" size={15}/>
-      </button>
-    </section>}
-
     {loadError&&<div className="nr-account-inline-error" role="alert">
       <Icon name="info" size={18}/>
       <div><strong>{say('Account unavailable','መለያ አይገኝም')}</strong><span>{say('We could not load your account right now.','መለያዎን አሁን መጫን አልተቻለም።')}</span></div>
@@ -323,42 +260,15 @@ export function RiderProfile(props:Props) {
 
     <div className="nr-account-standard-groups" aria-label={say('Your account options', 'የመለያ አማራጮች')}>
       <AccountSection title={say('Personal information','የግል መረጃ')} subtitle={say('Your identity and contact details','የእርስዎ ማንነት እና የመገናኛ መረጃ')}>
-        <AccountRow icon="user" title={say('Edit profile','መገለጫ አርትዕ')} detail={say('Name, photo and contact information','ስም፣ ፎቶ እና የመገናኛ መረጃ')} onClick={()=>{setForm(shown);open('edit')}}/>
-        <AccountRow icon="shield" title={say('Account & security','መለያ እና ደህንነት')} detail={say('Verified contacts, sign-in and privacy','የተረጋገጠ መገናኛ፣ መግቢያ እና ግላዊነት')} onClick={()=>router.push('/account/manage?role=rider#account-security')}/>
-      </AccountSection>
-
-      <AccountSection title={say('Rides & places','ጉዞዎች እና ቦታዎች')} subtitle={say('Your journey history and destinations','የጉዞ ታሪክ እና መድረሻዎች')}>
-        <AccountRow icon="clock" title={say('My rides & receipts','ጉዞዎቼ እና ደረሰኞች')} detail={say('Completed, cancelled and recent trips','የተጠናቀቁ፣ የተሰረዙ እና የቅርብ ጉዞዎች')} onClick={props.rides}/>
-        <AccountRow icon="star" title={say('Saved places','የተቀመጡ ቦታዎች')} detail={say('Home, work and favourite destinations','ቤት፣ ስራ እና ተወዳጅ መድረሻዎች')} onClick={props.saved}/>
-      </AccountSection>
-
-      <AccountSection title={say('Wallet & payments','የኪስ ቦርሳ እና ክፍያዎች')} subtitle={say('Payments and recorded transactions','ክፍያዎች እና የተመዘገቡ ግብይቶች')}>
-        <AccountRow icon="wallet" title={say('Wallet & payment methods','ኪስ ቦርሳ እና የክፍያ መንገዶች')} detail={say('Manage the methods available to your account','ለመለያዎ የሚገኙ የክፍያ መንገዶች')} onClick={props.payments}/>
-      </AccountSection>
-
-      <AccountSection title={say('Safety & support','ደህንነት እና ድጋፍ')} subtitle={say('Assistance whenever you need it','በሚያስፈልግዎ ጊዜ እገዛ')}>
-        <AccountRow icon="shield" title={say('Safety Center','የደህንነት ማዕከል')} detail={say('Emergency tools and trip safety','የአደጋ ጊዜ እገዛ እና የጉዞ ደህንነት')} onClick={props.safety}/>
-        <AccountRow icon="chat" title={say('Help & support','እገዛ እና ድጋፍ')} detail={say('Get help with rides or your account','በጉዞዎች ወይም በመለያዎ ላይ እገዛ')} onClick={props.support}/>
+        <AccountRow icon="lock" title={say('Account & security','መለያ እና ደህንነት')} detail={say('Verified contacts, sign-in and privacy','የተረጋገጠ መገናኛ፣ መግቢያ እና ግላዊነት')} onClick={()=>router.push('/account/manage?role=rider#account-security')}/>
       </AccountSection>
 
       <AccountSection title={say('Preferences','ምርጫዎች')} subtitle={say('Make Biloo work your way','Bilooን ለራስዎ ያስተካክሉ')}>
         <AccountRow icon="settings" title={say('Appearance, language & alerts','ገጽታ፣ ቋንቋ እና ማሳወቂያዎች')} detail={say('Light/dark theme, permissions and settings','ብርሃን/ጨለማ ገጽታ፣ ፈቃዶች እና ቅንብሮች')} onClick={()=>open('settings')}/>
-        <AccountRow icon="info" title={say('Privacy & your data','ግላዊነት እና ውሂብዎ')} detail={say('Understand how your information is handled','መረጃዎ እንዴት እንደሚተዳደር ይወቁ')} onClick={()=>open('privacy')}/>
+        <AccountRow icon="shield" title={say('Privacy & your data','ግላዊነት እና ውሂብዎ')} detail={say('Understand how your information is handled','መረጃዎ እንዴት እንደሚተዳደር ይወቁ')} onClick={()=>open('privacy')}/>
         <AccountRow icon="info" title={say('Terms & about Biloo','ሕጋዊ መረጃ እና ስለ Biloo')} detail={say('Service terms and product information','የአገልግሎት ውሎች እና ስለ መተግበሪያው')} onClick={()=>router.push('/explore/terms')}/>
       </AccountSection>
 
-      <section className="nr-account-secondary-actions" aria-label={say('More Biloo options','ተጨማሪ የBiloo አማራጮች')}>
-        <button onClick={props.switchDriver}>
-          <span className="nr-account-row-icon" data-tone="navigation"><Icon name="navigation" size={19}/></span>
-          <span className="nr-account-row-copy"><strong>{say('Drive with Biloo','በBiloo ያሽከርክሩ')}</strong><small>{say('Open the Driver experience','የአሽከርካሪ ልምድን ይክፈቱ')}</small></span>
-          <Icon name="chevron" size={17}/>
-        </button>
-        {props.isAdmin&&<button className="admin-access" onClick={()=>router.push('/admin')}>
-          <span className="nr-account-row-icon" data-tone="shield"><Icon name="shield" size={19}/></span>
-          <span className="nr-account-row-copy"><strong>Admin Control Center</strong><small>Operations and platform management</small></span>
-          <Icon name="chevron" size={17}/>
-        </button>}
-      </section>
     </div>
 
     {notice&&<div className="nr-account-success" role="status"><Icon name="check" size={17}/><span>{notice}</span></div>}
