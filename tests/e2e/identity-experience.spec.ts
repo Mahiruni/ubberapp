@@ -203,6 +203,7 @@ test('existing Rider enters Driver onboarding with the same account and never cr
   await page.getByLabel('Vehicle model', { exact: true }).fill('Toyota Yaris');
   await page.getByLabel('Vehicle color', { exact: true }).selectOption('Silver');
   await page.getByLabel('Plate number', { exact: true }).fill('REAL-123');
+  await page.getByRole('checkbox').check();
   await page.getByRole('button', { name: 'Continue verification', exact: true }).click();
   await expect(page).toHaveURL(/\/driver\/verification$/);
   expect(backend.signupCalls()).toBe(0);
@@ -265,7 +266,7 @@ test('startup does not confuse a failed authenticated profile lookup with being 
   await expect(page.locator('.nr-splash-wordmark')).toHaveText('Biloo');
   unavailable = false;
   await page.getByRole('button', { name: 'Try again', exact: true }).click();
-  await expect(page).toHaveURL(/\/driver\/onboarding$/);
+  await expect(page).toHaveURL(/\/driver\/verification$/);
 });
 
 test('account security retries a failed load without losing the identity and translates its controls', async ({ page }) => {

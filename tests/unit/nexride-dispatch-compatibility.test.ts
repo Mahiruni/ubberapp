@@ -21,7 +21,7 @@ const riderId = "b8888888-bbbb-4888-8888-bbbbbbbbbbbb";
 const requestId = "a9999999-aaaa-4999-9999-aaaaaaaaaaaa";
 const pickup = { lat: 9.008, lng: 38.775, name: "Pickup" };
 const destination = { lat: 8.978, lng: 38.799, name: "Destination" };
-function booking() {
+function booking(pickupInstructions?: unknown) {
   const fares = liveFareSet({ pickup, destination });
   const economy = fares.offers.find(f => f.category === "economy")!;
   return new Request("http://localhost/api/rider/requests", {
@@ -33,6 +33,7 @@ function booking() {
     body: JSON.stringify({
       pickup, destination, quoteId: economy.id, category: "economy",
       revision: fares.revision, paymentMethod: "cash",
+      pickupInstructions,
     }),
   });
 }
@@ -83,6 +84,16 @@ beforeEach(() => {
 });
 
 describe("NexRide server-owned one-driver dispatch", () => {
+  it("persists validated pickup instructions with the original booking", async () => {
+    const db = mockDatabase();
+    expect((await POST(booking("  Meet at the main entrance.  "))).status).toBe(201);
+    expect(db.insert.mock.calls[0][0].value.pickup_instructions).toBe("Meet at the main entrance.");
+  });
+  it.each([123, "x".repeat(301)])("rejects invalid pickup instructions before creating records", async instructions => {
+    const db = mockDatabase();
+    expect((await POST(booking(instructions))).status).toBe(400);
+    expect(db.insert).not.toHaveBeenCalled();
+  });
   it("never bulk-inserts offers and instead invokes trusted sequential dispatch", async () => {
     const db = mockDatabase();
     const response = await POST(booking());

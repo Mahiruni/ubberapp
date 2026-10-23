@@ -352,7 +352,7 @@
     --dock-text: #d6e2f1;
   }
   .nr-driver-app-shell .biloo-footer-nav[data-role="driver"] .biloo-footer-nav__surface {
-    grid-template-columns: repeat(5,minmax(0,1fr))!important;
+    grid-template-columns: repeat(4,minmax(0,1fr))!important;
     width: 100%;
   }
   .nr-driver-app-shell .biloo-footer-nav[data-role="driver"] .biloo-footer-nav__item {

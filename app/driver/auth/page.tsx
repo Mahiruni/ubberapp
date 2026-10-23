@@ -10,6 +10,7 @@ import { clearExplicitSignOut, enterDriver, explicitSignOutRole } from "../../..
 import { driverResumeDestination } from "../../../lib/nexride-driver-verification";
 import { resolveSessionRole } from "../../../lib/nexride-account-role";
 import { authErrorKey } from "../../../lib/nexride-auth-errors";
+import { withOperationTimeout } from "../../../lib/nexride-operation";
 import "../driver-welcome.css";
 import "./driver-auth.css";
 import "../../auth-experience.css";
@@ -34,7 +35,7 @@ export default function DriverAuth() {
     if (linkError) setError(t(authErrorKey(linkError)));
     // Confirmation links must not automatically restore a logged-out user.
     if (explicitSignOutRole(window.localStorage)) return;
-    supabase.auth.getSession().then(async ({ data, error: sessionError }) => {
+    withOperationTimeout(supabase.auth.getSession()).then(async ({ data, error: sessionError }) => {
       if (sessionError) throw sessionError;
       if (!active || !data.session || explicitSignOutRole(window.localStorage)) return;
       const role = await resolveSessionRole(data.session);
@@ -47,8 +48,8 @@ export default function DriverAuth() {
         router.replace("/driver/onboarding");
         return;
       }
-      enterDriver(data.session!);
-      const destination = await driverResumeDestination(data.session!);
+      const destination = await driverResumeDestination(data.session!, role);
+      if (destination === "/driver/home") enterDriver(data.session!);
       if (active && !explicitSignOutRole(window.localStorage)) router.replace(destination);
     }).catch(() => { if (active) setError(t("authNetworkFailure")); });
     return () => { active = false; };
@@ -62,7 +63,7 @@ export default function DriverAuth() {
 
     let data;
     try {
-      const result = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+      const result = await withOperationTimeout(supabase.auth.signInWithPassword({ email: email.trim(), password }));
       if (result.error || !result.data.session) {
         setError(t(authErrorKey(result.error, "signin"))); setBusy(false); return;
       }
@@ -74,10 +75,10 @@ export default function DriverAuth() {
     try {
       const role = await resolveSessionRole(data.session!);
       const destination = role === "admin" ? "/admin" : role === "driver"
-        ? await driverResumeDestination(data.session!) : "/driver/onboarding";
+        ? await driverResumeDestination(data.session!, role) : "/driver/onboarding";
       clearExplicitSignOut();
       window.localStorage.setItem("nexride:active-account-role", "driver");
-      if (role === "driver") enterDriver(data.session!);
+      if (destination === "/driver/home") enterDriver(data.session!);
       router.replace(destination);
     } catch {
       setError(t("authNetworkFailure"));

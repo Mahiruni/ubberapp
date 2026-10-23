@@ -17,6 +17,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "../../lib/supabase";
 import { resolveSessionRole } from "../../lib/nexride-account-role";
 import { ACTIVE_ACCOUNT_ROLE_KEY } from "../../lib/nexride-startup";
+import { withOperationTimeout } from "../../lib/nexride-operation";
 import { ensureRiderProfile, RiderProfileBootstrapError } from "../../lib/nexride-rider-profile-bootstrap";
 import "../nexride.css";
 import "./rider-entry.css";
@@ -45,7 +46,7 @@ function RiderWelcome() {
       setCheckingSession(false);
       return () => { active = false; };
     }
-    supabase.auth.getSession().then(async ({ data, error }) => {
+    withOperationTimeout(supabase.auth.getSession()).then(async ({ data, error }) => {
       if (!active || explicitSignOutRole(window.localStorage)) return;
       if (error) throw error;
       if (!data.session) {

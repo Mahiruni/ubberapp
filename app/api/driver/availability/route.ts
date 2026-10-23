@@ -77,7 +77,7 @@ export async function PATCH(request: Request) {
         .maybeSingle(),
       admin
         .from("drivers")
-        .select("review_status,rejection_reason,is_online,rating,vehicle,vehicle_plate,gps_recorded_at,last_presence_at,gps_accuracy_meters")
+        .select("review_status,rejection_reason,is_online,rating,vehicle,vehicle_color,vehicle_plate,gps_recorded_at,last_presence_at,gps_accuracy_meters")
         .eq("id", authorized.user.id)
         .maybeSingle(),
     ]);
@@ -108,15 +108,13 @@ export async function PATCH(request: Request) {
       );
 
     const vehicleModel =
-      String(current.vehicle || authorized.user.user_metadata?.vehicle || "").trim();
+      String(current.vehicle || "").trim();
     const vehiclePlate =
       String(
-        current.vehicle_plate ||
-          authorized.user.user_metadata?.vehicle_plate ||
-          "",
+        current.vehicle_plate || "",
       ).trim();
     const vehicleColor = String(
-      authorized.user.user_metadata?.vehicle_color || "",
+      current.vehicle_color || "",
     ).trim();
 
     if (wantsOnline && (!vehicleModel || !vehiclePlate || !vehicleColor)) {
@@ -149,7 +147,7 @@ export async function PATCH(request: Request) {
     if (!hasOnline && current.is_online !== true)
       return reply({ status: "driver_offline" }, 409);
 
-    const selectFields = "review_status,rejection_reason,is_online,rating,vehicle,vehicle_plate,gps_recorded_at,last_presence_at,gps_accuracy_meters";
+    const selectFields = "review_status,rejection_reason,is_online,rating,vehicle,vehicle_color,vehicle_plate,gps_recorded_at,last_presence_at,gps_accuracy_meters";
     let updatedDriver = current;
 
     // Keep location writes on the trusted server client because the location

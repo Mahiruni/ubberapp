@@ -20,6 +20,7 @@ import { ensureRiderProfile, RiderProfileBootstrapError } from "../../lib/nexrid
 import { nexrideAuthRedirectUrl } from "../../lib/nexride-auth-url";
 import { authErrorKey } from "../../lib/nexride-auth-errors";
 import { normalizeEthiopianPhone } from "../../lib/nexride-identity";
+import { withOperationTimeout } from "../../lib/nexride-operation";
 
 export type RiderAuthMode = "signin" | "signup" | "forgot" | "reset";
 
@@ -206,10 +207,10 @@ function RiderAuth({ mode, entryRole }: { mode: RiderAuthMode; entryRole: "rider
     let navigating = false;
 
     try {
-      const { data, error: authError } = await supabase.auth.signInWithPassword({
+      const { data, error: authError } = await withOperationTimeout(supabase.auth.signInWithPassword({
         email: email.trim(),
         password,
-      });
+      }));
 
       if (authError || !data.session) {
         setError(t(authErrorKey(authError, "signin")));
@@ -298,7 +299,7 @@ function RiderAuth({ mode, entryRole }: { mode: RiderAuthMode; entryRole: "rider
     let navigating = false;
 
     try {
-      const { data, error: signUpError } = await supabase.auth.signUp({
+      const { data, error: signUpError } = await withOperationTimeout(supabase.auth.signUp({
         email: email.trim(),
         password,
         options: {
@@ -309,7 +310,7 @@ function RiderAuth({ mode, entryRole }: { mode: RiderAuthMode; entryRole: "rider
             phone: mobile,
           },
         },
-      });
+      }));
 
       if (signUpError) {
         setError(t(authErrorKey(signUpError, "signup")));

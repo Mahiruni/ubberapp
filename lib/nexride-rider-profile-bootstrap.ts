@@ -13,6 +13,7 @@ export async function ensureRiderProfile(
 ) {
   const response = await fetch("/api/rider/profile", {
     method: "POST",
+    signal: AbortSignal.timeout(15_000),
     cache: "no-store",
     headers: {
       Authorization: `Bearer ${session.access_token}`,

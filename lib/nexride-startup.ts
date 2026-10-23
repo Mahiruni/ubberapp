@@ -9,7 +9,7 @@ export const LANGUAGE_KEY = "nexride:language";
 export const EXPLICIT_SIGNOUT_KEY = "nexride:explicit-signout";
 export const ACTIVE_ACCOUNT_ROLE_KEY = "nexride:active-account-role";
 export type SignedOutRole = "rider" | "driver";
-export type StartupDestination = "/" | "/onboarding" | "/rider/sign-in" | "/driver/auth" | "/driver/onboarding" | "/driver/home";
+export type StartupDestination = "/" | "/admin" | "/onboarding" | "/rider/sign-in" | "/driver/auth" | "/driver/onboarding" | "/driver/verification" | "/driver/home";
 export type RestoredPreferences = { language: Language; mode: "rider" | "driver"; theme: "light" | "dark"; profile: PreviewProfile; trip: PreviewTrip | null };
 export type StartupResult = { preferences: RestoredPreferences; destination: StartupDestination; session: Session | null };
 export class StartupError extends Error { constructor(public readonly kind: "preferences" | "session") { super(kind === "preferences" ? "Unable to restore saved preferences." : "Unable to restore the session."); this.name = "StartupError"; } }
@@ -62,8 +62,8 @@ export function startupDestination({ session, returningPreview, previewEnabled, 
   // their previous Supabase identity must never be restored implicitly.
   if (signedOutRole) return previewEnabled ? "/" :
     signedOutRole === "driver" ? "/driver/auth" : "/rider/sign-in";
-  const role = accountRole || session?.user?.user_metadata?.role;
-  if (role === "driver") return session?.user?.user_metadata?.driver_onboarding_complete === true ? "/driver/home" : "/driver/onboarding";
+  if (session && accountRole === "admin") return "/admin";
+  if (session && accountRole === "driver") return "/driver/onboarding";
   if (session || returningPreview || previewEnabled) return "/";
   return onboardingComplete ? "/rider/sign-in" : "/onboarding";
 }
@@ -133,7 +133,7 @@ export function initializeRider(): Promise<StartupResult> {
         completed = { preferences: restored.preferences, destination, session: null };
         return completed;
       }
-      const role = accountRole || session?.user?.user_metadata?.role;
+      const role = accountRole;
       const requestedRiderRole = role === "driver"
         && window.localStorage.getItem(ACTIVE_ACCOUNT_ROLE_KEY) === "rider";
       let activeRiderRole = false;
@@ -177,8 +177,18 @@ export function initializeRider(): Promise<StartupResult> {
         } catch {}
       }
 
-      const destination = startupDestination({ ...restored, session,
-        accountRole: activeRiderRole ? "rider" : accountRole });
+      const destination = session && role === "driver" && !activeRiderRole
+        ? await import("./nexride-driver-verification").then(({ driverResumeDestination }) =>
+          driverResumeDestination(session, role))
+        : startupDestination({ ...restored, session,
+          accountRole: activeRiderRole ? "rider" : accountRole });
+      // Session restoration can finish after a person taps Log out.
+      const finalSignOut = explicitSignOutRole(window.localStorage);
+      if (finalSignOut) {
+        completed = { preferences: restored.preferences,
+          destination: startupDestination({ ...restored, session: null, signedOutRole: finalSignOut }), session: null };
+        return completed;
+      }
       completed = { preferences: restored.preferences, destination, session };
       return completed;
     } catch (error) {

@@ -12,12 +12,14 @@ import {
   updateStartupPreferences,
 } from "../../lib/nexride-startup";
 
-const { getSession, resolveSessionRole } = vi.hoisted(() => ({
+const { getSession, resolveSessionRole, driverResumeDestination } = vi.hoisted(() => ({
   getSession: vi.fn(),
   resolveSessionRole: vi.fn(),
+  driverResumeDestination: vi.fn(),
 }));
 vi.mock("../../lib/supabase", () => ({ supabase: { auth: { getSession } } }));
 vi.mock("../../lib/nexride-account-role", () => ({ resolveSessionRole }));
+vi.mock("../../lib/nexride-driver-verification", () => ({ driverResumeDestination }));
 const session = {
   access_token: "test-session",
   user: {
@@ -45,6 +47,7 @@ beforeEach(() => {
   vi.stubGlobal("window", { localStorage: storage });
   vi.stubGlobal("localStorage", storage);
   retryStartup();
+  driverResumeDestination.mockReset().mockResolvedValue("/driver/verification");
   getSession
     .mockReset()
     .mockResolvedValue({ data: { session: null }, error: null });
@@ -60,6 +63,14 @@ afterEach(() => {
 });
 
 describe("rider initialization", () => {
+  it("uses live Driver approval at the common application entry", async () => {
+    resolveSessionRole.mockResolvedValue("driver");
+    getSession.mockResolvedValue({ data: { session }, error: null });
+    expect((await initializeRider()).destination).toBe("/driver/verification");
+    retryStartup();
+    driverResumeDestination.mockResolvedValue("/driver/home");
+    expect((await initializeRider()).destination).toBe("/driver/home");
+  });
   it("routes first visits, signed-out users, restored sessions and explicit previews", () => {
     const state = {
       session: null,

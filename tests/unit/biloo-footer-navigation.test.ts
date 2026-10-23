@@ -10,14 +10,14 @@ const css = read("app/biloo-footer-navigation.css");
 const layout = read("app/layout.tsx");
 
 describe("Biloo approved Rider and Driver footer menus", () => {
-  it("contains the five Rider items and the five Driver items in approved order", () => {
+  it("contains the four Rider items and the four Driver items in approved order", () => {
     const riderItems = footer.slice(footer.indexOf("export function riderFooterLinks"),footer.indexOf("export function driverFooterLinks"));
     const driverItems = footer.slice(footer.indexOf("export function driverFooterLinks"));
-    expect([...riderItems.matchAll(/id: "([^"]+)"/g)].map(m => m[1])).toEqual(["home","activity","wallet","support","account"]);
-    expect([...driverItems.matchAll(/id: "([^"]+)"/g)].map(m => m[1])).toEqual(["home","activity","map","earnings","account"]);
+    expect([...riderItems.matchAll(/id: "([^"]+)"/g)].map(m => m[1])).toEqual(["home","activity","wallet","account"]);
+    expect([...driverItems.matchAll(/id: "([^"]+)"/g)].map(m => m[1])).toEqual(["home","earnings","map","account"]);
     expect(footer).toContain('href: "/rider/trips"');
     expect(footer).toContain('href: "/rider/wallet"');
-    expect(footer).toContain('href: "/driver/activity"');
+    expect(driver).toContain('href: "/driver/activity"');
     expect(footer).toContain('href: "/driver/earnings"');
     expect(footer).toContain('href: "/driver/map"');
     expect(driver).toContain('href: "/support?role=driver"');
@@ -36,7 +36,7 @@ describe("Biloo approved Rider and Driver footer menus", () => {
 
   it("preserves booking swipe, safe areas, active states and reduced motion", () => {
     expect(layout).toContain('import "./biloo-footer-navigation.css";');
-    expect(css).toContain("repeat(5,minmax(0,1fr))");
+    expect(css).toContain("repeat(4,minmax(0,1fr))");
     expect(css).toContain(".nr-driver-home-swipe[data-map-input-boundary=\"true\"]");
     expect(css).not.toContain("height: max(120px");
     expect(css).toContain(".rider-map-flow.rider-home-view");
@@ -48,7 +48,7 @@ describe("Biloo approved Rider and Driver footer menus", () => {
     expect(footer).toContain("biloo-footer-nav__indicator");
     expect(css).toContain("border-radius: 0;");
     expect(css).toContain("box-shadow: none;");
-    expect(css).toContain("clip-path: inset(50%)");
+    expect(css).toContain("clip-path: none");
     expect(css).toContain("bottom: 0!important;");
     expect(css).toContain("scroll-padding-bottom: calc(var(--biloo-dock-bar-height)");
     expect(css).toContain("padding-bottom: calc(var(--biloo-dock-bar-height)");

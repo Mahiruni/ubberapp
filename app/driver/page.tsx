@@ -8,6 +8,7 @@ import { supabase } from "../../lib/supabase";
 import { enterDriver, explicitSignOutRole, StartupError } from "../../lib/nexride-startup";
 import { driverResumeDestination } from "../../lib/nexride-driver-verification";
 import { resolveSessionRole } from "../../lib/nexride-account-role";
+import { withOperationTimeout } from "../../lib/nexride-operation";
 import "./driver-welcome.css";
 
 export default function DriverWelcome() {
@@ -24,14 +25,14 @@ export default function DriverWelcome() {
       setChecking(false);
       return () => { active = false; };
     }
-    supabase.auth.getSession().then(async ({ data, error }) => {
+    withOperationTimeout(supabase.auth.getSession()).then(async ({ data, error }) => {
       if (!active || explicitSignOutRole(window.localStorage)) return;
       if (error) throw error;
       const session = data.session;
       const role = session ? await resolveSessionRole(session) : "";
-      if (session && role === "driver") {
-        enterDriver(session);
-        const destination = await driverResumeDestination(session);
+      if (session) {
+        const destination = await driverResumeDestination(session, role);
+        if (destination === "/driver/home") enterDriver(session);
         if (active && !explicitSignOutRole(window.localStorage)) router.replace(destination);
         return;
       }

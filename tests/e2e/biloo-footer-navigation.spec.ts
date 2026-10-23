@@ -30,7 +30,7 @@ async function mockDriver(page: Page) {
   await page.routeWebSocket("**/realtime/v1/**", ws => ws.close());
 }
 
-test("Rider footer matches the approved five items and leaves the map booking sheet uncovered", async ({ page }) => {
+test("Rider footer has four destinations and leaves the map booking sheet uncovered", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.addInitScript(() => { localStorage.setItem("nexride:preview-enabled", "true"); });
   await page.route("https://tile.openstreetmap.org/**", route =>
@@ -38,9 +38,8 @@ test("Rider footer matches the approved five items and leaves the map booking sh
   await page.goto("/");
   const footer = page.getByRole("navigation", { name: "Rider bottom navigation" });
   await expect(footer).toBeVisible();
-  await expect(footer.locator(".biloo-footer-nav__item")).toHaveCount(5);
-  // X-style navigation is icon-only visually; accessible names remain available.
-  for (const name of ["Home", "Activity", "Wallet", "Support", "Account"]) {
+  await expect(footer.locator(".biloo-footer-nav__item")).toHaveCount(4);
+  for (const name of ["Home", "Activity", "Wallet", "Account"]) {
     await expect(footer.getByRole(name === "Home" || name === "Account" ? "button" : "link", { name, exact: true })).toBeVisible();
   }
   await expect(footer.locator(".biloo-footer-nav__surface")).toHaveCSS("border-radius", "0px");
@@ -49,10 +48,9 @@ test("Rider footer matches the approved five items and leaves the map booking sh
   expect(navBox.x).toBe(0);
   expect(navBox.width).toBeCloseTo(390, 0);
   expect(navBox.y + navBox.height).toBeCloseTo(844, 0);
-  await expect(footer.locator(".biloo-footer-nav__label").first()).toHaveCSS("width", "1px");
+  expect(await footer.locator(".biloo-footer-nav__label").first().evaluate(el => el.getBoundingClientRect().width)).toBeGreaterThan(10);
   await expect(footer.getByRole("link", { name: "Activity" })).toHaveAttribute("href", "/rider/trips");
   await expect(footer.getByRole("link", { name: "Wallet" })).toHaveAttribute("href", "/rider/wallet");
-  await expect(footer.getByRole("link", { name: "Support" })).toHaveAttribute("href", "/support");
   const sheet = (await page.locator(".nr-rider-flow-panel").boundingBox())!;
   const geometry = await page.locator(".nr-rider-flow-panel").evaluate(el => ({
     height: getComputedStyle(el).height,
@@ -77,19 +75,19 @@ test("Rider footer matches the approved five items and leaves the map booking sh
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
 });
 
-test("Driver footer provides Activity/Map/Earnings and hides during critical live-trip controls", async ({ page }) => {
+test("Driver footer provides Earnings/Map/Account and hides during critical live-trip controls", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await mockDriver(page);
   await page.goto("/driver/earnings");
   const footer = page.getByRole("navigation", { name: "Driver bottom navigation" });
   await expect(footer).toBeVisible();
-  await expect(footer.locator(".biloo-footer-nav__item")).toHaveCount(5);
-  for (const name of ["Home", "Activity", "Map", "Earnings", "Account"]) {
+  await expect(footer.locator(".biloo-footer-nav__item")).toHaveCount(4);
+  for (const name of ["Home", "Earnings", "Map", "Account"]) {
     await expect(footer.getByRole("link", { name, exact: true })).toBeVisible();
   }
   await expect(footer.locator(".biloo-footer-nav__surface")).toHaveCSS("border-radius", "0px");
   await expect(footer.locator(".biloo-footer-nav__surface")).toHaveCSS("box-shadow", "none");
-  await expect(footer.getByRole("link", { name: "Activity" })).toHaveAttribute("href", "/driver/activity");
+  await expect(footer.getByRole("link", { name: "Earnings" })).toHaveAttribute("href", "/driver/earnings");
   await expect(footer.getByRole("link", { name: "Earnings" })).toHaveAttribute("aria-current", "page");
   await expect(footer.getByRole("link", { name: "Map" })).toHaveAttribute("href", "/driver/map");
   await expect(footer.locator(".biloo-footer-nav__label").first()).not.toHaveCSS("width", "1px");

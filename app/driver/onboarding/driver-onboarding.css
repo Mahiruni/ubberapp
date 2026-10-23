@@ -50,3 +50,26 @@
   background:#f5f7f9!important;
   border-color:#dfe7eb!important;
 }
+.nr-auth-form .biloo-driver-terms { display:flex; align-items:flex-start; gap:10px; font-size:12px; line-height:1.6; }
+.nr-auth-form .biloo-driver-terms input { width:18px; min-height:18px; height:18px; flex:0 0 18px; margin-top:3px; accent-color:#08295f; }
+.biloo-driver-terms a { color:inherit; text-decoration:underline; text-underline-offset:3px; }
+
+/* Verification also renders outside the operational shell during activation. */
+.driver-onboarding-page { background:#f4f7fc!important; color:#08295f!important; min-height:100dvh; box-sizing:border-box; }
+.driver-onboarding-page .driver-onboarding-card { box-sizing:border-box; max-width:560px; padding:clamp(20px,4vw,32px); background:#fff; border:1px solid #dce5f2; border-radius:24px; box-shadow:0 12px 40px #08295f08; }
+.biloo-verification-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; gap:20px; }
+.biloo-verification-header .driver-auth-back { margin:0; font-size:13px; color:#08295f!important; }
+.biloo-verification-header .nr-brand { margin:0; }
+.driver-onboarding-page .driver-auth-card h1 { color:#08295f!important; font-size:clamp(30px,8vw,42px); line-height:1.08; }
+.driver-onboarding-page .driver-auth-card :is(p,label,small) { color:#50627e; }
+.driver-onboarding-page .driver-auth-role { color:#876018!important; font-size:10px; letter-spacing:.13em; }
+.driver-onboarding-page .driver-auth-card :is(input,select,textarea) { box-sizing:border-box; width:100%; min-height:48px; padding:12px; background:#f9fbfe!important; color:#08295f!important; border:1px solid #c8d5e8!important; border-radius:12px; font:inherit; }
+.driver-onboarding-page .driver-auth-card input[type=file] { height:auto; min-height:58px; font-size:12px; }
+.driver-onboarding-page .driver-auth-card :is(input,select,textarea):focus-visible { outline:2px solid #08295f; outline-offset:2px; }
+.driver-onboarding-page .driver-auth-submit { display:flex; align-items:center; justify-content:center; width:100%; padding:14px; background:#08295f!important; color:#fff!important; min-height:52px; }
+.driver-onboarding-page .driver-auth-secondary { display:flex; align-items:center; justify-content:center; box-sizing:border-box; padding:12px; text-decoration:none; background:#f2f6fc!important; color:#08295f!important; border-color:#c8d5e8!important; }
+.driver-onboarding-page .driver-auth-error { color:#9b253a!important; background:#fff2f4!important; border-color:#efb7c2!important; }
+.biloo-document-preview { display:grid; gap:9px; padding:12px; border:1px solid #dce5f2; border-radius:12px; background:#f9fbfe; }
+.biloo-document-preview img { max-width:100%; max-height:220px; object-fit:contain; border-radius:8px; }
+.biloo-document-preview a { color:#08295f; font-size:12px; font-weight:700; }
+.biloo-document-preview button { min-height:44px; padding:10px; border:1px solid #c8d5e8; border-radius:10px; background:#fff; color:#08295f; font:inherit; font-size:12px; font-weight:700; }

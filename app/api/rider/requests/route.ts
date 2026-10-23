@@ -42,6 +42,7 @@ export async function POST(request: Request) {
       category,
       revision,
       paymentMethod,
+      pickupInstructions,
     } = body || {};
 
     const area = serviceBounds(process.env.NEXRIDE_SERVICE_BOUNDS);
@@ -57,6 +58,8 @@ export async function POST(request: Request) {
       return reply({ status: "unavailable" }, 422);
     if (!rideCategories.includes(category) || paymentMethod !== "cash")
       return reply({ status: "failed" }, 400);
+    if (pickupInstructions !== undefined && (typeof pickupInstructions !== "string" || pickupInstructions.length > 300))
+      return reply({ status: "invalid_pickup_instructions" }, 400);
 
     const fares = liveFareSet({ pickup, destination });
     const current = fares.offers.find((offer) => offer.category === category);
@@ -162,6 +165,7 @@ export async function POST(request: Request) {
         estimated_trip_distance_km: Number(roadKm.toFixed(2)),
         estimated_trip_duration_minutes: durationMinutes,
         payment_method: paymentMethod,
+        pickup_instructions: typeof pickupInstructions === "string" ? pickupInstructions.trim() : "",
         payment_status: "pending",
         status: "pending",
         dispatch_state: "searching",

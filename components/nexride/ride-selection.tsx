@@ -32,6 +32,7 @@ export function RideSelection({
   const model = useRideOffers(journey, onPending, onCreated);
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pickupInstructions, setPickupInstructions] = useState("");
   useEffect(() => {
     if (!model.canRequest) setConfirmOpen(false);
   }, [model.canRequest]);
@@ -406,6 +407,9 @@ export function RideSelection({
             )}
           </p>
           <div className="nr-fare-breakdown">
+            <div><span>{t("pickup")}</span><strong>{journey.pickup ? endpointName(journey.pickup, language, t) : "—"}</strong></div>
+            <div><span>{t("dropoff")}</span><strong>{journey.destination ? endpointName(journey.destination, language, t) : "—"}</strong></div>
+            {journey.routeState.route && <div><span>{language === "am" ? "መንገድ" : "Route"}</span><strong>{(journey.routeState.route.distanceMeters / 1000).toFixed(1)} km · {Math.ceil(journey.routeState.route.durationSeconds / 60)} min</strong></div>}
             <div>
               <strong>{t(model.selected)}</strong>
               <span>
@@ -430,12 +434,13 @@ export function RideSelection({
               {t("payment")}: {t("cash")}
             </p>
           </div>
+          <label className="biloo-pickup-instructions">{language === "am" ? "የመነሻ መመሪያ (አማራጭ)" : "Pickup instructions (optional)"}<textarea value={pickupInstructions} onChange={event => setPickupInstructions(event.target.value)} maxLength={300} rows={2} placeholder={language === "am" ? "የመግቢያ በር ወይም አቅራቢያ ምልክት" : "Entrance, landmark or where to meet"} /></label>
           <Button
             disabled={!model.canRequest}
             onClick={() => {
               if (model.canRequest) {
                 setConfirmOpen(false);
-                void model.request();
+                void model.request(pickupInstructions);
               }
             }}
           >

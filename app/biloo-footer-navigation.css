@@ -43,7 +43,7 @@
   }
   .biloo-footer-nav__surface {
     display: grid;
-    grid-template-columns: repeat(5,minmax(0,1fr));
+    grid-template-columns: repeat(4,minmax(0,1fr));
     align-items: stretch;
     flex: 1 1 auto;
     box-sizing: border-box;
@@ -112,17 +112,16 @@
     stroke-width: 1.9;
     fill: none;
   }
-  /* X's phone bottom navigation is icon-first: labels stay accessible to
-     screen readers but are visually hidden instead of taking vertical space. */
+  /* Four stable destinations with readable labels on Android-sized screens. */
   .biloo-footer-nav__label {
-    position: absolute!important;
-    width: 1px!important;
-    height: 1px!important;
+    position: static!important;
+    width: auto!important;
+    height: auto!important;
     padding: 0!important;
-    margin: -1px!important;
-    overflow: hidden!important;
-    clip: rect(0,0,0,0)!important;
-    clip-path: inset(50%)!important;
+    margin: 3px 0 0!important;
+    overflow: visible!important;
+    clip: auto!important;
+    clip-path: none!important;
     white-space: nowrap!important;
     border: 0!important;
   }

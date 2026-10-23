@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   browser:
-    name: Opening, accounts, portraits and live trips
+    name: Connected Rider, Driver and Admin lifecycle
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
@@ -34,11 +34,13 @@ jobs:
         with:
           node-version: '24'
           cache: npm
-      - run: npm install --no-audit --no-fund
+      - run: npm ci --no-audit --no-fund
+      - run: npm test
+      - run: npx tsc --noEmit --pretty false
       - run: npx playwright install --with-deps chromium
       - run: npm run build
       - name: Browser validation against the production build
-        run: npx playwright test tests/e2e/identity-experience.spec.ts tests/e2e/driver-portrait.spec.ts tests/e2e/trip-screens.spec.ts --project=chromium --project=mobile --workers=2
+        run: npx playwright test tests/e2e/biloo-lifecycle.spec.ts tests/e2e/biloo-booking-lifecycle.spec.ts tests/e2e/biloo-admin-operations.spec.ts tests/e2e/biloo-footer-navigation.spec.ts tests/e2e/identity-experience.spec.ts tests/e2e/driver-portrait.spec.ts tests/e2e/trip-screens.spec.ts --project=chromium --project=mobile --workers=2
       - uses: actions/upload-artifact@v4
         if: always()
         with:

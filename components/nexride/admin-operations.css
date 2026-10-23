@@ -1,0 +1,24 @@
+.biloo-operation-dialog { width:min(940px,calc(100vw - 24px)); max-height:calc(100dvh - 32px); padding:0; border:1px solid #dbe2ee; border-radius:22px; background:#fff; color:#152847; box-shadow:0 24px 90px #08295f38; }
+.biloo-operation-dialog::backdrop { background:#071b3bb8; }
+.biloo-operation-dialog header { position:sticky; top:0; z-index:1; display:flex; justify-content:space-between; align-items:center; gap:16px; padding:22px; border-bottom:1px solid #e5eaf2; background:#fff; }
+.biloo-operation-dialog small { color:#5c6b82; font-size:10px; letter-spacing:.14em; font-weight:700; }
+.biloo-operation-dialog h2 { margin:6px 0 0; color:#08295f; font-size:24px; letter-spacing:-.035em; }
+.biloo-operation-dialog button { min-height:44px; padding:10px 15px; border:1px solid #cbd6e6; border-radius:12px; background:#f2f6fc; color:#08295f; font:inherit; font-size:13px; font-weight:700; cursor:pointer; }
+.biloo-operation-dialog button:disabled { opacity:.6; cursor:wait; }
+.biloo-operation-body { padding:22px; display:grid; gap:18px; }
+.biloo-operation-body p { color:#4b5c75; font-size:13px; line-height:1.6; margin:0; }
+.biloo-operation-summary { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1px; background:#e4eaf3; border:1px solid #e4eaf3; border-radius:14px; overflow:hidden; margin:0; }
+.biloo-operation-summary div { padding:13px; background:#f8faff; min-width:0; }
+.biloo-operation-summary dt { text-transform:capitalize; font-size:11px; color:#5c6b82; }
+.biloo-operation-summary dd { margin:5px 0 0; font-size:13px; font-weight:600; overflow-wrap:anywhere; }
+.biloo-operation-section { min-width:0; }
+.biloo-operation-section h3 { font-size:15px; margin:0 0 12px; color:#08295f; }
+.biloo-operation-table { max-width:100%; overflow:auto; border:1px solid #e4eaf3; border-radius:12px; }
+.biloo-operation-table table { border-collapse:collapse; width:100%; font-size:12px; }
+.biloo-operation-table :is(th,td) { text-align:left; padding:11px; border-bottom:1px solid #e4eaf3; white-space:normal; min-width:100px; max-width:320px; overflow-wrap:anywhere; color:#233956; }
+.biloo-operation-table th { background:#f2f6fc; text-transform:capitalize; }
+.biloo-operation-note { border-left:3px solid #f9c449; padding:10px 14px; background:#fffbef; }
+.biloo-review-dialog { max-width:520px; }
+.biloo-operation-body label { display:grid; gap:8px; font-size:13px; font-weight:600; }
+.biloo-operation-body textarea { width:100%; box-sizing:border-box; font:inherit; background:#fff; color:#152847; padding:12px; border:1px solid #b9c7dc; border-radius:12px; }
+@media(max-width:600px) { .biloo-operation-summary { grid-template-columns:1fr; } .biloo-operation-dialog header,.biloo-operation-body { padding:16px; } }

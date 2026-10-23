@@ -243,6 +243,7 @@ export function RiderWorkspace({
         status={locationStatus}
         position={position}
         locate={locate}
+        previewMode={!realTrips.userId}
       />
     );
   if (screen === "rides")
