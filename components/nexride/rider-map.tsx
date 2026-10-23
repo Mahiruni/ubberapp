@@ -717,6 +717,11 @@ export function RiderMap({
     let cancelled = false;
     setMapStatus("loading");
     loadedRef.current = false;
+    // Mapbox can stall indefinitely when style/tile requests never settle.
+    // Bound startup so the Rider always receives an actionable retry state.
+    const startupTimeout = window.setTimeout(() => {
+      if (!cancelled && !loadedRef.current) setMapStatus("unavailable");
+    }, 15000);
 
     const boot = async () => {
       if (!container.current) return;
@@ -852,12 +857,15 @@ export function RiderMap({
       map.on("style.load", () => {
         if (cancelled) return;
         syncStyleData();
+        loadedRef.current = true;
+        window.clearTimeout(startupTimeout);
         setMapStatus("ready");
       });
 
       map.on("load", () => {
         if (cancelled) return;
         loadedRef.current = true;
+        window.clearTimeout(startupTimeout);
         setMounted(true);
         setMapStatus("ready");
         syncStyleData();
@@ -1006,6 +1014,7 @@ export function RiderMap({
 
     return () => {
       cancelled = true;
+      window.clearTimeout(startupTimeout);
       resizeObserver.current?.disconnect();
       resizeObserver.current = null;
       pickupMarker.current?.remove();
