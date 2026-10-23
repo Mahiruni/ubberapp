@@ -418,6 +418,21 @@ function AppWorkspace({
           {t("city")}
         </span>
         <Navigation items={navItems} active={screen} onNavigate={navigate} />
+        <div className="nr-sidebar-account-actions" aria-label="Account and experience">
+          <button type="button" onClick={() => navigate("profile")} aria-current={profileView ? "page" : undefined}>
+            <Icon name="user" size={19}/><span>{t("account")}</span>
+          </button>
+          {mode === "rider" && (
+            <button type="button" onClick={() => switchMode("driver")}>
+              <Icon name="navigation" size={19}/><span>Drive with Biloo</span>
+            </button>
+          )}
+          {isAdmin && (
+            <button type="button" onClick={() => router.push("/admin")}>
+              <Icon name="users" size={19}/><span>Administration</span>
+            </button>
+          )}
+        </div>
       </aside>
       <section className="nr-main">
         <header className="nr-topbar">
