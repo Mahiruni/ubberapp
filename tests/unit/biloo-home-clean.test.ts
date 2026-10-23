@@ -24,6 +24,19 @@ describe("Biloo Rider homepage clarity", () => {
     expect(css).toContain(".biloo-home-floating-header");
   });
 
+  it("removes the routes CTA entirely and keeps one circle, one wordmark, one profile", () => {
+    expect(home).not.toContain("Explore routes across Ethiopia");
+    expect(home).not.toContain("biloo-route-home-entry");
+    expect(home).not.toContain('href="/routes"');
+    const floating = app.slice(app.indexOf('className="biloo-home-floating-header"'), app.indexOf('className="biloo-home-floating-profile"'));
+    expect(floating).toContain("<RiderMenu");
+    expect(floating).not.toContain("<Brand");
+    expect(app).toContain('{mode === "rider" && !riderHome && (');
+    expect(css).toContain("border-radius: 50%!important;");
+    expect(css).toContain(".nr-topbar-actions");
+    expect(css).toContain('width:52px;height:52px;min-width:52px;');
+  });
+
   it("retains the existing 40 percent sheet, drag handle and operational flows", () => {
     expect(home).toContain("defaultRatio: 0.4");
     expect(home).toContain("...motion.handleProps");
