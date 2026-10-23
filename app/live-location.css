@@ -203,3 +203,47 @@ html[data-nr-data-saver] .nr-live-location-marker .nr-live-location-pulse-two {
     display: none;
   }
 }
+
+
+/* Biloo identity map markers: no colored GPS dots, ripples, or round badges.
+ * The black person is Rider; the black top-down vehicle is Driver.
+ * A light silhouette edge ensures visibility on dark or satellite maps.
+ */
+.nr-live-location-marker.nr-location-identity {
+  width:48px!important;
+  height:48px!important;
+  min-width:48px!important;
+  min-height:48px!important;
+  display:grid!important;
+  place-items:center!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  pointer-events:none!important;
+  user-select:none;
+  contain:layout paint style;
+}
+.nr-live-location-marker.nr-location-identity .nr-location-identity-glyph {
+  display:block;
+  width:42px;
+  height:42px;
+  min-width:42px;
+  min-height:42px;
+  flex:none;
+  overflow:visible;
+  filter:drop-shadow(0 2px 4px rgba(0,0,0,.3));
+}
+.nr-live-location-marker.nr-location-identity[data-marker-role="driver"] .nr-location-identity-glyph {
+  width:44px;
+  height:44px;
+}
+.nr-live-location-marker.nr-location-identity.is-stale .nr-location-identity-glyph {
+  opacity:.57;
+  filter:grayscale(1) drop-shadow(0 2px 3px rgba(0,0,0,.3));
+}
+.nr-live-location-marker.nr-location-identity.is-paused .nr-location-identity-glyph,
+html[data-nr-data-saver] .nr-live-location-marker.nr-location-identity .nr-location-identity-glyph {
+  animation:none!important;
+}
