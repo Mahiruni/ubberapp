@@ -1,26 +1,37 @@
 /**
- * GPS camera framing for the default Biloo Rider home screen.
+ * Framing the LIVE location on Biloo Rider's default map.
  *
- * The home sheet lives in a separate grid row below the map. The default
- * location should sit in the central CLEAR area of the map, comfortably away
- * from the sheet, rather than being centered under the bottom controls.
+ * The target is the midpoint of the actual visible map area ABOVE the
+ * bottom "Where to?" wrapper, not the midpoint of the whole app viewport.
  *
- * A negative Mapbox camera offset raises the position on screen. This policy
- * intentionally has no effect on Driver maps, other trip stages or desktop.
+ * When the sheet occupies a separate grid row, nothing occludes the map
+ * and the correct Mapbox pixel offset is [0, 0]. If a wrapper overlays the
+ * map (e.g. during a responsive transition), offset by half the portion it
+ * covers so the GPS marker still sits in the clear map's center.
+ *
+ * This camera policy never changes Driver maps, other trip screens, desktop,
+ * the actual GPS coordinates, or the navigation route.
  */
 export function riderHomeLocationCameraOffset(
-  visibleMapHeight: number,
+  mapHeight: number,
   riderHome: boolean,
   mobile: boolean,
+  occludedBottomPx = 0,
 ): [number, number] {
   if (
     !riderHome ||
     !mobile ||
-    !Number.isFinite(visibleMapHeight) ||
-    visibleMapHeight < 180
+    !Number.isFinite(mapHeight) ||
+    mapHeight < 140
   ) {
     return [0, 0];
   }
-  // 11% above the physical canvas midpoint ≈ 39% from the top.
-  return [0, -Math.round(Math.min(150, visibleMapHeight * 0.11))];
+
+  const covered = Number.isFinite(occludedBottomPx)
+    ? Math.max(0, Math.min(mapHeight - 100, occludedBottomPx))
+    : 0;
+
+  // A negative Mapbox pixel offset places the actual GPS point higher
+  // on-screen, at 50% of the unobstructed portion of the map.
+  return [0, -Math.round(covered / 2)];
 }
