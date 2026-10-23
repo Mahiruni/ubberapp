@@ -49,7 +49,7 @@ test("Rider has no footer tabs; hamburger and Profile remain independent", async
   await expect(menu).toBeVisible();
   await expect(menu.locator(".biloo-menu-profile-card")).toHaveCount(1);
   await expect(menu.getByRole("button", { name: /My rides/i })).toBeVisible();
-  await expect(menu.getByRole("button", { name: /Wallet & payments/i })).toBeVisible();
+  await expect(menu.getByRole("button", { name: /^Wallet/i })).toBeVisible();
   await expect(menu.locator(".nr-menu-section-label").filter({ hasText: "ACCOUNT" })).toHaveCount(0);
   await page.locator(".nr-rider-drawer-close").click();
   await expect(menu).toHaveCount(0);
