@@ -623,7 +623,9 @@ export function DriverWorkspace({
                     ? "Your current location is centered on the map."
                     : mapLocation.status === "denied"
                       ? "Location permission is blocked on this device."
-                      : "Use the location button to center the map on you."}
+                      : mapLocation.status === "loading" || mapLocation.status === "idle"
+                        ? "Finding your location automatically…"
+                        : "GPS unavailable. Check device location or tap the locate button."}
                 </span>
               </div>
             </div>
