@@ -20,7 +20,7 @@ import {
 import { signOutNexRide } from "../../lib/nexride-sign-out";
 import { resolveSessionRole } from "../../lib/nexride-account-role";
 import { useAppearance } from "../../lib/nexride-appearance";
-import { readAccount } from "../../lib/nexride-account";
+import { useSharedAccountPortrait } from "../../lib/nexride-shared-portrait";
 import { supabase } from "../../lib/supabase";
 import {
   Icon,
@@ -76,8 +76,8 @@ export function RiderMenu({
   const say = (en: string, am: string) => (language === "am" ? am : en);
   const [open, setOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(Boolean(adminOverride));
-  const [identity, setIdentity] = useState({name:"", avatar:""});
-  const [hasSession, setHasSession] = useState(false);
+  const portrait = useSharedAccountPortrait();
+  const initials = portrait.name.trim().split(/\s+/).slice(0,2).map(part => part[0]).join("").toUpperCase() || "BL";
   const [signingOut, setSigningOut] = useState(false);
   const [signOutError, setSignOutError] = useState("");
   const triggerRef = useRef<HTMLButtonElement | null>(null);
@@ -92,17 +92,10 @@ export function RiderMenu({
 
     void supabase.auth.getSession().then(async ({ data }) => {
       if (!activeEffect) return;
-      setHasSession(Boolean(data.session));
-      if (data.session) {
-        const account = await readAccount().catch(() => null);
-        if (activeEffect) setIdentity({name:account?.profile.name || "",avatar:account?.avatar || ""});
-      }
       if (!data.session || adminOverride !== undefined) return;
       const role = await resolveSessionRole(data.session).catch(() => "");
       if (activeEffect) setIsAdmin(role === "admin");
-    }).catch(() => {
-      if (activeEffect) setHasSession(false);
-    });
+    }).catch(() => {});
 
     return () => {
       activeEffect = false;
@@ -255,7 +248,6 @@ export function RiderMenu({
         localStorage.removeItem("nexride-state");
       } catch {}
       retryStartup(true);
-      setHasSession(false);
       setOpen(false);
       window.location.replace("/rider/sign-in?logged_out=1");
     } catch {
@@ -333,6 +325,19 @@ export function RiderMenu({
               </button>
             </header>
 
+            <button type="button" className="biloo-menu-profile-card" disabled={locked}
+              onClick={() => navigate("profile")} aria-label={say("View my profile", "መገለጫዬን ይመልከቱ")}>
+              <span className="biloo-menu-profile-avatar">
+                <span aria-hidden="true">{initials}</span>
+                {portrait.url && <img src={portrait.url} width={62} height={62} decoding="async" alt=""
+                  onError={event => { event.currentTarget.style.display = "none"; }}/>}
+              </span>
+              <span className="biloo-menu-profile-copy">
+                <strong>{portrait.name || say("My profile", "የእኔ መገለጫ")}</strong>
+                <small>{say("Rider account · Edit photo", "የተሳፋሪ መለያ · ፎቶ አርትዕ")}</small>
+              </span>
+              <Icon name="chevron" size={18}/>
+            </button>
 
             <div className="nr-menu-scroll" data-testid="rider-menu-scroll">
               <div className="nr-menu-section-label">{say("OVERVIEW", "አጠቃላይ")}</div>
