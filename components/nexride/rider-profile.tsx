@@ -312,7 +312,6 @@ export function RiderProfile(props:Props) {
         <h3>{say('Your data, clearly explained','ስለ ውሂብዎ ግልጽ መረጃ')}</h3>
         <p>{say('Signed-in profile details, bookings and feedback are stored with your Biloo account and protected by the existing account permissions.','የመገለጫ ዝርዝሮች፣ ጉዞዎችና አስተያየቶች በBiloo መለያዎ ይቀመጣሉ።')}</p>
         <p>{say('Preview details and preferences are stored in this browser. Location permission stays under your browser or device controls.','የማሳያ ዝርዝሮችና ምርጫዎች በዚህ አሳሽ ይቀመጣሉ።')}</p>
-        <a className="nr-settings-security-link" href="/account/manage">{t('entryAccountSecurity')}<Icon name="chevron" size={17}/></a>
       </div>
       :<>
         <div className="nr-signout-confirm">
