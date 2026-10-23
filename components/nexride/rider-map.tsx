@@ -1132,9 +1132,16 @@ export function RiderMap({
       const recenterChanged = lastRecenter.current !== recenter;
       lastRecenter.current = recenter;
 
-      if (isNew || recenterChanged) manualView.current = false;
+      // A first GPS fix must not steal a map that the user has already panned,
+      // nor replace an already planned pickup→destination route. A deliberate
+      // tap on the recenter control is the only override of those choices.
+      if (recenterChanged) manualView.current = false;
+      const plannedRoute = Boolean(
+        journeyRef.current?.pickup?.confirmed &&
+        journeyRef.current?.destination?.confirmed,
+      );
 
-      if (!manualView.current) {
+      if (!manualView.current && (!plannedRoute || recenterChanged)) {
         currentMap.easeTo({
           center: target,
           zoom:
