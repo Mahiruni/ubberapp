@@ -27,7 +27,7 @@ describe("Biloo automatic map location", () => {
 
   it("centers immediately on a valid GPS fix, not an assumed city", () => {
     expect(map).toContain("positionRef.current && statusRef.current === \"ready\"");
-    expect(map).toContain("center: [positionRef.current.lng, positionRef.current.lat]");
+    expect(map).toContain("? [positionRef.current.lng, positionRef.current.lat]");
     expect(map).toContain("const target: [number, number] = [position.lng, position.lat]");
     expect(map).toContain("currentMap.easeTo({");
     expect(map).toContain("center: target,");
@@ -48,7 +48,7 @@ describe("Biloo automatic map location", () => {
     expect(driver).toContain('screen === "map"');
     expect(driver).toContain("Finding your location automatically");
     expect(driver).toContain("GPS unavailable. Check device location");
-    expect(driver).toContain("nr-driver-availability-swipe");
+    expect(driver).toContain("nr-driver-home-swipe");
     expect(map).toContain('status === "denied"');
     expect(map).toContain('onClick={locate}');
     expect(map).toContain('aria-label={t("recenter")}');
