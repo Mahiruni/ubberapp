@@ -205,8 +205,8 @@ html[data-nr-data-saver] .nr-live-location-marker .nr-live-location-pulse-two {
 }
 
 
-/* Biloo identity map markers: no colored GPS dots, ripples, or round badges.
- * The black person is Rider; the black top-down vehicle is Driver.
+/* Biloo identity map markers: black person for Rider, black car for Driver.
+ * The Rider's location gets a subtle green heartbeat halo behind the icon.
  * A light silhouette edge ensures visibility on dark or satellite maps.
  */
 .nr-live-location-marker.nr-location-identity {
@@ -246,4 +246,71 @@ html[data-nr-data-saver] .nr-live-location-marker .nr-live-location-pulse-two {
 .nr-live-location-marker.nr-location-identity.is-paused .nr-location-identity-glyph,
 html[data-nr-data-saver] .nr-live-location-marker.nr-location-identity .nr-location-identity-glyph {
   animation:none!important;
+}
+
+/* Rider-only GPS heartbeat: two green rings widen and close BEHIND the black
+ * person silhouette. Driver car markers do not receive this decoration.
+ * Do not clip the concentric waves to the marker's 48px hit-free bounds. */
+.nr-live-location-marker.nr-location-identity[data-marker-role="rider"] {
+  position:relative!important;
+  contain:layout style!important;
+  overflow:visible!important;
+  isolation:isolate;
+}
+.nr-live-location-marker.nr-location-identity[data-marker-role="rider"]::before,
+.nr-live-location-marker.nr-location-identity[data-marker-role="rider"]::after {
+  content:"";
+  position:absolute;
+  left:50%;
+  top:50%;
+  z-index:0;
+  box-sizing:border-box;
+  width:38px;
+  height:38px;
+  border:2.5px solid rgba(6,157,69,.78);
+  border-radius:50%;
+  background:rgba(6,157,69,.13);
+  pointer-events:none;
+  transform:translate(-50%,-50%) scale(.66);
+  opacity:0;
+  will-change:transform,opacity;
+  animation:biloo-rider-location-heartbeat 2.8s ease-in-out infinite;
+}
+.nr-live-location-marker.nr-location-identity[data-marker-role="rider"]::after {
+  animation-delay:-1.4s;
+}
+.nr-live-location-marker.nr-location-identity[data-marker-role="rider"] > .nr-location-identity-glyph {
+  position:relative;
+  z-index:1;
+}
+@keyframes biloo-rider-location-heartbeat {
+  0%   {transform:translate(-50%,-50%) scale(.66);opacity:.3}
+  16%  {transform:translate(-50%,-50%) scale(1);opacity:.77}
+  52%  {transform:translate(-50%,-50%) scale(2.35);opacity:.20}
+  70%  {transform:translate(-50%,-50%) scale(2.55);opacity:0}
+  87%  {transform:translate(-50%,-50%) scale(.66);opacity:0}
+  100% {transform:translate(-50%,-50%) scale(.66);opacity:.3}
+}
+/* No perpetual effect on stale fixes, minimized screens or data-saver mode. */
+.nr-live-location-marker.nr-location-identity[data-marker-role="rider"].is-stale::before,
+.nr-live-location-marker.nr-location-identity[data-marker-role="rider"].is-stale::after,
+.nr-live-location-marker.nr-location-identity[data-marker-role="rider"].is-paused::before,
+.nr-live-location-marker.nr-location-identity[data-marker-role="rider"].is-paused::after,
+html[data-nr-data-saver] .nr-live-location-marker.nr-location-identity[data-marker-role="rider"]::before,
+html[data-nr-data-saver] .nr-live-location-marker.nr-location-identity[data-marker-role="rider"]::after {
+  animation:none!important;
+  will-change:auto;
+  opacity:0!important;
+}
+@media(prefers-reduced-motion:reduce) {
+  .nr-live-location-marker.nr-location-identity[data-marker-role="rider"]::before,
+  .nr-live-location-marker.nr-location-identity[data-marker-role="rider"]::after {
+    animation:none!important;
+    will-change:auto;
+    transform:translate(-50%,-50%) scale(1.24);
+    opacity:.38;
+  }
+  .nr-live-location-marker.nr-location-identity[data-marker-role="rider"]::after {
+    display:none;
+  }
 }
