@@ -662,8 +662,14 @@ export function RiderMap({
       const map = new mapboxgl.default.Map({
         container: container.current,
         style: STYLE_URLS[preferredStyle || styleKey],
-        center: INITIAL_CENTER,
-        zoom: INITIAL_ZOOM,
+        // If GPS resolved before Mapbox finished loading, start at the real
+        // device position rather than briefly displaying the fallback city.
+        center: positionRef.current && statusRef.current === "ready"
+          ? [positionRef.current.lng, positionRef.current.lat]
+          : INITIAL_CENTER,
+        zoom: positionRef.current && statusRef.current === "ready"
+          ? Math.max(INITIAL_ZOOM, 16)
+          : INITIAL_ZOOM,
         pitch: INITIAL_PITCH,
         bearing: INITIAL_BEARING,
         attributionControl: true,
