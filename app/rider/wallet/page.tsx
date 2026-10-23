@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "../../../components/nexride/ui";
-import { BilooFooterNav, riderFooterLinks } from "../../../components/nexride/biloo-footer-nav";
 import { RiderMenu, usePersistedRiderTheme } from "../../../components/nexride/rider-menu";
 import { useOperationalTranslation } from "../../../components/nexride/operational-i18n";
 import { supabase } from "../../../lib/supabase";
@@ -232,7 +231,6 @@ export default function RiderWalletPage() {
         )}
       </div>
       <RiderMenu active="wallet" />
-      <BilooFooterNav role="rider" active="wallet" items={riderFooterLinks()} />
     </main>
   );
 }
