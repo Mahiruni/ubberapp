@@ -234,33 +234,33 @@ function SafetyHome({
         </div>
       </section>
 
-      <div className="nr-safety-actions">
+      <div className="nr-safety-actions biloo-safety-quick-actions" aria-label={op("Safety actions")}>
         <SafetyAction
-          tone="danger"
-          icon="phone"
-          title={op("Emergency SOS")}
-          detail={op("Open emergency call options. Biloo does not dispatch responders.")}
-          onClick={() => open("sos")}
+          tone="info"
+          icon="chat"
+          title={op("Support")}
+          detail={op("Safety and trip help")}
+          onClick={() => open("help")}
         />
         <SafetyAction
           tone="success"
           icon="share"
-          title={op("Share your trip")}
-          detail={op("Share a secure, expiring live trip link with someone you trust.")}
+          title={op("Share with contacts")}
+          detail={op("Secure live-trip link")}
           onClick={() => open("share")}
         />
         <SafetyAction
-          tone="info"
-          icon="chat"
-          title={op("Help Center")}
-          detail={op("Find guidance for safety, trip, location, and connection issues.")}
-          onClick={() => open("help")}
+          tone="danger"
+          icon="phone"
+          title={op("Emergency call options")}
+          detail={op("Choose a phone service; no call is placed automatically")}
+          onClick={() => open("sos")}
         />
         <SafetyAction
           tone="neutral"
           icon="info"
           title={op("Report an issue")}
-          detail={op("Tell Biloo what happened and include trip details when available.")}
+          detail={op("Attach trip details when available")}
           onClick={() => open("report")}
         />
       </div>
@@ -269,7 +269,7 @@ function SafetyHome({
         <h2 id="biloo-protection-title">{op("How you're protected")}</h2>
         <div className="biloo-safety-protection-grid">
           <button type="button" onClick={() => open("help")}><Icon name="shield" size={24}/><strong>{op("Proactive safety support")}</strong><small>{op("Find guidance and help for your journey")}</small></button>
-          <button type="button" onClick={() => open("help")}><Icon name="user" size={24}/><strong>{op("Driver verification")}</strong><small>{op("Understand driver and vehicle checks")}</small></button>
+          <button type="button" onClick={() => open("help")}><Icon name="user" size={24}/><strong>{op("Driver verification")}</strong><small>{op("Learn how Biloo checks drivers and vehicles")}</small></button>
           <button type="button" onClick={() => open("share")}><Icon name="share" size={24}/><strong>{op("Protecting your privacy")}</strong><small>{op("Share only the trip details you choose")}</small></button>
           <button type="button" onClick={() => open("sos")}><Icon name="phone" size={24}/><strong>{op("Staying safe on every ride")}</strong><small>{op("Emergency calling options")}</small></button>
           <button type="button" onClick={() => open("report")}><Icon name="info" size={24}/><strong>{op("Accidents: steps to take")}</strong><small>{op("Report an incident to Biloo")}</small></button>
