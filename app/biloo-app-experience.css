@@ -29,7 +29,7 @@
 }
 /* Small predictable hover/focus transitions; do not animate map or sheet geometry. */
 .nr-app[data-mode="rider"] :is(.nr-home-search,.nr-home-shortcuts button,.nr-home-destinations button,.nr-list-row,.nr-navigation button,.nr-sidebar-bottom>button,.nr-mode-control button),
-.nr-driver-app-shell :is(.nr-driver-primary,.nr-driver-icon-btn,.nr-driver-home-quick-actions button,.nr-driver-global-icon-button),
+.nr-driver-app-shell :is(.nr-driver-primary,.nr-driver-icon-btn,.nr-driver-global-icon-button),
 .nr-identity-entry :is(.nr-auth-submit,.nr-auth-create-link,.nr-auth-back) {
   transition: background-color var(--biloo-motion-base) ease,
     border-color var(--biloo-motion-base) ease,
@@ -39,12 +39,12 @@
 }
 @media (hover:hover) and (pointer:fine) {
   .nr-app[data-mode="rider"] :is(.nr-home-search,.nr-home-shortcuts button,.nr-home-destinations button):hover:not(:disabled),
-  .nr-driver-app-shell :is(.nr-driver-home-quick-actions button,.nr-driver-global-icon-button):hover:not(:disabled) {
+  .nr-driver-app-shell :is(.nr-driver-global-icon-button):hover:not(:disabled) {
     box-shadow: var(--biloo-app-shadow);
   }
 }
 .nr-app[data-mode="rider"] :is(.nr-home-search,.nr-home-shortcuts button,.nr-home-destinations button):active:not(:disabled),
-.nr-driver-app-shell :is(.nr-driver-home-quick-actions button,.nr-driver-global-icon-button):active:not(:disabled) {
+.nr-driver-app-shell :is(.nr-driver-global-icon-button):active:not(:disabled) {
   transform: scale(.985);
 }
 /* Rider desktop application chrome; preserve the mobile map-first composition. */
@@ -196,14 +196,10 @@
   letter-spacing: -.035em;
   line-height: 1.2;
 }
-.nr-driver-app-shell .nr-driver-home-quick-actions button {
-  border-radius: 12px;
-  font-weight: 650;
-}
 .nr-driver-app-shell .nr-driver-home-control-online {
   font-variant-numeric: tabular-nums;
 }
-.nr-driver-app-shell :is(.nr-driver-profile-row,.nr-earnings-report-action,.nr-driver-activity-page a,.nr-driver-home-quick-actions button):focus-visible {
+.nr-driver-app-shell :is(.nr-driver-profile-row,.nr-earnings-report-action,.nr-driver-activity-page a):focus-visible {
   outline: 3px solid var(--biloo-focus);
   outline-offset: 3px;
 }
@@ -299,7 +295,7 @@
 /* Respect reduced-motion requirements in both native and web. */
 @media (prefers-reduced-motion: reduce) {
   .nr-app[data-mode="rider"] :is(.nr-home-search,.nr-home-shortcuts button,.nr-home-destinations button,.nr-list-row,.nr-navigation button,.nr-ride-selection .nr-ride-card),
-  .nr-driver-app-shell :is(.nr-driver-primary,.nr-driver-icon-btn,.nr-driver-home-quick-actions button,.nr-driver-global-icon-button,.nr-driver-card,.nr-driver-profile-section,.nr-profile-panel,.nr-earnings-total-card),
+  .nr-driver-app-shell :is(.nr-driver-primary,.nr-driver-icon-btn,.nr-driver-global-icon-button,.nr-driver-card,.nr-driver-profile-section,.nr-profile-panel,.nr-earnings-total-card),
   .nr-identity-entry :is(.nr-auth-submit,.nr-auth-input),
   :is(.nr-rider-drawer-layer,.nr-driver-menu-layer) :is(.nr-rider-drawer-nav button,.nr-driver-menu-row,.nr-driver-menu-utility),
   .biloo-driver-welcome :is(.biloo-driver-welcome__start,.biloo-driver-welcome__signin,.biloo-driver-welcome__register) {
