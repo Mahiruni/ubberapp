@@ -171,13 +171,9 @@ export default function RootLayout({
   return (
     <html lang="en" dir="ltr">
       <head>
-        <link
-          rel="preload"
-          href="/fonts/Benaiah/Benaiah-Bold-Ethiopic.woff2?v=5"
-          as="font"
-          type="font/woff2"
-          crossOrigin="anonymous"
-        />
+        {/* The Ethiopic face is unicode-ranged and font-display:swap.
+            Don't force-download it before the first Rider/Driver frame in
+            English; it still loads naturally when Amharic glyphs appear. */}
       </head>
       <body>
         <NexRideNativeLaunchBridge />
