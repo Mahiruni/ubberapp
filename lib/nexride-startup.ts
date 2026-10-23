@@ -11,7 +11,7 @@ export const ACTIVE_ACCOUNT_ROLE_KEY = "nexride:active-account-role";
 export type SignedOutRole = "rider" | "driver";
 export type StartupDestination = "/" | "/onboarding" | "/rider/sign-in" | "/driver/auth" | "/driver/onboarding" | "/driver/home";
 export type RestoredPreferences = { language: Language; mode: "rider" | "driver"; theme: "light" | "dark"; profile: PreviewProfile; trip: PreviewTrip | null };
-export type StartupResult = { preferences: RestoredPreferences; destination: StartupDestination; session: Session | null };
+export type StartupResult = { preferences: RestoredPreferences; destination: StartupDestination; session: Session | null; /** Authoritatively resolved once during startup; omit on externally established sessions. */ accountRole?: string | null };
 export class StartupError extends Error { constructor(public readonly kind: "preferences" | "session") { super(kind === "preferences" ? "Unable to restore saved preferences." : "Unable to restore the session."); this.name = "StartupError"; } }
 // A permanently invalid refresh token requires a new sign-in; a network failure
 // must never be mistaken for a logout or cause the stored identity to be erased.
@@ -179,7 +179,14 @@ export function initializeRider(): Promise<StartupResult> {
 
       const destination = startupDestination({ ...restored, session,
         accountRole: activeRiderRole ? "rider" : accountRole });
-      completed = { preferences: restored.preferences, destination, session };
+      // Reuse the role already verified above. The home page previously
+      // repeated this database request before rendering its first frame.
+      completed = {
+        preferences: restored.preferences,
+        destination,
+        session,
+        accountRole: activeRiderRole ? "rider" : role,
+      };
       return completed;
     } catch (error) {
       throw error instanceof StartupError ? error : new StartupError("session");
