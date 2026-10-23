@@ -36,6 +36,19 @@ export async function readAccount(): Promise<RiderAccount | null> {
         avatar = signed.data?.signedUrl || null;
       }
     }
+    // Legacy Driver identities may have an approved portrait but no shared
+    // profiles.avatar_path yet. Use the same fallback for BOTH experiences,
+    // without copying or modifying verification evidence.
+    if (!avatar) {
+      const legacy = await supabase.from('driver_profile_photos')
+        .select('storage_path').eq('driver_id', userId).eq('status', 'approved')
+        .order('created_at', { ascending: false }).limit(1).maybeSingle();
+      if (!legacy.error && legacy.data?.storage_path) {
+        const signed = await supabase.storage.from('nexride-driver-photos')
+          .createSignedUrl(legacy.data.storage_path, 900);
+        avatar = signed.data?.signedUrl || null;
+      }
+    }
     const value: RiderAccount = {
       id: data.id,
       profile: { name: data.full_name || '', phone: data.phone || '', email: session.session.user.email || '' },
