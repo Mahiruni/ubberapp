@@ -52,6 +52,28 @@ const emptyFeatureCollection = {
   features: [],
 };
 
+/**
+ * Center the device marker in the CLEAR area of the Rider home map rather
+ * than close to its bottom wrapper. The home sheet is already laid out in a
+ * separate grid row, so offset only the map camera (never the sheet itself).
+ *
+ * The location marker sits at ~39% of map height, leaving comfortable
+ * breathing room above the sheet and below the floating map controls.
+ * Other ride screens, Driver maps, and desktop keep their native centers.
+ */
+function deviceLocationCameraOffset(map: MapboxMap): [number, number] {
+  const container = map.getContainer();
+  if (
+    typeof window === "undefined" ||
+    window.innerWidth > 800 ||
+    !container.closest(".rider-home-view")
+  ) return [0, 0];
+
+  const height = container.clientHeight;
+  if (!height || height < 180) return [0, 0];
+  return [0, -Math.round(Math.min(150, height * 0.11))];
+}
+
 const accuracyPolygon = (
   lat: number,
   lng: number,
@@ -699,6 +721,15 @@ export function RiderMap({
       });
       mapRef.current = map;
       activeStyleRef.current = styleKey;
+      // A GPS fix may predate Mapbox's first render; give it the same
+      // clear-map offset as later live updates and the locate control.
+      if (positionRef.current && statusRef.current === "ready") {
+        map.jumpTo({
+          center: [positionRef.current.lng, positionRef.current.lat],
+          zoom: Math.max(INITIAL_ZOOM, 16),
+          offset: deviceLocationCameraOffset(map),
+        });
+      }
 
       map.touchZoomRotate.enable();
       map.dragPan.enable();
@@ -819,13 +850,16 @@ export function RiderMap({
           positionRef.current &&
           statusRef.current === "ready"
         ) {
-          map.jumpTo({
-            center: [
-              positionRef.current.lng,
-              positionRef.current.lat,
-            ],
-            zoom: 16,
-          });
+          if (!manualView.current) {
+            map.jumpTo({
+              center: [
+                positionRef.current.lng,
+                positionRef.current.lat,
+              ],
+              zoom: Math.max(map.getZoom(), 16),
+              offset: deviceLocationCameraOffset(map),
+            });
+          }
         }
       });
 
@@ -904,6 +938,24 @@ export function RiderMap({
 
       resizeObserver.current = new ResizeObserver(() => {
         map.resize();
+        // When the default Rider sheet expands/collapses or the screen
+        // rotates, keep a real fix in the visible map's clear center.
+        // Never take control away from a user's pan or a planned route.
+        const fix = positionRef.current;
+        const planned = Boolean(
+          journeyRef.current?.pickup?.confirmed &&
+          journeyRef.current?.destination?.confirmed,
+        );
+        if (
+          fix && statusRef.current === "ready" &&
+          !manualView.current && !planned &&
+          container.current?.closest(".rider-home-view")
+        ) {
+          map.jumpTo({
+            center: [fix.lng, fix.lat],
+            offset: deviceLocationCameraOffset(map),
+          });
+        }
       });
       resizeObserver.current.observe(container.current);
     };
@@ -1183,6 +1235,7 @@ export function RiderMap({
       if (!manualView.current && (!plannedRoute || recenterChanged)) {
         currentMap.easeTo({
           center: target,
+          offset: deviceLocationCameraOffset(currentMap),
           zoom:
             isNew || recenterChanged
               ? Math.max(currentMap.getZoom(), 16)
@@ -1579,6 +1632,7 @@ export function RiderMap({
             if (position && mapRef.current)
               mapRef.current.easeTo({
                 center: [position.lng, position.lat],
+                offset: deviceLocationCameraOffset(mapRef.current),
                 zoom: Math.max(mapRef.current.getZoom(), 16),
                 duration: 280,
               });
