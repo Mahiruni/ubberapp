@@ -265,6 +265,17 @@ function SafetyHome({
         />
       </div>
 
+      <section className="biloo-safety-protection" aria-labelledby="biloo-protection-title">
+        <h2 id="biloo-protection-title">{op("How you're protected")}</h2>
+        <div className="biloo-safety-protection-grid">
+          <button type="button" onClick={() => open("help")}><Icon name="shield" size={24}/><strong>{op("Proactive safety support")}</strong><small>{op("Find guidance and help for your journey")}</small></button>
+          <button type="button" onClick={() => open("help")}><Icon name="user" size={24}/><strong>{op("Driver verification")}</strong><small>{op("Understand driver and vehicle checks")}</small></button>
+          <button type="button" onClick={() => open("share")}><Icon name="share" size={24}/><strong>{op("Protecting your privacy")}</strong><small>{op("Share only the trip details you choose")}</small></button>
+          <button type="button" onClick={() => open("sos")}><Icon name="phone" size={24}/><strong>{op("Staying safe on every ride")}</strong><small>{op("Emergency calling options")}</small></button>
+          <button type="button" onClick={() => open("report")}><Icon name="info" size={24}/><strong>{op("Accidents: steps to take")}</strong><small>{op("Report an incident to Biloo")}</small></button>
+        </div>
+      </section>
+
       <section className="nr-safety-context">
         <span>{op("TRIP CONTEXT")}</span>
         {loadingTrip ? (
