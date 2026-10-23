@@ -661,3 +661,83 @@
     padding:9px 10px!important;
   }
 }
+
+/* Driver drawer in standalone safety/support views uses the same comfortable
+ * role-scoped menu without a second profile or any tab footer. */
+.nr-driver-standalone-menu .nr-driver-menu-trigger {
+  box-sizing:border-box!important;
+  width:48px!important;
+  height:48px!important;
+  min-width:48px!important;
+  min-height:48px!important;
+  padding:0!important;
+  border:1px solid #dce5f0!important;
+  border-radius:50%!important;
+  background:#fff!important;
+  color:#08295f!important;
+  box-shadow:0 5px 18px rgba(8,41,95,.13)!important;
+}
+.nr-driver-standalone-menu .nr-driver-menu-trigger:focus-visible {
+  outline:3px solid #3975bf!important;
+  outline-offset:3px!important;
+  border-radius:50%!important;
+}
+.nr-driver-menu-layer {
+  justify-content:flex-start!important;
+}
+.nr-driver-menu-layer .nr-driver-menu-panel {
+  box-sizing:border-box!important;
+  width:min(88vw,360px)!important;
+  max-width:100vw!important;
+  border-left:0!important;
+  border-right:1px solid var(--ed-line)!important;
+  border-radius:0 22px 22px 0!important;
+  background:var(--ed-bg)!important;
+  color:var(--ed-ink)!important;
+  box-shadow:16px 0 48px rgba(4,25,59,.19)!important;
+}
+.nr-driver-menu-layer .nr-driver-menu-nav>.nr-driver-menu-row {
+  min-height:60px!important;
+  padding:10px 12px!important;
+  gap:12px!important;
+}
+.nr-driver-menu-layer .nr-driver-menu-secondary {
+  display:grid;
+  gap:4px;
+  padding:0 5px 4px;
+}
+.nr-driver-menu-layer .nr-driver-menu-secondary>a {
+  box-sizing:border-box;
+  min-height:60px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:10px 12px;
+  border:1px solid var(--ed-line);
+  border-radius:14px;
+  color:var(--ed-ink);
+  text-decoration:none;
+  background:var(--ed-panel);
+}
+.nr-driver-menu-layer .nr-driver-menu-secondary>a>span {
+  display:grid;
+  flex:1 1 auto;
+  min-width:0;
+  gap:4px;
+}
+.nr-driver-menu-layer .nr-driver-menu-secondary>a strong{
+  font-size:13px;
+  font-weight:780;
+}
+.nr-driver-menu-layer .nr-driver-menu-secondary>a small{
+  font-size:11px;
+  color:var(--ed-muted);
+}
+.nr-driver-menu-layer .nr-driver-menu-secondary>a>svg:last-child{color:var(--ed-muted)}
+.nr-driver-menu-layer .nr-driver-menu-secondary>a:focus-visible {
+  outline:3px solid var(--ed-accent)!important;
+  outline-offset:2px!important;
+}
+@media(prefers-reduced-motion:reduce) {
+  .nr-driver-standalone-menu .nr-driver-menu-trigger {transition:none!important;}
+}
