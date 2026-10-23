@@ -5,9 +5,7 @@ import { useRouter } from "next/navigation";
 import { NexRideFeedbackSettings } from "../../../../components/nexride/feedback-settings";
 import { PermissionSettings } from "../../../../components/nexride/permission-settings";
 import { NativeReliabilitySettings } from "../../../../components/nexride/native-reliability-settings";
-import { AppLockSettings } from "../../../../components/nexride/app-lock-settings";
 import { SettingsGroups } from "../../../../components/nexride/settings-groups";
-import { AppVersion } from "../../../../components/nexride/app-version";
 import { Icon, LanguageContext, useTranslation } from "../../../../components/nexride/ui";
 import { announceLanguage } from "../../../../components/nexride/language-provider";
 import { DriverThemeSelector } from "../../../../components/nexride/driver-app-shell";
@@ -145,24 +143,15 @@ export default function DriverProfileSettingsPage() {
           {feedback && <div className={"nr-profile-alert " + (success ? "success" : "")} role={success ? "status" : "alert"}><Icon name={success ? "check" : "info"} size={17}/><span>{feedback}</span></div>}
 
         </section>
-        <section className="nr-profile-panel"><div className="nr-profile-panel-head"><div><h2>{t("entryVerifiedInformation")}</h2><p>{t("entryVerifiedInformationHint")}</p></div></div><div className="nr-doc-actions"><button className="nr-doc-secondary" onClick={() => router.push("/driver/profile/documents")}><Icon name="shield" size={16}/>{t("entryDocuments")}</button><button className="nr-doc-secondary" onClick={() => router.push("/driver/profile/vehicle")}><Icon name="pin" size={16}/>{t("entryVehicle")}</button></div></section>
-            <a className="nr-settings-security-link" href="/account/manage?role=driver#account-deletion">{say("Account deletion", "መለያ መሰረዝ")}<Icon name="chevron" size={17}/></a>
-          </> },
-          { id: "security", icon: "shield", title: say("Security & App Lock", "ደህንነት እና የመተግበሪያ ቁልፍ"), summary: say("App lock, sessions and permissions", "የመተግበሪያ ቁልፍ፣ መግቢያ እና ፈቃዶች"), children: <>
-            <AppLockSettings/><PermissionSettings/>
-          <a className="nr-settings-security-link" href="/account/manage?role=driver#account-security"><Icon name="shield" size={20}/><span>{t("entryAccountSecurity")}</span><Icon name="chevron" size={17}/></a>
           </> },
           { id: "notifications", icon: "bell", title: say("Notifications", "ማሳወቂያዎች"), summary: say("Ride alerts, sounds and haptics", "የጉዞ ማሳወቂያ፣ ድምፅ እና ንዝረት"), children: <>
-            <NexRideFeedbackSettings role="driver" language={language}/><NativeReliabilitySettings role="driver"/>
+            <PermissionSettings/><NexRideFeedbackSettings role="driver" language={language}/><NativeReliabilitySettings role="driver"/>
           </> },
           { id: "appearance", icon: "globe", title: say("Language & Appearance", "ቋንቋ እና ገጽታ"), summary: say("English, Amharic and your theme", "እንግሊዝኛ፣ አማርኛ እና ገጽታ"), children: <>
         <section className="nr-profile-panel"><div className="nr-profile-panel-head"><div><h2>{t("entryPreferences")}</h2><p>{t("appearanceHint")}</p></div></div>
           <div className="nr-driver-preference-block"><div className="nr-driver-preference-label"><strong>{t("appearance")}</strong></div><DriverThemeSelector/></div>
           <div className="nr-driver-preference-block"><div className="nr-driver-preference-label"><strong>{t("language")}</strong></div><div className="nr-driver-language-selector" role="group" aria-label={t("language")}><button type="button" data-active={language === "en"} aria-pressed={language === "en"} onClick={() => announceLanguage("en")}>English</button><button type="button" data-active={language === "am"} aria-pressed={language === "am"} onClick={() => announceLanguage("am")}>አማርኛ</button></div></div>
         </section>
-          </> },
-          { id: "help", icon: "info", title: say("Help & About", "እገዛ እና ስለ እኛ"), summary: say("Support, legal and app information", "ድጋፍ፣ ሕጋዊ መረጃ እና ስለ መተግበሪያው"), children: <>
-        <nav className="nr-settings-legal" aria-label={t("entryAccountSecurity")}><a href="/support?role=driver">{t("help")}</a><a href="/explore/terms">{t("entryTerms")}</a><a href="/explore/privacy">{t("entryPrivacy")}</a><a href="/explore/about">{language === "am" ? "ስለ Biloo" : "About Biloo"}</a></nav><AppVersion/>
           </> },
         ]}/>
       </> : <section className="nr-profile-state-card" role="alert"><Icon name="info" size={22}/><strong>{t("entrySettingsUnavailable")}</strong><p>{feedback || t("entryProfileLoadFailure")}</p><button type="button" onClick={() => window.location.reload()}>{t("tryAgain")}</button></section>}
