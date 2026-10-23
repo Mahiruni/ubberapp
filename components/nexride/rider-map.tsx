@@ -11,6 +11,7 @@ import { Icon, LanguageContext, Spinner, useTranslation } from "./ui";
 import { endpointName } from "./destination";
 import type { Journey } from "../../lib/nexride-journey";
 import type { LocationStatus, RiderLocation } from "../../lib/nexride-location";
+import { riderHomeLocationCameraOffset } from "../../lib/biloo-map-camera";
 import { nexrideApiFetch } from "../../lib/nexride-api-auth";
 import type { TripSnapshot } from '../../lib/nexride-trip-data';
 import { withinNearbyDriverRadius } from "../../lib/nexride-nearby-vehicles";
@@ -63,15 +64,11 @@ const emptyFeatureCollection = {
  */
 function deviceLocationCameraOffset(map: MapboxMap): [number, number] {
   const container = map.getContainer();
-  if (
-    typeof window === "undefined" ||
-    window.innerWidth > 800 ||
-    !container.closest(".rider-home-view")
-  ) return [0, 0];
-
-  const height = container.clientHeight;
-  if (!height || height < 180) return [0, 0];
-  return [0, -Math.round(Math.min(150, height * 0.11))];
+  return riderHomeLocationCameraOffset(
+    container.clientHeight,
+    Boolean(container.closest(".rider-home-view")),
+    typeof window !== "undefined" && window.innerWidth <= 800,
+  );
 }
 
 const accuracyPolygon = (
