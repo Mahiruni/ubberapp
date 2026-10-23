@@ -20,9 +20,10 @@ describe("Biloo map-first wrapper design", () => {
   });
 
   it("preserves Activity, Earnings, Settings in the accessible hamburger", () => {
-    for (const href of ["/driver/activity", "/driver/earnings", "/driver/profile/settings"]) {
-      expect(shell).toContain('href="' + href + '"');
+    for (const href of ["/driver/activity", "/driver/earnings"]) {
+      expect(shell).toContain('href: "' + href + '"');
     }
+    expect(shell).toContain('href="/driver/profile/settings"');
     expect(shell).toContain('aria-expanded={open}');
   });
 
