@@ -3,38 +3,17 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import type { Session } from "@supabase/supabase-js";
+import { ADMIN_NAVIGATION, ADMIN_AUX_NAVIGATION, type AdminNavigationId } from "../../lib/biloo-navigation-registry";
 import { Brand, Icon, type IconName } from "../../components/nexride/ui";
 import { supabase } from "../../lib/supabase";
 import { AdminAccountIdentities } from "../../components/nexride/admin-account-identities";
 import "./admin.css";
 import "../detail-system.css";
 
-type Module =
-  | "overview"
-  | "rides"
-  | "drivers"
-  | "verification"
-  | "users"
-  | "accounts"
-  | "finance"
-  | "safety"
-  | "support"
-  | "audit";
-
+type Module = AdminNavigationId;
 type Row = Record<string, any>;
 
-const nav: [Module, string, IconName][] = [
-  ["overview", "Dashboard", "home"],
-  ["rides", "Rides", "navigation"],
-  ["drivers", "Drivers", "user"],
-  ["verification", "Verification", "check"],
-  ["users", "Users", "users"],
-  ["accounts", "Identity & Accounts", "shield"],
-  ["finance", "Payments", "money"],
-  ["safety", "Safety", "shield"],
-  ["support", "Support", "chat"],
-  ["audit", "Audit log", "clock"],
-];
+const nav: [Module,string,IconName][] = ADMIN_NAVIGATION.map(item => [item.id,item.label,item.icon]);
 
 export default function AdminPage() {
   const [module, setModule] = useState<Module>("overview");
@@ -523,11 +502,13 @@ export default function AdminPage() {
               ) : null}
             </button>
           ))}
-          <Link href="/admin/prelaunch-campaign" className="admin-campaign-link" style={{display:"flex",alignItems:"center",gap:12,padding:"12px 16px",color:"inherit",textDecoration:"none",borderRadius:12}}>
-            <i><Icon name="chat" size={20} /></i><span>Email Campaigns</span>
-          </Link>
-          <Link href="/admin/campaign-settings" className="admin-campaign-link" style={{display:"flex",alignItems:"center",gap:12,padding:"12px 16px",color:"inherit",textDecoration:"none",borderRadius:12}}><i><Icon name="shield" size={20} /></i><span>Messaging Security</span></Link>
-          <Link href="/admin/reliability" className="admin-campaign-link" style={{display:"flex",alignItems:"center",gap:12,padding:"12px 16px",color:"inherit",textDecoration:"none",borderRadius:12}}><i><Icon name="pin" size={20} /></i><span>Android Reliability</span></Link>
+          {ADMIN_AUX_NAVIGATION.map(item => (
+            <Link key={item.id} href={item.href} className="admin-campaign-link"
+              onClick={() => setNavOpen(false)}
+              style={{display:"flex",alignItems:"center",gap:12,padding:"12px 16px",color:"inherit",textDecoration:"none",borderRadius:12}}>
+              <i><Icon name={item.icon} size={20}/></i><span>{item.label}</span>
+            </Link>
+          ))}
         </nav>
 
         <div className="admin-side-foot">
@@ -615,22 +596,6 @@ export default function AdminPage() {
           />
         )}
       </section>
-
-      <nav className="admin-mobile-nav" aria-label="Admin primary navigation">
-        {([
-          ["overview", "Home", "home"],
-          ["rides", "Rides", "navigation"],
-          ["drivers", "Drivers", "user"],
-          ["support", "Support", "chat"],
-        ] as [Module, string, IconName][]).map(([id, label, icon]) => (
-          <button key={id} className={module === id ? "active" : ""} onClick={() => selectModule(id)} aria-current={module === id ? "page" : undefined}>
-            <Icon name={icon} size={21} /><span>{label}</span>
-          </button>
-        ))}
-        <button className={!["overview", "rides", "drivers", "support"].includes(module) || navOpen ? "active" : ""} onClick={() => setNavOpen(true)} aria-expanded={navOpen}>
-          <Icon name="more" size={21} /><span>More</span>
-        </button>
-      </nav>
 
       {notice && <div className="admin-toast" role="status" aria-live="polite">{notice}</div>}
     </div>
