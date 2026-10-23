@@ -751,23 +751,13 @@ function AppWorkspace({
                   />
                 ))}
                 <ListRow
-                  icon="shield"
-                  title={t("safety")}
-                  onClick={() => openSafety(mode)}
-                />
-                <ListRow
-                  icon="settings"
-                  title={t("settings")}
-                  onClick={() => setPanel("settings")}
-                />
-                <ListRow
-                  icon="star"
-                  title="Discover Biloo"
-                  onClick={() => router.push("/discover")}
+                  icon="user"
+                  title={t("account")}
+                  onClick={() => navigate("profile")}
                 />
                 {isAdmin && (
                   <ListRow
-                    icon="shield"
+                    icon="users"
                     title="Admin Control Center"
                     detail="Review drivers, documents & operations"
                     onClick={() => {
