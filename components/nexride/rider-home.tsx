@@ -1,7 +1,6 @@
 "use client";
 
 import { useContext } from "react";
-import Link from "next/link";
 import { useSheetMotion } from "./use-sheet-motion";
 import { Icon, LanguageContext, ListRow, useTranslation } from "./ui";
 import { locality, placeKey, placeName } from "../../lib/nexride-search";
@@ -130,19 +129,6 @@ export function RiderHomePanel({
             <Icon name="arrow" size={20} />
           </span>
         </button>
-
-        <Link href="/routes" className="biloo-route-home-entry" style={{
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          minHeight: 52, margin: "10px 16px 14px", padding: "11px 15px",
-          borderRadius: 15, background: "#eef4fb", border: "1px solid #cbdaeb",
-          color: "#08295f", textDecoration: "none", fontWeight: 800, fontSize: 14,
-        }}>
-          <span style={{ display: "flex", alignItems: "center", gap: 9 }}>
-            <Icon name="navigation" size={19} />
-            {language === "am" ? "የመንገድ ካርታ ይመልከቱ" : "Explore routes across Ethiopia"}
-          </span>
-          <Icon name="arrow" size={18} />
-        </Link>
 
         <div className="nr-home-expandable">
           <div className="nr-home-shortcuts">
