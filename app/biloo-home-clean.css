@@ -11,63 +11,92 @@
   --biloo-home-muted: #68788c;
   --biloo-home-line: #e5eaf0;
 }
-/* Top-left single menu + wordmark, outside the map gesture surface. */
+/* InDrive-inspired, Biloo-original map chrome: one circle at each edge and
+   one centered brand. Avoid a second logo/profile or wide pill at upper left. */
 .nr-app[data-mode="rider"] .rider-map-flow.rider-home-view .biloo-home-floating-header {
-  position: absolute;
-  z-index: 110;
+  position: absolute!important;
+  z-index: 115;
   top: calc(env(safe-area-inset-top,0px) + 12px);
-  left: max(12px,env(safe-area-inset-left,0px));
-  display: inline-flex;
+  left: max(14px,env(safe-area-inset-left,0px));
+  right: auto!important;
+  width: 52px;
+  height: 52px;
+  min-height: 52px;
+  max-width: 52px;
+  display: flex;
   align-items: center;
-  gap: 7px;
-  min-height: 50px;
-  max-width: calc(100vw - 114px);
-  padding: 3px 16px 3px 4px;
-  color: var(--biloo-home-navy);
-  background: rgba(255,255,255,.97);
-  border: 1px solid rgba(8,41,95,.12);
-  border-radius: 15px;
-  box-shadow: 0 8px 26px rgba(8,41,95,.14);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   pointer-events: auto;
 }
-.nr-app[data-mode="rider"] .rider-map-flow.rider-home-view .biloo-home-floating-header .nr-brand {
-  display: inline-flex;
-  gap: 5px;
+.nr-app[data-mode="rider"] .rider-map-flow.rider-home-view .biloo-home-floating-header .nr-rider-hamburger {
+  box-sizing: border-box;
+  display: flex!important;
+  flex-direction: column!important;
+  align-items: center!important;
+  justify-content: center!important;
+  position: static!important;
+  inset: auto!important;
+  flex: 0 0 52px!important;
+  width: 52px!important;
+  min-width: 52px!important;
+  height: 52px!important;
+  min-height: 52px!important;
+  padding: 0!important;
+  gap: 5px!important;
+  border: 1px solid #dce5ef!important;
+  border-radius: 50%!important;
+  background: #fff!important;
+  color: #0b2b50!important;
+  box-shadow: 0 6px 20px rgba(8,41,95,.16)!important;
+  transform-origin: center!important;
+  -webkit-tap-highlight-color: transparent;
+}
+.nr-app[data-mode="rider"] .rider-map-flow.rider-home-view .biloo-home-floating-header .nr-rider-hamburger:hover {
+  background: #f3f6fb!important;
+}
+.nr-app[data-mode="rider"] .rider-map-flow.rider-home-view .biloo-home-floating-header .nr-rider-hamburger:focus-visible {
+  outline: 3px solid #2972b4!important;
+  outline-offset: 3px!important;
+  border-radius: 50%!important;
+}
+.nr-app[data-mode="rider"] .rider-map-flow.rider-home-view .biloo-home-floating-header .nr-rider-hamburger-line {
+  background: #0b2b50!important;
+  height: 2px;
+  flex: 0 0 2px;
+}
+.nr-app[data-mode="rider"] .rider-map-flow.rider-home-view .biloo-home-floating-header .nr-rider-hamburger-line.short {width: 16px;}
+/* The legacy top bar supplies ONLY the centered Biloo wordmark on home. */
+.nr-app[data-mode="rider"] .rider-map-flow.rider-home-view .nr-topbar {
+  pointer-events: none!important;
+  background: transparent!important;
+  box-shadow: none!important;
+}
+.nr-app[data-mode="rider"] .rider-map-flow.rider-home-view .nr-topbar > .nr-brand {
+  pointer-events: none!important;
+  gap: 6px!important;
+  white-space: nowrap;
   min-width: 0;
-  color: var(--biloo-home-navy)!important;
 }
-.nr-app[data-mode="rider"] .rider-map-flow.rider-home-view .biloo-home-floating-header .nr-brand strong {
-  color: var(--biloo-home-navy)!important;
-  font-size: 19px!important;
-  font-weight: 820;
-  letter-spacing: -.065em;
+.nr-app[data-mode="rider"] .rider-map-flow.rider-home-view .nr-topbar > .nr-brand strong {
+  font-size: 22px!important;
+  letter-spacing: -.055em!important;
+  line-height: 1.1!important;
+  color: #08295f!important;
 }
-.nr-app[data-mode="rider"] .rider-map-flow.rider-home-view .biloo-home-floating-header .nr-brand-symbol {
+.nr-app[data-mode="rider"] .rider-map-flow.rider-home-view .nr-topbar > .nr-brand .nr-brand-symbol {
   width: 27px!important;
   height: 27px!important;
 }
-.nr-app[data-mode="rider"] .rider-map-flow.rider-home-view .biloo-home-floating-header .nr-rider-hamburger {
-  display: grid!important;
-  place-items: center;
-  flex: 0 0 44px;
-  width: 44px!important;
-  height: 44px!important;
-  min-height: 44px!important;
-  min-width: 44px!important;
-  padding: 10px!important;
-  color: var(--biloo-home-navy)!important;
-  background: transparent!important;
-  border: 0!important;
-  border-radius: 11px!important;
-  box-shadow: none!important;
-}
-.nr-app[data-mode="rider"] .rider-map-flow.rider-home-view .biloo-home-floating-header .nr-rider-hamburger:hover {
-  background: #f1f5fb!important;
-}
-.nr-app[data-mode="rider"] .rider-map-flow.rider-home-view .biloo-home-floating-header .nr-rider-hamburger-line {
-  background: var(--biloo-home-navy)!important;
+.nr-app[data-mode="rider"] .rider-map-flow.rider-home-view .nr-topbar-actions {
+  display: none!important;
 }
 .nr-app[data-mode="rider"] .rider-map-flow.rider-home-view .nr-rider-map-top {
   display: none!important;
@@ -362,13 +391,13 @@
   box-sizing:border-box;
   position:absolute;
   z-index:112;
-  top:calc(env(safe-area-inset-top,0px) + 13px);
+  top:calc(env(safe-area-inset-top,0px) + 12px);
   right:max(14px,env(safe-area-inset-right,0px));
   left:auto;
   display:grid;place-items:center;
-  width:46px;height:46px;min-width:46px;
+  width:52px;height:52px;min-width:52px;
   overflow:hidden;
-  padding:0;border-radius:16px;
+  padding:0;border-radius:50%;
   border:1px solid #dce5f0;
   background:#fff;color:#08295f;
   font-size:15px;font-weight:850;
