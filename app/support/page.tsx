@@ -3,7 +3,6 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "../../components/nexride/ui";
-import { BilooFooterNav, riderFooterLinks, driverFooterLinks } from "../../components/nexride/biloo-footer-nav";
 import { DriverStandaloneMenu, usePersistedDriverTheme } from "../../components/nexride/driver-app-shell";
 import { RiderMenu, usePersistedRiderTheme } from "../../components/nexride/rider-menu";
 import { useOperationalTranslation } from "../../components/nexride/operational-i18n";
@@ -316,9 +315,6 @@ export default function HelpSupportPage() {
         </form>
       </div>
       {role === "rider" ? <RiderMenu active="messages" /> : <DriverStandaloneMenu activeOverride="messages" />}
-      {role === "rider"
-        ? <BilooFooterNav role="rider" active="support" items={riderFooterLinks()} />
-        : <BilooFooterNav role="driver" active="support" items={driverFooterLinks()} />}
     </main>
   );
 }
