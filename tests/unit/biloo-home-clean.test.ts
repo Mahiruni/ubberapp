@@ -28,13 +28,14 @@ describe("Biloo Rider homepage clarity", () => {
     expect(home).not.toContain("Explore routes across Ethiopia");
     expect(home).not.toContain("biloo-route-home-entry");
     expect(home).not.toContain('href="/routes"');
-    const floating = app.slice(app.indexOf('className="biloo-home-floating-header"'), app.indexOf('className="biloo-home-floating-profile"'));
+    const floating = app.slice(app.indexOf('className="biloo-home-floating-header"'), app.indexOf('mode === "rider" && riderMapView'));
     expect(floating).toContain("<RiderMenu");
     expect(floating).not.toContain("<Brand");
-    expect(app).toContain('{mode === "rider" && !riderHome && (');
+    expect(app).not.toContain('className="biloo-home-floating-profile"');
+    expect(app).not.toContain('className="nr-avatar-button nr-rider-profile-top"');
     expect(css).toContain("border-radius: 50%!important;");
     expect(css).toContain(".nr-topbar-actions");
-    expect(css).toContain('width:52px;height:52px;min-width:52px;');
+    expect(css).toContain('pointer-events: none!important;');
   });
 
   it("retains the existing 40 percent sheet, drag handle and operational flows", () => {
