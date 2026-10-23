@@ -23,7 +23,6 @@ import { useAppearance } from "../../lib/nexride-appearance";
 import { readAccount } from "../../lib/nexride-account";
 import { supabase } from "../../lib/supabase";
 import {
-  Brand,
   Icon,
   LanguageContext,
   type IconName,
@@ -320,7 +319,10 @@ export function RiderMenu({
             aria-label={say("Rider menu", "የተሳፋሪ ምናሌ")}
           >
             <header className="nr-rider-drawer-head">
-              <Brand />
+              <div className="biloo-rider-drawer-heading">
+                <span>{language === "am" ? "BILOO · ተሳፋሪ" : "BILOO · RIDER"}</span>
+                <strong>{say("Menu", "ምናሌ")}</strong>
+              </div>
               <button
                 type="button"
                 className="nr-rider-drawer-close"
