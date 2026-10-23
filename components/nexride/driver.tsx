@@ -608,6 +608,7 @@ export function DriverWorkspace({
             readOnly
             topLabel={state.online ? "ONLINE" : "OFFLINE"}
             showProfile={false}
+            markerRole="driver"
             showDriverRadar={state.online}
             preferredStyle={resolvedTheme === "dark" ? "dark" : "streets"}
           />
@@ -699,6 +700,7 @@ export function DriverWorkspace({
           locked={loading}
           readOnly
           showProfile={false}
+          markerRole="driver"
           preferredStyle={resolvedTheme === "dark" ? "dark" : "streets"}
           showSearch={false}
           showNativeControls={false}
