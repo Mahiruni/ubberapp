@@ -538,7 +538,7 @@ function AppWorkspace({
               <Icon name="globe" size={17} />
               <span>{language === "en" ? "አማርኛ" : "EN"}</span>
             </button>
-            {mode === "rider" && (
+            {mode === "rider" && !riderHome && (
               <button
                 className="nr-avatar-button nr-rider-profile-top"
                 aria-label={t("profile")}
@@ -767,7 +767,6 @@ function AppWorkspace({
                 isAdmin={isAdmin}
                 locked={requestPending || matching.active}
               />
-              <Brand />
             </div>
             <button type="button" className="biloo-home-floating-profile"
               aria-label={t("profile")}
