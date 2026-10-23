@@ -279,7 +279,8 @@ function DriverHamburgerMenu({
             </div>
             <Link href="/driver/profile" className="biloo-menu-profile-card" onClick={() => setOpen(false)}>
               <span className="biloo-menu-profile-avatar">
-                {portrait.url ? <img src={portrait.url} alt="" width={62} height={62} decoding="async" onError={event => { event.currentTarget.style.display = 'none'; }}/> : <span aria-hidden="true">{initials}</span>}
+                <span aria-hidden="true">{initials}</span>
+                {portrait.url && <img src={portrait.url} alt="" width={62} height={62} decoding="async" onError={event => { event.currentTarget.style.display = 'none'; }}/>} 
               </span>
               <span className="biloo-menu-profile-copy">
                 <strong>{portrait.name || (language === "am" ? "የእኔ መገለጫ" : "My profile")}</strong>
