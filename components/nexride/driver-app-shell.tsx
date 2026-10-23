@@ -234,7 +234,6 @@ function DriverHamburgerMenu({
   };
 
   const driveItems = NAV_ITEMS.filter((item) => ["home", "requests", "map", "earnings"].includes(item.id));
-  const accountItems = NAV_ITEMS.filter((item) => item.id === "account");
   const supportItems = NAV_ITEMS.filter((item) => item.id === "messages");
 
   const menuRows = (items: typeof NAV_ITEMS) =>
@@ -294,16 +293,10 @@ function DriverHamburgerMenu({
             }}
             role="dialog" aria-modal="true" aria-labelledby="nr-driver-menu-title">
             <div className="nr-driver-menu-head">
-              <Link href="/driver/profile" className="nr-driver-menu-identity" onClick={() => setOpen(false)}>
-                <div className="nr-driver-menu-avatar">
-                  {portrait.url ? <img src={portrait.url} alt="" onError={() => void portrait.refresh()} /> : <span>{initials}</span>}
-                </div>
-                <div>
-                  <small>{language === "am" ? "BILOO · አሽከርካሪ" : "BILOO · DRIVER"}</small>
-                  <strong id="nr-driver-menu-title">{identity.name}</strong>
-                  <span className="nr-menu-view-profile">{language === "am" ? "መገለጫ ይመልከቱ" : "View profile"} <Icon name="arrow" size={14}/></span>
-                </div>
-              </Link>
+              <div className="nr-driver-menu-brand-head">
+                <img src="/brand/biloo-mark.svg" width={42} height={42} alt="" aria-hidden="true" />
+                <div><small>BILOO · DRIVER</small><strong id="nr-driver-menu-title">{language === "am" ? "የጉዞ ምናሌ" : "Navigation"}</strong><span>{language === "am" ? "የጉዞ እና እገዛ መሣሪያዎች" : "Trips, work & support"}</span></div>
+              </div>
               <button ref={closeRef} type="button" className="nr-driver-menu-close" onClick={() => setOpen(false)} aria-label={language === "am" ? "ዝጋ" : "Close"}>
                 <Icon name="close" size={21} />
               </button>
@@ -315,27 +308,6 @@ function DriverHamburgerMenu({
               <nav className="nr-driver-menu-nav" aria-label={language === "am" ? "የመንዳት አሰሳ" : "Drive navigation"}>
                 {menuRows(driveItems)}
               </nav>
-              <MenuGroup label={language === "am" ? "የአሽከርካሪ አስተዳደር" : "DRIVER MANAGEMENT"} icon="navigation">
-                <nav className="nr-driver-menu-nav nr-menu-nested" aria-label={language === "am" ? "የአሽከርካሪ አስተዳደር" : "Driver management"}>
-                  <Link href="/driver/profile/vehicle" className="nr-driver-menu-utility" onClick={() => setOpen(false)}><Icon name="navigation" size={20}/><span>{language === "am" ? "ተሽከርካሪ" : "Vehicle"}</span></Link>
-                  <Link href="/driver/profile/documents" className="nr-driver-menu-utility" onClick={() => setOpen(false)}><Icon name="shield" size={20}/><span>{language === "am" ? "ሰነዶች እና ማረጋገጫ" : "Documents & verification"}</span></Link>
-                  <Link href="/driver/profile/payouts" className="nr-driver-menu-utility" onClick={() => setOpen(false)}><Icon name="card" size={20}/><span>{language === "am" ? "የክፍያ መረጃ" : "Payout information"}</span></Link>
-                </nav>
-              </MenuGroup>
-              <div className="nr-menu-section-label">{language === "am" ? "መለያ" : "ACCOUNT"}</div>
-              <nav className="nr-driver-menu-nav" aria-label={language === "am" ? "መለያ እና ቅንብሮች" : "Account and settings"}>
-                {menuRows(accountItems)}
-                <Link href="/account/manage?role=driver" className="nr-driver-menu-utility" onClick={() => setOpen(false)}>
-                  <span className="nr-driver-menu-utility-icon"><Icon name="shield" size={20}/></span>
-                  <span className="nr-driver-menu-utility-copy">{language === "am" ? "መለያ እና ደህንነት" : "Account & security"}</span>
-                  <Icon name="chevron" size={16}/>
-                </Link>
-                <Link href="/driver/profile/settings" className="nr-driver-menu-utility" onClick={() => setOpen(false)}>
-                  <span className="nr-driver-menu-utility-icon"><Icon name="settings" size={20}/></span>
-                  <span className="nr-driver-menu-utility-copy">{language === "am" ? "ቅንብሮች" : "Settings"}</span>
-                  <Icon name="chevron" size={16}/>
-                </Link>
-              </nav>
               <div className="nr-menu-section-label">{language === "am" ? "ድጋፍ እና ደህንነት" : "HELP & SAFETY"}</div>
               <nav className="nr-driver-menu-nav" aria-label={language === "am" ? "ድጋፍ እና ደህንነት" : "Help and safety"}>
                 {menuRows(supportItems)}
@@ -345,15 +317,6 @@ function DriverHamburgerMenu({
                   <Icon name="chevron" size={16}/>
                 </Link>
               </nav>
-              <MenuGroup label={language === "am" ? "ቋንቋ" : "LANGUAGE"} icon="settings">
-                <div className="nr-driver-menu-preferences">
-                  <div className="nr-driver-menu-pref-head"><span>{language === "am" ? "ቋንቋ" : "Language"}</span><small>{language === "am" ? "አማርኛ" : "English"}</small></div>
-                  <div className="nr-driver-menu-language" role="group" aria-label={language === "am" ? "ቋንቋ" : "Language"}>
-                    <button type="button" data-active={language === "en" ? "true" : "false"} aria-pressed={language === "en"} onClick={() => announceLanguage("en")}>English</button>
-                    <button type="button" data-active={language === "am" ? "true" : "false"} aria-pressed={language === "am"} onClick={() => announceLanguage("am")}>አማርኛ</button>
-                  </div>
-                </div>
-              </MenuGroup>
             </div>
 
             <footer className="nr-driver-menu-footer">
@@ -365,11 +328,6 @@ function DriverHamburgerMenu({
                   <AppVersion />
                 </div>
               </div>
-              <button type="button" className="nr-driver-menu-logout" onClick={() => void signOutDriver()} disabled={signingOut}>
-                <Icon name="power" size={18} />
-                <span>{signingOut ? (language === "am" ? "በመውጣት ላይ…" : "Logging out…") : (language === "am" ? "ውጣ" : "Log out")}</span>
-              </button>
-              {signOutError && <p role="alert">{signOutError}</p>}
             </footer>
           </aside>
         </div>, document.body
@@ -476,11 +434,12 @@ function DriverHeader({
     <header className="nr-driver-global-header" data-map={isTripFocusPath(pathname) ? "true" : "false"}>
       <div className="nr-driver-global-header-inner">
         <div className="nr-driver-global-header-side nr-driver-global-header-left">
-          {backTarget ? (
-            <button type="button" className="nr-driver-global-icon-button" onClick={() => router.push(backTarget)} aria-label={language === "am" ? "ተመለስ" : "Back"}>
-              <Icon name="back" size={21} />
+          <DriverHamburgerMenu controlledOpen={menuOpen} onOpenChange={onMenuOpenChange} />
+          {backTarget && (
+            <button type="button" className="nr-driver-global-icon-button nr-driver-header-back" onClick={() => router.push(backTarget)} aria-label={language === "am" ? "ተመለስ" : "Back"}>
+              <Icon name="back" size={19} />
             </button>
-          ) : <span className="nr-driver-global-header-spacer" aria-hidden="true" />}
+          )}
         </div>
 
         <div className="nr-driver-global-header-title">
@@ -499,7 +458,9 @@ function DriverHeader({
         </div>
 
         <div className="nr-driver-global-header-side nr-driver-global-header-right">
-          <DriverHamburgerMenu controlledOpen={menuOpen} onOpenChange={onMenuOpenChange} />
+          <Link href="/driver/profile" className="nr-driver-header-profile" aria-label={language === "am" ? "መገለጫዬን ክፈት" : "Open my profile"} aria-current={pathname.startsWith("/driver/profile") ? "page" : undefined}>
+            <Icon name="user" size={21}/>
+          </Link>
         </div>
       </div>
     </header>
