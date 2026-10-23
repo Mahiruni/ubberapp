@@ -54,20 +54,42 @@ const emptyFeatureCollection = {
 };
 
 /**
- * Center the device marker in the CLEAR area of the Rider home map rather
- * than close to its bottom wrapper. The home sheet is already laid out in a
- * separate grid row, so offset only the map camera (never the sheet itself).
- *
- * The location marker sits at ~39% of map height, leaving comfortable
- * breathing room above the sheet and below the floating map controls.
- * Other ride screens, Driver maps, and desktop keep their native centers.
+ * Center the real GPS marker in the VISIBLE Rider home map, above the
+ * bottom wrapper, even if a responsive layout temporarily overlaps them.
+ * Mapbox's camera offset moves the coordinate's screen projection — no
+ * fake GPS coordinates, CSS-translated marker, or sheet repositioning.
  */
 function deviceLocationCameraOffset(map: MapboxMap): [number, number] {
   const container = map.getContainer();
+  const home = container.closest<HTMLElement>(".rider-home-view");
+  const isMobile = typeof window !== "undefined" && window.innerWidth <= 800;
+
+  let occludedBottomPx = 0;
+  if (home && isMobile) {
+    const panel = home.querySelector<HTMLElement>(".nr-home-panel-host");
+    const mapRect = container.getBoundingClientRect();
+    const sheetRect = panel?.getBoundingClientRect();
+
+    // Most Biloo layouts put map and wrapper in separate grid rows, in which
+    // case overlap is zero and the GPS sits exactly at the map midpoint.
+    // If the sheet overlays the map from the bottom, subtract that overlap.
+    if (
+      sheetRect && sheetRect.width > 0 && sheetRect.height > 0 &&
+      sheetRect.top < mapRect.bottom &&
+      sheetRect.bottom >= mapRect.bottom - 2
+    ) {
+      occludedBottomPx = Math.max(
+        0,
+        mapRect.bottom - Math.max(mapRect.top, sheetRect.top),
+      );
+    }
+  }
+
   return riderHomeLocationCameraOffset(
     container.clientHeight,
-    Boolean(container.closest(".rider-home-view")),
-    typeof window !== "undefined" && window.innerWidth <= 800,
+    Boolean(home),
+    isMobile,
+    occludedBottomPx,
   );
 }
 
