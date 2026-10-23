@@ -1,0 +1,24 @@
+/* Biloo navigation motion: composited, short and never blocks interaction. */
+.biloo-route-stage{min-height:100%;isolation:isolate}
+@media (prefers-reduced-motion:no-preference){
+  .biloo-route-stage{
+    animation:biloo-route-enter 220ms cubic-bezier(.2,.8,.2,1) both;
+    will-change:opacity,transform;
+  }
+  /* Mapbox/canvas screens keep their coordinates and compositor stable. */
+  .biloo-route-stage[data-map-route="true"]{
+    animation:biloo-map-enter 170ms ease-out both;
+    will-change:opacity;
+  }
+}
+@keyframes biloo-route-enter{
+  from{opacity:.65;transform:translate3d(0,8px,0)}
+  to{opacity:1;transform:translate3d(0,0,0)}
+}
+@keyframes biloo-map-enter{
+  from{opacity:.7}
+  to{opacity:1}
+}
+@media (prefers-reduced-motion:reduce){
+  .biloo-route-stage{animation:none!important;transition:none!important;transform:none!important}
+}
