@@ -984,3 +984,121 @@ html[lang="am"] .nr-driver-menu-layer :where(strong,small) {
 @media(prefers-reduced-motion:reduce) {
   .nr-driver-menu-layer .nr-driver-menu-panel { animation: none !important; }
 }
+
+/*
+ * Biloo map-first mobile sheets — inDrive-inspired layout principles:
+ * clear map canvas, solid docked surface, compact operational controls.
+ * No changes to offer acceptance, GPS, availability or trip state.
+ */
+@media (max-width:759px) {
+  .nr-driver-app-shell[data-home="true"] .nr-driver-home-swipe[data-map-input-boundary="true"] {
+    position: absolute !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    transform: none !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-top: 1px solid #e4eaf0 !important;
+    border-radius: 24px 24px 0 0 !important;
+    background: #fff !important;
+    color: #102334 !important;
+    box-shadow: 0 -7px 24px rgba(4,28,48,.11) !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    overflow: hidden !important;
+    touch-action: auto !important;
+    isolation: isolate !important;
+  }
+  .nr-driver-app-shell[data-home="true"] .nr-driver-home-swipe[data-map-input-boundary="true"]::before {
+    content: "";
+    display: block;
+    width: 38px;
+    height: 4px;
+    border-radius: 999px;
+    background: #b9c6cf;
+    margin: 11px auto 1px;
+    pointer-events: none;
+  }
+  .nr-driver-app-shell[data-home="true"] .nr-driver-home-control-panel {
+    gap: 11px !important;
+    padding: 14px max(16px,env(safe-area-inset-right,0px))
+      calc(15px + env(safe-area-inset-bottom,0px))
+      max(16px,env(safe-area-inset-left,0px)) !important;
+    background: #fff !important;
+    color: #102334 !important;
+    border-radius: 0 !important;
+    max-height: min(45dvh,360px) !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+  }
+  .nr-driver-app-shell[data-home="true"] .nr-driver-home-control-state {
+    gap: 3px !important;
+  }
+  .nr-driver-app-shell[data-home="true"] .nr-driver-home-control-state strong {
+    font-size: clamp(18px,4.7vw,22px) !important;
+    line-height: 1.16 !important;
+  }
+  .nr-driver-app-shell[data-home="true"] .nr-driver-home-control-state small {
+    display: block !important;
+    max-width: 31ch !important;
+    font-size: 10.5px !important;
+    line-height: 1.45 !important;
+  }
+  .nr-driver-app-shell[data-home="true"] .nr-driver-home-control-online {
+    min-height: 30px !important;
+    white-space: nowrap;
+  }
+  .nr-driver-app-shell[data-home="true"] .nr-driver-home-control-panel .nr-driver-availability-swipe {
+    min-height: 58px !important;
+    height: 58px !important;
+    border-radius: 16px !important;
+  }
+  .nr-driver-app-shell[data-home="true"] .nr-driver-home-map-canvas :is(
+    .mapboxgl-ctrl-bottom-left,.mapboxgl-ctrl-bottom-right
+  ) {
+    bottom: calc(214px + env(safe-area-inset-bottom,0px)) !important;
+  }
+  /* Offer, pickup and in-trip sheets use the same solid edge-to-edge shape.
+     Their existing scroll and pinned-action regions remain untouched. */
+  .nr-driver-app-shell :is(
+    .nr-driver-request-page .nr-request-sheet,
+    .nr-driver-navigation-page .nr-nav-bottom-card,
+    .nr-driver-pickup-page .nr-pickup-card
+  ) {
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    transform: none !important;
+    margin: 0 !important;
+    border: 0 !important;
+    border-top: 1px solid #e4eaf0 !important;
+    border-radius: 24px 24px 0 0 !important;
+    box-shadow: 0 -7px 24px rgba(4,28,48,.11) !important;
+    background: #fff !important;
+    color: #102334 !important;
+  }
+  .nr-driver-app-shell :is(.nr-request-sheet,.nr-nav-bottom-card)
+    .nr-driver-sheet-grab > span {
+    width: 38px !important;
+    height: 4px !important;
+    border-radius: 999px !important;
+    background: #b9c6cf !important;
+  }
+}
+@media (max-width:360px) {
+  .nr-driver-app-shell[data-home="true"] .nr-driver-home-control-panel {
+    padding-inline: 12px !important;
+    gap: 9px !important;
+  }
+  .nr-driver-app-shell[data-home="true"] .nr-driver-home-control-heading { gap: 8px !important; }
+}
+@media (max-height:620px) and (max-width:759px) {
+  .nr-driver-app-shell[data-home="true"] .nr-driver-home-control-panel { max-height: 50dvh !important; }
+  .nr-driver-app-shell[data-home="true"] .nr-driver-home-control-state small { font-size: 10px !important; }
+}
