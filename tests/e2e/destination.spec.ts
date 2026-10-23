@@ -333,11 +333,10 @@ test("Amharic UI uses translated place names and locality details", async ({
   page,
 }) => {
   await page.goto("/");
-  await page
-    .getByRole("button", { name: "Profile", exact: true })
-    .first()
-    .click();
-  await page.getByRole("button", { name: "አማርኛ", exact: true }).last().click();
+  await page.locator(".nr-sidebar-account-actions").getByRole("button",{name:"Account"}).click();
+  await page.locator(".nr-account-standard").getByRole("button",{name:/Appearance, language & alerts/i}).click();
+  await page.getByRole("dialog").getByRole("button", { name: "አማርኛ", exact: true }).click();
+  await page.keyboard.press("Escape");
   await page
     .locator(".nr-navigation:visible")
     .getByRole("button", { name: "መነሻ", exact: true })
