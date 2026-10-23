@@ -344,6 +344,11 @@ function DriverHamburgerMenu({
                   <Icon name="chevron" size={16}/>
                 </Link>
               </nav>
+              <Link href="/rider" className="nr-driver-menu-role-switch" onClick={() => setOpen(false)}>
+                <span className="nr-driver-menu-switch-icon"><Icon name="navigation" size={21}/></span>
+                <span><strong>{language === "am" ? "ወደ ተሳፋሪ ቀይር" : "Switch to Rider"}</strong><small>{language === "am" ? "በBiloo ጉዞ ይያዙ" : "Book a ride with Biloo"}</small></span>
+                <Icon name="chevron" size={17} />
+              </Link>
               <MenuGroup label={language === "am" ? "ቋንቋ" : "LANGUAGE"} icon="settings">
                 <div className="nr-driver-menu-preferences">
                   <div className="nr-driver-menu-pref-head"><span>{language === "am" ? "ቋንቋ" : "Language"}</span><small>{language === "am" ? "አማርኛ" : "English"}</small></div>
@@ -475,11 +480,7 @@ function DriverHeader({
     <header className="nr-driver-global-header" data-map={isTripFocusPath(pathname) ? "true" : "false"}>
       <div className="nr-driver-global-header-inner">
         <div className="nr-driver-global-header-side nr-driver-global-header-left">
-          {backTarget ? (
-            <button type="button" className="nr-driver-global-icon-button" onClick={() => router.push(backTarget)} aria-label={language === "am" ? "ተመለስ" : "Back"}>
-              <Icon name="back" size={21} />
-            </button>
-          ) : <span className="nr-driver-global-header-spacer" aria-hidden="true" />}
+          <DriverHamburgerMenu controlledOpen={menuOpen} onOpenChange={onMenuOpenChange} />
         </div>
 
         <div className="nr-driver-global-header-title">
@@ -498,7 +499,11 @@ function DriverHeader({
         </div>
 
         <div className="nr-driver-global-header-side nr-driver-global-header-right">
-          <DriverHamburgerMenu controlledOpen={menuOpen} onOpenChange={onMenuOpenChange} />
+          {backTarget ? (
+            <button type="button" className="nr-driver-global-icon-button" onClick={() => router.push(backTarget)} aria-label={language === "am" ? "ተመለስ" : "Back"}>
+              <Icon name="back" size={21} />
+            </button>
+          ) : <span className="nr-driver-global-header-spacer" aria-hidden="true" />}
         </div>
       </div>
     </header>
