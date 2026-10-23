@@ -2,12 +2,24 @@
 
 import { useContext, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import { Icon, LanguageContext } from "./ui";
 import { useDriverTheme } from "./driver-app-shell";
-import { RiderMap } from "./rider-map";
 import { useRiderLocation } from "../../lib/nexride-location";
-import { DriverEarningsScreen } from "./driver-earnings";
-import { DriverProfileScreen } from "./driver-profile";
+// Mapbox, geocoder, financial charts, and profile photo management must not
+// inflate the first Driver dashboard bundle. Their actual data/UX is unchanged.
+const RiderMap = dynamic(
+  () => import("./rider-map").then(module => module.RiderMap),
+  { ssr: false, loading: () => <div className="biloo-map-preparing" role="status" aria-label="Preparing driver map" /> },
+);
+const DriverEarningsScreen = dynamic(
+  () => import("./driver-earnings").then(module => module.DriverEarningsScreen),
+  { ssr: false },
+);
+const DriverProfileScreen = dynamic(
+  () => import("./driver-profile").then(module => module.DriverProfileScreen),
+  { ssr: false },
+);
 import { DriverAvailabilitySwipe } from "./driver-availability-swipe";
 import { supabase } from "../../lib/supabase";
 import { resolveSessionRole } from "../../lib/nexride-account-role";
