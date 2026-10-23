@@ -419,8 +419,10 @@ function syncAccuracy(
     type: "fill",
     source: "nexride-live-accuracy",
     paint: {
-      "fill-color": "#078930",
-      "fill-opacity": 0.12,
+      // Accuracy telemetry remains available to Mapbox, but the green
+      // circle is hidden. The person/car icon alone marks current position.
+      "fill-color": "#111111",
+      "fill-opacity": 0,
     },
   });
   map.addLayer({
@@ -428,8 +430,8 @@ function syncAccuracy(
     type: "line",
     source: "nexride-live-accuracy",
     paint: {
-      "line-color": "#078930",
-      "line-opacity": 0.22,
+      "line-color": "#111111",
+      "line-opacity": 0,
       "line-width": 1,
     },
   });
