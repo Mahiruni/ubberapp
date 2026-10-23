@@ -480,7 +480,7 @@ function AppWorkspace({
               initials={initials}
               onProfile={() => navigate("profile")}
               showProfile={false}
-              markerRole={mode === "driver" ? "driver" : "rider"}
+              markerRole="rider"
               assignedTrip={['trip','live'].includes(screen) ? liveSnapshot : null}
               journey={
                 ['trip','live'].includes(screen) && liveSnapshot
