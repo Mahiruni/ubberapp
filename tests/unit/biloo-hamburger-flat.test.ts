@@ -54,6 +54,34 @@ describe("Biloo zero-duplication navigation ownership", () => {
     expect(account).toContain('router.push("/driver/profile/documents")');
   });
 
+  it("places account security in Account, not in a second settings menu", () => {
+    const rider = read("components/nexride/rider-profile.tsx");
+    const driver = read("components/nexride/driver-profile.tsx");
+    const riderDrawer = read("components/nexride/rider-menu.tsx");
+    const driverSettings = read("app/driver/profile/settings/page.tsx");
+    expect(rider).toContain("router.push('/account/manage?role=rider#account-security')");
+    expect(driver).toContain('router.push("/account/manage?role=driver#account-security")');
+    expect(rider).not.toContain('id: "security"');
+    expect(driverSettings).not.toContain('id: "security"');
+    expect(driverSettings).not.toContain('id: "help"');
+    expect(driverSettings).not.toContain("AppLockSettings");
+    expect(riderDrawer).not.toContain("onSettings?");
+    expect(riderDrawer).not.toContain('id === "settings"');
+    expect(riderDrawer).toContain("RIDER_NAVIGATION.map");
+  });
+
+  it("keeps profile management intact with contextual photo editing and private account routes", () => {
+    const rider = read("components/nexride/rider-profile.tsx");
+    const driver = read("components/nexride/driver-profile.tsx");
+    const driverSettings = read("app/driver/profile/settings/page.tsx");
+    expect(rider).toContain("<RiderPhotoEditor");
+    expect(driver).toContain("<DriverPhotoManager");
+    expect(driver).toContain('router.push("/driver/profile/vehicle")');
+    expect(driver).toContain('router.push("/driver/profile/payouts")');
+    expect(driverSettings).toContain("PermissionSettings");
+    expect(driverSettings).toContain('router.push("/driver/profile")');
+  });
+
   it("keeps Admin sidebar and menu accessible without duplicate mobile footer", () => {
     const admin = read("app/admin/page.tsx");
     const css = read("app/admin/admin.css");
