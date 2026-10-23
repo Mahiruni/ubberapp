@@ -50,7 +50,12 @@ describe("Biloo navigation and image-performance safeguards", () => {
     expect(account).toContain("nexride-driver-photos");
     expect(photo).toContain("compressPortraitThumbnail");
     expect(photo).toContain("canvas.width = 256");
+    expect(photo).toContain("compressPortraitMaster");
+    expect(photo).toContain("safeLimit");
+    expect(photo).toContain("3840");
     expect(rider).toContain("compressPortraitThumbnail(canvas)");
+    expect(rider).toContain("compressPortraitMaster");
+    expect(driver).toContain("compressPortraitMaster");
     expect(driver).toContain("uploadRiderAvatar(account,");
   });
 
