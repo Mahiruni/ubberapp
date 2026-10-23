@@ -22,7 +22,7 @@ import {
   LanguageContext,
 } from "./ui";
 
-export type RiderMenuId = RiderNavigationId | "profile" | "settings";
+export type RiderMenuId = RiderNavigationId | "profile";
 type RiderTheme = "light" | "dark";
 
 export function usePersistedRiderTheme(): RiderTheme {
@@ -32,14 +32,12 @@ export function usePersistedRiderTheme(): RiderTheme {
 export function RiderMenu({
   active = "home",
   onNavigate,
-  onSettings,
   isAdmin: adminOverride,
   className = "",
   locked = false,
 }: {
   active?: RiderMenuId;
   onNavigate?: (id: RiderMenuId) => void;
-  onSettings?: () => void;
   isAdmin?: boolean;
   className?: string;
   locked?: boolean;
@@ -134,10 +132,6 @@ export function RiderMenu({
   const navigate = (id: RiderMenuId) => {
     if (locked && !["safety", "messages"].includes(id)) return;
     setOpen(false);
-    if (id === "settings" && onSettings) {
-      onSettings();
-      return;
-    }
     if (onNavigate) {
       onNavigate(id);
       return;
@@ -145,7 +139,6 @@ export function RiderMenu({
     const destination = RIDER_NAVIGATION.find(item => item.id === id);
     if (destination) router.push(destination.href);
     else if (id === "profile") router.push("/?screen=profile");
-    else if (id === "settings") router.push("/?screen=profile&panel=settings");
   };
 
   const renderRows = (subset: typeof items) => subset.map(item => {
