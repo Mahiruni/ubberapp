@@ -34,7 +34,12 @@ export default function DriverMapPage() {
           router.replace("/driver/auth");
           return;
         }
-        const role = await resolveSessionRole(data.session);
+        // Run independent authorization and verification reads together
+        // instead of serializing two network round-trips on every map open.
+        const [role, reviewStatus] = await Promise.all([
+          resolveSessionRole(data.session),
+          getDriverReviewStatus(data.session.user.id).catch(() => null),
+        ]);
         if (!mounted) return;
         if (role !== "driver") {
           router.replace(role === "admin" ? "/admin" : "/");
@@ -44,9 +49,7 @@ export default function DriverMapPage() {
           router.replace("/driver/onboarding");
           return;
         }
-        const status = await getDriverReviewStatus(data.session.user.id).catch(() => null);
-        if (!mounted) return;
-        if (status === "draft" || status === "rejected") {
+        if (reviewStatus === "draft" || reviewStatus === "rejected") {
           router.replace("/driver/verification");
           return;
         }
