@@ -431,3 +431,48 @@
 @media(prefers-reduced-motion:reduce){
   :is(.nr-rider-drawer-layer,.nr-driver-menu-layer) .biloo-menu-profile-card {transition:none!important;}
 }
+
+/* Responsive single-owner navigation: desktop rail OR mobile hamburger.
+   Account remains reachable at all widths, with no duplicated portrait. */
+.nr-app .nr-sidebar-account-actions{
+  margin-top:auto;
+  display:grid;
+  gap:5px;
+  padding-top:13px;
+  border-top:1px solid var(--line);
+}
+.nr-app .nr-sidebar-account-actions>button{
+  box-sizing:border-box;
+  min-height:46px;
+  display:flex;
+  align-items:center;
+  gap:11px;
+  padding:9px 12px;
+  border:0;
+  border-radius:12px;
+  background:transparent;
+  color:var(--text);
+  font-size:12px;
+  font-weight:650;
+  text-align:start;
+}
+.nr-app .nr-sidebar-account-actions>button:hover,
+.nr-app .nr-sidebar-account-actions>button[aria-current="page"]{
+  background:var(--surface-alt);
+}
+.nr-app .nr-sidebar-account-actions>button:focus-visible{
+  outline:3px solid #3678c0;
+  outline-offset:2px;
+}
+@media(min-width:801px){
+  .nr-app[data-mode="rider"] .nr-workspace .biloo-home-floating-header,
+  .nr-app[data-mode="rider"] .nr-topbar .nr-rider-menu-root{
+    display:none!important;
+  }
+  .nr-app[data-mode="rider"] .nr-sidebar{
+    overflow-y:auto;
+  }
+}
+@media(max-width:800px){
+  .nr-app .nr-sidebar-account-actions{display:none!important}
+}
