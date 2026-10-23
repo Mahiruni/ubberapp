@@ -111,9 +111,13 @@ export default function Home() {
     } catch {}
     initializeRider()
       .then(async (result) => {
-        const accountRole = result.session
-          ? await resolveSessionRole(result.session).catch(() => "")
-          : "";
+        // initializeRider already verified the account role. Reuse it for
+        // the first usable frame; only older cached entry states need lookup.
+        const accountRole = result.accountRole !== undefined
+          ? result.accountRole || ""
+          : result.session
+            ? await resolveSessionRole(result.session).catch(() => "")
+            : "";
         if (!active) return;
         const p = result.preferences;
         setAuthenticated(Boolean(result.session));
