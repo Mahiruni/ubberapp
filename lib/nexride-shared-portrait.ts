@@ -22,7 +22,7 @@ function warmImage(url: string) {
  * remain in the separate approved-photo bucket and are not altered here.
  */
 export function useSharedAccountPortrait() {
-  const [portrait, setPortrait] = useState<Portrait>(warm);
+  const [portrait, setPortrait] = useState<Portrait>(empty);
   useEffect(() => {
     let live = true;
     let request = 0;
