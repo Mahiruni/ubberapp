@@ -18,6 +18,7 @@ import { NexRideFeedbackSettings } from './feedback-settings';
 import './rider-avatar-upload.css';
 import { AppVersion } from './app-version';
 import { SettingsGroups } from "./settings-groups";
+import { RiderMapAvatarPicker } from "./rider-map-avatar-picker";
 
 type Props = {
   language: Language;
@@ -275,6 +276,7 @@ export function RiderProfile(props:Props) {
       </AccountSection>
 
       <AccountSection title={say('Preferences','ምርጫዎች')} subtitle={say('Make Biloo work your way','Bilooን ለራስዎ ያስተካክሉ')}>
+        <RiderMapAvatarPicker />
         <AccountRow icon="settings" title={say('Appearance, language & alerts','ገጽታ፣ ቋንቋ እና ማሳወቂያዎች')} detail={say('Light/dark theme, permissions and settings','ብርሃን/ጨለማ ገጽታ፣ ፈቃዶች እና ቅንብሮች')} onClick={()=>open('settings')}/>
         <AccountRow icon="shield" title={say('Privacy & your data','ግላዊነት እና ውሂብዎ')} detail={say('Understand how your information is handled','መረጃዎ እንዴት እንደሚተዳደር ይወቁ')} onClick={()=>open('privacy')}/>
         <AccountRow icon="info" title={say('Terms & about Biloo','ሕጋዊ መረጃ እና ስለ Biloo')} detail={say('Service terms and product information','የአገልግሎት ውሎች እና ስለ መተግበሪያው')} onClick={()=>router.push('/explore/terms')}/>
