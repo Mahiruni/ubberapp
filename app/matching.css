@@ -199,3 +199,103 @@
   border-color:#f9c449;
   color:#08295f;
 }
+
+/* Biloo flagship matching sheet: calm, structured and Android-safe. */
+.rider-matching-view .nr-driver-matching {
+  width:100%;
+  max-width:100%;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+  background:#fff;
+  border:1px solid #e6ebf1;
+  border-radius:28px 28px 0 0;
+  overflow:hidden;
+}
+.rider-matching-view .nr-driver-matching .nr-matching-body {
+  flex:1 1 auto;
+  min-height:0;
+  overflow-y:auto;
+  overscroll-behavior-y:contain;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:thin;
+  padding:14px clamp(16px,4vw,24px) 22px;
+}
+.rider-matching-view .nr-driver-matching .nr-matching-heading {
+  min-width:0;
+}
+.rider-matching-view .nr-driver-matching .nr-matching-heading h1 {
+  font-size:clamp(22px,5vw,29px);
+  line-height:1.2;
+  letter-spacing:-.035em;
+  font-weight:750;
+  color:#08295f;
+  overflow-wrap:break-word;
+}
+.rider-matching-view .nr-driver-matching .nr-matching-heading p {
+  max-width:40ch;
+  line-height:1.5;
+  font-size:14px;
+}
+.rider-matching-view .nr-driver-matching .nr-match-summary {
+  background:#f7f9fc;
+  border:1px solid #e4eaf0;
+  border-radius:18px;
+  padding:14px 16px;
+  margin-top:14px;
+}
+.rider-matching-view .nr-driver-matching .nr-match-place {
+  min-height:44px;
+  gap:12px;
+}
+.rider-matching-view .nr-driver-matching .nr-match-place + .nr-match-place {
+  margin-top:4px;
+}
+.rider-matching-view .nr-driver-matching .nr-match-fare {
+  margin-top:12px;
+  padding-top:12px;
+}
+.rider-matching-view .nr-driver-matching footer {
+  flex:0 0 auto;
+  display:grid;
+  gap:10px;
+  padding:12px clamp(16px,4vw,24px) max(16px,env(safe-area-inset-bottom,0px));
+  background:#fff;
+  border-top:1px solid #e7edf2;
+  box-shadow:0 -4px 16px rgba(8,41,95,.035);
+}
+.rider-matching-view .nr-driver-matching footer > button,
+.rider-matching-view .nr-driver-matching footer > .nr-button {
+  width:100%;
+  min-height:50px;
+  border-radius:14px;
+  font-size:15px;
+  font-weight:700;
+  margin:0;
+}
+.rider-matching-view .nr-driver-matching[data-matching-state="cancelled"] .nr-matching-symbol {
+  width:42px;
+  height:42px;
+  border-radius:14px;
+  margin-bottom:10px;
+}
+.rider-matching-view .nr-driver-matching[data-matching-state="cancelled"] .nr-matching-heading p {
+  margin-bottom:4px;
+}
+.rider-matching-view .nr-driver-matching[data-matching-state="cancelled"] footer > button:first-child {
+  background:#f9c449;
+  border:1px solid #f9c449;
+  color:#08295f;
+}
+.rider-matching-view .nr-driver-matching[data-matching-state="cancelled"] footer > button:last-child {
+  background:#fff;
+  border:1px solid #cfd9e3;
+  color:#08295f;
+}
+@media(max-width:390px) {
+  .rider-matching-view .nr-driver-matching .nr-matching-body {padding-inline:16px}
+  .rider-matching-view .nr-driver-matching .nr-match-summary {padding:12px}
+}
+@media(prefers-reduced-motion:reduce) {
+  .rider-matching-view .nr-driver-matching {animation:none!important}
+}
