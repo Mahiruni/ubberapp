@@ -303,3 +303,60 @@
     animation: none !important;
   }
 }
+
+/* Biloo Rider + Driver: unified premium text-field design.
+   Excludes native switches, checks, radios, file inputs, ranges and color pickers.
+   Shared entry flows use the same treatment without changing validation or input behavior. */
+:is(.nr-app[data-mode="rider"],.nr-driver-app-shell,.nr-identity-entry)
+:is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]):not([type="color"]):not([type="button"]):not([type="submit"]):not([type="reset"]),textarea,select) {
+  box-sizing:border-box;
+  min-width:0;
+  max-width:100%;
+  min-height:50px;
+  border:1px solid var(--biloo-line,#dfe6ef);
+  border-radius:14px;
+  background:var(--nr-surface,#fff);
+  color:var(--biloo-ink,#132a48);
+  font-family:inherit;
+  font-size:16px;
+  font-weight:500;
+  line-height:1.4;
+  padding:12px 14px;
+  box-shadow:0 1px 2px rgba(8,41,95,.025);
+  transition:border-color 160ms ease,box-shadow 160ms ease,background-color 160ms ease;
+}
+:is(.nr-app[data-mode="rider"],.nr-driver-app-shell,.nr-identity-entry) textarea {
+  min-height:108px;
+  resize:vertical;
+}
+:is(.nr-app[data-mode="rider"],.nr-driver-app-shell,.nr-identity-entry) :is(input,textarea)::placeholder {
+  color:var(--biloo-muted,#63748b);
+  opacity:.85;
+  font-weight:400;
+}
+:is(.nr-app[data-mode="rider"],.nr-driver-app-shell,.nr-identity-entry) :is(input,textarea,select):focus {
+  border-color:var(--biloo-focus,#1765b6);
+  box-shadow:0 0 0 3px rgba(23,101,182,.12);
+}
+:is(.nr-app[data-mode="rider"],.nr-driver-app-shell,.nr-identity-entry) :is(input,textarea,select):focus-visible {
+  outline:2px solid var(--biloo-focus,#1765b6)!important;
+  outline-offset:1px;
+}
+:is(.nr-app[data-mode="rider"],.nr-driver-app-shell,.nr-identity-entry) :is(input,textarea,select)[aria-invalid="true"] {
+  border-color:#bd4051;
+  box-shadow:0 0 0 2px rgba(189,64,81,.09);
+}
+:is(.nr-app[data-mode="rider"],.nr-driver-app-shell,.nr-identity-entry) :is(input,textarea,select):disabled {
+  opacity:.65;
+  cursor:not-allowed;
+  box-shadow:none;
+}
+:is(.nr-app[data-mode="rider"],.nr-driver-app-shell,.nr-identity-entry) :is(input,textarea,select):-webkit-autofill {
+  -webkit-text-fill-color:var(--biloo-ink,#132a48);
+  transition:background-color 9999s ease-out 0s;
+}
+@media(prefers-reduced-motion:reduce) {
+  :is(.nr-app[data-mode="rider"],.nr-driver-app-shell,.nr-identity-entry) :is(input,textarea,select) {
+    transition:none!important;
+  }
+}
