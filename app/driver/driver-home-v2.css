@@ -559,3 +559,105 @@
 @media(prefers-reduced-motion:reduce){
   .nr-driver-home-cockpit .nr-driver-presence-label{transition:none!important}
 }
+
+/* Biloo Driver: first map wrapper, mobile-first premium control surface. */
+.nr-driver-home-cockpit .biloo-driver-first-wrapper {
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  background:#fff;
+  border:1px solid #e1e8f0;
+  border-radius:24px;
+  padding:14px 16px 16px;
+  box-shadow:0 8px 26px rgba(8,41,95,.085);
+  color:#08295f;
+}
+.nr-driver-home-cockpit .biloo-driver-first-handle {
+  width:42px;
+  height:5px;
+  border-radius:99px;
+  background:#cbd5df;
+  align-self:center;
+  flex:none;
+}
+.nr-driver-home-cockpit .biloo-driver-first-wrapper .nr-driver-home-control-state strong {
+  font-size:clamp(20px,5vw,24px);
+  font-weight:800;
+  letter-spacing:-.035em;
+  color:#08295f;
+}
+.nr-driver-home-cockpit .biloo-driver-first-wrapper .nr-driver-home-control-brand {
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.1em;
+  color:#9b741d;
+}
+.nr-driver-home-cockpit .biloo-driver-first-wrapper .nr-driver-home-control-state small {
+  display:block;
+  font-size:12px;
+  line-height:1.45;
+  color:#63748b;
+  max-width:32ch;
+}
+.nr-driver-home-cockpit .biloo-driver-first-availability {
+  display:grid;
+  gap:10px;
+  background:#f6f8fb;
+  border:1px solid #e4eaf1;
+  border-radius:17px;
+  padding:12px;
+}
+.nr-driver-home-cockpit .biloo-driver-first-availability-copy {
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+}
+.nr-driver-home-cockpit .biloo-driver-first-availability-copy strong {
+  color:#08295f;
+  font-size:14px;
+  font-weight:750;
+}
+.nr-driver-home-cockpit .biloo-driver-first-availability-copy span {
+  color:#63748b;
+  font-size:12px;
+  line-height:1.4;
+}
+.nr-driver-home-cockpit .biloo-driver-first-links {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+.nr-driver-home-cockpit .biloo-driver-first-links button {
+  min-width:0;
+  min-height:48px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  padding:9px 8px;
+  background:#fff;
+  border:1px solid #dfe6ef;
+  border-radius:13px;
+  color:#08295f;
+  font:inherit;
+  font-size:12px;
+  font-weight:700;
+  cursor:pointer;
+}
+.nr-driver-home-cockpit .biloo-driver-first-links button span {
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.nr-driver-home-cockpit .biloo-driver-first-links button:focus-visible {
+  outline:2px solid #1765b6;
+  outline-offset:2px;
+}
+@media(max-width:380px) {
+  .nr-driver-home-cockpit .biloo-driver-first-wrapper {padding:11px 12px 12px;gap:9px}
+  .nr-driver-home-cockpit .biloo-driver-first-links button {font-size:11px;gap:4px}
+}
+@media(prefers-reduced-motion:reduce) {
+  .nr-driver-home-cockpit .biloo-driver-first-wrapper * {transition:none!important}
+}
