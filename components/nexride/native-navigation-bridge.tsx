@@ -79,11 +79,14 @@ export function NexRideNativeNavigationBridge() {
         // and reconcile their data when the activity is resumed.
         const stateListener = await App.addListener("appStateChange", ({ isActive }) => {
           window.dispatchEvent(new Event(isActive ? "biloo:native-resume" : "biloo:native-pause"));
-        });
+        }).catch(() => null);
+        // If the optional lifecycle listener is unavailable, the Back
+        // callback must still be cleaned up correctly and remain functional.
         if (disposed) {
-          await Promise.all([subscription.remove(), stateListener.remove()]);
+          await Promise.all([subscription.remove(), stateListener?.remove()]);
         } else {
-          removers = [() => subscription.remove(), () => stateListener.remove()];
+          removers = [() => subscription.remove()];
+          if (stateListener) removers.push(() => stateListener.remove());
         }
       },
     ).catch(() => {
