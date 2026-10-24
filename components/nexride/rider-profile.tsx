@@ -51,8 +51,7 @@ export function RiderSettings({language,setLanguage}: Pick<Props,'language'|'set
       <h2>{say("App settings", "የመተግበሪያ ቅንብሮች")}</h2>
       <p>{say("A simpler way to personalize your Biloo experience.", "የBiloo ልምድዎን በቀላሉ ያስተካክሉ።")}</p>
     </header>
-    <SettingsGroups defaultOpenId="appearance" groups={[
-      { id: "legal", icon: "shield", title: say("Legal documents", "ሕጋዊ ሰነዶች"), summary: say("Privacy and terms", "ግላዊነት እና ውሎች"), children: <nav className="biloo-settings-links" aria-label="Legal documents"><a href="/explore/privacy">Privacy policy <span>›</span></a><a href="/explore/terms">Terms of service <span>›</span></a></nav> },
+    <SettingsGroups defaultOpenId={null} groups={[
 
       { id: "notifications", icon: "bell", title: say("Notifications", "ማሳወቂያዎች"), summary: say("Trip alerts, sounds and haptics", "የጉዞ ማሳወቂያ፣ ድምፅ እና ንዝረት"), children: <>
     <PermissionSettings/>
@@ -90,6 +89,7 @@ export function RiderSettings({language,setLanguage}: Pick<Props,'language'|'set
       </div>
     </div>
       </> },
+      { id: "legal", icon: "shield", title: say("Legal documents", "ሕጋዊ ሰነዶች"), summary: say("Privacy and terms", "ግላዊነት እና ውሎች"), children: <nav className="biloo-settings-links" aria-label="Legal documents"><a href="/explore/privacy">Privacy policy <span>›</span></a><a href="/explore/terms">Terms of service <span>›</span></a></nav> },
     ]}/>
     <div className="biloo-ref-settings-meta" aria-label={say("App information", "የመተግበሪያ መረጃ")}>
       <span><Icon name="info" size={20}/>{say("App version", "የመተግበሪያ ስሪት")}</span>
