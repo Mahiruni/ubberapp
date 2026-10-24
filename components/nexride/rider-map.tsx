@@ -22,6 +22,7 @@ import {
   type RouteResult,
   type TrafficLevel,
 } from "../../lib/location";
+import { DEFAULT_MAP_AVATAR, loadMapAvatar, mapAvatarSvg, normalizeMapAvatar, type MapAvatar } from "../../lib/biloo-rider-map-avatar";
 import { applyBilooCityMapPalette } from "../../lib/biloo-map-palette";
 import "mapbox-gl/dist/mapbox-gl.css";
 import "@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css";
@@ -144,14 +145,14 @@ const endpointElement = (kind: "pickup" | "destination") => {
  */
 export type BilooLocationMarkerRole = "rider" | "driver";
 
-const locationMarkerElement = (label: string, role: BilooLocationMarkerRole) => {
+const locationMarkerElement = (label: string, role: BilooLocationMarkerRole, avatar: MapAvatar = DEFAULT_MAP_AVATAR) => {
   const root = document.createElement("div");
   root.className = "nr-live-location-marker nr-location-identity";
   root.dataset.markerRole = role;
+  if (role === "rider") root.classList.add("biloo-custom-map-avatar");
   root.setAttribute("role", "img");
   root.setAttribute("aria-label", label);
-  root.innerHTML = role === "rider"
-    ? '<svg class="nr-location-identity-glyph" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">' +
+  root.innerHTML = role === "rider" ? mapAvatarSvg(avatar) : '<svg class="nr-location-identity-glyph" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">' +
       '<circle cx="24" cy="9" r="6.2" fill="#111111" stroke="white" stroke-width="1.4"/>' +
       '<path d="M19 18h10c2.4 0 4.3 1.8 4.8 4.2l2.3 11.3-5 1.1-2.7-10.1V34h-2.9v10h-5V34h-2.9v-9.5l-2.7 10.1-5-1.1 2.3-11.3c.5-2.4 2.4-4.2 4.8-4.2Z" fill="#111111" stroke="white" stroke-width="1.4" stroke-linejoin="round"/>' +
       '</svg>'
@@ -730,6 +731,7 @@ export function RiderMap({
   const mapRef = useRef<MapboxMap | null>(null);
   const liveMarker = useRef<MapboxMarker | null>(null);
   const liveMarkerRole = useRef<BilooLocationMarkerRole | null>(null);
+  const [riderMapAvatar, setRiderMapAvatar] = useState<MapAvatar>(DEFAULT_MAP_AVATAR);
   useEffect(() => {
     const refresh = () => {
       const el = liveMarker.current?.getElement();
@@ -748,6 +750,21 @@ export function RiderMap({
 
   const liveMarkerAnimation = useRef<number | null>(null);
   const liveMarkerLngLat = useRef<[number, number] | null>(null);
+  useEffect(() => {
+    if (markerRole !== "rider") return;
+    let active = true;
+    const refresh = () => { void loadMapAvatar().then(a => { if(active) setRiderMapAvatar(a); }).catch(()=>{}); };
+    const updated = (event: Event) => { const detail=(event as CustomEvent<MapAvatar>).detail; if(detail) setRiderMapAvatar(normalizeMapAvatar(detail)); else refresh(); };
+    refresh();
+    window.addEventListener("biloo:rider-avatar-updated", updated);
+    window.addEventListener("focus", refresh);
+    return () => {active=false;window.removeEventListener("biloo:rider-avatar-updated",updated);window.removeEventListener("focus",refresh);};
+  }, [markerRole]);
+  useEffect(() => {
+    if (markerRole !== "rider") return;
+    const el = liveMarker.current?.getElement();
+    if (el && liveMarkerRole.current === "rider") el.innerHTML = mapAvatarSvg(riderMapAvatar);
+  }, [riderMapAvatar, markerRole]);
   const pickupMarker = useRef<MapboxMarker | null>(null);
   const destinationMarker = useRef<MapboxMarker | null>(null);
   const searchMarker = useRef<MapboxMarker | null>(null);
@@ -1344,6 +1361,7 @@ export function RiderMap({
             ? (language === "am" ? "የእርስዎ መኪና" : "Your vehicle")
             : (language === "am" ? "የእርስዎ አካባቢ" : "Your location"),
           markerRole,
+          riderMapAvatar,
         );
         markerElement.classList.toggle("is-stale", gpsStale);
         markerElement.classList.toggle(
