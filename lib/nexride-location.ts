@@ -131,12 +131,10 @@ export function useRiderLocation() {
     let permission: PermissionStatus | null = null;
     let cancelled = false;
 
-    // Opening the Rider or Driver map starts location acquisition immediately.
-    // The browser/Android WebView asks for permission if it was not granted
-    // already. A denied request never blocks access to the map or booking UI.
-    // The first valid GPS fix centers the map through RiderMap's marker logic;
-    // explicit recenter remains reserved for the locate button.
-    startWatch(false);
+    // Auto-acquire foreground GPS only while the map is visible. Android and
+    // browsers may pause or recreate the page when the screen is locked.
+    // Never run a permanent GPS watcher from a background Rider/Driver PWA.
+    if (document.visibilityState !== "hidden") startWatch(false);
 
     const syncPermission = () => {
       if (cancelled || !active.current || !permission) return;
@@ -146,7 +144,7 @@ export function useRiderLocation() {
         latest.current = null;
         setPosition(null);
         setStatus("denied");
-      } else if (permission.state === "granted") {
+      } else if (permission.state === "granted" && document.visibilityState !== "hidden") {
         startWatch(false);
       } else if (!latest.current && watchId.current === null) {
         // Browsers may report "prompt" until the user answers. Keep loading
@@ -154,6 +152,31 @@ export function useRiderLocation() {
         setStatus("loading");
       }
     };
+
+    const pauseLocation = () => {
+      if (cancelled) return;
+      clearWatch();
+      // Keep last confirmed coordinates for a stale/paused indicator; do not
+      // fabricate fresh GPS points while the application is backgrounded.
+    };
+
+    const resumeLocation = () => {
+      if (cancelled || !active.current || document.visibilityState === "hidden") return;
+      if (permission?.state === "denied") {
+        syncPermission(); // Never silently re-prompt after permission denial.
+        return;
+      }
+      startWatch(false);
+    };
+
+    const visibilityChanged = () => {
+      if (document.visibilityState === "hidden") pauseLocation();
+      else resumeLocation();
+    };
+
+    document.addEventListener("visibilitychange", visibilityChanged);
+    window.addEventListener("pagehide", pauseLocation);
+    window.addEventListener("pageshow", resumeLocation);
 
     navigator.permissions
       ?.query({ name: "geolocation" })
@@ -172,6 +195,9 @@ export function useRiderLocation() {
       cancelled = true;
       active.current = false;
       clearWatch();
+      document.removeEventListener("visibilitychange", visibilityChanged);
+      window.removeEventListener("pagehide", pauseLocation);
+      window.removeEventListener("pageshow", resumeLocation);
       permission?.removeEventListener("change", syncPermission);
     };
   }, [clearWatch, startWatch]);
