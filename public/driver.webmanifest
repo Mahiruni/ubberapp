@@ -8,7 +8,7 @@
   "display": "standalone",
   "display_override": [
     "standalone",
-    "fullscreen"
+    "minimal-ui"
   ],
   "orientation": "any",
   "background_color": "#08295F",
