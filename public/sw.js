@@ -105,7 +105,8 @@ function bilooNotificationDestination(raw) {
 self.addEventListener("push", (event) => {
   let data = {};
   try {
-    data = event.data ? event.data.json() : {};
+    const payload = event.data ? event.data.json() : {};
+    data = payload && typeof payload === "object" ? payload : {};
   } catch {
     data = { body: event.data ? event.data.text() : "" };
   }
