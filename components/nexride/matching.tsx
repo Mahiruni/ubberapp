@@ -15,6 +15,7 @@ export function DriverMatching({ model, changeCategory, previewAssigned, home }:
   const heading = useRef<HTMLHeadingElement>(null);
   const { request, snapshot, connectionLost, syncFailed, reconnecting, busy, actionFailed } = model;
   const status = snapshot?.status || 'searching';
+  const cancelled = status === 'cancelled' || cancelSuccess;
   const degraded = !connectionLost && syncFailed;
   const title = connectionLost ? 'matchingConnection' : degraded ? 'matchingSyncProblem' : status === 'assigned' ? 'assigned' : status === 'delayed' ? 'matchingDelayed' : status === 'no_drivers' ? 'matchingEmpty' : status === 'cancelled' ? 'matchingCancelled' : 'finding';
   useEffect(() => { if (status === 'assigned') heading.current?.focus(); }, [status]);
@@ -46,7 +47,7 @@ export function DriverMatching({ model, changeCategory, previewAssigned, home }:
     // server snapshot arrives. The action handler fetches the current version.
     setConfirmVersion(snapshot?.version ?? -1);
   };
-  return <section className="nr-driver-matching" data-matching-state={connectionLost ? 'connection_lost' : degraded ? 'sync_problem' : status} aria-label={t('matchingScreen')}>
+  return <section className="nr-driver-matching" data-matching-state={cancelled ? 'cancelled' : connectionLost ? 'connection_lost' : degraded ? 'sync_problem' : status} aria-label={t('matchingScreen')}>
     <RiderSheetHandle
       label={language === "am" ? "የአሽከርካሪ ማዛመጃ ፓነሉን አስፋ ወይም አሳንስ" : "Resize driver matching panel"}
       defaultRatio={0.48}
@@ -117,14 +118,14 @@ export function DriverMatching({ model, changeCategory, previewAssigned, home }:
     <footer>
       {(connectionLost || degraded) && <Button disabled={busy || reconnecting} loading={reconnecting} onClick={() => void model.reconnect()}>{t(reconnecting ? 'matchingReconnecting' : 'matchingReconnect')}</Button>}
       {!connectionLost && snapshot?.canRetry && <Button disabled={busy} loading={busy} onClick={() => void model.action('retry')}>{t(busy ? 'matchingUpdating' : 'matchingRetry')}</Button>}
-      {(status === 'cancelled' || cancelSuccess) ? <>
+      {cancelled ? <>
         <Button disabled={busy} onClick={home}>{t('riderCancelHome')}</Button>
         <Button variant="secondary" disabled={busy} onClick={changeCategory}>{t('riderCancelNewRide')}</Button>
       </> : <>
         {status === 'no_drivers' && <Button variant="ghost" disabled={busy} onClick={home}>{t('home')}</Button>}
         {snapshot?.canChangeCategory && <Button variant="secondary" disabled={busy} onClick={changeCategory}>{t('matchingChangeCategory')}</Button>}
       </>}
-      {!cancelSuccess && status !== 'cancelled' && <Button variant="danger" className="nr-rider-cancel-button" disabled={busy || reconnecting || terms?.allowed === false} onClick={cancel}><Icon name="close" size={17} />{t(busy ? 'matchingUpdating' : 'matchingCancel')}</Button>}
+      {!cancelled && <Button variant="danger" className="nr-rider-cancel-button" disabled={busy || reconnecting || terms?.allowed === false} onClick={cancel}><Icon name="close" size={17} />{t(busy ? 'matchingUpdating' : 'matchingCancel')}</Button>}
       {!preview && !snapshot && <small className="nr-match-terms-note">{t('matchingTermsPending')}</small>}
     </footer>
     {confirmVersion !== null && <Dialog title={t('matchingCancelConfirm')} onClose={() => setConfirmVersion(null)}>
