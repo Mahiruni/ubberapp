@@ -132,8 +132,7 @@ export default function DriverProfileSettingsPage() {
           <small>{say("Tap the photo to view, crop or update it", "ፎቶዎን ለማየት ወይም ለመቀየር ይንኩ")}</small>
         </section>
         {profile.accountStatus !== "active" && <div className="nr-profile-alert" role="status"><Icon name="info" size={17}/><span>{t("entryEditingLimited")}</span></div>}
-        <SettingsGroups defaultOpenId="account" groups={[
-      { id: "legal", icon: "shield", title: say("Legal documents", "ሕጋዊ ሰነዶች"), summary: say("Privacy and terms", "ግላዊነት እና ውሎች"), children: <nav className="biloo-settings-links" aria-label="Legal documents"><a href="/explore/privacy">Privacy policy <span>›</span></a><a href="/explore/terms">Terms of service <span>›</span></a></nav> },
+        <SettingsGroups defaultOpenId={null} groups={[
 
           { id: "account", icon: "user", title: say("Account", "መለያ"), summary: say("Personal details, documents and vehicle", "የግል መረጃ፣ ሰነዶች እና ተሽከርካሪ"), children: <>
         <section className="nr-profile-panel">
@@ -168,6 +167,7 @@ export default function DriverProfileSettingsPage() {
           <div className="nr-driver-preference-block"><div className="nr-driver-preference-label"><strong>{t("language")}</strong></div><div className="nr-driver-language-selector" role="group" aria-label={t("language")}><button type="button" data-active={language === "en"} aria-pressed={language === "en"} onClick={() => announceLanguage("en")}>English</button><button type="button" data-active={language === "am"} aria-pressed={language === "am"} onClick={() => announceLanguage("am")}>አማርኛ</button></div></div>
         </section>
           </> },
+      { id: "legal", icon: "shield", title: say("Legal documents", "ሕጋዊ ሰነዶች"), summary: say("Privacy and terms", "ግላዊነት እና ውሎች"), children: <nav className="biloo-settings-links" aria-label="Legal documents"><a href="/explore/privacy">Privacy policy <span>›</span></a><a href="/explore/terms">Terms of service <span>›</span></a></nav> },
         ]}/>
         <div className="biloo-ref-driver-account-info">
           <div className="biloo-ref-settings-meta"><span><Icon name="info" size={19}/>{say("App version", "የመተግበሪያ ስሪት")}</span><AppVersion/></div>
