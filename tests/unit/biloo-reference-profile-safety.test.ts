@@ -53,8 +53,8 @@ describe("Biloo original profile, safety and settings experience", () => {
     expect(dialog).toContain("className?: string");
   });
 
-  it("keeps actual Rider preferences and expands Appearance by default", () => {
-    expect(rider).toContain('defaultOpenId="appearance"');
+  it("keeps actual Rider preferences with settings collapsed by default", () => {
+    expect(rider).toContain('defaultOpenId={null}');
     expect(rider).toContain("PermissionSettings");
     expect(rider).toContain("NexRideFeedbackSettings");
     expect(rider).toContain("NativeReliabilitySettings");
@@ -69,7 +69,7 @@ describe("Biloo original profile, safety and settings experience", () => {
 
   it("keeps Driver editable profile, photo, verified contacts, theme and notifications", () => {
     expect(driver).toContain('className="nr-app nr-driver-profile-subpage biloo-reference-driver-settings"');
-    expect(driver).toContain('defaultOpenId="account"');
+    expect(driver).toContain('defaultOpenId={null}');
     expect(driver).toContain("DriverPhotoManager");
     expect(driver).toContain("loadDriverProfileData(session.user.id)");
     expect(driver).toContain('getUser()');

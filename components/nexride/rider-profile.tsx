@@ -19,7 +19,6 @@ import './rider-avatar-upload.css';
 import { AppVersion } from './app-version';
 import { RiderMapAvatarStudio } from './rider-map-avatar-studio';
 import { SettingsGroups } from "./settings-groups";
-import { RiderMapAvatarPicker } from "./rider-map-avatar-picker";
 
 type Props = {
   language: Language;
@@ -277,8 +276,7 @@ export function RiderProfile(props:Props) {
       </AccountSection>
 
       <AccountSection title={say('Preferences','ምርጫዎች')} subtitle={say('Make Biloo work your way','Bilooን ለራስዎ ያስተካክሉ')}>
-        <RiderMapAvatarPicker />
-        <AccountRow icon="user" title={say('My Map Avatar','የካርታ አምሳያዬ')} detail={say('Choose or design your 3D Rider character','የራስዎን የካርታ ገጸ ባህሪ ይምረጡ')} onClick={()=>open('map-avatar')}/>
+        <AccountRow icon="user" title={say('My Map Avatar','የካርታ አምሳያዬ')} detail={say('20 characters. Make your map avatar yours.','የራስዎን የካርታ ገጸ ባህሪ ይምረጡ')} onClick={()=>open('map-avatar')}/>
         <AccountRow icon="settings" title={say('Appearance, language & alerts','ገጽታ፣ ቋንቋ እና ማሳወቂያዎች')} detail={say('Light/dark theme, permissions and settings','ብርሃን/ጨለማ ገጽታ፣ ፈቃዶች እና ቅንብሮች')} onClick={()=>open('settings')}/>
         <AccountRow icon="shield" title={say('Privacy & your data','ግላዊነት እና ውሂብዎ')} detail={say('Understand how your information is handled','መረጃዎ እንዴት እንደሚተዳደር ይወቁ')} onClick={()=>open('privacy')}/>
         <AccountRow icon="info" title={say('Terms & about Biloo','ሕጋዊ መረጃ እና ስለ Biloo')} detail={say('Service terms and product information','የአገልግሎት ውሎች እና ስለ መተግበሪያው')} onClick={()=>router.push('/explore/terms')}/>
@@ -296,7 +294,7 @@ export function RiderProfile(props:Props) {
       <AppVersion />
     </footer>
 
-    {panel&&<Dialog className={panel==='edit'?'biloo-ref-profile-modal':panel==='settings'?'biloo-ref-settings-modal':''} title={
+    {panel&&<Dialog className={panel==='edit'?'biloo-ref-profile-modal':panel==='settings'?'biloo-ref-settings-modal':panel==='map-avatar'?'biloo-avatar-modal':''} title={
       panel==='edit'?say('Edit profile','መገለጫ አርትዕ')
       :panel==='settings'?t('settings')
       :panel==='map-avatar'?say('My Map Avatar','የካርታ አምሳያዬ')

@@ -314,3 +314,11 @@ html[data-nr-data-saver] .nr-live-location-marker.nr-location-identity[data-mark
     display:none;
   }
 }
+
+/* Override both legacy 48px minimums and the previous 64x92 avatar size.
+   Only Rider markers use this box. Mapbox positions the bottom at the GPS fix. */
+.nr-live-location-marker.nr-location-identity.biloo-custom-map-avatar[data-marker-role="rider"]{width:36px!important;height:48px!important;min-width:36px!important;min-height:48px!important;max-width:36px!important;max-height:48px!important;position:relative!important;display:block!important;margin:0!important;padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important;overflow:visible!important;contain:layout style!important;isolation:isolate;pointer-events:none!important}
+.nr-live-location-marker.nr-location-identity.biloo-custom-map-avatar[data-marker-role="rider"]>.biloo-rider-avatar-art{position:relative;z-index:1;display:block;width:29px!important;height:48px!important;max-width:29px!important;max-height:48px!important;margin:0 auto;filter:drop-shadow(0 1px 1px #12305244)}
+.nr-live-location-marker.nr-location-identity.biloo-custom-map-avatar[data-marker-role="rider"]::before{content:"";position:absolute;z-index:0;left:50%;top:auto;bottom:-2px;box-sizing:border-box;width:20px;height:6px;background:#497c9a2b;border:1px solid #497c9a70;border-radius:50%;transform:translateX(-50%);opacity:1;animation:none!important;will-change:auto}
+.nr-live-location-marker.nr-location-identity.biloo-custom-map-avatar[data-marker-role="rider"]::after{display:none!important;animation:none!important}
+.nr-live-location-marker.nr-location-identity.biloo-custom-map-avatar[data-marker-role="rider"].is-stale>.biloo-rider-avatar-art{opacity:.57;filter:grayscale(1) drop-shadow(0 1px 1px #12305244)}
