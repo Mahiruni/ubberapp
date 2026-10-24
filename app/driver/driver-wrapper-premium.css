@@ -1130,3 +1130,65 @@ html[lang="am"] .nr-driver-menu-layer :where(strong,small) {
 .nr-driver-app-shell{--driver-bg:var(--biloo-bg);--driver-surface:#fff;--driver-surface-elevated:#f0f4f8;--driver-border:var(--biloo-line);--driver-text-primary:var(--biloo-ink);--driver-text-secondary:var(--biloo-muted);--driver-accent:var(--biloo-gold);--driver-header-bg:rgba(255,255,255,.96);--driver-nav-bg:#fff}
 .nr-driver-app-shell :is(.nr-driver-global-header,.nr-driver-sheet,.nr-driver-nav){border-color:var(--driver-border)!important}
 .nr-driver-app-shell :is(.nr-driver-menu-trigger,.nr-driver-global-icon-button):focus-visible,.nr-driver-menu-layer :is(a,button):focus-visible{outline-color:var(--biloo-focus)!important}
+
+/* Biloo Driver — Android-safe wrapper refinement, October 2026.
+   Preserve native safe areas, map gestures, live trip controls and JS sheet snap logic. */
+.nr-driver-app-shell {
+  --biloo-driver-motion:cubic-bezier(.22,1,.36,1);
+  --biloo-driver-panel-shadow:0 -9px 32px rgba(8,41,95,.11);
+  -webkit-tap-highlight-color:transparent;
+}
+.nr-driver-app-shell .nr-driver-sheet {
+  border-color:var(--driver-border,var(--biloo-line))!important;
+  box-shadow:var(--biloo-driver-panel-shadow);
+  border-radius:26px 26px 0 0;
+  background:var(--driver-surface,#fff);
+  color:var(--driver-text-primary,var(--biloo-ink));
+  overscroll-behavior:contain;
+}
+.nr-driver-app-shell .nr-driver-sheet[data-dragging="true"] {
+  transition:none!important;
+}
+.nr-driver-app-shell .nr-driver-sheet-grab {
+  touch-action:none;
+  -webkit-tap-highlight-color:transparent;
+}
+.nr-driver-app-shell .nr-driver-sheet-grab>span {
+  background:var(--driver-border,#dfe6ef);
+  border-radius:999px;
+}
+.nr-driver-app-shell .nr-driver-sheet-content {
+  min-height:0;
+  overscroll-behavior-y:contain;
+  -webkit-overflow-scrolling:touch;
+}
+.nr-driver-app-shell .nr-driver-sheet-footer {
+  flex-shrink:0;
+  background:var(--driver-surface,#fff);
+  border-color:var(--driver-border,#dfe6ef);
+  padding-bottom:max(12px,env(safe-area-inset-bottom,0px));
+}
+.nr-driver-app-shell :is(.nr-driver-sheet,.nr-driver-shell-content) :is(button,a,input,select,textarea) {
+  font-family:inherit;
+}
+.nr-driver-app-shell :is(.nr-driver-sheet,.nr-driver-shell-content) :is(button,a) {
+  touch-action:manipulation;
+}
+.nr-driver-app-shell :is(.nr-driver-sheet,.nr-driver-shell-content) :is(button,a,input,select,textarea):focus-visible {
+  outline:3px solid var(--biloo-focus,#1765b6)!important;
+  outline-offset:2px;
+}
+.nr-driver-app-shell :is(.nr-driver-sheet,.nr-driver-shell-content) :is(.nr-driver-card,.nr-driver-operational-card,.nr-earnings-total-card) {
+  transition:background-color 170ms ease,border-color 170ms ease,box-shadow 170ms ease;
+}
+@media(max-width:600px) {
+  .nr-driver-app-shell :is(.nr-driver-sheet,.nr-driver-shell-content) :is(input,select,textarea) {
+    font-size:max(16px,1rem);
+  }
+}
+@media(prefers-reduced-motion:reduce) {
+  .nr-driver-app-shell :is(.nr-driver-sheet,.nr-driver-card,.nr-driver-operational-card,.nr-earnings-total-card) {
+    transition:none!important;
+    animation:none!important;
+  }
+}
