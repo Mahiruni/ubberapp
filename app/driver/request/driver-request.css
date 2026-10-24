@@ -1088,3 +1088,80 @@
     min-height:46px!important;
   }
 }
+
+/* BILOO DRIVER / DESIGN 08 — Clean Modern incoming request.
+   Pure presentation: existing offer, countdown, and dispatch actions are untouched. */
+.nr-driver-app-shell .nr-driver-request-page {
+  background:#eef3f8;
+  color:#08295f;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-driver-request-map {
+  background:#edf3f9;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-driver-request-map .nr-map {
+  filter:saturate(.8) contrast(.97) brightness(1.07);
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-driver-request-map::after {
+  background:linear-gradient(180deg,rgba(238,244,249,.10),transparent 55%,rgba(238,244,249,.42));
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-sheet {
+  background:#fff;
+  color:#08295f;
+  border:1px solid #e1e8f0;
+  border-radius:28px 28px 0 0;
+  box-shadow:0 -12px 40px rgba(8,41,95,.10);
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-eyebrow {
+  color:#a67a19;
+  font-weight:800;
+  letter-spacing:.09em;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-heading h1 {
+  color:#08295f;
+  font-weight:800;
+  letter-spacing:-.035em;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-route,
+.nr-driver-app-shell .nr-driver-request-page .nr-request-summary {
+  background:#f6f8fb;
+  border:1px solid #e4eaf1;
+  border-radius:17px;
+  box-shadow:none;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-countdown {
+  background:#fff;
+  color:#08295f;
+  border-radius:50%;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-countdown-ring .progress {
+  stroke:#f9c449;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-driver-sheet-footer {
+  background:#fff;
+  border-top:1px solid #e8edf3;
+  padding-bottom:max(14px,env(safe-area-inset-bottom,0px));
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-driver-sheet-footer .nr-request-actions>.nr-request-accept {
+  background:#08295f;
+  color:#fff;
+  border:1px solid #08295f;
+  border-radius:15px;
+  min-height:52px;
+  box-shadow:none;
+  font-weight:800;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-driver-sheet-footer .nr-request-actions-secondary .nr-request-decline {
+  background:#fff;
+  color:#08295f;
+  border:1px solid #cbd6e2;
+  border-radius:14px;
+  min-height:46px;
+  box-shadow:none;
+}
+.nr-driver-app-shell .nr-driver-request-page :is(button,a):focus-visible {
+  outline:3px solid #dcae3a;
+  outline-offset:2px;
+}
+@media(prefers-reduced-motion:reduce) {
+  .nr-driver-app-shell .nr-driver-request-page .nr-request-countdown-ring .progress {transition:none}
+}
