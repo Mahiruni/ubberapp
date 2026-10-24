@@ -4,13 +4,17 @@ The same cartography now runs on Rider maps, Driver maps, active Driver navigati
 
 | Feature | Day | Night |
 | --- | --- | --- |
-| Ground | `#e9ede9` | `#18242e` |
-| Parks | `#c6dccb` | `#223c35` |
-| Water | `#abcddd` | `#15394c` |
-| Buildings | `#d2dcdd` | `#2c3b46` |
-| Local roads | `#fffffd` | `#44484c` |
-| Major roads | `#fbfcfa` | `#62666a` |
-| Main labels | `#143654` | `#e9f0f5` |
+| Ground | `#e9ede9` | `#141414` |
+| Parks | `#c6dccb` | `#252d28` |
+| Water | `#abcddd` | `#202b31` |
+| Buildings | `#d2dcdd` | `#2d2d2d` |
+| Local roads | `#fffffd` | `#505050` |
+| Major roads | `#fbfcfa` | `#686868` |
+| Main labels | `#143654` | `#f3f3f3` |
+
+The night palette uses charcoal and graphite from the user's October 24 reference, with subtle park/water hues for orientation. Driver trip navigation pairs those surfaces with an orange `#ffb000` primary action and pale text. The selected map style adapts floating controls; the saved appearance preference still determines the trip sheet and header. Satellite imagery remains photographic.
+
+Map-layer rows keep labels on one line, use a fixed 16px selection icon, and reserve the traffic switch's width. Full-canvas SVG sizing applies only to the map's direct illustration, never to nested UI icons. Browser checks cover the selected Satellite row, traffic toggle, light/dark appearance and 320–430px viewports.
 
 Combined landuse layers use the feature's class to distinguish parks, woodland, residential land, education, hospitals and other areas. The Light/Dark v11 basemaps have no casing on their combined surface and tunnel road layers; Biloo adds two narrow outlines using those same sources. Their width expressions preserve class and zoom behavior, including roads that remain hidden at regional zooms.
 

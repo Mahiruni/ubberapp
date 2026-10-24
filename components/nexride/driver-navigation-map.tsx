@@ -344,7 +344,7 @@ export function DriverNavigationMap({
   const showCompass = Math.abs(normalizedBearing(bearing)) > 2;
 
   return (
-    <div className="nr-navigation-map nr-live-navigation-map" role="region" aria-label="Live Biloo Mapbox route map" data-gps={gpsState} data-target={target}>
+    <div className="nr-navigation-map nr-live-navigation-map" role="region" aria-label="Live Biloo Mapbox route map" data-gps={gpsState} data-target={target} data-map-style={styleKey}>
       <div ref={container} className="nr-live-navigation-canvas" />
 
       {mapStatus === "loading" && <div className="nr-driver-map-loading" role="status"><Spinner /> Loading live map…</div>}
@@ -362,7 +362,7 @@ export function DriverNavigationMap({
 
       <div className="nr-driver-map-controls" aria-label="Driver map controls">
         <button type="button" onClick={recenter} aria-label="Recenter map"><Icon name="locate" size={21} /></button>
-        <button type="button" onClick={() => setLayersOpen((open) => !open)} aria-expanded={layersOpen} aria-label="Map layers"><Icon name="globe" size={21} /></button>
+        <button type="button" onClick={() => setLayersOpen((open) => !open)} aria-haspopup="menu" aria-controls="biloo-driver-map-layers" aria-expanded={layersOpen} aria-label="Map layers"><Icon name="globe" size={21} /></button>
         {showCompass && (
           <button type="button" aria-label="Reset map north" onClick={() => mapRef.current?.easeTo({ bearing: 0, duration: 220 })}>
             <span style={{ display: "grid", placeItems: "center", transform: `rotate(${-bearing}deg)` }}><Icon name="navigation" size={21} /></span>
@@ -371,7 +371,7 @@ export function DriverNavigationMap({
       </div>
 
       {layersOpen && (
-        <div className="nr-driver-layer-menu" role="menu" aria-label="Map style and traffic">
+        <div id="biloo-driver-map-layers" className="nr-driver-layer-menu" role="menu" aria-label="Map style and traffic">
           {(["streets", "satellite", "dark"] as MapStyleKey[]).map((key) => (
             <button key={key} type="button" role="menuitemradio" aria-checked={styleKey === key} onClick={() => { setStyleKey(key); setLayersOpen(false); }}>
               <span>{key === "streets" ? "Streets" : key === "satellite" ? "Satellite" : "Dark"}</span>

@@ -20,15 +20,15 @@ const DAY = {
 
 type Palette = Record<keyof typeof DAY, string>;
 const NIGHT: Palette = {
-  ground: '#18242e', residential: '#1d2b34', commercial: '#2a2e35',
-  industrial: '#26333e', education: '#34352f', hospital: '#392c35',
-  park: '#223c35', woodland: '#1c352f', sand: '#37382f',
-  water: '#15394c', waterEdge: '#284d60',
-  building: '#2c3b46', buildingEdge: '#40515b', airport: '#293743',
-  road: '#44484c', roadMajor: '#62666a', roadCase: '#25292d', roadCaseMajor: '#34383c',
-  path: '#53645d', rail: '#56616b', boundary: '#435462',
-  label: '#e9f0f5', streetLabel: '#c0d0da', secondaryLabel: '#aabfcb',
-  parkLabel: '#bad7c2', waterLabel: '#b4d6e6', halo: '#18242e',
+  ground: '#141414', residential: '#1b1b1b', commercial: '#262421',
+  industrial: '#242628', education: '#2b2924', hospital: '#2e2728',
+  park: '#252d28', woodland: '#202722', sand: '#30302b',
+  water: '#202b31', waterEdge: '#39464d',
+  building: '#2d2d2d', buildingEdge: '#414141', airport: '#292929',
+  road: '#505050', roadMajor: '#686868', roadCase: '#202020', roadCaseMajor: '#303030',
+  path: '#555b56', rail: '#606060', boundary: '#4b4b4b',
+  label: '#f3f3f3', streetLabel: '#f2f2f2', secondaryLabel: '#bcbcbc',
+  parkLabel: '#c1cdc5', waterLabel: '#c8d4db', halo: '#141414',
 };
 
 export const BILOO_CITY_PALETTES = { streets: DAY, dark: NIGHT };
@@ -154,5 +154,5 @@ export function applyBilooCityMapPalette(map: MapboxMap, style: BilooMapStyle | 
       // An optional layer in a custom style must never block the usable map.
     }
   }
-  map.getContainer().dataset.bilooMapPalette = `biloo-${theme}-v2`;
+  map.getContainer().dataset.bilooMapPalette = theme === 'dark' ? 'biloo-dark-v3' : 'biloo-streets-v2';
 }

@@ -60,12 +60,12 @@ describe('Biloo city cartography', () => {
       const { map, style, dataset } = fakeMap();
       applyBilooCityMapPalette(map, theme);
       expect(validate(style).map(error => error.message)).toEqual([]);
-      expect(dataset.bilooMapPalette).toBe(`biloo-${theme}-v2`);
+      expect(dataset.bilooMapPalette).toBe(theme === 'dark' ? 'biloo-dark-v3' : 'biloo-streets-v2');
     });
 
     it(`${theme} labels remain readable on land, streets, water and parks`, () => {
       const p = BILOO_CITY_PALETTES[theme];
-      for (const pair of [[p.label, p.ground], [p.secondaryLabel, p.ground], [p.streetLabel, p.road], [p.waterLabel, p.water], [p.parkLabel, p.park]]) expect(contrast(...pair as [string, string])).toBeGreaterThanOrEqual(4.5);
+      for (const pair of [[p.label, p.ground], [p.secondaryLabel, p.ground], [p.streetLabel, p.road], [p.streetLabel, p.roadMajor], [p.waterLabel, p.water], [p.parkLabel, p.park]]) expect(contrast(...pair as [string, string])).toBeGreaterThanOrEqual(4.5);
     });
   }
 

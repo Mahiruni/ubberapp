@@ -532,3 +532,79 @@
 /* Biloo gold is the primary interaction accent; success and danger remain semantic. */
 .nr-driver-app-shell{--trip-primary:#f9c449;--trip-handle:#f9c449;--trip-active-text:#08295f}
 .nr-driver-app-shell[data-theme="dark"]{--trip-primary:#f9c449;--trip-handle:#f9c449;--trip-active-text:#f9c449}
+
+/* Trip navigation: graphite surfaces and a restrained warm-orange action accent. */
+.nr-driver-app-shell[data-theme] .nr-driver-navigation-page{
+  --trip-primary:#ffb000;
+  --trip-ink:#181818;
+  --trip-brand:#666666;
+  --trip-brand-strong:#262626;
+  --trip-elevated:#f1f1f1;
+  --trip-border:#e2e2e2;
+  --trip-text:#222222;
+  --trip-muted:#626262;
+  --trip-handle:#a3a3a3;
+  --trip-stroke:#e2e2e2;
+  --trip-active-bg:#fff5e2;
+  --trip-active-text:#795211;
+  --driver-text-primary:#222222;
+  --driver-text-secondary:#626262;
+  --driver-surface:var(--trip-surface);
+  --driver-surface-elevated:var(--trip-elevated);
+  --driver-border:var(--trip-border);
+}
+.nr-driver-app-shell[data-theme="dark"] .nr-driver-navigation-page{
+  --trip-primary:#ffb000;
+  --trip-ink:#181818;
+  --trip-brand:#a3a3a3;
+  --trip-brand-strong:#303030;
+  --trip-surface:#202020;
+  --trip-elevated:#303030;
+  --trip-subtle:#181818;
+  --trip-border:#3a3a3a;
+  --trip-text:#f2f2f2;
+  --trip-muted:#bcbcbc;
+  --trip-handle:#737373;
+  --trip-stroke:#3a3a3a;
+  --trip-active-bg:#302a1e;
+  --trip-active-text:#ffc15c;
+  --trip-shadow:0 -12px 36px rgba(0,0,0,.24);
+  --driver-text-primary:#f2f2f2;
+  --driver-text-secondary:#bcbcbc;
+}
+.nr-driver-app-shell[data-theme="dark"]:has(.nr-driver-navigation-page){
+  --driver-bg:#141414;
+  --driver-surface:#202020;
+  --driver-border:#3a3a3a;
+  --driver-text-primary:#f2f2f2;
+  --driver-text-secondary:#bcbcbc;
+  --driver-header-bg:#181818;
+}
+/* Selecting the dark basemap also adapts its floating controls in light mode. */
+.nr-driver-navigation-page .nr-live-navigation-map[data-map-style="dark"]{
+  --trip-surface:#202020;
+  --trip-elevated:#303030;
+  --trip-border:#3a3a3a;
+  --trip-text:#f2f2f2;
+  --trip-primary:#ffb000;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-trip-progress>span.active i{
+  box-shadow:none!important;
+}
+.nr-driver-app-shell[data-theme] .nr-driver-navigation-page .nr-nav-bottom-card.nr-driver-sheet{
+  background:var(--trip-surface)!important;
+  border-color:var(--trip-border)!important;
+  color:var(--trip-text)!important;
+}
+.nr-driver-app-shell[data-theme] .nr-driver-navigation-page .nr-nav-bottom-card.nr-driver-sheet
+  :is(.nr-driver-sheet-content,.nr-driver-sheet-grab,.nr-driver-sheet-footer){
+  background:var(--trip-surface)!important;
+  border-color:var(--trip-border)!important;
+  color:var(--trip-text)!important;
+}
+.nr-driver-app-shell[data-theme="dark"]:has(.nr-driver-navigation-page) .nr-driver-menu-trigger{
+  color:var(--driver-text-primary)!important;
+}
+.nr-driver-app-shell[data-theme="dark"]:has(.nr-driver-navigation-page) .nr-driver-menu-trigger>span{
+  background:currentColor!important;
+}

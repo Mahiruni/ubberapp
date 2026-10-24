@@ -1,5 +1,5 @@
 .nr-driver-navigation-page{min-height:100dvh;height:100dvh;position:relative;overflow:hidden;background:#031522;color:#f5f9fc}
-.nr-navigation-map{position:absolute;inset:0;overflow:hidden;background:#041827}.nr-navigation-map svg{width:100%;height:100%;display:block}
+.nr-navigation-map{position:absolute;inset:0;overflow:hidden;background:#041827}.nr-navigation-map>svg{width:100%;height:100%;display:block}
 .nr-nav-map-ground{fill:#061c2c}.nr-nav-map-block{fill:#0a273a}.nr-nav-map-road-edge{fill:none;stroke:#03121d;stroke-width:31;stroke-linecap:round;stroke-linejoin:round}.nr-nav-map-road{fill:none;stroke:#17384d;stroke-width:20;stroke-linecap:round;stroke-linejoin:round}.nr-nav-map-minor{fill:none;stroke:#102f43;stroke-width:10;stroke-linecap:round}
 .nr-nav-route-casing{fill:none;stroke:#d7edff;stroke-width:16;stroke-linecap:round;stroke-linejoin:round;opacity:.88}.nr-nav-route{fill:none;stroke:#1688ff;stroke-width:9;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 7px rgba(22,136,255,.42))}
 .nr-nav-pickup-marker{fill:#00d081;stroke:#f7fbff;stroke-width:5}.nr-nav-destination-marker{fill:#071a29;stroke:#fff;stroke-width:5}

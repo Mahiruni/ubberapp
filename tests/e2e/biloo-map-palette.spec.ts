@@ -27,7 +27,7 @@ async function mapProviders(page: Page) {
   await page.routeWebSocket('**/realtime/v1/**', socket => socket.close());
 }
 
-async function authenticatedDriver(page: Page) {
+async function authenticatedDriver(page: Page, tripStatus: 'accepted' | 'in_trip' = 'accepted') {
   const user = { id: driverId, aud: 'authenticated', role: 'authenticated', email: 'driver@example.test', app_metadata: {}, user_metadata: { role: 'driver', full_name: 'Biloo Driver' }, created_at: '2026-01-01T00:00:00Z' };
   const token = `eyJhbGciOiJIUzI1NiJ9.${Buffer.from(JSON.stringify({ sub: driverId, exp: 4102444800 })).toString('base64url')}.test`;
   const session = { access_token: token, refresh_token: 'test', expires_at: 4102444800, expires_in: 3600, token_type: 'bearer', user };
@@ -44,7 +44,7 @@ async function authenticatedDriver(page: Page) {
     if (table === 'profiles') row = { id: driverId, role: 'driver', full_name: 'Biloo Driver', account_status: 'active', phone: '+251912345678' };
     if (table === 'drivers') row = { id: driverId, review_status: 'approved', vehicle: 'Toyota Yaris' };
     if (table === 'ride_request_offers') row = { id: offerId, request_id: tripId, driver_id: driverId, status: 'accepted', pickup_distance_km: 1.1, pickup_eta_minutes: 4 };
-    if (table === 'ride_requests') row = { id: tripId, rider_id: '33333333-3333-4333-8333-333333333333', assigned_driver_id: driverId, pickup_location: 'Bole, Addis Ababa', destination_location: 'Mexico Square, Addis Ababa', pickup_lat: 9.008, pickup_lng: 38.775, destination_lat: 9.018, destination_lng: 38.751, ride_category: 'Economy', status: 'accepted', estimated_trip_distance_km: 6.4, estimated_trip_duration_minutes: 20 };
+    if (table === 'ride_requests') row = { id: tripId, rider_id: '33333333-3333-4333-8333-333333333333', assigned_driver_id: driverId, pickup_location: 'Bole, Addis Ababa', destination_location: 'Mexico Square, Addis Ababa', pickup_lat: 9.008, pickup_lng: 38.775, destination_lat: 9.018, destination_lng: 38.751, ride_category: 'Economy', status: tripStatus, estimated_trip_distance_km: 6.4, estimated_trip_duration_minutes: 20 };
     return route.fulfill({ json: single ? row : row ? [row] : [] });
   });
 }
@@ -66,7 +66,7 @@ test('Rider retains Biloo day/night styling and the compact avatar across style 
   await expect(map).toHaveAttribute('data-biloo-map-palette', 'biloo-streets-v2', { timeout: 20000 });
   await expect(page.locator('.mapboxgl-marker.biloo-custom-map-avatar')).toHaveCSS('height', '48px');
   await page.screenshot({ path: test.info().outputPath('biloo-rider-day.png') });
-  for (const [label, palette] of [['Dark', 'biloo-dark-v2'], ['Satellite', 'satellite'], ['Streets', 'biloo-streets-v2']]) {
+  for (const [label, palette] of [['Dark', 'biloo-dark-v3'], ['Satellite', 'satellite'], ['Streets', 'biloo-streets-v2']]) {
     await page.getByRole('button', { name: 'Map style', exact: true }).click();
     await page.getByRole('menuitemradio', { name: label, exact: true }).click();
     await expect(map).toHaveAttribute('data-biloo-map-palette', palette);
@@ -81,14 +81,72 @@ test('Driver navigation follows theme and manual layer changes with the correct 
   page.on('pageerror', error => errors.push(error.message));
   await page.goto(`/driver/navigation?offer=${offerId}`);
   const map = page.locator('.nr-live-navigation-canvas');
-  await expect(map).toHaveAttribute('data-biloo-map-palette', 'biloo-dark-v2', { timeout: 20000 });
+  await expect(map).toHaveAttribute('data-biloo-map-palette', 'biloo-dark-v3', { timeout: 20000 });
   await page.evaluate(() => { localStorage.setItem('nexride.driver.theme', 'light'); window.dispatchEvent(new Event('nexride:appearance-change')); });
   await expect(map).toHaveAttribute('data-biloo-map-palette', 'biloo-streets-v2');
-  for (const [label, palette] of [['Satellite', 'satellite'], ['Dark', 'biloo-dark-v2'], ['Streets', 'biloo-streets-v2']]) {
+  await expect(page.locator('.nr-nav-stage-primary')).toHaveCSS('background-color', 'rgb(255, 176, 0)');
+  await expect(page.locator('.nr-nav-bottom-card')).toHaveCSS('background-color', 'rgb(255, 255, 255)');
+  for (const [label, palette] of [['Satellite', 'satellite'], ['Dark', 'biloo-dark-v3'], ['Streets', 'biloo-streets-v2']]) {
     await page.getByRole('button', { name: 'Map layers', exact: true }).click();
     await page.getByRole('menuitemradio', { name: label, exact: true }).click();
     await expect(map).toHaveAttribute('data-biloo-map-palette', palette);
   }
   await page.screenshot({ path: test.info().outputPath('biloo-driver-day.png') });
   expect(errors).toEqual([]);
+});
+
+test('Driver layer labels and selection icons stay compact on narrow phones', async ({ page }) => {
+  await authenticatedDriver(page, 'in_trip');
+  await page.goto(`/driver/navigation?offer=${offerId}`);
+  await expect(page.locator('.nr-live-navigation-canvas')).toHaveAttribute('data-biloo-map-palette', 'biloo-dark-v3', { timeout: 20000 });
+  await expect(page.locator('.nr-nav-bottom-card')).toHaveCSS('background-color', 'rgb(32, 32, 32)');
+  await expect(page.locator('.nr-driver-global-header')).toHaveCSS('background-color', 'rgb(24, 24, 24)');
+  await expect(page.locator('.nr-driver-menu-trigger>span').first()).toHaveCSS('background-color', 'rgb(242, 242, 242)');
+  await expect(page.getByRole('button', { name: 'Complete trip', exact: true })).toHaveCSS('background-color', 'rgb(255, 176, 0)');
+
+  const layers = page.getByRole('button', { name: 'Map layers', exact: true });
+  await layers.click();
+  const menu = page.getByRole('menu', { name: 'Map style and traffic' });
+  await expect(menu).toHaveCSS('background-color', 'rgb(32, 32, 32)');
+  await page.screenshot({ path: test.info().outputPath('biloo-driver-graphite-menu.png') });
+  await page.getByRole('menuitemradio', { name: 'Satellite', exact: true }).click();
+  await layers.click();
+
+  // The reported failure stretched the selected SVG to the map's height,
+  // leaving only one letter per line for the Satellite label.
+  for (const width of [320, 390, 430]) {
+    await page.setViewportSize({ width, height: 844 });
+    await expect(page.getByRole('menuitemradio', { name: 'Satellite', exact: true })).toHaveAttribute('aria-checked', 'true');
+    const geometry = await menu.evaluate(element => {
+      const rect = element.getBoundingClientRect();
+      return {
+        left: rect.left, right: rect.right,
+        rows: Array.from(element.querySelectorAll('button')).map(row => ({
+          height: row.getBoundingClientRect().height,
+          labelHeight: row.querySelector('span')!.getBoundingClientRect().height,
+          iconWidth: row.querySelector('svg')?.getBoundingClientRect().width ?? 0,
+          iconHeight: row.querySelector('svg')?.getBoundingClientRect().height ?? 0,
+          overflow: row.scrollWidth > row.clientWidth,
+        })),
+        switchWidth: element.querySelector('.nr-driver-traffic-switch')!.getBoundingClientRect().width,
+      };
+    });
+    expect(geometry.left).toBeGreaterThanOrEqual(8);
+    expect(geometry.right).toBeLessThanOrEqual(width - 8);
+    expect(geometry.switchWidth).toBe(34);
+    for (const row of geometry.rows) {
+      expect(row.height).toBeLessThanOrEqual(48);
+      expect(row.labelHeight).toBeLessThanOrEqual(24);
+      expect(row.iconWidth).toBeLessThanOrEqual(16);
+      expect(row.iconHeight).toBeLessThanOrEqual(16);
+      expect(row.overflow).toBe(false);
+    }
+  }
+  const traffic = page.getByRole('menuitemcheckbox', { name: 'Live traffic' });
+  await expect(traffic).toHaveAttribute('aria-checked', 'true');
+  await traffic.click();
+  await expect(traffic).toHaveAttribute('aria-checked', 'false');
+  await traffic.click();
+  await expect(traffic).toHaveAttribute('aria-checked', 'true');
+  await page.screenshot({ path: test.info().outputPath('biloo-driver-satellite-menu.png') });
 });
