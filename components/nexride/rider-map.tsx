@@ -21,6 +21,7 @@ import {
   type RouteResult,
   type TrafficLevel,
 } from "../../lib/location";
+import { applyBilooCityMapPalette } from "../../lib/biloo-map-palette";
 import "mapbox-gl/dist/mapbox-gl.css";
 import "@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css";
 
@@ -898,6 +899,7 @@ export function RiderMap({
 
       map.on("style.load", () => {
         if (cancelled) return;
+        applyBilooCityMapPalette(map, activeStyleRef.current === "streets");
         syncStyleData();
         loadedRef.current = true;
         window.clearTimeout(startupTimeout);
