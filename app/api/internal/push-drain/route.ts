@@ -131,7 +131,7 @@ export async function GET(request: Request) {
           const { data: counterpart } = await admin.from("profiles")
             .select("full_name").eq("id", counterpartId).maybeSingle();
           const candidate = typeof counterpart?.full_name === "string"
-            ? counterpart.full_name.replace(/[\\r\\n\\t]+/g, " ").trim().slice(0, 60) : "";
+            ? counterpart.full_name.replace(/[\r\n\t]+/g, " ").trim().slice(0, 60) : "";
           if (candidate.length >= 2) counterpartName = candidate;
         }
         const title = counterpartName && event.kind === "driver_offer"
@@ -149,13 +149,14 @@ export async function GET(request: Request) {
                 ? counterpartName + " has arrived at your pickup location."
                 : copy.body;
         const url = event.kind === "driver_offer" ?
-          "/driver/request?offer=" + event.offer_id : "/rider/trips";
+          "/driver/request?offer=" + event.offer_id : event.request_id ? "/rider/trips/" + event.request_id : "/rider/trips";
         // An offer can expire while we resolve devices; do not ring stale requests.
         const remainingTtl = event.kind === "driver_offer"
           ? nexrideDriverOfferTtlSeconds(offerExpiresAt) : 300;
         if (remainingTtl === 0) {
           await finish("skipped", "offer_expired_before_fcm"); skipped++; continue;
         }
+        // Dispatch to registered devices concurrently; one slow device must not delay others.
         let successes = 0;
         for (const device of devices) {
           const sentResponse = await fetch(
