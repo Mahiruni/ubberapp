@@ -211,3 +211,7 @@
 @media(prefers-reduced-motion:reduce){
   .biloo-driver-welcome a,.nr-driver-menu-panel,.nr-rider-drawer{transition:none!important;animation:none!important}
 }
+
+/* Shared brand-only presentation for legacy primary actions. Semantic status and maps remain distinct. */
+:is(.nr-app,.nr-driver-app-shell,.nr-identity-entry) :is(.nr-auth-submit,.nr-rider-get-started,.driver-auth-submit,.nr-button.nr-primary){background:var(--biloo-gold)!important;color:var(--biloo-navy)!important;border-color:var(--biloo-gold)!important}
+:is(.nr-app,.nr-driver-app-shell,.nr-identity-entry) :is(a,button,input,select,textarea):focus-visible{outline-color:var(--biloo-focus)!important}
