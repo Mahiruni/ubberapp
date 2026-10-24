@@ -49,8 +49,8 @@ export function DriverMatching({ model, changeCategory, previewAssigned, home }:
   return <section className="nr-driver-matching" data-matching-state={connectionLost ? 'connection_lost' : degraded ? 'sync_problem' : status} aria-label={t('matchingScreen')}>
     <RiderSheetHandle
       label={language === "am" ? "የአሽከርካሪ ማዛመጃ ፓነሉን አስፋ ወይም አሳንስ" : "Resize driver matching panel"}
-      defaultRatio={0.54}
-      snaps={[0.28, 0.54, 0.75]}
+      defaultRatio={0.48}
+      snaps={[0.30, 0.48, 0.76]}
       scrollSelector=".nr-matching-body"
       storageKey="nexride.rider.sheet.matching"
     />
@@ -64,7 +64,7 @@ export function DriverMatching({ model, changeCategory, previewAssigned, home }:
               : "BILOO እየፈለገ ነው"
             : status === "assigned"
               ? "DRIVER MATCHED"
-              : "BILOO MATCHING"}
+              : "MATCHING YOUR RIDE"}
         </span>
         <h1 tabIndex={-1} ref={heading}>{t(title)}</h1>
         <p>{t(connectionLost ? 'matchingConnectionNote' : degraded ? 'matchingSyncProblemNote' : status === 'assigned' ? 'matchingAcceptedNote' : status === 'no_drivers' ? 'matchingEmptyNote' : status === 'cancelled' ? 'matchingCancelledNote' : status === 'delayed' ? 'matchingDelayedNote' : 'matchingNote')}</p>
