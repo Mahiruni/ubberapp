@@ -741,3 +741,27 @@
 @media(prefers-reduced-motion:reduce) {
   .nr-driver-standalone-menu .nr-driver-menu-trigger {transition:none!important;}
 }
+
+/* Biloo icon specification: consistent outline system across Rider and Driver. */
+:is(.nr-app,.nr-driver-app-shell,.nr-rider-drawer-layer,.nr-driver-menu-layer,.nex-manage) :is(button,a) > svg:not([data-brand-mark]),
+:is(.nr-app,.nr-driver-app-shell,.nr-rider-drawer-layer,.nr-driver-menu-layer,.nex-manage) :is(button,a) > span > svg:not([data-brand-mark]){
+  flex-shrink:0;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  vector-effect:non-scaling-stroke;
+}
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer) :is(.nr-rider-drawer-icon,.nr-driver-menu-row-icon,.nr-driver-menu-utility-icon){
+  width:40px!important;height:40px!important;min-width:40px!important;flex-basis:40px!important;
+  border-radius:12px!important;background:var(--biloo-bg)!important;color:var(--biloo-navy)!important;
+}
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer) :is(.nr-rider-drawer-icon,.nr-driver-menu-row-icon,.nr-driver-menu-utility-icon) svg{
+  width:21px!important;height:21px!important;stroke-width:2!important;
+  color:inherit!important;
+}
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer) :is(button.active,.nr-driver-menu-row[data-active="true"]) :is(.nr-rider-drawer-icon,.nr-driver-menu-row-icon){
+  background:var(--biloo-gold-soft)!important;color:var(--biloo-navy)!important;
+}
+:is(.nr-rider-drawer-layer,.nr-driver-menu-layer) :is(.nr-rider-drawer-nav>button,.nr-driver-menu-row,.nr-driver-menu-utility){min-height:52px!important}
+@media(prefers-reduced-motion:reduce){
+  :is(.nr-rider-drawer-layer,.nr-driver-menu-layer) :is(.nr-rider-drawer-icon,.nr-driver-menu-row-icon,.nr-driver-menu-utility-icon){transition:none!important}
+}
