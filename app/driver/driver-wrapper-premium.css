@@ -178,7 +178,7 @@
   outline-offset: 2px;
 }
 .nr-driver-app-shell :is(input,textarea,select):focus {
-  border-color: #3975bf!important;
+  border-color: #1765b6!important;
   box-shadow: 0 0 0 3px rgba(57,117,191,.11);
 }
 .nr-driver-app-shell :where(button,a) {
@@ -187,7 +187,7 @@
 }
 .nr-driver-app-shell :where(button,a):focus-visible,
 .nr-driver-menu-layer :where(button,a):focus-visible {
-  outline: 3px solid #3975bf!important;
+  outline: 3px solid #1765b6!important;
   outline-offset: 3px!important;
 }
 .nr-driver-app-shell[data-theme="dark"] :where(button,a,input):focus-visible,
@@ -617,7 +617,7 @@ html[lang="am"] .nr-driver-menu-layer :where(strong,small) {
   border-radius: 13px;
 }
 .driver-onboarding-page :is(button,input,select,textarea,a):focus-visible {
-  outline: 3px solid #3975bf!important;
+  outline: 3px solid #1765b6!important;
   outline-offset: 3px;
 }
 /* Profile sections, vehicle information and wallet/earnings detail inherit
@@ -959,7 +959,7 @@ html[lang="am"] .nr-driver-menu-layer :where(strong,small) {
 }
 .nr-driver-menu-layer .nr-driver-menu-footer-brand {margin-bottom:0!important;}
 .nr-driver-app-shell :where(.nr-driver-header-profile,.nr-driver-home-profile,.nr-driver-menu-trigger):focus-visible {
-  outline:3px solid #3975bf!important;outline-offset:3px;
+  outline:3px solid #1765b6!important;outline-offset:3px;
 }
 @media(max-width:390px){
   .nr-driver-app-shell .nr-driver-global-header-inner {
@@ -1009,7 +1009,7 @@ html[lang="am"] .nr-driver-menu-layer :where(strong,small) {
 }
 .nr-driver-app-shell .nr-driver-menu-trigger:focus-visible,
 .nr-driver-standalone-menu .nr-driver-menu-trigger:focus-visible {
-  outline:3px solid #3975bf!important;
+  outline:3px solid #1765b6!important;
   outline-offset:3px!important;
   border-radius:50%!important;
 }
@@ -1125,3 +1125,8 @@ html[lang="am"] .nr-driver-menu-layer :where(strong,small) {
     animation:none!important;
   }
 }
+
+/* Official Biloo wrapper surfaces; safety/availability statuses retain their meaning. */
+.nr-driver-app-shell{--driver-bg:var(--biloo-bg);--driver-surface:#fff;--driver-surface-elevated:#f0f4f8;--driver-border:var(--biloo-line);--driver-text-primary:var(--biloo-ink);--driver-text-secondary:var(--biloo-muted);--driver-accent:var(--biloo-gold);--driver-header-bg:rgba(255,255,255,.96);--driver-nav-bg:#fff}
+.nr-driver-app-shell :is(.nr-driver-global-header,.nr-driver-sheet,.nr-driver-nav){border-color:var(--driver-border)!important}
+.nr-driver-app-shell :is(.nr-driver-menu-trigger,.nr-driver-global-icon-button):focus-visible,.nr-driver-menu-layer :is(a,button):focus-visible{outline-color:var(--biloo-focus)!important}
