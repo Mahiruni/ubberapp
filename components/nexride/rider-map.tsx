@@ -7,6 +7,7 @@ import type {
   Marker as MapboxMarker,
 } from "mapbox-gl";
 import { Icon, LanguageContext, Spinner, useTranslation } from "./ui";
+import { AVATAR_EVENT, avatarMarkup, getCachedAvatar } from "./rider-map-avatar-picker";
 import { endpointName } from "./destination";
 import type { Journey } from "../../lib/nexride-journey";
 import type { LocationStatus, RiderLocation } from "../../lib/nexride-location";
@@ -161,6 +162,10 @@ const locationMarkerElement = (label: string, role: BilooLocationMarkerRole) => 
       '<path d="M11.5 24h5v9h-5v-9Zm20 0h5v9h-5v-9Z" fill="#111111" stroke="white" stroke-width="1.1"/>' +
       '<path d="M17 38h14" stroke="white" stroke-width="1.7" stroke-linecap="round"/>' +
       '</svg>';
+  if (role === "rider") {
+    root.classList.add("biloo-custom-rider-avatar");
+    root.innerHTML = avatarMarkup(getCachedAvatar());
+  }
   return root;
 };
 
@@ -725,6 +730,22 @@ export function RiderMap({
   const mapRef = useRef<MapboxMap | null>(null);
   const liveMarker = useRef<MapboxMarker | null>(null);
   const liveMarkerRole = useRef<BilooLocationMarkerRole | null>(null);
+  useEffect(() => {
+    const refresh = () => {
+      const el = liveMarker.current?.getElement();
+      if (el?.dataset.markerRole === "rider") el.innerHTML = avatarMarkup(getCachedAvatar());
+    };
+    window.addEventListener(AVATAR_EVENT, refresh);
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === "biloo:rider-avatar") refresh();
+    };
+    window.addEventListener("storage", onStorage);
+    return () => {
+      window.removeEventListener(AVATAR_EVENT, refresh);
+      window.removeEventListener("storage", onStorage);
+    };
+  }, []);
+
   const liveMarkerAnimation = useRef<number | null>(null);
   const liveMarkerLngLat = useRef<[number, number] | null>(null);
   const pickupMarker = useRef<MapboxMarker | null>(null);
