@@ -82,3 +82,95 @@
   .nr-search-area-pulse, .nr-matching-symbol.searching, .nr-match-dots b, .nr-driver-matching, .nr-confirmed-driver { animation: none; }
   .nr-search-area-pulse { opacity: 0; }
 }
+
+/* Biloo matching — compact, premium mobile sheet with clear status hierarchy. */
+.nr-app[data-mode="rider"] .nr-driver-matching {
+  --biloo-match-navy:#08295f;
+  --biloo-match-gold:#f9c449;
+  background:#fff;
+  color:#172b46;
+  border-radius:26px 26px 0 0;
+  box-shadow:0 -12px 36px rgba(8,41,95,.09);
+}
+.nr-app[data-mode="rider"] .nr-driver-matching .nr-matching-body {
+  padding:12px 20px 18px;
+}
+.nr-app[data-mode="rider"] .nr-driver-matching .nr-matching-kicker {
+  color:#a87a12;
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:.09em;
+}
+.nr-app[data-mode="rider"] .nr-driver-matching .nr-matching-heading h1 {
+  color:var(--biloo-match-navy);
+  font-size:clamp(23px,5.3vw,29px);
+  line-height:1.17;
+  letter-spacing:-.035em;
+  font-weight:780;
+}
+.nr-app[data-mode="rider"] .nr-driver-matching .nr-matching-heading p {
+  color:#627188;
+  font-size:14px;
+  line-height:1.5;
+  max-width:34ch;
+}
+.nr-app[data-mode="rider"] .nr-driver-matching .nr-matching-symbol {
+  width:44px;
+  height:44px;
+  border-radius:14px;
+  background:#f2f7fa;
+  color:var(--biloo-match-navy);
+  border:1px solid #e0e8ee;
+}
+.nr-app[data-mode="rider"] .nr-driver-matching .nr-match-online-wait-note {
+  background:#f5f8fb;
+  color:#52657b;
+  border:1px solid #e5ebf1;
+  border-radius:14px;
+  font-size:12px;
+  line-height:1.5;
+  padding:10px 12px;
+  margin:12px 0;
+}
+.nr-app[data-mode="rider"] .nr-driver-matching .nr-match-progress {
+  background:#f8fafc;
+  border:1px solid #e6ebf1;
+  border-radius:14px;
+  padding:12px;
+  margin:12px 0;
+  color:var(--biloo-match-navy);
+}
+.nr-app[data-mode="rider"] .nr-driver-matching .nr-match-summary {
+  background:#f8fafc;
+  border:1px solid #e4eaf1;
+  border-radius:18px;
+  padding:14px;
+  margin-top:12px;
+  box-shadow:none;
+}
+.nr-app[data-mode="rider"] .nr-driver-matching .nr-match-place strong,
+.nr-app[data-mode="rider"] .nr-driver-matching .nr-match-fare strong {
+  color:var(--biloo-match-navy);
+}
+.nr-app[data-mode="rider"] .nr-driver-matching .nr-match-route-meta {
+  font-size:12px;
+  color:#64748b;
+}
+.nr-app[data-mode="rider"] .nr-driver-matching footer {
+  background:#fff;
+  border-top:1px solid #e8edf2;
+  padding:12px 20px max(16px,env(safe-area-inset-bottom,0px));
+}
+.nr-app[data-mode="rider"] .nr-driver-matching footer .nr-rider-cancel-button {
+  min-height:52px;
+  border-radius:15px;
+  font-weight:750;
+  box-shadow:none;
+}
+@media(max-width:390px) {
+  .nr-app[data-mode="rider"] .nr-driver-matching .nr-matching-body {padding-inline:16px}
+  .nr-app[data-mode="rider"] .nr-driver-matching footer {padding-inline:16px}
+}
+@media(prefers-reduced-motion:reduce) {
+  .nr-app[data-mode="rider"] .nr-driver-matching * {scroll-behavior:auto}
+}
