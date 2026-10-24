@@ -322,3 +322,56 @@ html[data-nr-data-saver] .nr-live-location-marker.nr-location-identity[data-mark
 .nr-live-location-marker.nr-location-identity.biloo-custom-map-avatar[data-marker-role="rider"]::before{content:"";position:absolute;z-index:0;left:50%;top:auto;bottom:-2px;box-sizing:border-box;width:20px;height:6px;background:#497c9a2b;border:1px solid #497c9a70;border-radius:50%;transform:translateX(-50%);opacity:1;animation:none!important;will-change:auto}
 .nr-live-location-marker.nr-location-identity.biloo-custom-map-avatar[data-marker-role="rider"]::after{display:none!important;animation:none!important}
 .nr-live-location-marker.nr-location-identity.biloo-custom-map-avatar[data-marker-role="rider"].is-stale>.biloo-rider-avatar-art{opacity:.57;filter:grayscale(1) drop-shadow(0 1px 1px #12305244)}
+
+/* Restore a restrained live-location heartbeat beneath the compact 3D Rider avatar.
+   Keep the avatar itself stationary and preserve the small GPS marker footprint. */
+.nr-live-location-marker.nr-location-identity.biloo-custom-map-avatar[data-marker-role="rider"]::before {
+  left:50%;
+  top:auto;
+  bottom:-3px;
+  width:22px;
+  height:8px;
+  border-radius:50%;
+  background:rgba(8,41,95,.14);
+  border:1px solid rgba(8,41,95,.35);
+  transform:translateX(-50%);
+  transform-origin:center;
+  animation:biloo-avatar-ground-pulse 2.5s ease-out infinite!important;
+  will-change:transform,opacity;
+}
+.nr-live-location-marker.nr-location-identity.biloo-custom-map-avatar[data-marker-role="rider"]::after {
+  content:"";
+  display:block!important;
+  position:absolute;
+  left:50%;
+  bottom:-3px;
+  top:auto;
+  z-index:0;
+  width:22px;
+  height:8px;
+  border-radius:50%;
+  background:rgba(249,196,73,.18);
+  border:1px solid rgba(8,41,95,.2);
+  transform:translateX(-50%);
+  animation:biloo-avatar-ground-pulse 2.5s ease-out 1.25s infinite!important;
+  pointer-events:none;
+}
+@keyframes biloo-avatar-ground-pulse {
+  0% {transform:translateX(-50%) scale(.7);opacity:.7}
+  75% {transform:translateX(-50%) scale(2.1);opacity:0}
+  100% {transform:translateX(-50%) scale(2.1);opacity:0}
+}
+.nr-live-location-marker.nr-location-identity.biloo-custom-map-avatar[data-marker-role="rider"].is-stale::before,
+.nr-live-location-marker.nr-location-identity.biloo-custom-map-avatar[data-marker-role="rider"].is-stale::after,
+.nr-live-location-marker.nr-location-identity.biloo-custom-map-avatar[data-marker-role="rider"].is-paused::before,
+.nr-live-location-marker.nr-location-identity.biloo-custom-map-avatar[data-marker-role="rider"].is-paused::after,
+html[data-nr-data-saver] .nr-live-location-marker.nr-location-identity.biloo-custom-map-avatar[data-marker-role="rider"]::before,
+html[data-nr-data-saver] .nr-live-location-marker.nr-location-identity.biloo-custom-map-avatar[data-marker-role="rider"]::after {
+  animation:none!important;
+}
+@media(prefers-reduced-motion:reduce) {
+  .nr-live-location-marker.nr-location-identity.biloo-custom-map-avatar[data-marker-role="rider"]::before,
+  .nr-live-location-marker.nr-location-identity.biloo-custom-map-avatar[data-marker-role="rider"]::after {
+    animation:none!important;
+  }
+}
