@@ -159,10 +159,6 @@ const locationMarkerElement = (label: string, role: BilooLocationMarkerRole, ava
       '<path d="M11.5 24h5v9h-5v-9Zm20 0h5v9h-5v-9Z" fill="#111111" stroke="white" stroke-width="1.1"/>' +
       '<path d="M17 38h14" stroke="white" stroke-width="1.7" stroke-linecap="round"/>' +
       '</svg>';
-  if (role === "rider") {
-    root.classList.add("biloo-custom-rider-avatar");
-    root.innerHTML = avatarMarkup(getCachedAvatar());
-  }
   return root;
 };
 
