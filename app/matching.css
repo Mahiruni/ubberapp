@@ -174,3 +174,28 @@
 @media(prefers-reduced-motion:reduce) {
   .nr-app[data-mode="rider"] .nr-driver-matching * {scroll-behavior:auto}
 }
+
+/* Cancelled matching state: single status and action area, no stacked duplicates. */
+.nr-app[data-mode="rider"] .nr-driver-matching[data-matching-state="cancelled"] .nr-matching-body {
+  padding-bottom:18px;
+}
+.nr-app[data-mode="rider"] .nr-driver-matching[data-matching-state="cancelled"] .nr-match-summary {
+  margin-top:16px;
+}
+.nr-app[data-mode="rider"] .nr-driver-matching[data-matching-state="cancelled"] footer {
+  display:grid;
+  grid-template-columns:1fr;
+  gap:10px;
+  position:relative;
+  z-index:2;
+}
+.nr-app[data-mode="rider"] .nr-driver-matching[data-matching-state="cancelled"] footer button {
+  width:100%;
+  min-height:50px;
+  border-radius:14px;
+}
+.nr-app[data-mode="rider"] .nr-driver-matching[data-matching-state="cancelled"] footer button:first-child {
+  background:#f9c449;
+  border-color:#f9c449;
+  color:#08295f;
+}
