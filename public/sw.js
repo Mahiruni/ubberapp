@@ -1,4 +1,4 @@
-const VERSION = "biloo-fast-navigation-20261021-v1";
+const VERSION = "biloo-android-lifecycle-20261024-v1";
 const CORE_CACHE = VERSION + "-core";
 const RUNTIME_CACHE = VERSION + "-runtime";
 // Keep install lightweight: large images, fonts, and audio cache on first demand.
@@ -82,6 +82,26 @@ self.addEventListener("fetch", (event) => {
 });
 
 
+/**
+ * A push payload is untrusted. It may suggest a destination but must never
+ * navigate the installed PWA to another origin (including protocol-relative
+ * URLs such as //evil.example or encoded backslash variants). Auth/RLS is
+ * still enforced by the destination route after sign-in.
+ */
+function bilooNotificationDestination(raw) {
+  if (typeof raw !== "string" || raw.length > 512) return "/";
+  if (!raw.startsWith("/") || raw.startsWith("//") || raw.includes("\\") ||
+      /[\u0000-\u001f]/.test(raw)) return "/";
+  try {
+    const target = new URL(raw, self.location.origin);
+    if (target.origin !== self.location.origin ||
+        !["http:", "https:"].includes(target.protocol)) return "/";
+    return target.pathname + target.search + target.hash;
+  } catch {
+    return "/";
+  }
+}
+
 self.addEventListener("push", (event) => {
   let data = {};
   try {
@@ -92,7 +112,7 @@ self.addEventListener("push", (event) => {
 
   const title = typeof data.title === "string" && data.title ? data.title : "Biloo";
   const body = typeof data.body === "string" ? data.body : "";
-  const url = typeof data.url === "string" && data.url.startsWith("/") ? data.url : "/";
+  const url = bilooNotificationDestination(data.url);
   const tag = typeof data.tag === "string" ? data.tag : undefined;
 
   event.waitUntil(
@@ -111,7 +131,8 @@ self.addEventListener("push", (event) => {
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  const target = new URL(event.notification.data?.url || "/", self.location.origin).href;
+  const safePath = bilooNotificationDestination(event.notification.data?.url);
+  const target = new URL(safePath, self.location.origin).href;
   event.waitUntil(
     self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
       for (const client of clients) {
