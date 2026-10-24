@@ -242,6 +242,68 @@ const segmentCollection = (route: RouteResult | undefined) => ({
   })),
 });
 
+
+const bilooRouteAnimations = new WeakMap<MapboxMap, { key: string; frame: number }>();
+function animateBilooRoute(map: MapboxMap, coords: number[][]) {
+  if (coords.length < 2 || typeof window === "undefined") return;
+  const key = JSON.stringify(coords);
+  const old = bilooRouteAnimations.get(map);
+  if (old?.key === key && map.getSource("biloo-route-draw")) return;
+  if (old) cancelAnimationFrame(old.frame);
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const routeId = "biloo-route-draw", pulseId = "biloo-route-pulse";
+  const line = (points: number[][]) => ({ type: "Feature" as const, properties: {},
+    geometry: { type: "LineString" as const, coordinates: points } });
+  const point = (position: number[]) => ({ type: "Feature" as const, properties: {},
+    geometry: { type: "Point" as const, coordinates: position } });
+  try {
+    if (!map.getSource(routeId)) map.addSource(routeId, { type: "geojson", data: line(coords.slice(0, 2)) });
+    if (!map.getLayer(routeId)) map.addLayer({ id: routeId, type: "line", source: routeId,
+      layout: { "line-cap": "round", "line-join": "round" },
+      paint: { "line-color": "#F9C449", "line-width": 5, "line-opacity": 0.98 } });
+    if (!map.getSource(pulseId)) map.addSource(pulseId, { type: "geojson", data: point(coords[0]) });
+    if (!map.getLayer(pulseId)) map.addLayer({ id: pulseId, type: "circle", source: pulseId,
+      paint: { "circle-color": "#F9C449", "circle-radius": 7,
+        "circle-stroke-color": "#08295F", "circle-stroke-width": 2 } });
+    map.setPaintProperty(pulseId, "circle-opacity", 1);
+  } catch { return; }
+  const distances = [0];
+  for (let i = 1; i < coords.length; i++) {
+    const a = coords[i - 1], b = coords[i], latitude = (a[1] + b[1]) * Math.PI / 360;
+    distances.push(distances[i - 1] + Math.hypot((b[0] - a[0]) * Math.cos(latitude), b[1] - a[1]));
+  }
+  const total = distances[distances.length - 1];
+  if (!total) return;
+  const locate = (fraction: number) => {
+    const distance = Math.max(0, Math.min(1, fraction)) * total;
+    let i = 1;
+    while (i < distances.length - 1 && distances[i] < distance) i++;
+    const a = coords[i - 1], b = coords[i];
+    const t = (distance - distances[i - 1]) / Math.max(1e-12, distances[i] - distances[i - 1]);
+    return { index: i, position: [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t] };
+  };
+  const state = { key, frame: 0 };
+  bilooRouteAnimations.set(map, state);
+  const start = performance.now(), forward = 2200, pause = 280, backward = 1400;
+  const animate = (now: number) => {
+    if (bilooRouteAnimations.get(map) !== state || !map.isStyleLoaded()) return;
+    const elapsed = now - start;
+    const draw = Math.min(1, elapsed / forward);
+    const head = locate(1 - (1 - draw) ** 3);
+    const returnProgress = Math.max(0, Math.min(1, (elapsed - forward - pause) / backward));
+    const moving = elapsed < forward ? head.position : locate(1 - returnProgress).position;
+    const routeSource = map.getSource(routeId) as GeoJSONSource | undefined;
+    const pulseSource = map.getSource(pulseId) as GeoJSONSource | undefined;
+    if (!routeSource || !pulseSource) return;
+    routeSource.setData(line([...coords.slice(0, head.index), head.position]));
+    pulseSource.setData(point(moving));
+    map.setPaintProperty(pulseId, "circle-radius", 7 + 2 * Math.sin(elapsed / 140) ** 2);
+    if (elapsed < forward + pause + backward) state.frame = requestAnimationFrame(animate);
+    else map.setPaintProperty(pulseId, "circle-opacity", 0);
+  };
+  state.frame = requestAnimationFrame(animate);
+}
+
 function syncRoutes(map: MapboxMap, journey: Journey | undefined) {
   if (!map.isStyleLoaded()) return;
   const state = journey?.routeState;
@@ -258,6 +320,9 @@ function syncRoutes(map: MapboxMap, journey: Journey | undefined) {
   const selectedRoute = routes[selectedIndex];
   const routesData = routeCollection(routes, selectedIndex);
   const segmentsData = segmentCollection(selectedRoute);
+  if (selectedRoute?.geometry?.length) {
+    animateBilooRoute(map, selectedRoute.geometry.map(([lat, lng]) => [lng, lat]));
+  }
 
   const routeSource = map.getSource("nexride-routes") as
     | GeoJSONSource
