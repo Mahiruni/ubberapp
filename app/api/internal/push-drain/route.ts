@@ -74,6 +74,7 @@ export async function GET(request: Request) {
       };
       try {
         let offerExpiresAt: string | null = null;
+        let confirmedTripStatus: string | null = null;
         if (event.kind === "driver_offer") {
           const { data: offer } = await admin.from("ride_request_offers")
             .select("status,expires_at,driver_id").eq("id", event.offer_id).maybeSingle();
@@ -88,14 +89,35 @@ export async function GET(request: Request) {
           if (!ride || ride.status !== event.expected_status || ride.rider_id !== event.user_id) {
             await finish("skipped", "ride_state_changed"); skipped++; continue;
           }
+          confirmedTripStatus = ride.status;
         }
         const { data: devices, error: deviceError } = await admin.from("nexride_push_devices")
           .select("id,fcm_token").eq("user_id", event.user_id).eq("role", event.role).eq("enabled", true);
         if (deviceError) throw new Error("device_lookup_failed");
         if (!devices?.length) { await finish("skipped", "no_registered_device"); skipped++; continue; }
-        const title = event.kind === "driver_offer" ? "New NexRide ride request" : "NexRide trip update";
-        const body = event.kind === "driver_offer" ? "Open NexRide to review your active ride offer." :
-          "Your trip status has changed. Open NexRide for details.";
+        // Only describe the state we just confirmed in the database.
+        const tripCopy: Record<string, { title: string; body: string }> = {
+          requested: { title: "Ride requested", body: "Your ride request has been received. Waiting for a driver." },
+          searching: { title: "Finding your driver", body: "Biloo is looking for an available driver for your ride." },
+          pending: { title: "Ride requested", body: "Your ride request is awaiting a driver." },
+          accepted: { title: "Driver confirmed", body: "A driver has accepted your ride request. Open Biloo for pickup details." },
+          assigned: { title: "Driver confirmed", body: "Your ride has been assigned to a driver. Open Biloo for pickup details." },
+          arriving: { title: "Driver on the way", body: "Your driver is heading to the pickup location." },
+          approaching: { title: "Driver on the way", body: "Your driver is approaching your pickup location." },
+          arrived: { title: "Driver arrived", body: "Your driver has arrived at the pickup location." },
+          arrived_pickup: { title: "Driver arrived", body: "Your driver has arrived at the pickup location." },
+          in_trip: { title: "Trip started", body: "Your trip is now in progress." },
+          started: { title: "Trip started", body: "Your trip is now in progress." },
+          completed: { title: "Trip completed", body: "Your ride has ended. View your trip details in Biloo." },
+          cancelled: { title: "Trip cancelled", body: "Your ride was cancelled. Open Biloo for details." },
+          canceled: { title: "Trip cancelled", body: "Your ride was cancelled. Open Biloo for details." },
+        };
+        const copy = event.kind === "driver_offer"
+          ? { title: "New Biloo ride request", body: "A new ride offer is available. Open Biloo to review it before it expires." }
+          : confirmedTripStatus ? tripCopy[confirmedTripStatus] : undefined;
+        // Unknown states must not produce misleading or generic push notifications.
+        if (!copy) { await finish("skipped", "unrecognized_trip_status"); skipped++; continue; }
+        const { title, body } = copy;
         const url = event.kind === "driver_offer" ?
           "/driver/request?offer=" + event.offer_id : "/rider/trips";
         // An offer can expire while we resolve devices; do not ring stale requests.
@@ -120,12 +142,12 @@ export async function GET(request: Request) {
                   priority: event.kind === "driver_offer" ? "HIGH" : "NORMAL",
                   // TTL cannot exceed the server-owned 30-second offer window.
                   ttl: `${remainingTtl}s`,
-                  collapse_key: event.kind === "driver_offer" ? "nexride_active_ride_offer" : undefined,
+                  collapse_key: event.kind === "driver_offer" ? "biloo_active_ride_offer" : "biloo_trip_" + event.request_id,
                   notification: {
                     channel_id: event.kind === "driver_offer"
                       ? "nexride_driver_requests_v2" : "nexride_trip_updates",
                     // New offers replace older notification tray entries.
-                    tag: event.kind === "driver_offer" ? "nexride_active_ride_offer" : event.id,
+                    tag: event.kind === "driver_offer" ? "biloo_active_ride_offer" : "biloo_trip_" + event.request_id,
                     ...(event.kind === "driver_offer" ? { sound: "nexride_ride_request" } : {}),
                   },
                 },
