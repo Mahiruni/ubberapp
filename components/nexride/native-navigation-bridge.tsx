@@ -43,7 +43,7 @@ export function NexRideNativeNavigationBridge() {
 
   useEffect(() => {
     let disposed = false;
-    let remove: (() => Promise<void>) | undefined;
+    let removers: Array<() => Promise<void>> = [];
     let clearNotice: number | undefined;
 
     const showNotice = (message: string) => {
@@ -74,8 +74,17 @@ export function NexRideNativeNavigationBridge() {
             showNotice("Use your device Home control to leave Biloo.");
           });
         });
-        if (disposed) await subscription.remove();
-        else remove = () => subscription.remove();
+        // Capacitor appStateChange is the native complement to web
+        // visibilitychange. Consumers pause foreground-only GPS while hidden
+        // and reconcile their data when the activity is resumed.
+        const stateListener = await App.addListener("appStateChange", ({ isActive }) => {
+          window.dispatchEvent(new Event(isActive ? "biloo:native-resume" : "biloo:native-pause"));
+        });
+        if (disposed) {
+          await Promise.all([subscription.remove(), stateListener.remove()]);
+        } else {
+          removers = [() => subscription.remove(), () => stateListener.remove()];
+        }
       },
     ).catch(() => {
       // The web/PWA build retains browser navigation without a native plugin.
@@ -83,7 +92,7 @@ export function NexRideNativeNavigationBridge() {
 
     return () => {
       disposed = true;
-      if (remove) void remove();
+      for (const remove of removers) void remove();
       if (clearNotice) window.clearTimeout(clearNotice);
     };
   }, []);
