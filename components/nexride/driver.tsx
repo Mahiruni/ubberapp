@@ -739,14 +739,15 @@ export function DriverWorkspace({
           onClick={(event) => event.stopPropagation()}
           onDoubleClick={(event) => event.stopPropagation()}
         >
-          <div className="nr-driver-home-control-panel">
+          <div className="nr-driver-home-control-panel biloo-driver-first-wrapper">
+            <div className="biloo-driver-first-handle" aria-hidden="true" />
             <div className="nr-driver-home-control-heading">
               <div className="nr-driver-home-control-state">
                 <span className="nr-driver-home-control-brand">BILOO · DRIVER</span>
-                <strong>{state.online ? say("Ready for rides", "ለጉዞ ዝግጁ") : say("You're offline", "ከመስመር ውጭ ነዎት")}</strong>
+                <strong>{state.online ? say("Ready for rides", "ለጉዞ ዝግጁ") : say("Ready to drive?", "ለመንዳት ዝግጁ ነዎት?")}</strong>
                 <small>{state.online
                   ? say("Online stays active when minimized. Android may pause GPS and delay alerts until you reopen Biloo.", "መተግበሪያው ሲቀነስ የመስመር ላይ ሁኔታዎ ይቀጥላል። Android GPSን እና ማሳወቂያዎችን ሊያዘገይ ይችላል።")
-                  : say("Swipe to start receiving ride requests", "ጉዞ ለመቀበል ያንሸራትቱ")}</small>
+                  : say("Go online to receive nearby ride requests.", "የአቅራቢያ ጉዞ ጥያቄዎችን ለመቀበል መስመር ላይ ይግቡ።")}</small>
               </div>
               <div className="nr-driver-home-control-tools">
                 <span className="nr-driver-home-control-online" data-online={state.online ? "true" : "false"}>
@@ -771,6 +772,11 @@ export function DriverWorkspace({
                 </button>
               </div>
             </div>
+            <div className="biloo-driver-first-availability" role="group" aria-label={say("Driver availability", "የአሽከርካሪ ተገኝነት")}>
+              <div className="biloo-driver-first-availability-copy">
+                <strong>{state.online ? say("You're online", "መስመር ላይ ነዎት") : say("You're offline", "ከመስመር ውጭ ነዎት")}</strong>
+                <span>{state.online ? say("Waiting for nearby ride requests", "የአቅራቢያ ጉዞ ጥያቄዎችን በመጠባበቅ ላይ") : say("Swipe below to become available", "ለመገኘት ከታች ያንሸራትቱ")}</span>
+              </div>
             <DriverAvailabilitySwipe
               online={state.online}
               updating={updating}
@@ -778,6 +784,11 @@ export function DriverWorkspace({
               labelOverride={swipeFeedback}
               onToggle={toggleAvailability}
             />
+            </div>
+            <div className="biloo-driver-first-links" aria-label={say("Driver shortcuts", "የአሽከርካሪ አቋራጮች")}>
+              <button type="button" onClick={() => navigate("earnings")}><Icon name="wallet" size={17}/><span>{say("Earnings", "ገቢ")}</span><Icon name="arrow" size={14}/></button>
+              <button type="button" onClick={onSafety}><Icon name="shield" size={17}/><span>{say("Safety & support", "ደህንነት እና ድጋፍ")}</span><Icon name="arrow" size={14}/></button>
+            </div>
           </div>
         </div>
       </section>
