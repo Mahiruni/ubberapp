@@ -105,23 +105,23 @@ export async function GET(request: Request) {
         if (!devices?.length) { await finish("skipped", "no_registered_device"); skipped++; continue; }
         // Only describe the state we just confirmed in the database.
         const tripCopy: Record<string, { title: string; body: string }> = {
-          requested: { title: "Ride requested", body: "Your ride request has been received. Waiting for a driver." },
-          searching: { title: "Finding your driver", body: "Biloo is looking for an available driver for your ride." },
-          pending: { title: "Ride requested", body: "Your ride request is awaiting a driver." },
-          accepted: { title: "Driver confirmed", body: "A driver has accepted your ride request. Open Biloo for pickup details." },
-          assigned: { title: "Driver confirmed", body: "Your ride has been assigned to a driver. Open Biloo for pickup details." },
-          arriving: { title: "Driver on the way", body: "Your driver is heading to the pickup location." },
-          approaching: { title: "Driver on the way", body: "Your driver is approaching your pickup location." },
-          arrived: { title: "Driver arrived", body: "Your driver has arrived at the pickup location." },
-          arrived_pickup: { title: "Driver arrived", body: "Your driver has arrived at the pickup location." },
-          in_trip: { title: "Trip started", body: "Your trip is now in progress." },
-          started: { title: "Trip started", body: "Your trip is now in progress." },
-          completed: { title: "Trip completed", body: "Your ride has ended. View your trip details in Biloo." },
-          cancelled: { title: "Trip cancelled", body: "Your ride was cancelled. Open Biloo for details." },
-          canceled: { title: "Trip cancelled", body: "Your ride was cancelled. Open Biloo for details." },
+          requested: { title: "Ride requested", body: "We've got your request! We're finding a driver for you." },
+          searching: { title: "Finding your driver", body: "We're finding a driver for you. We'll let you know when one accepts." },
+          pending: { title: "Ride requested", body: "Your request is in! We'll let you know when a driver accepts." },
+          accepted: { title: "Driver confirmed", body: "Great news! Your driver has accepted your ride. See your pickup details in Biloo." },
+          assigned: { title: "Driver confirmed", body: "Good news! Your driver is confirmed. Check your pickup details in Biloo." },
+          arriving: { title: "Driver on the way", body: "Your driver is on the way to meet you." },
+          approaching: { title: "Driver on the way", body: "Your driver is getting close to your pickup spot." },
+          arrived: { title: "Driver arrived", body: "Your driver is here! Head to your pickup spot when you're ready." },
+          arrived_pickup: { title: "Driver arrived", body: "Your driver is here! Head to your pickup spot when you're ready." },
+          in_trip: { title: "Trip started", body: "You're on your way! Have a lovely ride." },
+          started: { title: "Trip started", body: "You're on your way! Have a lovely ride." },
+          completed: { title: "Trip completed", body: "You've arrived! Thanks for riding with Biloo." },
+          cancelled: { title: "Trip cancelled", body: "Your ride has been cancelled. You can check the details in Biloo." },
+          canceled: { title: "Trip cancelled", body: "Your ride has been cancelled. You can check the details in Biloo." },
         };
         const copy = event.kind === "driver_offer"
-          ? { title: "New Biloo ride request", body: "A new ride offer is available. Open Biloo to review it before it expires." }
+          ? { title: "New Biloo ride request", body: "A rider is waiting for a driver! Open Biloo to review the request." }
           : confirmedTripStatus ? tripCopy[confirmedTripStatus] : undefined;
         // Unknown states must not produce misleading or generic push notifications.
         if (!copy) { await finish("skipped", "unrecognized_trip_status"); skipped++; continue; }
@@ -140,13 +140,13 @@ export async function GET(request: Request) {
             ? copy.title + " · " + counterpartName
             : copy.title;
         const body = counterpartName && event.kind === "driver_offer"
-          ? counterpartName + " has requested a ride. Open Biloo to review the offer."
+          ? counterpartName + " is looking for a ride. Tap to review the request."
           : counterpartName && ["accepted", "assigned"].includes(confirmedTripStatus || "")
-            ? counterpartName + " has accepted your ride. Open Biloo for pickup details."
+            ? counterpartName + " is your driver! Tap to see your pickup details."
             : counterpartName && ["arriving", "approaching"].includes(confirmedTripStatus || "")
-              ? counterpartName + " is heading to your pickup location."
+              ? counterpartName + " is on the way to meet you."
               : counterpartName && ["arrived", "arrived_pickup"].includes(confirmedTripStatus || "")
-                ? counterpartName + " has arrived at your pickup location."
+                ? counterpartName + " is here! Head to your pickup spot when you're ready."
                 : copy.body;
         const url = event.kind === "driver_offer" ?
           "/driver/request?offer=" + event.offer_id : event.request_id ? "/rider/trips/" + event.request_id : "/rider/trips";
