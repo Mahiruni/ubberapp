@@ -108,12 +108,7 @@ export function DriverMatching({ model, changeCategory, previewAssigned, home }:
       </div>
       {preview && <p className="nr-match-preview"><strong>{t('preview')}</strong> · {t('findingNote')}</p>}
       {actionFailed && <p className="nr-match-warning" role="alert">{t('matchingActionFailed')}</p>}
-      {cancelSuccess && <div className="nr-cancel-success" role="status">
-        <strong>{t('riderCancelSuccess')}</strong>
-        <p>{t('riderCancelSuccessNote')}</p>
-        <Button onClick={home}>{t('riderCancelHome')}</Button>
-        <Button variant="secondary" onClick={changeCategory}>{t('riderCancelNewRide')}</Button>
-      </div>}
+
       {preview && <details className="nr-match-preview-controls"><summary>{t('matchingPreviewControls')}</summary>
         <div>{(['searching', 'delayed', 'no_drivers', 'connection_lost'] as const).map(s => <button key={s} onClick={() => model.previewState(s)}>{t(s === 'searching' ? 'matchingSearchState' : s === 'delayed' ? 'matchingDelayed' : s === 'no_drivers' ? 'matchingEmpty' : 'matchingConnection')}</button>)}</div>
         <button className="nr-preview-assignment" onClick={previewAssigned}>{t('matchingPreviewAssigned')}<Icon name="arrow" size={16}/></button>
@@ -122,8 +117,13 @@ export function DriverMatching({ model, changeCategory, previewAssigned, home }:
     <footer>
       {(connectionLost || degraded) && <Button disabled={busy || reconnecting} loading={reconnecting} onClick={() => void model.reconnect()}>{t(reconnecting ? 'matchingReconnecting' : 'matchingReconnect')}</Button>}
       {!connectionLost && snapshot?.canRetry && <Button disabled={busy} loading={busy} onClick={() => void model.action('retry')}>{t(busy ? 'matchingUpdating' : 'matchingRetry')}</Button>}
-      {['cancelled', 'no_drivers'].includes(status) && <Button variant="ghost" disabled={busy} onClick={home}>{t('home')}</Button>}
-      {snapshot?.canChangeCategory && <Button variant="secondary" disabled={busy} onClick={changeCategory}>{t('matchingChangeCategory')}</Button>}
+      {(status === 'cancelled' || cancelSuccess) ? <>
+        <Button disabled={busy} onClick={home}>{t('riderCancelHome')}</Button>
+        <Button variant="secondary" disabled={busy} onClick={changeCategory}>{t('riderCancelNewRide')}</Button>
+      </> : <>
+        {status === 'no_drivers' && <Button variant="ghost" disabled={busy} onClick={home}>{t('home')}</Button>}
+        {snapshot?.canChangeCategory && <Button variant="secondary" disabled={busy} onClick={changeCategory}>{t('matchingChangeCategory')}</Button>}
+      </>}
       {!cancelSuccess && status !== 'cancelled' && <Button variant="danger" className="nr-rider-cancel-button" disabled={busy || reconnecting || terms?.allowed === false} onClick={cancel}><Icon name="close" size={17} />{t(busy ? 'matchingUpdating' : 'matchingCancel')}</Button>}
       {!preview && !snapshot && <small className="nr-match-terms-note">{t('matchingTermsPending')}</small>}
     </footer>
