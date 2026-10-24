@@ -36,7 +36,7 @@
 .nr-live-navigation-map[data-gps="stale"] .nr-live-nav-marker.vehicle{opacity:.68}
 .nr-live-navigation-map[data-gps="lost"] .nr-live-nav-marker.vehicle,
 .nr-live-navigation-map[data-gps="unsupported"] .nr-live-nav-marker.vehicle{opacity:.4}
-.nr-live-map-status{position:absolute;z-index:450;left:50%;top:calc(env(safe-area-inset-top) + 104px);max-width:min(88%,430px);transform:translateX(-50%);padding:7px 10px;border:1px solid rgba(151,183,201,.22);border-radius:999px;background:rgba(4,28,48,.82);color:#e4eef3;font-size:10px;font-weight:750;text-align:center;backdrop-filter:blur(12px)}
+.nr-live-map-status{position:absolute;z-index:6;pointer-events:none;left:50%;top:calc(env(safe-area-inset-top) + 104px);max-width:min(88%,430px);transform:translateX(-50%);padding:7px 10px;border:1px solid rgba(151,183,201,.22);border-radius:999px;background:rgba(4,28,48,.82);color:#e4eef3;font-size:10px;font-weight:750;text-align:center;backdrop-filter:blur(12px)}
 .nr-live-map-status.route{top:calc(env(safe-area-inset-top) + 136px);color:#c6d6df}
 .nr-live-map-recenter{position:absolute;z-index:450;right:14px;bottom:170px;width:44px;height:44px;min-height:44px;border:1px solid rgba(117,162,188,.25);border-radius:50%;background:rgba(4,28,48,.88);color:#fff;display:grid;place-items:center;font-size:24px;line-height:1;backdrop-filter:blur(14px)}
 .nr-live-map-recenter:focus-visible{outline:3px solid #00c878;outline-offset:2px}

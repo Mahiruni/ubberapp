@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { GeoJSONSource, Map as MapboxMap, Marker as MapboxMarker } from "mapbox-gl";
 import { Icon, Spinner } from "./ui";
 import { useDriverTheme } from "./driver-app-shell";
-import { applyBilooCityMapPalette } from "../../lib/biloo-map-palette";
+import { applyBilooCityMapPalette, BILOO_STYLE_SWAP_OPTIONS } from "../../lib/biloo-map-palette";
 import "mapbox-gl/dist/mapbox-gl.css";
 
 export type NavigationCoordinate = { lat: number; lng: number };
@@ -65,6 +65,7 @@ export function DriverNavigationMap({
   const lastCameraView = useRef<MapView>(view);
   const lastCameraTarget = useRef<"pickup" | "destination">(target);
   const loaded = useRef(false);
+  const activeStyle = useRef<MapStyleKey>(resolvedTheme === "dark" ? "dark" : "streets");
   const trafficAvailable = useRef(true);
   const [mountedRevision, setMountedRevision] = useState(0);
   const [mapStatus, setMapStatus] = useState<"loading" | "ready" | "unavailable">("loading");
@@ -109,7 +110,7 @@ export function DriverNavigationMap({
       map.on("rotate", () => setBearing(map.getBearing()));
       map.on("style.load", () => {
         if (cancelled) return;
-        applyBilooCityMapPalette(map, styleKey === "streets");
+        applyBilooCityMapPalette(map, activeStyle.current);
         loaded.current = true;
         setMapStatus("ready");
         setMountedRevision((value) => value + 1);
@@ -141,9 +142,10 @@ export function DriverNavigationMap({
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !map.isStyleLoaded()) return;
-    map.setStyle(STYLE_URLS[styleKey]);
-  }, [styleKey]);
+    if (!map || activeStyle.current === styleKey) return;
+    activeStyle.current = styleKey;
+    map.setStyle(STYLE_URLS[styleKey], BILOO_STYLE_SWAP_OPTIONS);
+  }, [styleKey, mountedRevision]);
 
   useEffect(() => {
     const map = mapRef.current;

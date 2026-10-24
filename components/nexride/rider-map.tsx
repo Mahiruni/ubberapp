@@ -22,7 +22,7 @@ import {
   type TrafficLevel,
 } from "../../lib/location";
 import { AVATAR_STORAGE, DEFAULT_MAP_AVATAR, RIDER_MAP_AVATAR_SIZE, loadMapAvatar, mapAvatarSvg, normalizeMapAvatar, type MapAvatar } from "../../lib/biloo-rider-map-avatar";
-import { applyBilooCityMapPalette } from "../../lib/biloo-map-palette";
+import { applyBilooCityMapPalette, BILOO_STYLE_SWAP_OPTIONS } from "../../lib/biloo-map-palette";
 import "mapbox-gl/dist/mapbox-gl.css";
 import "@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css";
 
@@ -874,7 +874,7 @@ export function RiderMap({
         cooperativeGestures: false,
       });
       mapRef.current = map;
-      activeStyleRef.current = styleKey;
+      activeStyleRef.current = preferredStyle || styleKey;
       // A GPS fix may predate Mapbox's first render; give it the same
       // clear-map offset as later live updates and the locate control.
       if (positionRef.current && statusRef.current === "ready") {
@@ -989,7 +989,7 @@ export function RiderMap({
 
       map.on("style.load", () => {
         if (cancelled) return;
-        applyBilooCityMapPalette(map, activeStyleRef.current === "streets");
+        applyBilooCityMapPalette(map, activeStyleRef.current);
         syncStyleData();
         loadedRef.current = true;
         window.clearTimeout(startupTimeout);
@@ -1188,7 +1188,9 @@ export function RiderMap({
     activeStyleRef.current = styleKey;
     setMapStatus("loading");
     setLayerMenuOpen(false);
-    map.setStyle(STYLE_URLS[styleKey]);
+    // Rebuild the style so style.load always restores Biloo colors and overlays,
+    // including providers whose day/night styles share the same layer graph.
+    map.setStyle(STYLE_URLS[styleKey], BILOO_STYLE_SWAP_OPTIONS);
   }, [styleKey, mounted]);
 
   useEffect(() => {
@@ -1313,9 +1315,13 @@ export function RiderMap({
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!mounted || !map || !map.isStyleLoaded()) return;
-    syncAccuracy(map, position, status);
-    syncDriverRadar(map, position, showDriverRadar && !gpsStale && driverGpsQuality(position, status, Date.now()) === "live");
+    if (!mounted || !map) return;
+    // DOM identity markers do not depend on secondary traffic/accuracy tiles.
+    // Paint updates can make isStyleLoaded() false immediately after load.
+    if (map.isStyleLoaded()) {
+      syncAccuracy(map, position, status);
+      syncDriverRadar(map, position, showDriverRadar && !gpsStale && driverGpsQuality(position, status, Date.now()) === "live");
+    }
 
     if (!position || status !== "ready") {
       if (liveMarkerAnimation.current !== null) {

@@ -1,0 +1,94 @@
+import { expect, test, type Page } from '@playwright/test';
+
+const driverId = '22222222-2222-4222-8222-222222222222';
+const offerId = '44444444-4444-4444-8444-444444444444';
+const tripId = '55555555-5555-4555-8555-555555555555';
+
+async function mapProviders(page: Page) {
+  const polygon = (kind: string, x: number, y: number) => ({ type: 'Feature', properties: { kind, class: kind === 'landuse' ? 'park' : kind }, geometry: { type: 'Polygon', coordinates: [[[x, y], [x + .001, y], [x + .001, y + .001], [x, y + .001], [x, y]]] } });
+  const style = {
+    version: 8,
+    sources: { city: { type: 'geojson', data: { type: 'FeatureCollection', features: [
+      polygon('landuse', 38.7735, 9.0083), polygon('water', 38.7756, 9.007), polygon('building', 38.7744, 9.0074),
+      { type: 'Feature', properties: { kind: 'road', class: 'primary' }, geometry: { type: 'LineString', coordinates: [[38.772, 9.006], [38.778, 9.010]] } },
+    ] } } },
+    layers: [
+      { id: 'land', type: 'background', paint: { 'background-color': '#f5f6f7' } },
+      ...['landuse', 'water', 'building'].map(id => ({ id, type: 'fill', source: 'city', filter: ['==', ['get', 'kind'], id], paint: { 'fill-color': '#ddd' } })),
+      { id: 'road-simple', type: 'line', source: 'city', filter: ['==', ['get', 'kind'], 'road'], paint: { 'line-color': '#fff', 'line-width': ['interpolate', ['linear'], ['zoom'], 5, 0, 16, 8] } },
+    ],
+  };
+  await page.route('**/api.mapbox.com/**', route => route.fulfill({ json: style }));
+  await page.route('**/api.mapbox.com/v4/**', route => route.fulfill({ json: { tilejson: '3.0.0', minzoom: 0, maxzoom: 22, tiles: [`${test.info().project.use.baseURL}/fixture/palette/{z}/{x}/{y}.pbf`], vector_layers: [{ id: 'traffic', fields: {} }] } }));
+  await page.route('**/fixture/palette/**', route => route.fulfill({ body: Buffer.alloc(0), contentType: 'application/x-protobuf' }));
+  await page.route('**/api.mapbox.com/map-sessions/**', route => route.fulfill({ json: {} }));
+  await page.route('**/events.mapbox.com/**', route => route.fulfill({ status: 204 }));
+  await page.route('**/api/**', route => route.fulfill({ status: 503, json: { status: 'unavailable' } }));
+  await page.routeWebSocket('**/realtime/v1/**', socket => socket.close());
+}
+
+async function authenticatedDriver(page: Page) {
+  const user = { id: driverId, aud: 'authenticated', role: 'authenticated', email: 'driver@example.test', app_metadata: {}, user_metadata: { role: 'driver', full_name: 'Biloo Driver' }, created_at: '2026-01-01T00:00:00Z' };
+  const token = `eyJhbGciOiJIUzI1NiJ9.${Buffer.from(JSON.stringify({ sub: driverId, exp: 4102444800 })).toString('base64url')}.test`;
+  const session = { access_token: token, refresh_token: 'test', expires_at: 4102444800, expires_in: 3600, token_type: 'bearer', user };
+  await page.addInitScript(({ session }) => {
+    localStorage.setItem('sb-eyyvvwecpyctttiueban-auth-token', JSON.stringify(session));
+    localStorage.setItem('nexride.driver.theme', 'dark');
+    localStorage.setItem('nexride.driver.aurora-light-v1', '1');
+  }, { session });
+  await page.route('**/auth/v1/user', route => route.fulfill({ json: user }));
+  await page.route('**/rest/v1/**', route => {
+    const table = new URL(route.request().url()).pathname.split('/').pop();
+    const single = route.request().headers().accept?.includes('object+json');
+    let row: Record<string, unknown> | null = null;
+    if (table === 'profiles') row = { id: driverId, role: 'driver', full_name: 'Biloo Driver', account_status: 'active', phone: '+251912345678' };
+    if (table === 'drivers') row = { id: driverId, review_status: 'approved', vehicle: 'Toyota Yaris' };
+    if (table === 'ride_request_offers') row = { id: offerId, request_id: tripId, driver_id: driverId, status: 'accepted', pickup_distance_km: 1.1, pickup_eta_minutes: 4 };
+    if (table === 'ride_requests') row = { id: tripId, rider_id: '33333333-3333-4333-8333-333333333333', assigned_driver_id: driverId, pickup_location: 'Bole, Addis Ababa', destination_location: 'Mexico Square, Addis Ababa', pickup_lat: 9.008, pickup_lng: 38.775, destination_lat: 9.018, destination_lng: 38.751, ride_category: 'Economy', status: 'accepted', estimated_trip_distance_km: 6.4, estimated_trip_duration_minutes: 20 };
+    return route.fulfill({ json: single ? row : row ? [row] : [] });
+  });
+}
+
+test.beforeEach(async ({ page, context }) => {
+  test.skip(!process.env.NEXT_PUBLIC_MAPBOX_TOKEN?.startsWith('pk.'), 'The map fixture requires a syntactically valid public Mapbox token.');
+  await page.setViewportSize({ width: 390, height: 844 });
+  await context.grantPermissions(['geolocation']);
+  await context.setGeolocation({ longitude: 38.775, latitude: 9.008, accuracy: 8 });
+  await mapProviders(page);
+});
+
+test('Rider retains Biloo day/night styling and the compact avatar across style reloads', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('nexride:preview-enabled', 'true'));
+  const errors: string[] = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.goto('/');
+  const map = page.locator('.nr-mapbox-map');
+  await expect(map).toHaveAttribute('data-biloo-map-palette', 'biloo-streets-v2', { timeout: 20000 });
+  await expect(page.locator('.mapboxgl-marker.biloo-custom-map-avatar')).toHaveCSS('height', '48px');
+  await page.screenshot({ path: test.info().outputPath('biloo-rider-day.png') });
+  for (const [label, palette] of [['Dark', 'biloo-dark-v2'], ['Satellite', 'satellite'], ['Streets', 'biloo-streets-v2']]) {
+    await page.getByRole('button', { name: 'Map style', exact: true }).click();
+    await page.getByRole('menuitemradio', { name: label, exact: true }).click();
+    await expect(map).toHaveAttribute('data-biloo-map-palette', palette);
+    await expect(page.locator('.mapboxgl-marker.biloo-custom-map-avatar')).toHaveCSS('height', '48px');
+  }
+  expect(errors).toEqual([]);
+});
+
+test('Driver navigation follows theme and manual layer changes with the correct palette', async ({ page }) => {
+  await authenticatedDriver(page);
+  const errors: string[] = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.goto(`/driver/navigation?offer=${offerId}`);
+  const map = page.locator('.nr-live-navigation-canvas');
+  await expect(map).toHaveAttribute('data-biloo-map-palette', 'biloo-dark-v2', { timeout: 20000 });
+  await page.evaluate(() => { localStorage.setItem('nexride.driver.theme', 'light'); window.dispatchEvent(new Event('nexride:appearance-change')); });
+  await expect(map).toHaveAttribute('data-biloo-map-palette', 'biloo-streets-v2');
+  for (const [label, palette] of [['Satellite', 'satellite'], ['Dark', 'biloo-dark-v2'], ['Streets', 'biloo-streets-v2']]) {
+    await page.getByRole('button', { name: 'Map layers', exact: true }).click();
+    await page.getByRole('menuitemradio', { name: label, exact: true }).click();
+    await expect(map).toHaveAttribute('data-biloo-map-palette', palette);
+  }
+  await page.screenshot({ path: test.info().outputPath('biloo-driver-day.png') });
+  expect(errors).toEqual([]);
+});

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import type { GeoJSONSource, Map as MapboxMap, Marker as MapboxMarker } from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
+import { applyBilooCityMapPalette, BILOO_STYLE_SWAP_OPTIONS } from "../../lib/biloo-map-palette";
 import "./route-explorer.css";
 
 type Point = { lat: number; lng: number; name: string };
@@ -182,6 +183,7 @@ export default function RouteExplorerPage() {
         }), "top-right");
         map.on("style.load", () => {
           if (disposed) return;
+          applyBilooCityMapPalette(map, styleRef.current === "night" ? "dark" : styleRef.current);
           setMapReady(true);
           setMapError("");
           if (currentRouteRef.current) drawRoute(currentRouteRef.current);
@@ -218,7 +220,7 @@ export default function RouteExplorerPage() {
     // A redundant setStyle is harmless but avoid it while the initial style is loading.
     if (map.isStyleLoaded()) {
       setMapReady(false);
-      map.setStyle(expected);
+      map.setStyle(expected, BILOO_STYLE_SWAP_OPTIONS);
     }
   }, [mapStyle]);
 
