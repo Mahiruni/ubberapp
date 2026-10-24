@@ -357,3 +357,75 @@
 .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-rider-persistent-wrapper{--text:var(--biloo-ink);--muted:var(--biloo-muted);--surface:#fff;--surface-alt:var(--biloo-bg);--line:var(--biloo-line);--green:var(--biloo-gold);--green-text:var(--biloo-navy);--green-wash:var(--biloo-gold-soft);border-color:var(--biloo-line)!important}
 .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-rider-persistent-wrapper :is(.nr-rider-home-sheet,.nr-destination-panel,.nr-ride-selection,.nr-driver-matching,.nr-trip-experience){--text:var(--biloo-ink);--muted:var(--biloo-muted);--surface:#fff;--surface-alt:var(--biloo-bg);--line:var(--biloo-line);--green:var(--biloo-gold);--green-text:var(--biloo-navy);--green-wash:var(--biloo-gold-soft)}
 .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper :is(.nr-rider-persistent-wrapper,.nr-rider-home-sheet,.nr-destination-panel,.nr-ride-selection,.nr-driver-matching,.nr-trip-experience) :is(button,a,input):focus-visible{outline-color:var(--biloo-focus)!important}
+
+/* Biloo Rider 2026 — operational wrapper polish.
+   Do not alter Mapbox layers, native system bars, drag handlers or sheet geometry. */
+.nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper {
+  --biloo-rider-sheet-ease:cubic-bezier(.22,1,.36,1);
+  --biloo-rider-sheet-line:rgba(8,41,95,.10);
+  --biloo-rider-sheet-shadow:0 -10px 38px rgba(8,41,95,.10);
+  -webkit-tap-highlight-color:transparent;
+}
+.nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-rider-persistent-wrapper {
+  background:var(--nr-surface,#fff)!important;
+  color:var(--biloo-ink,#132a48)!important;
+  border-color:var(--biloo-rider-sheet-line)!important;
+  box-shadow:var(--biloo-rider-sheet-shadow)!important;
+  border-radius:26px 26px 0 0!important;
+  isolation:isolate;
+}
+.nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-main>.nr-rider-flow-panel {
+  transition:height 260ms var(--biloo-rider-sheet-ease)!important;
+  overscroll-behavior:contain;
+}
+.nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper[data-sheet-dragging="true"] .nr-main>.nr-rider-flow-panel {
+  transition:none!important;
+}
+.nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper :is(
+  .nr-rider-home-sheet,.nr-destination-panel,.nr-ride-selection,.nr-driver-matching,.nr-trip-experience
+) {
+  min-width:0;
+  overscroll-behavior-y:contain;
+  -webkit-overflow-scrolling:touch;
+}
+.nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper :is(
+  .nr-rider-home-sheet,.nr-destination-panel,.nr-ride-selection,.nr-driver-matching,.nr-trip-experience
+) :is(button,a,input,textarea,select) {
+  font-family:inherit;
+  touch-action:manipulation;
+}
+.nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper :is(
+  .nr-rider-home-sheet,.nr-destination-panel,.nr-ride-selection,.nr-driver-matching,.nr-trip-experience
+) :is(button,a):focus-visible {
+  outline:3px solid var(--biloo-focus,#1765b6)!important;
+  outline-offset:2px;
+}
+.nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper :is(
+  .nr-destination-panel,.nr-ride-selection,.nr-driver-matching,.nr-trip-experience
+) :is(h1,h2,h3) {
+  color:var(--biloo-ink,#132a48);
+  text-wrap:balance;
+}
+.nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper :is(
+  .nr-destination-panel,.nr-ride-selection,.nr-driver-matching,.nr-trip-experience
+) :is(.nr-button,button,a) {
+  -webkit-tap-highlight-color:transparent;
+}
+.nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper :is(
+  .nr-ride-card,.nr-home-shortcuts button,.nr-home-destinations button
+) {
+  transition:background-color 170ms ease,border-color 170ms ease,box-shadow 170ms ease!important;
+}
+@media(max-width:600px) {
+  .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper :is(
+    .nr-destination-panel,.nr-ride-selection,.nr-driver-matching,.nr-trip-experience
+  ) :is(input,textarea,select) {
+    font-size:max(16px,1rem);
+  }
+}
+@media(prefers-reduced-motion:reduce) {
+  .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-main>.nr-rider-flow-panel,
+  .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper :is(
+    .nr-ride-card,.nr-home-shortcuts button,.nr-home-destinations button
+  ) {transition:none!important;animation:none!important}
+}
