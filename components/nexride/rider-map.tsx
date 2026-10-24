@@ -153,10 +153,6 @@ const locationMarkerElement = (label: string, role: BilooLocationMarkerRole, ava
   root.setAttribute("role", "img");
   root.setAttribute("aria-label", label);
   root.innerHTML = role === "rider" ? mapAvatarSvg(avatar) : '<svg class="nr-location-identity-glyph" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">' +
-      '<circle cx="24" cy="9" r="6.2" fill="#111111" stroke="white" stroke-width="1.4"/>' +
-      '<path d="M19 18h10c2.4 0 4.3 1.8 4.8 4.2l2.3 11.3-5 1.1-2.7-10.1V34h-2.9v10h-5V34h-2.9v-9.5l-2.7 10.1-5-1.1 2.3-11.3c.5-2.4 2.4-4.2 4.8-4.2Z" fill="#111111" stroke="white" stroke-width="1.4" stroke-linejoin="round"/>' +
-      '</svg>'
-    : '<svg class="nr-location-identity-glyph" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">' +
       '<path d="M17 6.5h14c3.1 0 5.5 2.7 5.5 5.8v23.4c0 3.1-2.4 5.8-5.5 5.8H17c-3.1 0-5.5-2.7-5.5-5.8V12.3c0-3.1 2.4-5.8 5.5-5.8Z" fill="#111111" stroke="white" stroke-width="1.7"/>' +
       '<path d="M17.5 13.1h13l2.1 8.1H15.4l2.1-8.1Z" fill="white"/>' +
       '<path d="M15 30.5h18v4H15v-4Z" fill="white"/>' +
