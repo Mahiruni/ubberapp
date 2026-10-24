@@ -21,7 +21,7 @@ export function SharedTripMap({point}:{point:SharedDriverPoint|null}) {
    if(disposed||!node.current)return;
    mapboxgl.accessToken=process.env.NEXT_PUBLIC_MAPBOX_TOKEN||"";
    const next=new mapboxgl.Map({
-    container:node.current,style:"mapbox://styles/mapbox/streets-v12",
+    container:node.current,style:process.env.NEXT_PUBLIC_MAPBOX_STYLE || "mapbox://styles/mapbox/light-v11",
     center:[38.76,9.01],zoom:12,attributionControl:true,
    });
    map.current=next;
