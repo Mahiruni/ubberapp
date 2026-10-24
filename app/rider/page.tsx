@@ -140,8 +140,8 @@ function RiderWelcome() {
 
   return (
     <main className="nr-rider-welcome biloo-rider-campaign">
-      <header className="biloo-rider-brand"><img src="/brand/biloo-mark.svg" alt="" /><strong>biloo</strong><span>RIDES FOR A BETTER TOMORROW</span></header>
-      <section className="biloo-rider-heading"><h1>Your Ride<br/>is Here</h1><p>Safe. Reliable. Affordable.<br/>Across Addis Ababa.</p></section>
+      <header className="biloo-rider-brand"><img src="/brand/biloo-mark.svg" alt="" /><strong>Biloo</strong><span>RIDE · MOVE · EXPLORE</span></header>
+      <section className="biloo-rider-heading"><h1>Welcome to Biloo</h1><p>A safer, faster and more comfortable<br/>way to get around your city.</p></section>
       <img
         className="biloo-rider-photo"
         src="/brand/biloo-rider-get-started.jpg"
@@ -174,12 +174,11 @@ function RiderWelcome() {
             <Icon name="arrow" size={20} />
           </button>
         ) : <Link className="nr-rider-get-started" href="/rider/sign-up">
-          <span>{t("entryGetStarted")}</span>
+          <span>Open an account now</span>
           <Icon name="arrow" size={20} />
         </Link>}
-        {!returningDriver && <Link className="biloo-rider-register" href="/rider/sign-up">{t("createAccount")}</Link>}
         <Link className="nr-rider-welcome-sign-in" href={returningDriver ? "/driver/home" : "/rider/sign-in"}>
-          <span>{returningDriver ? t("entryReturnDriver") : t("alreadyHaveAccount")}</span>
+          <span>{returningDriver ? t("entryReturnDriver") : "I already have an account"}</span>
           <Icon name="chevron" size={19} />
         </Link>
       </div>
