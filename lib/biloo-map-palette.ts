@@ -7,10 +7,15 @@ export function applyBilooCityMapPalette(map: MapboxMap, enabled: boolean) {
   const layers = map.getStyle()?.layers ?? [];
   for (const layer of layers) {
     const id = layer.id.toLowerCase();
-    // Never recolor live navigation, traffic, custom overlays or symbol labels.
+    // Never recolor live navigation, traffic, custom overlays.
     if (/traffic|route|navigation|radar|accuracy|biloo|nr-|satellite/.test(id)) continue;
     try {
-      if (layer.type === "background") {
+      if (layer.type === "symbol" && layer.layout && "text-field" in layer.layout) {
+        map.setPaintProperty(layer.id, "text-color", "#08295F");
+        map.setPaintProperty(layer.id, "text-halo-color", "#ffffff");
+        map.setPaintProperty(layer.id, "text-halo-width", 1.25);
+        map.setPaintProperty(layer.id, "text-halo-blur", 0.35);
+      } else if (layer.type === "background") {
         map.setPaintProperty(layer.id, "background-color", "#f5f6f7");
       } else if (layer.type === "fill") {
         if (/water/.test(id)) map.setPaintProperty(layer.id, "fill-color", "#c9e3ed");
