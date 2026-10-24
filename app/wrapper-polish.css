@@ -1,7 +1,7 @@
 /* Shared sheet surfaces and handle interaction. Scoped to operational panels. */
 .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-rider-persistent-wrapper {
   --text:#102334; --muted:#667587; --surface:#fff; --surface-alt:#f5f7f9;
-  --line:#e4eaf0; --green:#00c878; --green-text:#007746; --green-wash:#e9fbf3;
+  --line:#e4eaf0; --green:#f9c449; --green-text:#08295f; --green-wash:#fff5d9;
   color:var(--text)!important;
   background:#fff!important;
   scrollbar-gutter:auto!important;
@@ -12,7 +12,7 @@
 .nr-app[data-mode="rider"][data-theme="dark"] .rider-map-flow.nr-polished-wrapper .nr-rider-persistent-wrapper,
 .nr-app[data-mode="rider"][data-theme="dark"] .rider-map-flow.nr-polished-wrapper .nr-rider-persistent-wrapper :is(.nr-rider-home-sheet,.nr-destination-panel,.nr-ride-selection,.nr-driver-matching,.nr-trip-experience) {
   --text:#f2f7fa; --muted:#b2c4d1; --surface:#0b2b43; --surface-alt:#082337;
-  --line:#244459; --green-text:#77edb9; --green-wash:#123c38;
+  --line:#244459; --green-text:#f9c449; --green-wash:#174579;
   color:var(--text)!important; background:var(--surface)!important; border-color:var(--line)!important;
 }
 .nr-app[data-mode="rider"][data-theme="dark"] .rider-map-flow.nr-polished-wrapper :is(.nr-home-shortcuts button,.nr-home-location,.nr-home-empty-state) {
@@ -34,7 +34,7 @@
 }
 .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-rider-persistent-wrapper :is(.nr-rider-home-sheet,.nr-destination-panel,.nr-ride-selection,.nr-driver-matching,.nr-trip-experience) {
   --text:#102334; --muted:#667587; --surface:#fff; --surface-alt:#f5f7f9;
-  --line:#e4eaf0; --green-text:#007746; --green-wash:#e9fbf3;
+  --line:#e4eaf0; --green-text:#08295f; --green-wash:#fff5d9;
   border:0!important; box-shadow:none!important; border-radius:0!important;
 }
 .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper :is(.nr-home-sheet-drag-zone,.nr-flow-sheet-handle),
@@ -53,12 +53,12 @@
   background:#c9d5dd!important; transition:width 160ms ease,background 160ms ease;
 }
 .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper :is(.nr-home-sheet-drag-zone,.nr-flow-sheet-handle):is(:hover,:focus-visible) > span,
-.nr-driver-app-shell .nr-driver-sheet .nr-driver-sheet-grab:is(:hover,:focus-visible) > span { width:58px!important; background:#00c878!important; }
+.nr-driver-app-shell .nr-driver-sheet .nr-driver-sheet-grab:is(:hover,:focus-visible) > span { width:58px!important; background:#f9c449!important; }
 .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-home-sheet-grab-area {
   padding:0!important; flex:0 0 auto!important; background:#041c30!important;
-  border-bottom:3px solid #00c878!important; touch-action:pan-y!important;
+  border-bottom:3px solid #f9c449!important; touch-action:pan-y!important;
 }
-.nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-home-sheet-drag-zone:is(:hover,:focus-visible) > span { background:#00c878!important; }
+.nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-home-sheet-drag-zone:is(:hover,:focus-visible) > span { background:#f9c449!important; }
 .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-rider-home-intro { display:block!important; padding:0 24px 22px!important; margin:0!important; }
 .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-rider-home-intro > div { width:100%!important; min-width:0!important; }
 .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-wrapper-brand { display:flex; align-items:center; justify-content:space-between; gap:12px; }
@@ -79,35 +79,35 @@
 .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-home-search {
   min-height:62px!important; padding:10px 12px 10px 18px!important;
   display:flex!important; gap:12px!important; width:100%!important;
-  border:1px solid #00c878!important; border-radius:17px!important;
-  background:#00c878!important; color:#041c30!important;
-  box-shadow:0 6px 16px #00c87822!important; text-align:left;
+  border:1px solid #f9c449!important; border-radius:17px!important;
+  background:#f9c449!important; color:#041c30!important;
+  box-shadow:0 6px 16px #f9c44922!important; text-align:left;
   font-size:16px!important; font-weight:700!important;
 }
 .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-home-search > svg { background:transparent!important; color:#041c30!important; padding:0!important; width:21px!important; height:21px!important; }
-.nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-home-search .nr-search-arrow { display:grid; place-items:center; margin-left:auto; width:38px!important; height:38px!important; border-radius:11px!important; color:#041c30!important; background:#00c878!important; }
-.nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-home-search:hover { background:#00b86e!important; box-shadow:0 8px 22px #00c87833!important; }
+.nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-home-search .nr-search-arrow { display:grid; place-items:center; margin-left:auto; width:38px!important; height:38px!important; border-radius:11px!important; color:#041c30!important; background:#f9c449!important; }
+.nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-home-search:hover { background:#00b86e!important; box-shadow:0 8px 22px #f9c44933!important; }
 .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-home-shortcuts { display:grid!important; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px!important; margin:18px 0!important; }
 .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-home-shortcuts button {
   display:flex!important; flex-direction:column!important; align-items:center!important; justify-content:center!important;
   gap:7px!important; min-height:76px!important; padding:12px 6px!important; background:#f5f7f9!important;
-  border:1px solid #e4eaf0!important; border-radius:16px!important; color:#007746!important; font-size:12px!important; font-weight:600!important;
+  border:1px solid #e4eaf0!important; border-radius:16px!important; color:#08295f!important; font-size:12px!important; font-weight:600!important;
 }
-.nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-home-shortcuts button:hover { background:#e9fbf3!important; border-color:#00c878!important; }
+.nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-home-shortcuts button:hover { background:#fff5d9!important; border-color:#f9c449!important; }
 .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-home-location { border:0!important; border-radius:12px!important; padding:11px 12px!important; background:#f5f7f9!important; color:#667587!important; font-size:12px!important; }
 .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-home-history-heading { margin:24px 0 12px!important; }
 .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-home-history-heading h2 { font-size:14px!important; font-weight:700!important; margin:0!important; }
 .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-home-empty-state { display:flex!important; gap:12px; padding:16px!important; background:#f5f7f9!important; border:1px dashed #e4eaf0!important; border-radius:16px!important; }
-.nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-home-empty-state > span { color:#00c878!important; background:#e9fbf3!important; }
+.nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-home-empty-state > span { color:#f9c449!important; background:#fff5d9!important; }
 .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-home-empty-state strong { font-size:13px!important; }
 .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-home-empty-state small { font-size:12px!important; line-height:18px!important; }
 .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-rider-persistent-wrapper :is(button,input,a):focus-visible,
-.nr-driver-app-shell .nr-driver-sheet :is(button,input,a):focus-visible { outline:3px solid #007746!important; outline-offset:3px!important; }
-.nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-rider-persistent-wrapper .nr-primary { background:#00c878!important; color:#041c30!important; border-color:#00c878!important; border-radius:15px!important; }
-.nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-rider-persistent-wrapper .nr-primary:hover:not(:disabled) { background:#007746!important; }
+.nr-driver-app-shell .nr-driver-sheet :is(button,input,a):focus-visible { outline:3px solid #08295f!important; outline-offset:3px!important; }
+.nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-rider-persistent-wrapper .nr-primary { background:#f9c449!important; color:#041c30!important; border-color:#f9c449!important; border-radius:15px!important; }
+.nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-rider-persistent-wrapper .nr-primary:hover:not(:disabled) { background:#08295f!important; }
 .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-rider-persistent-wrapper button:disabled { opacity:.48!important; box-shadow:none!important; cursor:not-allowed; }
 .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-rider-persistent-wrapper button:active:not(:disabled) { filter:brightness(.96); }
-.nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-endpoint-field.focused { border-color:#00aa66!important; box-shadow:0 0 0 3px #00c87811!important; }
+.nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-endpoint-field.focused { border-color:#00aa66!important; box-shadow:0 0 0 3px #f9c44911!important; }
 .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-place-suggestion { border-radius:12px!important; }
 .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-place-suggestion:hover { background:#f3f0ff!important; }
 .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper :is(.nr-destination-panel,.nr-ride-selection) > header { padding:8px 24px 20px!important; }
@@ -123,10 +123,10 @@
   .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-sidebar-city,.nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-sidebar-bottom p { color:#b2c4d1!important; }
   .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-mode-control { background:#ffffff12!important; border:1px solid #ffffff24!important; }
   .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-mode-control button { color:#f2f7fa!important; background:transparent!important; }
-  .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-mode-control button.selected { color:#007746!important; background:#fff!important; }
+  .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-mode-control button.selected { color:#08295f!important; background:#fff!important; }
   .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-sidebar .nr-navigation button { display:flex!important; flex-direction:row!important; align-items:center!important; width:100%!important; min-width:0!important; min-height:48px!important; padding:12px 14px!important; gap:13px!important; font-size:14px!important; color:#f2f7fa!important; background:transparent!important; border:0!important; text-align:left!important; }
   .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-sidebar .nr-navigation button span { white-space:nowrap; word-break:normal; }
-  .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-sidebar .nr-navigation button.active { background:#ffffff15!important; color:#00c878!important; box-shadow:inset 3px 0 #00c878!important; }
+  .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-sidebar .nr-navigation button.active { background:#ffffff15!important; color:#f9c449!important; box-shadow:inset 3px 0 #f9c449!important; }
   .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-sidebar .nr-navigation button:hover { background:#ffffff10!important; }
   .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-sidebar-bottom button { color:#b2c4d1!important; }
   .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-main { position:relative!important; height:100%!important; min-height:0!important; overflow:hidden!important; }
@@ -239,7 +239,7 @@
   min-width: 36px!important;
   padding: 8px!important;
   border-radius: 11px;
-  color: #00c878!important;
+  color: #f9c449!important;
   background: #f1efff!important;
 }
 .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper
@@ -288,14 +288,14 @@
   min-width: 44px;
   margin: 0!important;
   padding: 9px 8px!important;
-  color: #00c878!important;
+  color: #f9c449!important;
   font-size: 14px;
   font-weight: 750;
   white-space: nowrap!important;
 }
 .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper
   .nr-ride-selection footer .nr-ride-payment > .nr-text-button:focus-visible {
-  outline: 2px solid #00c878;
+  outline: 2px solid #f9c449;
   outline-offset: 2px;
   border-radius: 9px;
 }
@@ -352,3 +352,8 @@
   min-height:52px!important;
   margin:0!important;
 }
+
+/* Biloo wrapper palette: neutral surfaces, navy text, gold interactive accents. */
+.nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-rider-persistent-wrapper{--text:var(--biloo-ink);--muted:var(--biloo-muted);--surface:#fff;--surface-alt:var(--biloo-bg);--line:var(--biloo-line);--green:var(--biloo-gold);--green-text:var(--biloo-navy);--green-wash:var(--biloo-gold-soft);border-color:var(--biloo-line)!important}
+.nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-rider-persistent-wrapper :is(.nr-rider-home-sheet,.nr-destination-panel,.nr-ride-selection,.nr-driver-matching,.nr-trip-experience){--text:var(--biloo-ink);--muted:var(--biloo-muted);--surface:#fff;--surface-alt:var(--biloo-bg);--line:var(--biloo-line);--green:var(--biloo-gold);--green-text:var(--biloo-navy);--green-wash:var(--biloo-gold-soft)}
+.nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper :is(.nr-rider-persistent-wrapper,.nr-rider-home-sheet,.nr-destination-panel,.nr-ride-selection,.nr-driver-matching,.nr-trip-experience) :is(button,a,input):focus-visible{outline-color:var(--biloo-focus)!important}
