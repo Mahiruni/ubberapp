@@ -262,7 +262,7 @@ export function RiderMenu({
             </div>
 
             <footer className="nr-rider-drawer-footer" aria-label={say("App information","የመተግበሪያ መረጃ")}>
-              <AppVersion />
+              <span className="biloo-drawer-company-credit">Biloo — Proudly by Hisab Technologies PLC</span>
             </footer>
           </aside>
         </div>, document.body
