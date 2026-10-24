@@ -8,6 +8,15 @@ import {
 } from "../../lib/nexride-native-navigation";
 
 function closeTopOverlay(): boolean {
+  // Normally Android dismisses its own IME before delivering Back. If an
+  // embedded WebView does deliver the event, blur the field before closing
+  // a dialog or cancelling any operation.
+  const focused = document.activeElement;
+  if (focused instanceof HTMLElement &&
+    focused.matches("input, textarea, select, [contenteditable='true']")) {
+    focused.blur();
+    return true;
+  }
   const modal = [...document.querySelectorAll<HTMLDialogElement>("dialog[open]")]
     .filter(node => node.getClientRects().length).at(-1);
   if (modal) {
@@ -20,12 +29,6 @@ function closeTopOverlay(): boolean {
     drawer.querySelector<HTMLButtonElement>(".nr-driver-menu-close, .nr-rider-drawer-close")?.click();
     return true;
   }
-  const focused = document.activeElement;
-  if (focused instanceof HTMLElement &&
-    focused.matches("input, textarea, select, [contenteditable='true']")) {
-    focused.blur();
-    return true;
-  }
   return false;
 }
 
@@ -36,7 +39,6 @@ export function NexRideNativeNavigationBridge() {
   const current = useRef({ pathname, router });
   current.current = { pathname, router };
   const [notice, setNotice] = useState("");
-  const exitAt = useRef(0);
   const lastBackAt = useRef(0);
 
   useEffect(() => {
@@ -58,27 +60,19 @@ export function NexRideNativeNavigationBridge() {
           if (now - lastBackAt.current < 220) return;
           lastBackAt.current = now;
 
-          if (closeTopOverlay() || consumeNexRideBackHandlers()) {
-            exitAt.current = 0;
-            return;
-          }
+          if (closeTopOverlay() || consumeNexRideBackHandlers()) return;
           const { pathname: path, router: nextRouter } = current.current;
           const parent = nexrideSafeParentPath(path, window.location.search);
           if (parent) {
-            exitAt.current = 0;
             nextRouter.replace(parent);
             return;
           }
-          if (now - exitAt.current < 2400) {
-            exitAt.current = 0;
-            // Minimizing preserves Supabase sessions and never changes trip status.
-            void App.minimizeApp().catch(() => {
-              showNotice("Use your device Home control to leave Biloo.");
-            });
-          } else {
-            exitAt.current = now;
-            showNotice("Press Back again to minimize Biloo");
-          }
+          // A single Back action at the application root follows Android's
+          // normal task-exit intent. Never force repeated Back presses or sign
+          // out the user; minimizing preserves live-trip/server state.
+          void App.minimizeApp().catch(() => {
+            showNotice("Use your device Home control to leave Biloo.");
+          });
         });
         if (disposed) await subscription.remove();
         else remove = () => subscription.remove();
