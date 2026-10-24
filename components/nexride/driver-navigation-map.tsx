@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { GeoJSONSource, Map as MapboxMap, Marker as MapboxMarker } from "mapbox-gl";
 import { Icon, Spinner } from "./ui";
 import { useDriverTheme } from "./driver-app-shell";
+import { applyBilooCityMapPalette } from "../../lib/biloo-map-palette";
 import "mapbox-gl/dist/mapbox-gl.css";
 
 export type NavigationCoordinate = { lat: number; lng: number };
@@ -108,6 +109,7 @@ export function DriverNavigationMap({
       map.on("rotate", () => setBearing(map.getBearing()));
       map.on("style.load", () => {
         if (cancelled) return;
+        applyBilooCityMapPalette(map, styleKey === "streets");
         loaded.current = true;
         setMapStatus("ready");
         setMountedRevision((value) => value + 1);
