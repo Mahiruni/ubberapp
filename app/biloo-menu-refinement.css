@@ -765,3 +765,7 @@
 @media(prefers-reduced-motion:reduce){
   :is(.nr-rider-drawer-layer,.nr-driver-menu-layer) :is(.nr-rider-drawer-icon,.nr-driver-menu-row-icon,.nr-driver-menu-utility-icon){transition:none!important}
 }
+
+/* Biloo corporate credit — safe-area-aware navy footer */
+.nr-rider-drawer-layer .nr-rider-drawer-footer {background:#102b4e!important;color:#fff!important;border-radius:14px!important;padding:14px 12px!important;margin:12px 4px max(12px,env(safe-area-inset-bottom,0px))!important;text-align:center!important;border:0!important}
+.nr-rider-drawer-layer .biloo-drawer-company-credit {display:block;color:#fff!important;font-size:11px;font-weight:700;line-height:1.5;letter-spacing:.01em}
