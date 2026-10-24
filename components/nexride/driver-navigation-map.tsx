@@ -1,19 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { GeoJSONSource, Map as MapboxMap, Marker as MapboxMarker } from "mapbox-gl";
+import type { Map as MapboxMap, Marker as MapboxMarker } from "mapbox-gl";
 import { Icon, Spinner } from "./ui";
 import { useDriverTheme } from "./driver-app-shell";
 import { applyBilooCityMapPalette, BILOO_STYLE_SWAP_OPTIONS } from "../../lib/biloo-map-palette";
 import "mapbox-gl/dist/mapbox-gl.css";
 
 export type NavigationCoordinate = { lat: number; lng: number };
-export type NavigationTrafficSegment = {
-  from: NavigationCoordinate;
-  to: NavigationCoordinate;
-  congestion?: "low" | "moderate" | "heavy" | "severe";
-};
-
 type MapView = "overview" | "vehicle";
 type GpsState = "acquiring" | "fresh" | "stale" | "lost" | "unsupported";
 type MapStyleKey = "streets" | "satellite" | "dark";
@@ -41,7 +35,6 @@ export function DriverNavigationMap({
   pickup,
   destination,
   route = [],
-  segments = [],
   target,
   view,
   gpsState,
@@ -51,7 +44,6 @@ export function DriverNavigationMap({
   pickup: NavigationCoordinate | null;
   destination: NavigationCoordinate | null;
   route?: NavigationCoordinate[];
-  segments?: NavigationTrafficSegment[];
   target: "pickup" | "destination";
   view: MapView;
   gpsState: GpsState;
@@ -66,13 +58,10 @@ export function DriverNavigationMap({
   const lastCameraTarget = useRef<"pickup" | "destination">(target);
   const loaded = useRef(false);
   const activeStyle = useRef<MapStyleKey>(resolvedTheme === "dark" ? "dark" : "streets");
-  const trafficAvailable = useRef(true);
   const [mountedRevision, setMountedRevision] = useState(0);
   const [mapStatus, setMapStatus] = useState<"loading" | "ready" | "unavailable">("loading");
   const [styleKey, setStyleKey] = useState<MapStyleKey>(resolvedTheme === "dark" ? "dark" : "streets");
   const [layersOpen, setLayersOpen] = useState(false);
-  const [trafficVisible, setTrafficVisible] = useState(true);
-  const [trafficUnavailable, setTrafficUnavailable] = useState(false);
   const [bearing, setBearing] = useState(0);
 
   useEffect(() => {
@@ -151,47 +140,6 @@ export function DriverNavigationMap({
     const map = mapRef.current;
     if (!map || !map.isStyleLoaded()) return;
 
-    const sourceId = "nr-driver-live-traffic";
-    const layerId = "nr-driver-live-traffic-lines";
-    try {
-      if (map.getLayer(layerId)) map.removeLayer(layerId);
-      if (map.getSource(sourceId)) map.removeSource(sourceId);
-      setTrafficUnavailable(false);
-      trafficAvailable.current = true;
-
-      if (trafficVisible) {
-        map.addSource(sourceId, { type: "vector", url: "mapbox://mapbox.mapbox-traffic-v1" });
-        map.addLayer({
-          id: layerId,
-          type: "line",
-          source: sourceId,
-          "source-layer": "traffic",
-          minzoom: 6,
-          paint: {
-            "line-width": ["interpolate", ["linear"], ["zoom"], 6, 1.2, 12, 2.4, 17, 5],
-            "line-opacity": 0.68,
-            "line-color": [
-              "match",
-              ["get", "congestion"],
-              "low", "#22a06b",
-              "moderate", "#d8a321",
-              "heavy", "#df7928",
-              "severe", "#d84a57",
-              "#8c9aa4",
-            ],
-          },
-        });
-      }
-    } catch {
-      trafficAvailable.current = false;
-      setTrafficUnavailable(true);
-    }
-  }, [trafficVisible, mountedRevision]);
-
-  useEffect(() => {
-    const map = mapRef.current;
-    if (!map || !map.isStyleLoaded()) return;
-
     const sourceId = "nr-driver-route-source";
     const casingId = "nr-driver-route-casing";
     const lineId = "nr-driver-route-line";
@@ -203,35 +151,19 @@ export function DriverNavigationMap({
     const validRoute = route.filter(valid);
     if (validRoute.length < 2) return;
 
-    const segmentFeatures = segments
-      .filter((segment) => valid(segment.from) && valid(segment.to))
-      .map((segment) => ({
-        type: "Feature" as const,
-        properties: { congestion: segment.congestion || "unknown" },
-        geometry: {
-          type: "LineString" as const,
-          coordinates: [lngLat(segment.from), lngLat(segment.to)],
-        },
-      }));
-
-    const features = segmentFeatures.length
-      ? segmentFeatures
-      : [{
-          type: "Feature" as const,
-          properties: { congestion: "unknown" },
-          geometry: { type: "LineString" as const, coordinates: validRoute.map(lngLat) },
-        }];
-
     map.addSource(sourceId, {
       type: "geojson",
-      data: { type: "FeatureCollection", features },
+      data: {
+        type: "Feature", properties: {},
+        geometry: { type: "LineString", coordinates: validRoute.map(lngLat) },
+      },
     });
     map.addLayer({
       id: casingId,
       type: "line",
       source: sourceId,
       paint: {
-        "line-color": styleKey === "dark" ? "#07131d" : "#f8fbfd",
+        "line-color": styleKey === "dark" ? "#181818" : "#f8fbfd",
         "line-width": ["interpolate", ["linear"], ["zoom"], 10, 7, 16, 13],
         "line-opacity": 0.96,
       },
@@ -244,23 +176,16 @@ export function DriverNavigationMap({
       paint: {
         "line-width": ["interpolate", ["linear"], ["zoom"], 10, 4, 16, 8],
         "line-opacity": 0.98,
-        "line-color": [
-          "match",
-          ["get", "congestion"],
-          "low", "#19b874",
-          "moderate", "#d7a121",
-          "heavy", "#e17729",
-          "severe", "#d84a57",
-          "#5145e5",
-        ],
+        "line-color": "#F9C449",
       },
       layout: { "line-cap": "round", "line-join": "round" },
     });
-  }, [route, segments, mountedRevision, styleKey]);
+  }, [route, mountedRevision, styleKey]);
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !map.isStyleLoaded()) return;
+    // DOM markers stay available while route sources finish loading.
+    if (!map) return;
 
     let cancelled = false;
     void import("mapbox-gl").then((mapboxgl) => {
@@ -287,7 +212,8 @@ export function DriverNavigationMap({
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !map.isStyleLoaded()) return;
+    // Fitting the camera does not depend on secondary route tile readiness.
+    if (!map) return;
 
     const viewChanged = lastCameraView.current !== view;
     const targetChanged = lastCameraTarget.current !== target;
@@ -358,7 +284,6 @@ export function DriverNavigationMap({
           Road route is unavailable. Biloo will not draw a straight-line estimate.
         </div>
       )}
-      {trafficUnavailable && <div className="nr-driver-traffic-unavailable" role="status">Traffic data unavailable</div>}
 
       <div className="nr-driver-map-controls" aria-label="Driver map controls">
         <button type="button" onClick={recenter} aria-label="Recenter map"><Icon name="locate" size={21} /></button>
@@ -371,16 +296,13 @@ export function DriverNavigationMap({
       </div>
 
       {layersOpen && (
-        <div id="biloo-driver-map-layers" className="nr-driver-layer-menu" role="menu" aria-label="Map style and traffic">
+        <div id="biloo-driver-map-layers" className="nr-driver-layer-menu" role="menu" aria-label="Map style">
           {(["streets", "satellite", "dark"] as MapStyleKey[]).map((key) => (
             <button key={key} type="button" role="menuitemradio" aria-checked={styleKey === key} onClick={() => { setStyleKey(key); setLayersOpen(false); }}>
               <span>{key === "streets" ? "Streets" : key === "satellite" ? "Satellite" : "Dark"}</span>
               {styleKey === key && <Icon name="check" size={16} />}
             </button>
           ))}
-          <button type="button" role="menuitemcheckbox" aria-checked={trafficVisible} onClick={() => setTrafficVisible((visible) => !visible)}>
-            <span>Live traffic</span><span className={`nr-driver-traffic-switch ${trafficVisible ? "on" : ""}`} aria-hidden="true"><i /></span>
-          </button>
         </div>
       )}
     </div>

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { DriverNavigationMap, type NavigationCoordinate, type NavigationTrafficSegment } from "../../../components/nexride/driver-navigation-map";
+import { DriverNavigationMap, type NavigationCoordinate } from "../../../components/nexride/driver-navigation-map";
 import { DriverBottomSheet } from "../../../components/nexride/driver-bottom-sheet";
 import { Button, Dialog, Icon } from "../../../components/nexride/ui";
 import { useOperationalTranslation } from "../../../components/nexride/operational-i18n";
@@ -41,7 +41,6 @@ type NativeRoute = {
   steps: GuidanceStep[];
   generatedAt: number;
   traffic: TrafficLevel | null;
-  segments: NavigationTrafficSegment[];
 };
 
 type NavigationData = {
@@ -577,22 +576,6 @@ export default function DriverNavigationPage() {
         ) return;
 
         const trafficLevel = body.route?.traffic?.level;
-        const trafficSegments = Array.isArray(body.route?.segments)
-          ? body.route.segments.map((segment: Record<string, unknown>) => {
-              const from = Array.isArray(segment.from) ? segment.from : [];
-              const to = Array.isArray(segment.to) ? segment.to : [];
-              const congestion = segment.congestion;
-              if (from.length < 2 || to.length < 2) return null;
-              const fromPoint = { lat: Number(from[0]), lng: Number(from[1]) };
-              const toPoint = { lat: Number(to[0]), lng: Number(to[1]) };
-              if (![fromPoint.lat, fromPoint.lng, toPoint.lat, toPoint.lng].every(Number.isFinite)) return null;
-              return {
-                from: fromPoint,
-                to: toPoint,
-                ...(congestion === "low" || congestion === "moderate" || congestion === "heavy" || congestion === "severe" ? { congestion } : {}),
-              } as NavigationTrafficSegment;
-            }).filter(Boolean) as NavigationTrafficSegment[]
-          : [];
         setNativeRoute({
           target,
           geometry,
@@ -600,7 +583,6 @@ export default function DriverNavigationPage() {
           distanceMeters,
           durationSeconds,
           generatedAt: Number(body.generatedAt) || Date.now(),
-          segments: trafficSegments,
           traffic:
             trafficLevel === "low" ||
             trafficLevel === "moderate" ||
@@ -800,7 +782,7 @@ export default function DriverNavigationPage() {
         <Icon name="info" size={17} />
         <span>{showingSavedTrip ? "Saved trip · " : ""}Reconnecting — trip actions paused until the latest stage is confirmed.</span>
       </div>}
-      <DriverNavigationMap vehicle={position} pickup={trip.pickupCoordinate} destination={trip.destinationCoordinate} route={nativeRoute?.target === stage.target ? nativeRoute.geometry : []} segments={nativeRoute?.target === stage.target ? nativeRoute.segments : []} target={stage.target} view={mapView} gpsState={gpsState} heading={position?.heading ?? null} />
+      <DriverNavigationMap vehicle={position} pickup={trip.pickupCoordinate} destination={trip.destinationCoordinate} route={nativeRoute?.target === stage.target ? nativeRoute.geometry : []} target={stage.target} view={mapView} gpsState={gpsState} heading={position?.heading ?? null} />
 
       <button className="nr-nav-home" onClick={() => router.replace("/driver/home")} aria-label={op("Driver home")}><Icon name="home" size={19} /></button>
 

@@ -19,7 +19,6 @@ import {
   formatDistance,
   formatDuration,
   type RouteResult,
-  type TrafficLevel,
 } from "../../lib/location";
 import { AVATAR_STORAGE, DEFAULT_MAP_AVATAR, RIDER_MAP_AVATAR_SIZE, loadMapAvatar, mapAvatarSvg, normalizeMapAvatar, type MapAvatar } from "../../lib/biloo-rider-map-avatar";
 import { applyBilooCityMapPalette, BILOO_STYLE_SWAP_OPTIONS } from "../../lib/biloo-map-palette";
@@ -221,25 +220,6 @@ const routeCollection = (
   ),
 });
 
-const segmentCollection = (route: RouteResult | undefined) => ({
-  type: "FeatureCollection" as const,
-  features: (route?.segments || []).map((segment, index) => ({
-    type: "Feature" as const,
-    id: index,
-    properties: {
-      congestion: segment.congestion || "unknown",
-    },
-    geometry: {
-      type: "LineString" as const,
-      coordinates: [
-        [segment.from[1], segment.from[0]],
-        [segment.to[1], segment.to[0]],
-      ],
-    },
-  })),
-});
-
-
 const bilooRouteAnimations = new WeakMap<MapboxMap, { key: string; frame: number }>();
 function animateBilooRoute(map: MapboxMap, coords: number[][]) {
   if (coords.length < 2 || typeof window === "undefined") return;
@@ -316,7 +296,6 @@ function syncRoutes(map: MapboxMap, journey: Journey | undefined) {
     state?.status === "ready" ? state.selectedIndex || 0 : 0;
   const selectedRoute = routes[selectedIndex];
   const routesData = routeCollection(routes, selectedIndex);
-  const segmentsData = segmentCollection(selectedRoute);
   if (selectedRoute?.geometry?.length) {
     animateBilooRoute(map, selectedRoute.geometry.map(([lat, lng]) => [lng, lat]));
   }
@@ -329,16 +308,6 @@ function syncRoutes(map: MapboxMap, journey: Journey | undefined) {
     map.addSource("nexride-routes", {
       type: "geojson",
       data: routesData,
-    });
-
-  const segmentSource = map.getSource("nexride-route-segments") as
-    | GeoJSONSource
-    | undefined;
-  if (segmentSource) segmentSource.setData(segmentsData);
-  else if (routes.length)
-    map.addSource("nexride-route-segments", {
-      type: "geojson",
-      data: segmentsData,
     });
 
   if (routes.length && !map.getLayer("nexride-route-casing")) {
@@ -375,7 +344,7 @@ function syncRoutes(map: MapboxMap, journey: Journey | undefined) {
         "line-color": [
           "case",
           ["boolean", ["get", "selected"], false],
-          "#246bc6",
+          "#F9C449",
           "#7f8d98",
         ],
         "line-width": [
@@ -394,32 +363,6 @@ function syncRoutes(map: MapboxMap, journey: Journey | undefined) {
     });
   }
 
-  if (routes.length && !map.getLayer("nexride-route-congestion")) {
-    map.addLayer({
-      id: "nexride-route-congestion",
-      type: "line",
-      source: "nexride-route-segments",
-      layout: { "line-cap": "round", "line-join": "round" },
-      paint: {
-        "line-color": [
-          "match",
-          ["get", "congestion"],
-          "low",
-          "#18a558",
-          "moderate",
-          "#e6b800",
-          "heavy",
-          "#f08a24",
-          "severe",
-          "#dc3f45",
-          "#246bc6",
-        ],
-        "line-width": 5.5,
-        "line-opacity": 0.98,
-      },
-    });
-  }
-
   if (routes.length && !map.getLayer("nexride-route-hitbox")) {
     map.addLayer({
       id: "nexride-route-hitbox",
@@ -433,76 +376,6 @@ function syncRoutes(map: MapboxMap, journey: Journey | undefined) {
       },
     });
   }
-}
-
-function firstSymbolLayer(map: MapboxMap) {
-  return map
-    .getStyle()
-    .layers?.find((layer) => layer.type === "symbol")?.id;
-}
-
-function addTraffic(map: MapboxMap) {
-  if (!map.isStyleLoaded()) return;
-  if (!map.getSource("nexride-traffic"))
-    map.addSource("nexride-traffic", {
-      type: "vector",
-      url: "mapbox://mapbox.mapbox-traffic-v1",
-    });
-  if (!map.getLayer("nexride-live-traffic")) {
-    map.addLayer(
-      {
-        id: "nexride-live-traffic",
-        type: "line",
-        source: "nexride-traffic",
-        "source-layer": "traffic",
-        layout: {
-          "line-cap": "round",
-          "line-join": "round",
-        },
-        paint: {
-          "line-color": [
-            "match",
-            ["get", "congestion"],
-            "low",
-            "#18a558",
-            "moderate",
-            "#e6b800",
-            "heavy",
-            "#f08a24",
-            "severe",
-            "#dc3f45",
-            "rgba(127,141,152,.38)",
-          ],
-          "line-width": [
-            "interpolate",
-            ["linear"],
-            ["zoom"],
-            8,
-            1.5,
-            12,
-            2.5,
-            16,
-            5,
-          ],
-          "line-opacity": 0.78,
-        },
-      },
-      firstSymbolLayer(map),
-    );
-  }
-}
-
-function removeTraffic(map: MapboxMap) {
-  if (map.getLayer("nexride-live-traffic"))
-    map.removeLayer("nexride-live-traffic");
-  if (map.getSource("nexride-traffic"))
-    map.removeSource("nexride-traffic");
-}
-
-function refreshTraffic(map: MapboxMap) {
-  if (!map.isStyleLoaded()) return;
-  removeTraffic(map);
-  addTraffic(map);
 }
 
 function syncAccuracy(
@@ -771,9 +644,7 @@ export function RiderMap({
   const statusRef = useRef(status);
   const rideLabelRef = useRef(rideLabel);
   const readOnlyRef = useRef(readOnly);
-  const trafficVisibleRef = useRef(false);
   const driverRadarRef = useRef(showDriverRadar);
-  const lastTrafficRefresh = useRef(0);
   const lastFastestDuration = useRef<number | null>(null);
   journeyRef.current = journey;
   positionRef.current = position;
@@ -796,7 +667,6 @@ export function RiderMap({
   const [styleKey, setStyleKey] = useState<MapStyleKey>(preferredStyle || "streets");
   const [layerMenuOpen, setLayerMenuOpen] = useState(false);
   const [bearing, setBearing] = useState(0);
-  const [trafficVisible, setTrafficVisible] = useState(true);
   const [fasterNotice, setFasterNotice] = useState<number | null>(null);
   const [gpsStale, setGpsStale] = useState(false);
   const [nearbyDrivers, setNearbyDrivers] = useState<NearbyDriver[]>([]);
@@ -805,7 +675,6 @@ export function RiderMap({
     ? [{ key: assignedFix.driverId, lat: assignedFix.lat, lng: assignedFix.lng, updatedAt: new Date(assignedFix.updatedAt).toISOString(), distanceMeters: 0 }] : [];
   const displayedDrivers = assignedTrip ? assignedDrivers : nearbyDrivers;
   const liveFrame = useRef('');
-  trafficVisibleRef.current = trafficVisible;
   driverRadarRef.current = showDriverRadar;
 
   const route =
@@ -821,17 +690,6 @@ export function RiderMap({
     ? { ...assignedTrip.destination, source: 'provider' as const, confirmed: true, name: assignedDestinationName || '', address: '' }
     : journey?.destination;
   const geometry = route?.geometry;
-  const trafficLabel = route?.traffic
-    ? t(
-        route.traffic.level === "low"
-          ? "trafficLow"
-          : route.traffic.level === "moderate"
-            ? "trafficModerate"
-            : route.traffic.level === "heavy"
-              ? "trafficHeavy"
-              : "trafficSevere",
-      )
-    : "";
   const showCompass = Math.abs(normalizedBearing(bearing)) > 2;
 
   useEffect(() => {
@@ -984,7 +842,6 @@ export function RiderMap({
         syncAccuracy(map, positionRef.current, statusRef.current);
         syncDriverRadar(map, positionRef.current,
           driverRadarRef.current && driverGpsQuality(positionRef.current, statusRef.current, Date.now()) === "live");
-        if (trafficVisibleRef.current) addTraffic(map);
       };
 
       map.on("style.load", () => {
@@ -1102,14 +959,6 @@ export function RiderMap({
           });
       });
 
-      map.on("idle", () => {
-        if (!trafficVisibleRef.current || !map.isStyleLoaded()) return;
-        const now = Date.now();
-        if (now - lastTrafficRefresh.current < 30_000) return;
-        lastTrafficRefresh.current = now;
-        refreshTraffic(map);
-      });
-
       resizeObserver.current = new ResizeObserver(() => {
         map.resize();
         // When the default Rider sheet expands/collapses or the screen
@@ -1192,17 +1041,6 @@ export function RiderMap({
     // including providers whose day/night styles share the same layer graph.
     map.setStyle(STYLE_URLS[styleKey], BILOO_STYLE_SWAP_OPTIONS);
   }, [styleKey, mounted]);
-
-  useEffect(() => {
-    const map = mapRef.current;
-    if (!mounted || !map || !map.isStyleLoaded()) return;
-    if (trafficVisible) {
-      addTraffic(map);
-      lastTrafficRefresh.current = Date.now();
-    } else {
-      removeTraffic(map);
-    }
-  }, [trafficVisible, mounted, styleKey]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -1316,7 +1154,7 @@ export function RiderMap({
   useEffect(() => {
     const map = mapRef.current;
     if (!mounted || !map) return;
-    // DOM identity markers do not depend on secondary traffic/accuracy tiles.
+    // DOM identity markers do not depend on secondary accuracy tiles.
     // Paint updates can make isStyleLoaded() false immediately after load.
     if (map.isStyleLoaded()) {
       syncAccuracy(map, position, status);
@@ -1859,29 +1697,6 @@ export function RiderMap({
 
         <button
           type="button"
-          className="nr-map-touch-control nr-map-traffic-toggle"
-          aria-label={
-            language === "am"
-              ? trafficVisible
-                ? "ቀጥታ ትራፊክ ደብቅ"
-                : "ቀጥታ ትራፊክ አሳይ"
-              : trafficVisible
-                ? "Hide live traffic"
-                : "Show live traffic"
-          }
-          aria-pressed={trafficVisible}
-          title={trafficVisible ? "Hide live traffic" : "Show live traffic"}
-          onClick={() => setTrafficVisible((visible) => !visible)}
-        >
-          <span className="nr-traffic-control-icon" aria-hidden="true">
-            <i />
-            <i />
-            <i />
-          </span>
-        </button>
-
-        <button
-          type="button"
           className="nr-map-touch-control"
           aria-label={language === "am" ? "የካርታ ቅጥ" : "Map style"}
           aria-expanded={layerMenuOpen}
@@ -2074,7 +1889,7 @@ export function RiderMap({
             <>
               <div className="nr-live-route-head">
                 <div>
-                  <small>{language === "am" ? "ቀጥታ ትራፊክ" : "Live traffic"}</small>
+                  <small>{language === "am" ? "የጉዞ ጊዜ" : "Travel time"}</small>
                   <strong>{formatDuration(route.durationSeconds)}</strong>
                 </div>
                 <div className="nr-live-route-metrics">

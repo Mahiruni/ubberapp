@@ -3,6 +3,7 @@ import { expect, test, type Page } from '@playwright/test';
 const driverId = '22222222-2222-4222-8222-222222222222';
 const offerId = '44444444-4444-4444-8444-444444444444';
 const tripId = '55555555-5555-4555-8555-555555555555';
+const trafficTileRequests = new WeakMap<Page, string[]>();
 
 async function mapProviders(page: Page) {
   const polygon = (kind: string, x: number, y: number) => ({ type: 'Feature', properties: { kind, class: kind === 'landuse' ? 'park' : kind }, geometry: { type: 'Polygon', coordinates: [[[x, y], [x + .001, y], [x + .001, y + .001], [x, y + .001], [x, y]]] } });
@@ -54,7 +55,16 @@ test.beforeEach(async ({ page, context }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await context.grantPermissions(['geolocation']);
   await context.setGeolocation({ longitude: 38.775, latitude: 9.008, accuracy: 8 });
+  const requests: string[] = [];
+  trafficTileRequests.set(page, requests);
+  page.on('request', request => {
+    if (request.url().includes('mapbox-traffic-v1')) requests.push(request.url());
+  });
   await mapProviders(page);
+});
+
+test.afterEach(async ({ page }) => {
+  expect(trafficTileRequests.get(page) ?? [], 'Maps must not download the removed traffic tiles').toEqual([]);
 });
 
 test('Rider retains Biloo day/night styling and the compact avatar across style reloads', async ({ page }) => {
@@ -65,6 +75,7 @@ test('Rider retains Biloo day/night styling and the compact avatar across style 
   const map = page.locator('.nr-mapbox-map');
   await expect(map).toHaveAttribute('data-biloo-map-palette', 'biloo-streets-v2', { timeout: 20000 });
   await expect(page.locator('.mapboxgl-marker.biloo-custom-map-avatar')).toHaveCSS('height', '48px');
+  await expect(page.getByRole('button', { name: /(?:Show|Hide) live traffic/i })).toHaveCount(0);
   await page.screenshot({ path: test.info().outputPath('biloo-rider-day.png') });
   for (const [label, palette] of [['Dark', 'biloo-dark-v3'], ['Satellite', 'satellite'], ['Streets', 'biloo-streets-v2']]) {
     await page.getByRole('button', { name: 'Map style', exact: true }).click();
@@ -97,6 +108,17 @@ test('Driver navigation follows theme and manual layer changes with the correct 
 
 test('Driver layer labels and selection icons stay compact on narrow phones', async ({ page }) => {
   await authenticatedDriver(page, 'in_trip');
+  await page.route('**/api/driver/route', route => route.fulfill({ json: {
+    status: 'ready', generatedAt: Date.now(), route: {
+      geometry: [[9.008, 38.775], [9.012, 38.766], [9.018, 38.751]],
+      distanceMeters: 6400, durationSeconds: 1200,
+      traffic: { level: 'severe' },
+      segments: [
+        { from: [9.008, 38.775], to: [9.012, 38.766], congestion: 'low' },
+        { from: [9.012, 38.766], to: [9.018, 38.751], congestion: 'severe' },
+      ],
+    },
+  } }));
   await page.goto(`/driver/navigation?offer=${offerId}`);
   await expect(page.locator('.nr-live-navigation-canvas')).toHaveAttribute('data-biloo-map-palette', 'biloo-dark-v3', { timeout: 20000 });
   await expect(page.locator('.nr-nav-bottom-card')).toHaveCSS('background-color', 'rgb(32, 32, 32)');
@@ -106,8 +128,13 @@ test('Driver layer labels and selection icons stay compact on narrow phones', as
 
   const layers = page.getByRole('button', { name: 'Map layers', exact: true });
   await layers.click();
-  const menu = page.getByRole('menu', { name: 'Map style and traffic' });
+  const menu = page.getByRole('menu', { name: 'Map style', exact: true });
   await expect(menu).toHaveCSS('background-color', 'rgb(32, 32, 32)');
+  await expect(menu.getByRole('menuitemradio')).toHaveCount(3);
+  await expect(menu.getByRole('menuitemcheckbox')).toHaveCount(0);
+  await expect(page.locator('.nr-live-map-status.route')).toHaveCount(0);
+  await expect(page.locator('.nr-driver-map-marker.vehicle')).toBeInViewport();
+  await expect(page.locator('.nr-driver-map-marker.destination')).toBeInViewport();
   await page.screenshot({ path: test.info().outputPath('biloo-driver-graphite-menu.png') });
   await page.getByRole('menuitemradio', { name: 'Satellite', exact: true }).click();
   await layers.click();
@@ -128,12 +155,10 @@ test('Driver layer labels and selection icons stay compact on narrow phones', as
           iconHeight: row.querySelector('svg')?.getBoundingClientRect().height ?? 0,
           overflow: row.scrollWidth > row.clientWidth,
         })),
-        switchWidth: element.querySelector('.nr-driver-traffic-switch')!.getBoundingClientRect().width,
       };
     });
     expect(geometry.left).toBeGreaterThanOrEqual(8);
     expect(geometry.right).toBeLessThanOrEqual(width - 8);
-    expect(geometry.switchWidth).toBe(34);
     for (const row of geometry.rows) {
       expect(row.height).toBeLessThanOrEqual(48);
       expect(row.labelHeight).toBeLessThanOrEqual(24);
@@ -142,11 +167,6 @@ test('Driver layer labels and selection icons stay compact on narrow phones', as
       expect(row.overflow).toBe(false);
     }
   }
-  const traffic = page.getByRole('menuitemcheckbox', { name: 'Live traffic' });
-  await expect(traffic).toHaveAttribute('aria-checked', 'true');
-  await traffic.click();
-  await expect(traffic).toHaveAttribute('aria-checked', 'false');
-  await traffic.click();
-  await expect(traffic).toHaveAttribute('aria-checked', 'true');
+  await expect(menu.getByRole('menuitemcheckbox')).toHaveCount(0);
   await page.screenshot({ path: test.info().outputPath('biloo-driver-satellite-menu.png') });
 });

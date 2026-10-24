@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { DriverNavigationMap, type NavigationCoordinate, type NavigationTrafficSegment } from "../../../components/nexride/driver-navigation-map";
+import { DriverNavigationMap, type NavigationCoordinate } from "../../../components/nexride/driver-navigation-map";
 import { DriverBottomSheet } from "../../../components/nexride/driver-bottom-sheet";
 import { Icon } from "../../../components/nexride/ui";
 import { useOperationalTranslation } from "../../../components/nexride/operational-i18n";
@@ -102,7 +102,6 @@ export default function DriverRideRequestPage() {
   const [secondsRemaining, setSecondsRemaining] = useState<number | null>(null);
   const [soundBlocked, setSoundBlocked] = useState(false);
   const [requestRoute, setRequestRoute] = useState<NavigationCoordinate[]>([]);
-  const [requestSegments, setRequestSegments] = useState<NavigationTrafficSegment[]>([]);
   const [driverPosition, setDriverPosition] = useState<NavigationCoordinate | null>(null);
   const [driverHeading, setDriverHeading] = useState<number | null>(null);
   const [gpsState, setGpsState] = useState<"acquiring" | "fresh" | "stale" | "lost" | "unsupported">("acquiring");
@@ -157,7 +156,6 @@ export default function DriverRideRequestPage() {
       !Number.isFinite(request.destination_lng)
     ) {
       setRequestRoute([]);
-      setRequestSegments([]);
       setApproachMeta(null);
       return;
     }
@@ -192,23 +190,6 @@ export default function DriverRideRequestPage() {
           )
           .map((point: [number, number]) => ({ lat: Number(point[0]), lng: Number(point[1]) }));
         setRequestRoute(road);
-        const trafficSegments = Array.isArray(body?.route?.segments)
-          ? body.route.segments.map((segment: Record<string, unknown>) => {
-              const from = Array.isArray(segment.from) ? segment.from : [];
-              const to = Array.isArray(segment.to) ? segment.to : [];
-              const congestion = segment.congestion;
-              if (from.length < 2 || to.length < 2) return null;
-              const fromPoint = { lat: Number(from[0]), lng: Number(from[1]) };
-              const toPoint = { lat: Number(to[0]), lng: Number(to[1]) };
-              if (![fromPoint.lat, fromPoint.lng, toPoint.lat, toPoint.lng].every(Number.isFinite)) return null;
-              return {
-                from: fromPoint,
-                to: toPoint,
-                ...(congestion === "low" || congestion === "moderate" || congestion === "heavy" || congestion === "severe" ? { congestion } : {}),
-              } as NavigationTrafficSegment;
-            }).filter(Boolean) as NavigationTrafficSegment[]
-          : [];
-        setRequestSegments(trafficSegments);
         if (driverPosition && body?.status === "ready") {
           const meters = Number(body.route?.distanceMeters);
           const seconds = Number(body.route?.durationSeconds);
@@ -234,7 +215,6 @@ export default function DriverRideRequestPage() {
       })
       .catch(() => {
         setRequestRoute([]);
-        setRequestSegments([]);
         setApproachMeta(null);
       });
     return () => controller.abort();
@@ -625,7 +605,6 @@ export default function DriverRideRequestPage() {
               : null
           }
           route={requestRoute}
-          segments={requestSegments}
           target="pickup"
           view="overview"
           gpsState={gpsState}
