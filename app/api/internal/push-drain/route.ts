@@ -75,6 +75,8 @@ export async function GET(request: Request) {
       try {
         let offerExpiresAt: string | null = null;
         let confirmedTripStatus: string | null = null;
+        let assignedDriverId: string | null = null;
+        let riderId: string | null = null;
         if (event.kind === "driver_offer") {
           const { data: offer } = await admin.from("ride_request_offers")
             .select("status,expires_at,driver_id").eq("id", event.offer_id).maybeSingle();
@@ -83,13 +85,19 @@ export async function GET(request: Request) {
             await finish("skipped", "offer_no_longer_pending"); skipped++; continue;
           }
           offerExpiresAt = offer.expires_at;
+          if (event.request_id) {
+            const { data: offeredRide } = await admin.from("ride_requests")
+              .select("rider_id").eq("id", event.request_id).maybeSingle();
+            riderId = offeredRide?.rider_id || null;
+          }
         } else {
           const { data: ride } = await admin.from("ride_requests")
-            .select("status,rider_id").eq("id", event.request_id).maybeSingle();
+            .select("status,rider_id,assigned_driver_id").eq("id", event.request_id).maybeSingle();
           if (!ride || ride.status !== event.expected_status || ride.rider_id !== event.user_id) {
             await finish("skipped", "ride_state_changed"); skipped++; continue;
           }
           confirmedTripStatus = ride.status;
+          assignedDriverId = ride.assigned_driver_id || null;
         }
         const { data: devices, error: deviceError } = await admin.from("nexride_push_devices")
           .select("id,fcm_token").eq("user_id", event.user_id).eq("role", event.role).eq("enabled", true);
@@ -117,7 +125,29 @@ export async function GET(request: Request) {
           : confirmedTripStatus ? tripCopy[confirmedTripStatus] : undefined;
         // Unknown states must not produce misleading or generic push notifications.
         if (!copy) { await finish("skipped", "unrecognized_trip_status"); skipped++; continue; }
-        const { title, body } = copy;
+        const counterpartId = event.kind === "driver_offer" ? riderId : assignedDriverId;
+        let counterpartName = "";
+        if (counterpartId) {
+          const { data: counterpart } = await admin.from("profiles")
+            .select("full_name").eq("id", counterpartId).maybeSingle();
+          const candidate = typeof counterpart?.full_name === "string"
+            ? counterpart.full_name.replace(/[\\r\\n\\t]+/g, " ").trim().slice(0, 60) : "";
+          if (candidate.length >= 2) counterpartName = candidate;
+        }
+        const title = counterpartName && event.kind === "driver_offer"
+          ? "Ride request from " + counterpartName
+          : counterpartName && ["accepted", "assigned", "arriving", "approaching", "arrived", "arrived_pickup"].includes(confirmedTripStatus || "")
+            ? copy.title + " · " + counterpartName
+            : copy.title;
+        const body = counterpartName && event.kind === "driver_offer"
+          ? counterpartName + " has requested a ride. Open Biloo to review the offer."
+          : counterpartName && ["accepted", "assigned"].includes(confirmedTripStatus || "")
+            ? counterpartName + " has accepted your ride. Open Biloo for pickup details."
+            : counterpartName && ["arriving", "approaching"].includes(confirmedTripStatus || "")
+              ? counterpartName + " is heading to your pickup location."
+              : counterpartName && ["arrived", "arrived_pickup"].includes(confirmedTripStatus || "")
+                ? counterpartName + " has arrived at your pickup location."
+                : copy.body;
         const url = event.kind === "driver_offer" ?
           "/driver/request?offer=" + event.offer_id : "/rider/trips";
         // An offer can expire while we resolve devices; do not ring stale requests.
