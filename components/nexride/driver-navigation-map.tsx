@@ -18,7 +18,7 @@ type GpsState = "acquiring" | "fresh" | "stale" | "lost" | "unsupported";
 type MapStyleKey = "streets" | "satellite" | "dark";
 
 const STYLE_URLS: Record<MapStyleKey, string> = {
-  streets: process.env.NEXT_PUBLIC_MAPBOX_STYLE || "mapbox://styles/mapbox/streets-v12",
+  streets: process.env.NEXT_PUBLIC_MAPBOX_STYLE || "mapbox://styles/mapbox/light-v11",
   satellite: "mapbox://styles/mapbox/satellite-streets-v12",
   dark: "mapbox://styles/mapbox/dark-v11",
 };
