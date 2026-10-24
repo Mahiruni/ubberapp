@@ -24,8 +24,9 @@ export function applyBilooCityMapPalette(map: MapboxMap, enabled: boolean) {
         else if (/land|residential|commercial/.test(id)) map.setPaintProperty(layer.id, "fill-color", "#f5f6f7");
       } else if (layer.type === "line") {
         if (/waterway|river|stream/.test(id)) map.setPaintProperty(layer.id, "line-color", "#b5d9e8");
-        else if (/road|street|motorway|highway|bridge|tunnel/.test(id) && !/case|outline/.test(id)) {
-          map.setPaintProperty(layer.id, "line-color", "#ffffff");
+        else if (/road|street|motorway|highway|bridge|tunnel/.test(id)) {
+          // Retain the basemap’s original road hierarchy, casings and widths.
+          // Painting every road white erases small streets against light land.
         }
       }
     } catch {
