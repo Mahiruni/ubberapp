@@ -177,6 +177,8 @@ export function useRiderLocation() {
     document.addEventListener("visibilitychange", visibilityChanged);
     window.addEventListener("pagehide", pauseLocation);
     window.addEventListener("pageshow", resumeLocation);
+    window.addEventListener("biloo:native-pause", pauseLocation);
+    window.addEventListener("biloo:native-resume", resumeLocation);
 
     navigator.permissions
       ?.query({ name: "geolocation" })
@@ -198,6 +200,8 @@ export function useRiderLocation() {
       document.removeEventListener("visibilitychange", visibilityChanged);
       window.removeEventListener("pagehide", pauseLocation);
       window.removeEventListener("pageshow", resumeLocation);
+      window.removeEventListener("biloo:native-pause", pauseLocation);
+      window.removeEventListener("biloo:native-resume", resumeLocation);
       permission?.removeEventListener("change", syncPermission);
     };
   }, [clearWatch, startWatch]);
