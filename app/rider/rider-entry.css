@@ -668,3 +668,23 @@
   background-image: none!important;
   background-color: #fff;
 }
+
+
+/* Biloo 9:16 rider welcome — two-action photographic onboarding */
+.biloo-rider-campaign{isolation:isolate;min-height:100dvh!important;padding:max(22px,env(safe-area-inset-top)) 20px max(32px,env(safe-area-inset-bottom))!important;background:#eef6ff!important}
+.biloo-rider-campaign .biloo-rider-photo{object-fit:cover!important;object-position:center center!important;background-size:cover!important;z-index:0}
+.biloo-rider-campaign::after{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:linear-gradient(180deg,rgba(235,245,255,.72) 0%,rgba(235,245,255,.12) 43%,transparent 68%,rgba(255,255,255,.92) 95%)}
+.biloo-rider-campaign .biloo-rider-brand{align-self:center;justify-content:center;text-align:center;gap:4px;max-width:100%;z-index:2}
+.biloo-rider-campaign .biloo-rider-brand img{width:44px;height:48px}
+.biloo-rider-campaign .biloo-rider-brand strong{font-size:clamp(38px,9vw,52px);color:#071c54}
+.biloo-rider-campaign .biloo-rider-brand span{width:100%;flex-basis:100%;letter-spacing:.22em;color:#1c3354;font-size:10px;margin:0}
+.biloo-rider-campaign .biloo-rider-heading{z-index:2;text-align:center;margin-top:clamp(28px,6vh,65px)}
+.biloo-rider-campaign .biloo-rider-heading h1{font-size:clamp(34px,8vw,54px);line-height:1.07;letter-spacing:-.055em;color:#061a50}
+.biloo-rider-campaign .biloo-rider-heading p{font-size:clamp(13px,3.5vw,18px);line-height:1.48;margin-top:14px;color:#45546d}
+.biloo-rider-campaign .nr-rider-entry-actions{grid-template-columns:1fr!important;gap:12px!important;margin-top:auto!important;z-index:3}
+.biloo-rider-campaign .nr-rider-get-started,.biloo-rider-campaign .nr-rider-welcome-sign-in{grid-column:1/-1!important;grid-row:auto!important;min-height:58px!important;width:100%!important;border-radius:20px!important;font-size:clamp(14px,3.8vw,17px)!important;box-shadow:none!important;text-align:center}
+.biloo-rider-campaign .nr-rider-get-started{background:#082a6c!important;color:white!important;border:1px solid #fff!important}
+.biloo-rider-campaign .nr-rider-welcome-sign-in{background:rgba(255,255,255,.96)!important;border:1px solid #8795ae!important;color:#082a6c!important}
+.biloo-rider-campaign .nr-rider-welcome-footer{display:none!important}
+.biloo-rider-campaign :is(a,button):focus-visible{outline:3px solid #258aff!important;outline-offset:3px}
+@media(max-height:620px){.biloo-rider-campaign .biloo-rider-heading{margin-top:14px}.biloo-rider-campaign .biloo-rider-heading h1{font-size:30px}.biloo-rider-campaign .nr-rider-entry-actions{gap:7px!important}.biloo-rider-campaign .nr-rider-get-started,.biloo-rider-campaign .nr-rider-welcome-sign-in{min-height:48px!important}}
