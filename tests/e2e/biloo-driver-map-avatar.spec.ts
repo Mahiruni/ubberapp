@@ -73,8 +73,8 @@ async function assertMapCar(page: Page, source: string) {
   await expect(marker.locator('img')).toHaveAttribute('src', source);
   await expect.poll(() => marker.locator('img').evaluate(img => (img as HTMLImageElement).naturalWidth > 0)).toBe(true);
   await expect(marker).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
-  await expect(marker.locator('img')).toHaveCSS('width', '48px');
-  await expect(marker.locator('img')).toHaveCSS('height', '82px');
+  await expect(marker.locator('img')).toHaveCSS('width', '32px');
+  await expect(marker.locator('img')).toHaveCSS('height', '55px');
   return marker;
 }
 
@@ -169,8 +169,8 @@ test('embedded active-trip map renders the same branded car with the proper Leaf
   const frame = page.frameLocator('#avatar-trip-frame');
   const marker = frame.locator('.biloo-driver-car-marker');
   await expect(marker.locator('img')).toHaveAttribute('src', driverMapAvatarSource(avatar(state)));
-  await expect(marker).toHaveCSS('margin-left', '-30px');
-  await expect(marker).toHaveCSS('margin-top', '-43px');
+  await expect(marker).toHaveCSS('margin-left', '-20px');
+  await expect(marker).toHaveCSS('margin-top', '-29px');
   await expect(marker.locator('img')).toHaveCSS('--biloo-car-heading', '65deg');
   await expect.poll(() => marker.locator('img').evaluate(img => (img as HTMLImageElement).naturalWidth > 0)).toBe(true);
 });

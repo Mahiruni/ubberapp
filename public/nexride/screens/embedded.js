@@ -19,12 +19,12 @@
    const style=['signature','goldline','executive'].includes(avatar?.style)?avatar.style:'signature';
    return '/brand/driver-avatar?bodyType='+body+'&color='+color+'&style='+style;
   };
-  const carMark='<img class="biloo-driver-car-art" width="48" height="82" alt="" draggable="false" src="'+avatarSource(null)+'"><span class="biloo-driver-car-label" aria-hidden="true">biloo</span>';
+  const carMark='<img class="biloo-driver-car-art" width="32" height="55" alt="" draggable="false" src="'+avatarSource(null)+'"><span class="biloo-driver-car-label" aria-hidden="true">biloo</span>';
   const icon=kind=>L.divIcon({
     className:'nexride-map-pin '+kind+(kind==='vehicle'?' biloo-driver-car-marker':''),
     html:kind==='vehicle'?carMark:kind==='destination'?'D':'P',
-    iconSize:kind==='vehicle'?[60,86]:[32,32],
-    iconAnchor:kind==='vehicle'?[30,43]:[16,16]
+    iconSize:kind==='vehicle'?[40,58]:[32,32],
+    iconAnchor:kind==='vehicle'?[20,29]:[16,16]
   });
   let fitted=false;
   const fitOptions=()=>innerWidth<=760?{paddingTopLeft:[25,190],paddingBottomRight:[25,(document.querySelector('.ride-panel')?.getBoundingClientRect().height||300)+25],maxZoom:15}:{paddingTopLeft:[35,170],paddingBottomRight:[425,40],maxZoom:15};

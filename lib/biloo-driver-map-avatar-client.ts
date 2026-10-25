@@ -62,7 +62,7 @@ export function updateDriverCarMarker(element: HTMLElement, value: unknown, head
   if (!art) {
     element.replaceChildren();
     art = document.createElement('img');
-    art.className = 'biloo-driver-car-art'; art.alt = ''; art.width = 48; art.height = 82; art.draggable = false;
+    art.className = 'biloo-driver-car-art'; art.alt = ''; art.width = 32; art.height = 55; art.draggable = false;
     const brand = document.createElement('span'); brand.className = 'biloo-driver-car-label'; brand.textContent = 'biloo'; brand.setAttribute('aria-hidden', 'true');
     element.append(art, brand);
   }

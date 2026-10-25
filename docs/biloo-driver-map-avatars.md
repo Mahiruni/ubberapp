@@ -16,6 +16,8 @@ Drivers choose their map car under **Profile → Map car avatar**, or **Vehicle 
 
 The public `/brand/driver-avatar` image endpoint accepts only allowlisted enums. It contains no identity, coordinates, user text, scripts or external assets. Shared marker CSS is used both by React maps and the embedded Leaflet screens. The map anchor remains at the verified coordinate; heading rotates the image inside the anchor, compensating for Mapbox bearing where applicable. Missing heading stays neutral. Stale GPS dims the car rather than inventing movement.
 
+Map artwork is a compact **32 × 55 CSS pixels**, about one-third smaller than the original. A **40 × 58** marker box keeps Mapbox and Leaflet centered on the same GPS coordinate. The Biloo badge scales with the car; the larger vehicle-management previews keep their existing size.
+
 Coverage: Driver home, Driver map, Driver navigation, nearby Rider supply, the assigned Rider trip, embedded pickup/on-trip maps and private shared-trip maps. Nearby supply retains anonymous per-viewer keys; private share links expose only body/color/style. All existing range, eligibility, trip ownership, GPS freshness, share expiry and revocation rules remain in place. Optional metadata reads use a bounded 10-second appearance-only cache; Rider nearby polling picks up a changed finish without moving or duplicating a stationary car.
 
 Driver navigation measures the actual trip sheet/guidance bounds when framing the map so the taller car remains above mobile controls or beside the desktop panel. Panning still respects the driver's manual camera choice; recenter restores unobstructed framing.
