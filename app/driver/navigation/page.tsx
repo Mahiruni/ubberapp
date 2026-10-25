@@ -841,6 +841,10 @@ export default function DriverNavigationPage() {
           </div>
         )}
         </div>}>
+        <div className="biloo-prestige-nav-heading">
+          <div><small>BILOO · DRIVER</small><strong>{op(stage.title)}</strong></div>
+          <span><i aria-hidden="true" />{op("Active trip")}</span>
+        </div>
         <div className="nr-nav-trip-meta"><span>Biloo · {trip.rideCategory}</span><span>{stage.badge}</span></div>
         {riderPickup?.signal && <p className="biloo-rider-pickup-signal" role="status"><Icon name="wave" size={18}/>{op('Your rider is at pickup')}<small>{op('Sent in trip chat')}</small></p>}
         <div className="nr-nav-current-destination">
@@ -848,6 +852,18 @@ export default function DriverNavigationPage() {
           <h1>{stage.destination}</h1>
           <p><Icon name="clock" size={15} />{routeEtaMinutes === null ? op("Arrival estimate unavailable") : routeEtaMinutes === 0 ? op("You are at this stop") : `Arriving in about ${routeEtaMinutes} min`}</p>
         </div>
+        {(trip.status === "accepted" || trip.status === "arrived_pickup") && (
+          <div className="biloo-prestige-trip-route" aria-label={op("Pickup to destination")}>
+            <div className="biloo-prestige-trip-stop pickup">
+              <span className="biloo-prestige-trip-marker" aria-hidden="true" />
+              <div><small>{op("Pickup")}</small><strong>{trip.pickup}</strong></div>
+            </div>
+            <div className="biloo-prestige-trip-stop destination">
+              <span className="biloo-prestige-trip-marker" aria-hidden="true" />
+              <div><small>{op("Destination")}</small><strong>{trip.destination}</strong></div>
+            </div>
+          </div>
+        )}
         <div className="nr-nav-utility-row" aria-label="Trip quick actions">
           {riderPhone ? (
             <a href={`tel:${riderPhone}`} aria-label={op("Call rider")}><Icon name="phone" size={17} /> {op("Call")}</a>
