@@ -2,19 +2,21 @@
 
 import { useOperationalTranslation } from "./operational-i18n";
 import { DriverPhotoManager } from "./driver-photo-manager";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { Dialog, Icon, useTranslation, type IconName } from "./ui";
 import { supabase } from "../../lib/supabase";
 import { signOutNexRide } from "../../lib/nexride-sign-out";
 import { nexrideApiFetch } from "../../lib/nexride-api-auth";
+import { useDriverPortrait } from "../../lib/nexride-driver-portrait";
+import { useDriverTheme } from "./driver-app-shell";
 import {
   loadDriverProfileData,
   verificationSummary,
+  initialsFor,
   type DriverProfileData,
 } from "../../lib/nexride-driver-profile";
-import "../../app/driver/profile/profile.css";
-import "../../app/detail-system.css";
+import styles from "./driver-profile.module.css";
 
 export function DriverProfileScreen({
   driverId,
@@ -28,6 +30,9 @@ export function DriverProfileScreen({
   const router = useRouter();
   const t = useTranslation();
   const say = useOperationalTranslation();
+  const { resolvedTheme, setPreference } = useDriverTheme();
+  const portrait = useDriverPortrait(driverId);
+  const [failedPhoto, setFailedPhoto] = useState("");
   const [profile, setProfile] = useState<DriverProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -70,26 +75,23 @@ export function DriverProfileScreen({
 
   if (loading) {
     return (
-      <div className="nr-driver-profile-loading nr-driver-profile-loading-v2" aria-busy="true">
-        <span className="photo" />
-        <span className="wide" />
-        <span />
-        <span className="panel" />
+      <div className={styles.account} data-driver-account="" aria-busy="true">
+        <div className={styles.loading} role="status" aria-label={say("Loading your account…")}><span/><span/><span/><span/></div>
       </div>
     );
   }
 
   if (!profile) {
     return (
-      <section className="nr-profile-state-card" role="alert">
+      <section className={styles.account} data-driver-account=""><div className={styles.state} role="alert">
         <Icon name="info" size={22} />
         <strong>{say("Profile unavailable")}</strong>
         <p>{error || say("Your driver profile could not be loaded.")}</p>
-        <div className="nr-profile-state-actions">
-          <button onClick={() => void load()}>{say("Retry")}</button>
-          <button className="secondary" onClick={onBack}>{say("Driver Home")}</button>
+        <div className={styles.stateActions}>
+          <button className={styles.primary} onClick={() => void load()}>{say("Retry")}</button>
+          <button className={styles.secondary} onClick={onBack}>{say("Driver Home")}</button>
         </div>
-      </section>
+      </div></section>
     );
   }
 
@@ -144,189 +146,136 @@ export function DriverProfileScreen({
       ? say("Your identity and vehicle documents are approved.")
       : say(verification.detail);
 
+  const candidatePhoto = portrait.url || profile.avatarUrl;
+  const photo = candidatePhoto !== failedPhoto ? candidatePhoto : "";
+  const verificationAction = verified ? say("View documents") : profile.reviewStatus === "draft" ? say("Complete verification") : say("Review status");
+
   return (
-    <div className="nr-driver-profile-v2">
-      <header className="nr-driver-profile-heading">
-        <div>
-          <span className="nr-driver-kicker">{say("DRIVER WORKSPACE / 05")}</span>
-          <h1>{say("Driver Account")}</h1>
-          <p>{say("Your identity, verification and earnings.")}</p>
+    <div className={styles.account} data-driver-account="">
+      <header className={styles.pageHead}>
+        <div><span className={styles.eyebrow}>BILOO · {t("driver")}</span><h1>{say("Your account")}</h1></div>
+        <div className={styles.appearance} role="group" aria-label={say("Display mode")}>
+          <button type="button" aria-label={say("Day mode")} aria-pressed={resolvedTheme === "light"} onClick={() => setPreference("light")}><Icon name="sun" size={18}/></button>
+          <button type="button" aria-label={say("Night mode")} aria-pressed={resolvedTheme === "dark"} onClick={() => setPreference("dark")}><Icon name="moon" size={18}/></button>
         </div>
-        <button className="nr-driver-icon-btn" onClick={onBack} aria-label={say("Back to driver home")}>
-          <Icon name="back" />
-        </button>
       </header>
 
-      <div className="biloo-driver-overview">
-      <section className="nr-driver-profile-hero nr-driver-profile-hero-v2">
-        <DriverPhotoManager driverId={driverId} fullName={profile.fullName}>
-        <span className="nr-driver-profile-photo">
-          <Icon name="user" size={28} />
-          {verified && <i className="nr-driver-photo-badge"><Icon name="check" size={13}/></i>}
-        </span>
-        </DriverPhotoManager>
+      <div className={styles.layout}>
+        <div className={styles.overview}>
+          <section className={styles.identityCard} aria-label={say("Driver identity")}>
+            <div className={styles.identityTop}>
+              <span className={styles.sectionLabel}>{say("DRIVER PROFILE")}</span>
+              <span className={styles.status} data-tone={verification.tone}>
+                <Icon name={verified ? "check" : verification.tone === "restricted" || verification.tone === "rejected" ? "info" : "clock"} size={13}/>
+                {say(verification.title)}
+              </span>
+            </div>
+            <div className={styles.identity}>
+              <div className={styles.portraitSlot}>
+                <DriverPhotoManager driverId={driverId} fullName={profile.fullName}>
+                  <span className={styles.avatar} aria-hidden="true">
+                    {photo ? <img src={photo} alt="" width={72} height={72} decoding="async" onError={() => setFailedPhoto(photo)}/> : initialsFor(profile.fullName)}
+                  </span>
+                </DriverPhotoManager>
+              </div>
+              <div className={styles.identityCopy}>
+                <h2>{profile.fullName}</h2>
+                <p className={styles.email}>{profile.email || say("Biloo Driver account")}</p>
+                <span className={styles.contact}><Icon name="phone" size={14}/>{profile.phone || say("Add a phone number")}</span>
+              </div>
+            </div>
+            <div className={styles.identityBottom}>
+              <span><Icon name="shield" size={13}/>{say("Driver account")}</span>
+              <button type="button" onClick={() => router.push("/driver/profile/settings")}>{say("Edit details")}<Icon name="chevron" size={15}/></button>
+            </div>
+          </section>
 
-        <div className="nr-driver-profile-identity">
-          <div className="nr-driver-role-line">
-            <span className="nr-driver-profile-role">{t("driver")}</span>
-            <span className={"nr-driver-verification-pill " + verification.tone}>
-              <i />
-              {say(verification.title)}
+          <section className={styles.metrics} aria-label={say("Driver summary")}>
+            <ProfileMetric icon="star" label={say("Rating")} value={profile.rating === null ? "—" : profile.rating.toFixed(1)} suffix={profile.rating === null ? "" : "/ 5"}/>
+            <ProfileMetric icon="navigation" label={say("Completed trips")} value={profile.completedTrips === null ? "—" : String(profile.completedTrips)}/>
+          </section>
+
+          <button type="button" className={styles.verification} data-tone={verification.tone} onClick={() => router.push("/driver/profile/documents")} aria-label={verificationAction}>
+            <span className={styles.verificationIcon}><Icon name="shield" size={23}/></span>
+            <span className={styles.verificationCopy}>
+              <span className={styles.sectionLabel}>{say("DRIVER VERIFICATION")}</span>
+              <strong>{say(verification.title)}</strong>
+              <span className={styles.verificationDetail}>{statusDetail}</span>
+              <span className={styles.verificationAction}>{verificationAction}<Icon name="arrow" size={15}/></span>
             </span>
-          </div>
-          <h2>{profile.fullName}</h2>
-          <p>{profile.email || say("Biloo Driver account")}</p>
-          <div className="nr-driver-contact-line">
-            <span><Icon name="phone" size={14}/>{profile.phone || say("Add a phone number")}</span>
-            {profile.vehiclePlate && <span><Icon name="pin" size={14}/>{profile.vehiclePlate}</span>}
-          </div>
+          </button>
+
+          {(profile.accountStatus !== "active" || profile.reviewStatus === "rejected") && <div className={styles.restriction} role="alert">
+            <Icon name="info" size={18}/>
+            <p>{profile.accountStatus !== "active" ? t("entryEditingLimited") : profile.rejectionReason || say("Replace the requested verification documents before going online.")}</p>
+          </div>}
         </div>
 
-
-      </section>
-
-      {profile.accountStatus !== "active" && (
-        <div className="nr-profile-restriction" role="alert">
-          <Icon name="info" size={18} />
-          <div>
-            <strong>{say("Account restriction")}</strong>
-            <span>{t("entryEditingLimited")}</span>
-          </div>
-        </div>
-      )}
-
-      {profile.reviewStatus === "rejected" && (
-        <div className="nr-profile-restriction rejected" role="alert">
-          <Icon name="shield" size={18} />
-          <div>
-            <strong>{say("Documents need attention")}</strong>
-            <span>{profile.rejectionReason || say("Replace the requested verification documents before going online.")}</span>
-          </div>
-        </div>
-      )}
-
-      <section className="nr-driver-profile-summary nr-driver-profile-summary-v2" aria-label={say("Driver summary")}>
-        <ProfileMetric label={say("Rating")} value={profile.rating === null ? "—" : profile.rating.toFixed(1)} suffix={profile.rating === null ? "" : "★"} />
-        <ProfileMetric label={say("Completed trips")} value={profile.completedTrips === null ? "—" : String(profile.completedTrips)} />
-        <ProfileMetric label={say("Vehicle")} value={[profile.vehicle, profile.vehicleColor].filter(Boolean).join(" · ") || say("Not provided")} compact />
-        <ProfileMetric label={say("Plate")} value={profile.vehiclePlate || say("Not provided")} compact />
-      </section>
-
-      <section className={"nr-driver-verification-card " + verification.tone}>
-        <div className="nr-driver-verification-symbol"><Icon name="shield" size={23}/></div>
-        <div>
-          <span>{say("DRIVER VERIFICATION")}</span>
-          <strong>{say(verification.title)}</strong>
-          <p>{statusDetail}</p>
-        </div>
-        <button onClick={() => router.push("/driver/profile/documents")}>
-          {verified ? say("View documents") : profile.reviewStatus === "draft" ? say("Complete verification") : say("Review status")}
-          <Icon name="chevron" size={16}/>
-        </button>
-      </section>
-      </div>
-
-      <div className="nr-driver-profile-columns" aria-label={say("Driver account options")}>
-        <div>
-          <DriverSection title={say("Personal information")} subtitle={say("Your identity and contact information")}>
+        <div className={styles.sections} aria-label={say("Driver account options")}>
+          <DriverSection title={say("Personal information")}>
             <DriverRow icon="lock" title={say("Account & security")} detail={say("Verified contacts, passwords and sessions")} onClick={() => router.push("/account/manage?role=driver#account-security")}/>
+            <DriverRow icon="settings" title={say("Profile & app settings")} detail={say("Personal details, appearance, language and alerts")} onClick={() => router.push("/driver/profile/settings")}/>
           </DriverSection>
 
-          <DriverSection title={say("Vehicle & payouts")} subtitle={say("Keep operating and settlement details current")}>
-            <DriverRow icon="pin" title={say("Vehicle management")} detail={profile.vehiclePlate || profile.vehicle || say("Vehicle details and registration")} onClick={() => router.push("/driver/profile/vehicle")}/>
-            <DriverRow icon="pin" title={say("Map car avatar")} detail={say("Choose your Biloo finish")} onClick={() => router.push("/driver/profile/vehicle#map-avatar")}/>
+          <DriverSection title={say("Vehicle & payouts")}>
+            <div className={styles.vehicle} role="group" aria-label={say("Your vehicle")}>
+              <div><span className={styles.vehicleLabel}>{say("REGISTERED VEHICLE")}</span><strong>{profile.vehicle || say("Not provided")}</strong><small>{profile.vehicleColor || say("Not provided")}</small></div>
+              <span className={styles.plate}>{profile.vehiclePlate || "—"}</span>
+            </div>
+            <DriverRow icon="pin" title={say("Vehicle management")} detail={say("Vehicle details and registration")} onClick={() => router.push("/driver/profile/vehicle")}/>
+            <DriverRow icon="navigation" title={say("Map car avatar")} detail={say("Choose your Biloo finish")} onClick={() => router.push("/driver/profile/vehicle#map-avatar")}/>
             <DriverRow icon="wallet" title={say("Payout account")} detail={say("Manage your payout destination")} onClick={() => router.push("/driver/profile/payouts")}/>
           </DriverSection>
-        </div>
 
-        <div>
-          <DriverSection title={say("Preferences")} subtitle={say("Make Biloo work your way")}>
-            <DriverRow icon="settings" title={say("Profile & app settings")} detail={say("Personal details, appearance, language and alerts")} onClick={() => router.push("/driver/profile/settings")}/>
-            <DriverRow icon="shield" title={say("Privacy & data")} detail={say("Read how Biloo handles your information")} onClick={() => router.push("/explore/privacy")}/>
+          <DriverSection title={say("Safety & information")}>
+            <DriverRow icon="shield" title={say("Safety center")} detail={say("Safety tools and trip support")} onClick={onSafety}/>
+            <DriverRow icon="lock" title={say("Privacy & data")} detail={say("Read how Biloo handles your information")} onClick={() => router.push("/explore/privacy")}/>
             <DriverRow icon="info" title={say("Terms & about Biloo")} detail={say("Service terms and information")} onClick={() => router.push("/explore/terms")}/>
           </DriverSection>
         </div>
       </div>
 
-      {!profile.avatarUrl && (
-        <p className="nr-profile-photo-note">
-          {t('photoInstantNote')}
-        </p>
-      )}
-
-      <footer className="nr-driver-profile-footer">
-        <button
-          className="nr-driver-profile-signout"
-          onClick={() => {
-            setSignOutError("");
-            setSignOutOpen(true);
-          }}
-          disabled={signingOut}
-        >
-          <Icon name="power" size={18} />
-          <span>{say("Sign out")}</span>
+      <footer className={styles.footer}>
+        <button type="button" className={styles.signOut} onClick={() => { setSignOutError(""); setSignOutOpen(true); }} disabled={signingOut}>
+          <Icon name="power" size={18}/><span>{say("Sign out")}</span><Icon name="chevron" size={16}/>
         </button>
-        <p>{say("Your verified identity, vehicle, documents, and payout details are available only in authenticated driver areas.")}</p>
+        <p className={styles.privacyNote}><Icon name="lock" size={13}/>{say("Your authenticated driver information stays private")}</p>
+        <span className={styles.brandLine}>Biloo · {say("Proudly by Hisab Technologies PLC")}</span>
       </footer>
 
-      {signOutOpen && (
-        <Dialog
-          title={say("Sign out of Biloo?")}
-          onClose={() => {
-            if (!signingOut) {
-              setSignOutOpen(false);
-              setSignOutError("");
-            }
-          }}
-        >
-          <div className="nr-driver-signout-intro">
-            <span><Icon name="power" size={22}/></span>
-            <div>
-              <strong>{say("Sign out on this device?")}</strong>
-              <p>{say("Biloo first checks that you have no active trip, then takes you offline and signs you out.")}</p>
-            </div>
+      {signOutOpen && <Dialog title={say("Sign out of Biloo?")} className={styles.dialog} fitViewport onClose={() => { if (!signingOut) { setSignOutOpen(false); setSignOutError(""); } }}>
+        <div className={styles.dialogBody}>
+          <span className={styles.signOutSymbol}><Icon name="power" size={24}/></span>
+          <h3>{say("Sign out on this device?")}</h3>
+          <p>{say("Biloo first checks that you have no active trip, then takes you offline and signs you out.")}</p>
+          {signOutError && <div className={styles.error} role="alert"><Icon name="info" size={17}/><span>{signOutError}</span></div>}
+          <div className={styles.dialogActions}>
+            <button type="button" className={styles.secondary} disabled={signingOut} onClick={() => { setSignOutOpen(false); setSignOutError(""); }}>{say("Stay signed in")}</button>
+            <button type="button" className={styles.danger} disabled={signingOut} onClick={() => void signOutDriver()}>{signingOut ? say("Signing out…") : say("Sign out")}</button>
           </div>
-          {signOutError && (
-            <div className="nr-profile-alert" role="alert">
-              <Icon name="info" size={17} />
-              <span>{signOutError}</span>
-            </div>
-          )}
-          <div className="nr-driver-signout-actions">
-            <button type="button" className="secondary" disabled={signingOut} onClick={() => {setSignOutOpen(false);setSignOutError("");}}>
-              Stay signed in
-            </button>
-            <button type="button" className="danger" disabled={signingOut} onClick={() => void signOutDriver()}>
-              {signingOut ? say("Signing out…") : say("Sign out")}
-            </button>
-          </div>
-        </Dialog>
-      )}
+        </div>
+      </Dialog>}
     </div>
   );
 }
 
-function ProfileMetric({ label, value, suffix = "", compact = false }: { label: string; value: string; suffix?: string; compact?: boolean }) {
-  return (
-    <div className={"nr-profile-metric" + (compact ? " compact" : "")}>
-      <small>{label}</small>
-      <strong>{value}{suffix && <span> {suffix}</span>}</strong>
-    </div>
-  );
+function ProfileMetric({ icon, label, value, suffix = "" }: { icon: IconName; label: string; value: string; suffix?: string }) {
+  return <div className={styles.metric} role="group" aria-label={label}>
+    <div><span>{label}</span><Icon name={icon} size={16}/></div>
+    <strong>{value}{suffix && <small>{suffix}</small>}</strong>
+  </div>;
 }
 
-
-function DriverSection({title,subtitle,children}:{title:string;subtitle:string;children:React.ReactNode}) {
-  return <section className="nr-driver-profile-section">
-    <header><h3>{title}</h3><p>{subtitle}</p></header>
-    <div>{children}</div>
+function DriverSection({ title, children }: { title: string; children: ReactNode }) {
+  return <section className={styles.section} aria-label={title}>
+    <h2>{title}</h2><div className={styles.sectionCard}>{children}</div>
   </section>;
 }
 
-function DriverRow({icon,title,detail,onClick}:{icon:IconName;title:string;detail:string;onClick:()=>void}) {
-  return <button className="nr-driver-profile-row" onClick={onClick}>
-    <span className="nr-driver-profile-row-icon" data-tone={icon}><Icon name={icon} size={19}/></span>
-    <span className="nr-driver-profile-row-copy"><strong>{title}</strong><small>{detail}</small></span>
+function DriverRow({ icon, title, detail, onClick }: { icon: IconName; title: string; detail: string; onClick: () => void }) {
+  return <button type="button" className={styles.row} onClick={onClick}>
+    <span className={styles.rowIcon} data-tone={icon}><Icon name={icon} size={20}/></span>
+    <span className={styles.rowCopy}><strong>{title}</strong><small>{detail}</small></span>
     <Icon name="chevron" size={17}/>
   </button>;
 }

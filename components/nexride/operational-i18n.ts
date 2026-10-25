@@ -4,6 +4,20 @@ import { useCallback, useContext } from "react";
 import { LanguageContext } from "./ui";
 
 const am: Record<string, string> = {
+  "Your account": "የእርስዎ መለያ",
+  "Display mode": "የማሳያ ገጽታ",
+  "Day mode": "የቀን ገጽታ",
+  "Night mode": "የሌሊት ገጽታ",
+  "Driver identity": "የአሽከርካሪ መገለጫ",
+  "DRIVER PROFILE": "የአሽከርካሪ መገለጫ",
+  "Edit details": "መረጃ አስተካክል",
+  "Your vehicle": "የእርስዎ መኪና",
+  "REGISTERED VEHICLE": "የተመዘገበ መኪና",
+  "Safety & information": "ደህንነት እና መረጃ",
+  "Safety center": "የደህንነት ማዕከል",
+  "Safety tools and trip support": "የደህንነት መሳሪያዎች እና የጉዞ ድጋፍ",
+  "Proudly by Hisab Technologies PLC": "በኩራት በሂሳብ ቴክኖሎጂስ ኃ.የተ.የግ.ማ",
+  "Loading your account…": "መለያዎ እየተጫነ ነው…",
   "Map car avatar": "የካርታ መኪና አቫታር",
   "Choose your Biloo finish": "የቢሉ ንድፍዎን ይምረጡ",
   "Unable to load account details. Please try again.": "የመለያዎን ዝርዝሮች መጫን አልተቻለም። እንደገና ይሞክሩ።",
