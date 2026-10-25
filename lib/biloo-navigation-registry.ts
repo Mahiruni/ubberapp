@@ -27,7 +27,6 @@ export const RIDER_NAVIGATION = [
 export const DRIVER_NAVIGATION = [
   { id:"home", href:"/driver/home", icon:"home", label:{en:"Home",am:"መነሻ"}, detail:{en:"Map and availability",am:"ካርታ እና ዝግጁነት"}, group:"journeys" },
   { id:"requests", href:"/driver/activity", icon:"clock", label:{en:"Activity",am:"እንቅስቃሴ"}, detail:{en:"Requests and trip history",am:"ጥያቄዎችና የጉዞ ታሪክ"}, group:"journeys" },
-  { id:"map", href:"/driver/map", icon:"navigation", label:{en:"Navigation",am:"አቅጣጫ"}, detail:{en:"Driver map tools",am:"የካርታ መሣሪያዎች"}, group:"journeys" },
   { id:"earnings", href:"/driver/earnings", icon:"wallet", label:{en:"Earnings",am:"ገቢ"}, detail:{en:"Recorded trip income",am:"የተመዘገበ ገቢ"}, group:"journeys" },
   { id:"messages", href:"/support?role=driver", icon:"chat", label:{en:"Help & Support",am:"እገዛ እና ድጋፍ"}, detail:{en:"Driver assistance",am:"የአሽከርካሪ ድጋፍ"}, group:"assistance" },
   { id:"safety", href:"/safety?role=driver", icon:"shield", label:{en:"Safety Center",am:"የደህንነት ማዕከል"}, detail:{en:"Trip safety and emergencies",am:"የጉዞ ደህንነት"}, group:"assistance" },
