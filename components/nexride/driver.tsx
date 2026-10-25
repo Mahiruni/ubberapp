@@ -763,9 +763,6 @@ export function DriverWorkspace({
               <div className="nr-driver-home-control-state">
                 <span className="nr-driver-home-control-brand">BILOO · DRIVER</span>
                 <strong>{state.online ? say("Ready for rides", "ለጉዞ ዝግጁ") : say("Ready to drive?", "ለመንዳት ዝግጁ ነዎት?")}</strong>
-                <small>{state.online
-                  ? say("Online stays active when minimized. Android may pause GPS and delay alerts until you reopen Biloo.", "መተግበሪያው ሲቀነስ የመስመር ላይ ሁኔታዎ ይቀጥላል። Android GPSን እና ማሳወቂያዎችን ሊያዘገይ ይችላል።")
-                  : say("Go online to receive nearby ride requests.", "የአቅራቢያ ጉዞ ጥያቄዎችን ለመቀበል መስመር ላይ ይግቡ።")}</small>
               </div>
               <div className="nr-driver-home-control-tools">
                 <span className="nr-driver-home-control-online" data-online={state.online ? "true" : "false"}>
