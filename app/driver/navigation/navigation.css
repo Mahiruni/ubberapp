@@ -347,3 +347,194 @@
     gap:4px;
   }
 }
+
+
+/* BILOO PRESTIGE / SELECTED DESIGN 3 — pickup navigation.
+   Uses authenticated trip fields and retains the live map, navigation guidance,
+   direct rider contact and guarded server-confirmed stage actions. */
+.nr-driver-app-shell .nr-driver-navigation-page{
+  --prestige-surface:#fff;
+  --prestige-subtle:#f4f7fb;
+  --prestige-line:#e0e8f0;
+  --prestige-text:#08295f;
+  --prestige-muted:#687c92;
+  --prestige-gold:#f9c449;
+}
+.nr-driver-app-shell[data-theme="dark"] .nr-driver-navigation-page{
+  --prestige-surface:#102b46;
+  --prestige-subtle:#193952;
+  --prestige-line:#34536c;
+  --prestige-text:#f6f9fc;
+  --prestige-muted:#b8cad9;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-guidance{
+  border:1px solid rgba(249,196,73,.35)!important;
+  border-radius:999px!important;
+  background:rgba(5,30,61,.97)!important;
+  box-shadow:0 8px 24px rgba(4,23,49,.20)!important;
+  color:#fff!important;
+  padding:9px 12px!important;
+  min-height:62px!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-guidance-icon{
+  width:38px!important;height:38px!important;
+  border-radius:50%!important;
+  color:#f9c449!important;
+  background:rgba(249,196,73,.12)!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-guidance small{color:#f9c449!important;}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-guidance strong{
+  font-size:clamp(13px,3.7vw,17px)!important;
+  line-height:1.18!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-bottom-card{
+  background:var(--prestige-surface)!important;
+  color:var(--prestige-text)!important;
+  border:1px solid var(--prestige-line)!important;
+  border-bottom:0!important;
+  box-shadow:0 -12px 40px rgba(8,41,95,.13)!important;
+  border-radius:26px 26px 0 0!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-bottom-card .nr-driver-sheet-content{
+  display:flex;
+  flex-direction:column;
+  padding:0 15px 14px!important;
+  gap:0;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .biloo-prestige-nav-heading{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:10px;
+  padding:4px 0 11px;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .biloo-prestige-nav-heading>div{
+  display:grid;min-width:0;gap:5px;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .biloo-prestige-nav-heading small{
+  font-size:10px;font-weight:840;letter-spacing:.1em;color:var(--prestige-muted);
+}
+.nr-driver-app-shell .nr-driver-navigation-page .biloo-prestige-nav-heading strong{
+  font-size:clamp(19px,4.8vw,24px);
+  font-weight:850;letter-spacing:-.036em;
+  line-height:1.12;color:var(--prestige-text);overflow-wrap:anywhere;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .biloo-prestige-nav-heading>span{
+  flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;
+  padding:7px 9px;border-radius:999px;
+  background:#dcf9e9;color:#08764c;
+  font-size:10px;font-weight:830;
+  white-space:nowrap;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .biloo-prestige-nav-heading>span i{
+  width:7px;height:7px;background:currentColor;border-radius:50%;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-trip-meta{
+  margin:0 0 6px!important;
+  color:var(--prestige-muted)!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-current-destination{
+  margin:0 0 11px;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-current-destination small{
+  color:var(--prestige-muted)!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-current-destination h1{
+  color:var(--prestige-text)!important;
+  font-size:clamp(18px,4.8vw,22px)!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-current-destination p{
+  color:var(--prestige-muted)!important;
+  margin-bottom:0!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .biloo-prestige-trip-route{
+  display:grid;
+  gap:10px;
+  padding:12px 13px;
+  margin:0 0 12px;
+  border:1px solid var(--prestige-line);
+  border-radius:17px;
+  background:var(--prestige-subtle);
+}
+.nr-driver-app-shell .nr-driver-navigation-page .biloo-prestige-trip-stop{
+  display:flex;align-items:flex-start;gap:11px;min-width:0;position:relative;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .biloo-prestige-trip-stop>div{
+  display:grid;gap:3px;min-width:0;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .biloo-prestige-trip-stop small{
+  color:var(--prestige-muted);font-size:11px;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .biloo-prestige-trip-stop strong{
+  font-size:13px;line-height:1.3;color:var(--prestige-text);
+  overflow-wrap:anywhere;font-weight:780;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .biloo-prestige-trip-marker{
+  display:block;flex:0 0 12px;width:12px;height:12px;margin-top:7px;
+  border:3px solid #1764cb;border-radius:50%;background:var(--prestige-surface);
+}
+.nr-driver-app-shell .nr-driver-navigation-page .biloo-prestige-trip-stop.pickup::after{
+  content:"";position:absolute;top:24px;bottom:-12px;left:5px;
+  border-left:1px dashed #9aaec5;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .biloo-prestige-trip-stop.destination .biloo-prestige-trip-marker{
+  border-color:#e3aa2e;background:#e3aa2e;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-utility-row{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:8px;margin:0 0 9px!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-utility-row :is(button,a){
+  min-height:47px!important;
+  border-radius:14px!important;
+  font-size:11px!important;
+  font-weight:770!important;
+  border:1px solid var(--prestige-line)!important;
+  background:var(--prestige-subtle)!important;
+  color:var(--prestige-text)!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-utility-row a[href^="tel:"]{
+  background:#e7fff1!important;
+  border-color:#bee9d4!important;
+  color:#007f57!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-trip-progress{
+  border-top:1px solid var(--prestige-line)!important;
+  order:3;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-trip-progress small{color:var(--prestige-muted)!important;}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-trip-progress>span.active small{color:var(--prestige-text)!important;}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-bottom-card .nr-driver-sheet-footer{
+  background:var(--prestige-surface)!important;
+  border-top:1px solid var(--prestige-line)!important;
+  padding:10px 13px max(13px,env(safe-area-inset-bottom,0px))!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-stage-primary{
+  margin:0!important;
+  min-height:54px!important;
+  border-radius:16px!important;
+  background:#08295f!important;
+  border:1px solid #d5a83b!important;
+  color:#fff!important;
+  box-shadow:0 3px 12px rgba(8,41,95,.12)!important;
+  font-size:14px!important;
+  font-weight:840!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-stage-primary svg{color:#f9c449!important;}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-stage-primary:disabled{opacity:.55!important;}
+.nr-driver-app-shell[data-theme="dark"] .nr-driver-navigation-page .biloo-prestige-nav-heading>span{
+  background:#174c40;color:#60ecb6;
+}
+.nr-driver-app-shell[data-theme="dark"] .nr-driver-navigation-page .nr-nav-utility-row :is(button,a){
+  background:#183b55!important;border-color:#34536e!important;color:#f4f8fc!important;
+}
+.nr-driver-app-shell[data-theme="dark"] .nr-driver-navigation-page .nr-nav-trip-progress i{background:#173a56!important;}
+@media(max-width:370px){
+  .nr-driver-app-shell .nr-driver-navigation-page .biloo-prestige-nav-heading>span{padding:6px 7px;font-size:9px;}
+  .nr-driver-app-shell .nr-driver-navigation-page .biloo-prestige-trip-route{padding:9px 10px;}
+  .nr-driver-app-shell .nr-driver-navigation-page .biloo-prestige-trip-stop strong{font-size:12px;}
+}
+@media(prefers-reduced-motion:reduce){
+  .nr-driver-app-shell .nr-driver-navigation-page .biloo-prestige-nav-heading *,
+  .nr-driver-app-shell .nr-driver-navigation-page .biloo-prestige-trip-route *{animation:none!important;transition:none!important;}
+}
