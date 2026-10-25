@@ -697,7 +697,7 @@ export default function DriverRideRequestPage() {
           <>
             <div className="nr-request-heading">
               <div>
-                <span className="nr-request-eyebrow">Biloo · {op("New request")}</span>
+                <span className="nr-request-eyebrow"><Icon name="navigation" size={15} /> Biloo · {op("New request")}</span>
                 <h1>{op("New ride request")}</h1>
               </div>
               {offer.expires_at && secondsRemaining !== null && (
