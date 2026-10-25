@@ -735,8 +735,9 @@ export function DriverWorkspace({
         />
 
 
-        <div className="nr-driver-presence-label" role="status" aria-live="polite" data-ready={state.online && gpsHealth === "ready" && gpsConfirmedAt > 0 && presenceClock - gpsConfirmedAt <= 60_000 ? "true" : "false"}>
-          {gpsHealthMessage}
+        <div className="nr-driver-presence-label" role="status" aria-live="polite" title={gpsHealthMessage} data-ready={state.online && gpsHealth === "ready" && gpsConfirmedAt > 0 && presenceClock - gpsConfirmedAt <= 60_000 ? "true" : "false"}>
+          <Icon name="locate" size={14} />
+          <span className="nr-driver-presence-copy">{gpsHealthMessage}</span>
         </div>
         <div
           className="nr-driver-home-swipe"
