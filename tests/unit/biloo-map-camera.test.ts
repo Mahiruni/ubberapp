@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { riderHomeLocationCameraOffset } from "../../lib/biloo-map-camera";
+import { riderHomeLocationCameraOffset, riderTripMapPadding } from "../../lib/biloo-map-camera";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
@@ -42,5 +42,26 @@ describe("Biloo Rider default location camera framing", () => {
     expect(map).toContain("if (!manualView.current && (!plannedRoute || recenterChanged))");
     expect(map).toContain('map.on("dragstart", markManual)');
     expect(map).toContain("fitJourney(map, journeyRef.current, rideLabelRef.current)");
+  });
+});
+
+describe('Active Rider trip map clearance', () => {
+  const clear = { top: 0, right: 0, bottom: 0, left: 0 };
+  it('clears the measured header/card and preserves the entire person above endpoints', () => {
+    expect(riderTripMapPadding(390, 370, { ...clear, top: 128, right: 60 })).toEqual({ top: 184, right: 84, bottom: 28, left: 24 });
+    expect(riderTripMapPadding(390, 246, { ...clear, top: 58 })).toEqual({ top: 114, right: 72, bottom: 28, left: 24 });
+  });
+  it('handles a bottom wrapper or a desktop side panel without moving coordinates', () => {
+    expect(riderTripMapPadding(390, 844, { ...clear, top: 128, bottom: 440 }).bottom).toBe(460);
+    expect(riderTripMapPadding(1280, 800, { ...clear, left: 400 }).left).toBe(424);
+    expect(riderTripMapPadding(1280, 800, { ...clear, right: 400 }).right).toBe(424);
+  });
+  it('always leaves Mapbox a positive fitting rectangle on small or malformed layouts', () => {
+    for (const [width,height] of [[320,140],[390,246],[40,40],[0,0],[NaN,Infinity]]) {
+      const padding = riderTripMapPadding(width,height,{top:800,bottom:800,left:800,right:800});
+      expect(Object.values(padding).every(value=>Number.isFinite(value)&&value>=0)).toBe(true);
+      expect(padding.top+padding.bottom).toBeLessThan(Math.max(16,Number.isFinite(height)?height:0));
+      expect(padding.left+padding.right).toBeLessThan(Math.max(16,Number.isFinite(width)?width:0));
+    }
   });
 });

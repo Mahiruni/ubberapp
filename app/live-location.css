@@ -408,3 +408,16 @@ html[data-nr-data-saver] .biloo-rider-rig * { animation:none!important;transform
 @media(prefers-reduced-motion:reduce) {
   .biloo-rider-rig * { animation:none!important;transform:none!important; }
 }
+
+/* The destination card must not stretch vertically over the live Rider. */
+.nr-app[data-mode="rider"] .rider-map-flow:is(.rider-assigned-view,.rider-live-view) .nr-map-ride-label {
+  top:calc(72px + env(safe-area-inset-top))!important;bottom:auto!important;
+  left:16px!important;right:84px!important;max-width:calc(100% - 100px)!important;
+  align-items:flex-start!important;pointer-events:none;
+}
+.nr-app[data-mode="rider"] .rider-map-flow:is(.rider-assigned-view,.rider-live-view) .nr-map-ride-label>div {
+  padding:8px 11px;border-radius:12px;background:var(--surface,#fff);border-color:var(--line,#e1e7ed);color:var(--text,#102334);
+}
+.nr-app[data-mode="rider"] .rider-map-flow:is(.rider-assigned-view,.rider-live-view) .nr-map-ride-label strong { color:var(--text,#102334); }
+.nr-app[data-mode="rider"] .rider-map-flow:is(.rider-assigned-view,.rider-live-view) .nr-map-ride-label small { color:var(--muted,#667587); }
+.nr-app[data-mode="rider"] .rider-map-flow:is(.rider-assigned-view,.rider-live-view) .nr-rider-map-surface[data-map-compact="true"] .nr-map-ride-label { display:none!important; }

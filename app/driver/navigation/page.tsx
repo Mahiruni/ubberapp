@@ -836,7 +836,7 @@ export default function DriverNavigationPage() {
         )}
         </div>}>
         <div className="nr-nav-trip-meta"><span>Biloo · {trip.rideCategory}</span><span>{stage.badge}</span></div>
-        {riderPickup?.signal && <p className="biloo-rider-pickup-signal" role="status"><span aria-hidden="true">👋</span>{op('Your rider is at pickup')}<small>{op('Sent in trip chat')}</small></p>}
+        {riderPickup?.signal && <p className="biloo-rider-pickup-signal" role="status"><Icon name="wave" size={18}/>{op('Your rider is at pickup')}<small>{op('Sent in trip chat')}</small></p>}
         <div className="nr-nav-current-destination">
           <small>{stage.target === "pickup" ? op("PICKUP") : op("DESTINATION")}</small>
           <h1>{stage.destination}</h1>

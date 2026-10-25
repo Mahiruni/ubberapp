@@ -35,3 +35,19 @@ export function riderHomeLocationCameraOffset(
   // on-screen, at 50% of the unobstructed portion of the map.
   return [0, covered > 0 ? -Math.round(covered / 2) : 0];
 }
+
+/** Active-trip camera clearance is measured from visible chrome, not the GPS.
+ * Preserve the full 48px person and room for the car/label at either endpoint.
+ * Even a nearly expanded sheet must leave Mapbox a positive fitting rectangle.
+ */
+export function riderTripMapPadding(width: number, height: number, occlusion: {
+  top: number; bottom: number; left: number; right: number;
+}) {
+  const safe = (value: number) => Number.isFinite(value) ? Math.max(0, value) : 0;
+  const w = Math.max(16, safe(width)), h = Math.max(16, safe(height));
+  const right = Math.min(Math.max(72, safe(occlusion.right) + 24), Math.max(0, w - 32));
+  const left = Math.min(Math.max(24, safe(occlusion.left) + 24), Math.max(0, w - right - 8));
+  const bottom = Math.min(Math.max(28, safe(occlusion.bottom) + 20), Math.max(0, h - 64));
+  const top = Math.min(Math.max(64, safe(occlusion.top) + 56), Math.max(0, h - bottom - 8));
+  return { top, right, bottom, left };
+}

@@ -17,6 +17,7 @@ The collection uses generated 3D character artwork, with one account-scoped pick
 - `/api/trips/[tripId]/pickup-signal` verifies the session, current rider/driver assignment and pre-trip stage on every read or send. Chat RLS and database-generated sender/timestamps remain authoritative. The assigned driver receives only normalized cosmetic avatar fields and a signal ID/timestamp. Signals expire after 90 seconds, including while offline. No new location sharing, schema, role, trip-state or payment mutation is introduced.
 - On Driver navigation the avatar marks the **booked pickup point**, not a claimed live rider location. A signal refreshes through the existing RLS-protected chat publication, with foreground polling/reconnection recovery. The text also appears in ordinary trip chat.
 - Once the trip starts, the person marker and pickup control disappear. The existing assigned vehicle marker continues to show the driver's actual tracked location.
+- Active-trip camera framing measures the actual header, destination card, map controls and sheet. It keeps the full person clear during initial fitting, resizing and recentering, and preserves manual panning. A short exposed map hides the duplicate destination card; the destination remains in the trip sheet. Card colors follow the current day/night tokens. Pickup controls use the shared SVG hand/check icons so their appearance does not depend on emoji fonts, and confirmed-send text keeps full contrast.
 
 ### Pickup artwork
 

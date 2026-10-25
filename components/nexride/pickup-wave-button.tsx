@@ -1,7 +1,7 @@
 'use client';
 
 import { useContext, useEffect, useRef, useState } from 'react';
-import { LanguageContext } from './ui';
+import { Icon, LanguageContext, Spinner } from './ui';
 import { nexrideApiFetch } from '../../lib/nexride-api-auth';
 import { PICKUP_SIGNAL_COOLDOWN_MS } from '../../lib/biloo-rider-motion';
 import { pickupSignal } from './use-pickup-signal';
@@ -35,8 +35,8 @@ export function PickupWaveButton({ tripId }: { tripId: string }) {
     finally { pending.current = false; }
   };
   return <div className="biloo-pickup-wave">
-    <button type="button" onClick={() => void send()} disabled={state === 'sending' || state === 'sent'}>
-      <span aria-hidden="true">👋</span>{state === 'sending' ? say('Sending…', 'በመላክ ላይ…') : state === 'sent' ? say('Sent to your driver', 'ለአሽከርካሪዎ ተልኳል') : say("I'm here", 'እዚህ ነኝ')}
+    <button type="button" onClick={() => void send()} disabled={state === 'sending' || state === 'sent'} aria-busy={state === 'sending'}>
+      {state === 'sending' ? <Spinner/> : <Icon name={state === 'sent' ? 'check' : 'wave'} size={18}/>}{state === 'sending' ? say('Sending…', 'በመላክ ላይ…') : state === 'sent' ? say('Sent to your driver', 'ለአሽከርካሪዎ ተልኳል') : say("I'm here", 'እዚህ ነኝ')}
     </button>
     <p role={state === 'error' ? 'alert' : 'status'}>{state === 'error' ? say('Couldn’t send. Check your connection and try again.', 'መላክ አልተቻለም። ግንኙነትዎን ያረጋግጡና እንደገና ይሞክሩ።') : state === 'sent' ? say('Your pickup signal is in the trip chat.', 'የመነሻ ምልክትዎ በጉዞ ውይይቱ ውስጥ ተልኳል።') : say('At pickup? Let your driver know.', 'መነሻ ላይ ነዎት? ለአሽከርካሪዎ ያሳውቁ።')}</p>
   </div>;

@@ -117,10 +117,13 @@ test('a rider waves briefly at arrival, sends a confirmed signal across contexts
   data.fail=true;await button.click();await expect(page.locator('.biloo-pickup-wave [role="alert"]')).toContainText('Couldn’t send');
   await expect(own).toHaveAttribute('data-pickup-motion','idle');
   data.fail=false;await button.click();await expect(page.getByRole('button',{name:'Sent to your driver'})).toBeDisabled();
+  await expect(page.getByRole('button',{name:'Sent to your driver'}).locator('svg')).toHaveCount(1);
+  await expect(page.getByRole('button',{name:'Sent to your driver'})).toHaveCSS('opacity','1');
   await expect(own).toHaveAttribute('data-pickup-motion','wave');
   expect(data.posts).toHaveLength(2);expect(data.posts[0].nonce).toBe(data.posts[1].nonce);
   await driver.evaluate(()=>window.dispatchEvent(new Event('online')));
   await expect(driver.locator('.biloo-rider-pickup-signal')).toContainText('Your rider is at pickup');await expect(assigned).toHaveAttribute('data-pickup-motion','wave');
+  await expect(driver.locator('.biloo-rider-pickup-signal > svg')).toHaveCount(1);
   await page.screenshot({path:`/tmp/biloo-rider-wave-${info.project.name}.png`});
   await driver.screenshot({path:`/tmp/biloo-driver-pickup-wave-${info.project.name}.png`});
   await driver.evaluate(()=>{localStorage.setItem('nexride.driver.theme','dark');window.dispatchEvent(new Event('nexride:appearance-change'));});
@@ -141,6 +144,49 @@ test('a rider waves briefly at arrival, sends a confirmed signal across contexts
   await expect(page.locator('.nr-nearby-car-marker')).toBeVisible();
   await expect(page.locator('.biloo-pickup-wave')).toHaveCount(0);await expect(assigned).toHaveCount(0);
   await driver.close();
+});
+
+test('pickup avatar stays clear of chrome after resizing, preserves manual pan and recenters safely in both themes',async({page},info)=>{
+  const data=state();data.assigned=true;await fixture(page,data);
+  await page.setViewportSize({width:390,height:844});await page.goto('/');
+  const marker=page.locator('.mapboxgl-marker.biloo-custom-map-avatar');
+  await expect(marker).toBeVisible({timeout:20_000});
+  const clear=async()=>{
+    await expect.poll(()=>marker.evaluate(element=>{
+      const rect=element.getBoundingClientRect(),surface=element.closest('.nr-rider-map-surface')!,main=element.closest('.nr-main')!;
+      const map=surface.getBoundingClientRect(),header=main.querySelector('.nr-topbar')!.getBoundingClientRect(),panel=main.querySelector('.nr-rider-flow-panel')!.getBoundingClientRect();
+      const obstacles=[surface.querySelector('.nr-map-ride-label > div'),surface.querySelector('.nr-map-control-stack')];
+      const overlaps=obstacles.some(node=>{const box=node?.getBoundingClientRect();return box&&box.width>0&&box.height>0&&box.left<rect.right&&box.right>rect.left&&box.top<rect.bottom&&box.bottom>rect.top;});
+      const bottom=panel.width>map.width*.75&&panel.top>map.top?Math.min(map.bottom,panel.top):map.bottom;
+      return !overlaps&&rect.top>=Math.max(map.top,header.bottom)-1&&rect.bottom<=bottom-8&&rect.left>=map.left&&rect.right<=map.right;
+    })).toBe(true);
+  };
+  for (const theme of ['light','dark']) {
+    await page.evaluate(theme=>{localStorage.setItem('nexride.rider.theme',theme);window.dispatchEvent(new Event('nexride:appearance-change'));},theme);
+    for(const size of [{width:390,height:844},{width:320,height:640},{width:390,height:560},{width:768,height:1024},{width:1280,height:900}]){
+      await page.setViewportSize(size);await clear();
+      if(size.height===560)await expect(page.locator('.nr-map-ride-label')).toBeHidden();
+    }
+    await page.screenshot({path:`/tmp/biloo-pickup-clear-${theme}-${info.project.name}.png`});
+  }
+  await page.setViewportSize({width:390,height:844});await clear();
+  const canvas=page.locator('.mapboxgl-canvas');const box=(await canvas.boundingBox())!;
+  const sheet=(await page.locator('.nr-rider-flow-panel').boundingBox())!;
+  const exposedHeight=Math.min(box.height,sheet.y-box.y);
+  const before=(await marker.boundingBox())!.x;
+  await page.mouse.move(box.x+box.width*.4,box.y+exposedHeight*.7);await page.mouse.down();
+  await page.mouse.move(box.x+box.width*.4+100,box.y+exposedHeight*.7,{steps:10});await page.mouse.up();
+  await expect.poll(async()=>Math.abs((await marker.boundingBox())!.x-before)).toBeGreaterThan(60);
+  // Let Mapbox's pan inertia finish before testing the independent resize.
+  await expect.poll(()=>marker.evaluate(async element=>{
+    const x=element.getBoundingClientRect().x;
+    await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+    return Math.abs(element.getBoundingClientRect().x-x);
+  })).toBeLessThan(.1);
+  const dragged=(await marker.boundingBox())!.x;
+  await page.setViewportSize({width:390,height:780});
+  await expect.poll(async()=>Math.abs((await marker.boundingBox())!.x-dragged)).toBeLessThan(3);
+  await page.getByRole('button',{name:'Recenter on my location',exact:true}).click();await clear();
 });
 
 test('all 20 character textures keep compact bounds and raise an arm instead of rotating the person',async({page},info)=>{

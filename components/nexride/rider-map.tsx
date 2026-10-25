@@ -10,7 +10,7 @@ import { Icon, LanguageContext, Spinner, useTranslation } from "./ui";
 import { endpointName } from "./destination";
 import type { Journey } from "../../lib/nexride-journey";
 import type { LocationStatus, RiderLocation } from "../../lib/nexride-location";
-import { riderHomeLocationCameraOffset } from "../../lib/biloo-map-camera";
+import { riderHomeLocationCameraOffset, riderTripMapPadding } from "../../lib/biloo-map-camera";
 import { nexrideApiFetch } from "../../lib/nexride-api-auth";
 import { validPoint as validTripPoint, type TripSnapshot } from '../../lib/nexride-trip-data';
 import { withinNearbyDriverRadius } from "../../lib/nexride-nearby-vehicles";
@@ -102,8 +102,27 @@ function deviceLocationCameraOffset(map: MapboxMap): [number, number] {
  * keep their original global map padding.
  */
 function deviceLocationCameraPadding(map: MapboxMap) {
+  if (map.getContainer().closest<HTMLElement>('.nr-rider-map-surface')?.dataset.activeTrip === 'true') return activeTripCameraPadding(map);
   const [, dy] = deviceLocationCameraOffset(map);
   return { top: 0, right: 0, bottom: Math.max(0, -2 * dy), left: 0 };
+}
+
+function activeTripCameraPadding(map: MapboxMap) {
+  const container = map.getContainer(), canvas = container.getBoundingClientRect();
+  const surface = container.closest('.nr-rider-map-surface'), main = container.closest('.nr-main');
+  const header = main?.querySelector('.nr-topbar')?.getBoundingClientRect();
+  const label = surface?.querySelector('.nr-map-ride-label > div')?.getBoundingClientRect();
+  const controls = surface?.querySelector('.nr-map-control-stack')?.getBoundingClientRect();
+  const panel = main?.querySelector('.nr-rider-flow-panel')?.getBoundingClientRect();
+  const intersects = (rect: DOMRect | undefined) => Boolean(rect && rect.width > 0 && rect.height > 0 && rect.bottom > canvas.top && rect.top < canvas.bottom && rect.right > canvas.left && rect.left < canvas.right);
+  const sidePanel = intersects(panel) && window.innerWidth > 800 && panel!.width < canvas.width * .75;
+  const panelOnLeft = sidePanel && panel!.left + panel!.width / 2 < canvas.left + canvas.width / 2;
+  return riderTripMapPadding(canvas.width, canvas.height, {
+    top: Math.max(intersects(header) ? header!.bottom - canvas.top : 0, intersects(label) ? label!.bottom - canvas.top : 0),
+    bottom: intersects(panel) && !sidePanel ? canvas.bottom - panel!.top : 0,
+    left: panelOnLeft ? panel!.right - canvas.left : 0,
+    right: Math.max(intersects(controls) ? canvas.right - controls!.left : 0, sidePanel && !panelOnLeft ? canvas.right - panel!.left : 0),
+  });
 }
 
 const accuracyPolygon = (
@@ -461,7 +480,7 @@ function fitJourney(
   fitMapPoints(map, points as [number, number][], rideLabel);
 }
 
-function fitMapPoints(map: MapboxMap, points: [number, number][], rideLabel: boolean) {
+function fitMapPoints(map: MapboxMap, points: [number, number][], rideLabel: boolean, activeTrip = false) {
   if (!points.length) return;
   let west = Infinity;
   let south = Infinity;
@@ -478,7 +497,7 @@ function fitMapPoints(map: MapboxMap, points: [number, number][], rideLabel: boo
   const canvas = container.getBoundingClientRect();
   const panel = container.closest(".rider-map-flow.nr-polished-wrapper")
     ?.querySelector<HTMLElement>(".nr-rider-flow-panel")?.getBoundingClientRect();
-  const padding = { top: rideLabel ? 88 : 68, right: 72, bottom: 54, left: 28 };
+  let padding = { top: rideLabel ? 88 : 68, right: 72, bottom: 54, left: 28 };
   // Keep route endpoints in the exposed map beside or above the ride panel.
   if (panel && panel.top < canvas.bottom && panel.right > canvas.left) {
     if (window.innerWidth > 800) {
@@ -487,6 +506,9 @@ function fitMapPoints(map: MapboxMap, points: [number, number][], rideLabel: boo
       padding.bottom = Math.min(Math.max(54, canvas.bottom - panel.top + 24), Math.max(54, canvas.height - padding.top - 48));
     }
   }
+  if (activeTrip) {
+    padding = activeTripCameraPadding(map);
+  }
   map.fitBounds(
     [
       [west, south],
@@ -494,6 +516,7 @@ function fitMapPoints(map: MapboxMap, points: [number, number][], rideLabel: boo
     ],
     {
       padding,
+      retainPadding: !activeTrip,
       maxZoom: 16,
       duration: matchMedia("(prefers-reduced-motion: reduce)").matches
         ? 0
@@ -690,6 +713,7 @@ export function RiderMap({
     ? [{ key: assignedFix.driverId, lat: assignedFix.lat, lng: assignedFix.lng, updatedAt: new Date(assignedFix.updatedAt).toISOString(), distanceMeters: 0, heading: assignedFix.heading, avatar: assignedTrip?.driver?.vehicle.mapAvatar || resolveDriverMapAvatar({ model: assignedTrip?.driver?.vehicle.model, color: assignedTrip?.driver?.vehicle.color }) }] : [];
   const displayedDrivers = assignedTrip ? assignedDrivers : nearbyDrivers;
   const liveFrame = useRef('');
+  const [tripLayoutRevision, setTripLayoutRevision] = useState(0);
   driverRadarRef.current = showDriverRadar;
 
   const route =
@@ -706,6 +730,36 @@ export function RiderMap({
     : journey?.destination;
   const geometry = route?.geometry;
   const showCompass = Math.abs(normalizedBearing(bearing)) > 2;
+
+  useEffect(() => {
+    const canvas = container.current;
+    if (!mounted || !assignedTrip || !canvas) return;
+    const surface = canvas.closest<HTMLElement>('.nr-rider-map-surface');
+    const main = canvas.closest('.nr-main');
+    let frame = 0, lastLayout = '';
+    const measure = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        if (!surface) return;
+        // The destination is already in the sheet; keep a short map clear.
+        const mapRect = canvas.getBoundingClientRect();
+        const panelRect = main?.querySelector('.nr-rider-flow-panel')?.getBoundingClientRect();
+        const coveredBottom = panelRect && panelRect.width > mapRect.width * .75 && panelRect.top > mapRect.top && panelRect.top < mapRect.bottom
+          ? mapRect.bottom - panelRect.top : 0;
+        surface.dataset.mapCompact = String(mapRect.height - coveredBottom < 270);
+        const elements = [canvas, main?.querySelector('.nr-topbar'), surface.querySelector('.nr-map-ride-label > div'), surface.querySelector('.nr-map-control-stack'), main?.querySelector('.nr-rider-flow-panel')];
+        const layout = elements.map(element => {
+          const rect = element?.getBoundingClientRect();
+          return rect ? [rect.top, rect.right, rect.bottom, rect.left].map(Math.round).join(',') : '';
+        }).join(':');
+        if (layout !== lastLayout) { lastLayout = layout; setTripLayoutRevision(value => value + 1); }
+      });
+    };
+    const observer = new ResizeObserver(measure);
+    for (const element of [canvas, main?.querySelector('.nr-topbar'), surface?.querySelector('.nr-map-ride-label > div'), surface?.querySelector('.nr-map-control-stack'), main?.querySelector('.nr-rider-flow-panel')]) if (element) observer.observe(element);
+    measure();
+    return () => { cancelAnimationFrame(frame); observer.disconnect(); if (surface) delete surface.dataset.mapCompact; };
+  }, [mounted, assignedTrip?.id, language]);
 
   useEffect(() => {
     let cancelled = false;
@@ -1612,21 +1666,21 @@ export function RiderMap({
       syncLiveTripRoute(map, assignedTrip);
       if (!assignedTrip) { liveFrame.current = ''; return; }
       syncRoutes(map, undefined);
-      const key = `${assignedTrip.id}:${assignedTrip.status}`;
+      const key = `${assignedTrip.id}:${assignedTrip.status}:${tripLayoutRevision}`;
       const end = assignedTrip.status === 'in_trip' ? assignedTrip.destination : assignedTrip.pickup;
       const points = assignedTrip.route?.points ||
         [assignedTrip.tracking, end].filter((p): p is { lat: number; lng: number } =>
           !!p && typeof p.lat === 'number' && Number.isFinite(p.lat) &&
           typeof p.lng === 'number' && Number.isFinite(p.lng));
       if (points.length > 1 && liveFrame.current !== key && !manualView.current) {
-        fitMapPoints(map, points.map(p => [p.lat, p.lng]), false);
+        fitMapPoints(map, points.map(p => [p.lat, p.lng]), rideLabel, true);
         liveFrame.current = key;
       }
     };
     sync();
     map.on('style.load', sync);
     return () => { map.off('style.load', sync); };
-  }, [assignedTrip, mounted]);
+  }, [assignedTrip, mounted, tripLayoutRevision, rideLabel]);
 
   useEffect(() => {
     const state = journey?.routeState;
@@ -1677,6 +1731,7 @@ export function RiderMap({
       inert={locked}
       aria-label={t("streetMap")}
       data-map-status={mapStatus}
+      data-active-trip={Boolean(assignedTrip && ['approaching', 'arrived', 'in_trip'].includes(assignedTrip.status))}
     >
       <div
         ref={container}
