@@ -1,0 +1,28 @@
+/* Biloo Journey Complete · compact, premium, high-contrast receipt */
+.biloo-completion-card{width:100%;max-width:760px;margin:0 auto;padding:20px clamp(16px,4vw,28px) max(26px,env(safe-area-inset-bottom,0px));color:#08295f}
+.biloo-completion-card>header{text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px;margin:0 0 22px}
+.biloo-completion-card .biloo-arrival-mark{width:58px;height:58px;display:grid;place-items:center;border-radius:50%;background:#e8f7f0;color:#0b936c;margin-bottom:4px}
+.biloo-completion-card .biloo-journey-eyebrow{color:#08795d;font-size:11px;font-weight:800;letter-spacing:.12em}
+.biloo-completion-card>header h1{margin:0;font-size:clamp(26px,6vw,34px);line-height:1.12;letter-spacing:-.035em;font-weight:800;color:#08295f}
+.biloo-completion-card>header p{margin:0;color:#5e6d80;font-size:14px;line-height:1.5}
+.biloo-completion-card .biloo-receipt-fare{display:flex;flex-direction:column;align-items:center;gap:10px;padding:20px 16px;background:#f4f8fb;border:1px solid #dce7ef;border-radius:22px;text-align:center}
+.biloo-completion-card .biloo-receipt-fare>small{color:#51667d;font-size:13px}
+.biloo-completion-card .biloo-receipt-fare>strong{font-size:clamp(38px,10vw,52px);line-height:1.08;letter-spacing:-.05em;font-variant-numeric:tabular-nums;color:#08295f}
+.biloo-completion-card .biloo-receipt-fare>strong span{font-size:15px;letter-spacing:0}
+.biloo-completion-card .biloo-payment-state{display:inline-flex;align-items:center;gap:7px;padding:8px 12px;border-radius:99px;background:#fff0ce;color:#795510;font-size:12px;font-weight:750;line-height:1.4}
+.biloo-completion-card .biloo-payment-state[data-status="paid"]{background:#ddf5e9;color:#086a4e}
+.biloo-completion-card .biloo-receipt-fare>p{max-width:36ch;margin:0;color:#56667a;font-size:12px;line-height:1.5}
+.biloo-completion-card .biloo-journey-stops{display:grid;gap:14px;padding:20px 4px 14px;border-bottom:1px solid #e1e8ef}
+.biloo-completion-card .biloo-journey-stops>div{display:flex;align-items:flex-start;gap:14px;min-width:0}
+.biloo-completion-card .biloo-journey-stops>div>div{display:grid;gap:4px;min-width:0}
+.biloo-completion-card .biloo-journey-stops small{color:#63748b;font-size:12px}
+.biloo-completion-card .biloo-journey-stops strong{color:#08295f;font-size:15px;overflow-wrap:anywhere}
+.biloo-completion-card .biloo-receipt-meta{margin:0;padding:8px 0 16px}
+.biloo-completion-card .biloo-receipt-meta>div{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid #edf1f5}
+.biloo-completion-card .biloo-receipt-meta dt{color:#5e6e80;font-size:13px}
+.biloo-completion-card .biloo-receipt-meta dd{margin:0;color:#08295f;font-size:13px;font-weight:750;text-align:right}
+.biloo-completion-card .biloo-completion-actions{display:grid;gap:10px;margin-top:16px}
+.biloo-completion-card .biloo-completion-actions button{min-height:50px;border-radius:14px}
+.biloo-completion-card .biloo-trip-reference{font-size:11px;color:#738196;overflow-wrap:anywhere}
+.biloo-completion-card .biloo-rating{border:1px solid #e2e9f0;border-radius:18px;padding:16px;background:#fff}
+@media(max-width:380px){.biloo-completion-card{padding-inline:14px}.biloo-completion-card .biloo-receipt-fare{padding:17px 12px}}
