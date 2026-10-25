@@ -1,5 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 
+test.use({ video: 'off', serviceWorkers: 'block' });
+
 const driverId = '22222222-2222-4222-8222-222222222222';
 const riderId = '33333333-3333-4333-8333-333333333333';
 const offerId = '44444444-4444-4444-8444-444444444444';
@@ -13,6 +15,7 @@ async function connectedDriver(page: Page, trip: 'pending' | 'accepted' | 'in_tr
   await page.addInitScript(({ session, theme }) => {
     localStorage.setItem('sb-eyyvvwecpyctttiueban-auth-token', JSON.stringify(session));
     localStorage.setItem('nexride.driver.theme', theme);
+    localStorage.setItem('nexride.driver.aurora-light-v1', '1');
     Object.defineProperty(navigator, 'geolocation', { configurable: true, value: {
       watchPosition: () => 1, clearWatch: () => {}, getCurrentPosition: () => {},
     } });
@@ -39,7 +42,7 @@ async function connectedDriver(page: Page, trip: 'pending' | 'accepted' | 'in_tr
   await page.routeWebSocket('**/realtime/v1/**', ws => ws.close());
 }
 
-test('incoming Rider call uses Biloo navy and gold with theme-aware surfaces', async ({ page }) => {
+test('incoming Rider call uses Biloo navy and gold with theme-aware surfaces', async ({ page }, info) => {
   await connectedDriver(page, 'pending', 'dark');
   await page.goto(`/driver/request?offer=${offerId}`);
   const wrapper = page.locator('.nr-driver-request-page .nr-request-sheet');
@@ -47,10 +50,15 @@ test('incoming Rider call uses Biloo navy and gold with theme-aware surfaces', a
   await expect(wrapper).toHaveCSS('background-color', 'rgb(16, 56, 111)');
   await expect(wrapper.locator('.nr-request-eyebrow')).toContainText('Biloo');
   await expect(wrapper.getByRole('button', { name: 'Accept' })).toHaveCSS('background-color', 'rgb(249, 196, 73)');
-  await expect(wrapper.getByRole('button', { name: 'Pass/Skip' })).toHaveCSS('background-color', 'rgb(8, 41, 95)');
-  await expect(wrapper.locator('.nr-request-route-horizontal')).toBeVisible();
+  await expect(wrapper.getByRole('button', { name: 'Pass/Skip' })).toBeInViewport();
+  await expect(wrapper.locator('.nr-request-route-compact')).toBeVisible();
   await expect(wrapper.getByRole('button', { name: 'Accept' })).toBeInViewport();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ animations: 'disabled', path: `/tmp/biloo-request-dark-${info.project.name}.png` });
+  await page.evaluate(() => { localStorage.setItem('nexride.driver.theme', 'light'); window.dispatchEvent(new Event('nexride:appearance-change')); });
+  await expect(wrapper).toHaveCSS('background-color', 'rgb(255, 255, 255)');
+  await expect(wrapper.getByRole('button', { name: 'Accept' })).toHaveCSS('background-color', 'rgb(249, 196, 73)');
+  await page.screenshot({ animations: 'disabled', path: `/tmp/biloo-request-light-${info.project.name}.png` });
 });
 
 test('accepted Rider trip retains pinned stage action and brand-aware light/dark surfaces', async ({ page }) => {
@@ -58,20 +66,20 @@ test('accepted Rider trip retains pinned stage action and brand-aware light/dark
   await page.goto(`/driver/navigation?offer=${offerId}`);
   const wrapper = page.locator('.nr-driver-navigation-page .nr-nav-bottom-card');
   await expect(wrapper).toBeVisible();
-  await expect(wrapper).toHaveCSS('background-color', 'rgb(16, 56, 111)');
+  await expect(wrapper).toHaveCSS('background-color', 'rgb(32, 32, 32)');
   await expect(wrapper.locator('.nr-nav-trip-meta')).toContainText('Biloo');
   const pinned = wrapper.locator('.nr-driver-sheet-footer').getByRole('button', { name: 'Arrived at pickup' });
   await expect(pinned).toBeVisible();
-  await expect(pinned).toHaveCSS('background-color', 'rgb(249, 196, 73)');
+  await expect(pinned).toHaveCSS('background-color', 'rgb(255, 176, 0)');
   await expect(pinned).toBeInViewport();
   await page.evaluate(() => { localStorage.setItem('nexride.driver.theme', 'light'); window.dispatchEvent(new Event('nexride:appearance-change')); });
   await expect(page.locator('.nr-driver-app-shell')).toHaveAttribute('data-theme','light');
   await expect(wrapper).toHaveCSS('background-color', 'rgb(255, 255, 255)');
-  await expect(pinned).toHaveCSS('background-color', 'rgb(249, 196, 73)');
+  await expect(pinned).toHaveCSS('background-color', 'rgb(255, 176, 0)');
 });
 
 
-test('incoming Driver offer stacks Accept, Pass/Skip and Decline without bottom dead space', async ({ page }) => {
+test('incoming Driver offer shows the fare with compact secondary decisions and no bottom dead space', async ({ page }) => {
   await connectedDriver(page, 'pending', 'dark');
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(`/driver/request?offer=${offerId}`);
@@ -86,15 +94,23 @@ test('incoming Driver offer stacks Accept, Pass/Skip and Decline without bottom 
   const p = (await pass.boundingBox())!;
   const d = (await decline.boundingBox())!;
   expect(a.y + a.height + 2).toBeLessThan(p.y);
-  expect(p.y + p.height + 2).toBeLessThan(d.y);
-  expect(Math.abs(a.x - p.x)).toBeLessThan(2);
-  expect(Math.abs(p.x - d.x)).toBeLessThan(2);
-  expect(Math.abs(a.width - p.width)).toBeLessThan(2);
+  expect(Math.abs(p.y - d.y)).toBeLessThan(2);
+  expect(p.x + p.width).toBeLessThan(d.x);
+  expect(Math.abs(p.width - d.width)).toBeLessThan(2);
+  await expect(sheet.locator('.nr-request-offer-value')).toBeInViewport();
+  await expect(sheet.locator('.nr-request-offer-value')).toContainText('Estimated driver payout');
+  await expect(sheet.locator('.nr-request-offer-value')).toContainText('195 ETB');
+  await expect(sheet.locator('.nr-request-route-compact')).toBeInViewport();
   const sheetBox = (await sheet.boundingBox())!;
   const footerBox = (await sheet.locator('.nr-driver-sheet-footer').boundingBox())!;
   expect(sheetBox.y + sheetBox.height - (footerBox.y + footerBox.height)).toBeLessThan(3);
   await expect(accept).toBeInViewport();
   await expect(decline).toBeInViewport();
+  await page.setViewportSize({ width: 320, height: 640 });
+  await expect(accept).toBeInViewport();
+  await expect(pass).toBeInViewport();
+  await expect(decline).toBeInViewport();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 
 test('active Driver trip Complete trip stays flush with compact safe-area footer after expanding', async ({ page }) => {
@@ -116,3 +132,34 @@ test('active Driver trip Complete trip stays flush with compact safe-area footer
   expect(footerBox.y + footerBox.height - (lastButton.y + lastButton.height)).toBeLessThan(30);
   await expect(complete).toBeInViewport();
 });
+
+for (const theme of ['light', 'dark'] as const) {
+  test(`trip completion confirmation stays readable and dismisses without changing the trip in ${theme} mode`, async ({ page }, info) => {
+    await connectedDriver(page, 'in_trip', theme);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(`/driver/navigation?offer=${offerId}`);
+    const next = page.getByRole('button', { name: 'Complete trip', exact: true });
+    await expect(page.locator('.nr-nav-current-destination')).toBeInViewport();
+    await expect(next).toBeInViewport();
+    await page.screenshot({ animations: 'disabled', path: `/tmp/biloo-navigation-${theme}-${info.project.name}.png` });
+    await next.click();
+    const dialog = page.getByRole('dialog', { name: 'Complete this trip?' });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole('heading')).toHaveCSS('color', theme === 'light' ? 'rgb(34, 34, 34)' : 'rgb(242, 242, 242)');
+    await expect(dialog).toContainText('Mexico Square, Addis Ababa');
+    await expect(dialog.getByRole('button', { name: 'Complete trip', exact: true })).toBeInViewport();
+    await page.screenshot({ animations: 'disabled', path: `/tmp/biloo-complete-dialog-${theme}-${info.project.name}.png` });
+    await dialog.getByRole('button', { name: 'Not yet', exact: true }).click();
+    await expect(dialog).toHaveCount(0);
+    await expect(next).toBeEnabled();
+    await next.click();
+    await page.keyboard.press('Escape');
+    await expect(dialog).toHaveCount(0);
+    await expect(next).toBeFocused();
+    await page.setViewportSize({ width: 320, height: 640 });
+    await next.click();
+    await expect(dialog.getByRole('heading')).toBeInViewport();
+    await expect(dialog.getByRole('button', { name: 'Complete trip', exact: true })).toBeInViewport();
+    await expect(dialog.getByRole('button', { name: 'Not yet', exact: true })).toBeInViewport();
+  });
+}

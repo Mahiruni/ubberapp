@@ -811,7 +811,7 @@ export default function DriverNavigationPage() {
         </div>
       )}
 
-      <DriverBottomSheet className="nr-nav-bottom-card" label="Trip controls" defaultSnap="collapsed"
+      <DriverBottomSheet className="nr-nav-bottom-card" label="Trip controls" defaultSnap="medium"
         footer={<div className="nr-nav-pinned-actions" aria-label={op("Trip stage action")}>
           {invalidTrip ? (
           <button className="nr-nav-stage-primary" onClick={() => router.replace("/driver/home")}>{op("Back to Driver Home")}</button>
@@ -832,6 +832,12 @@ export default function DriverNavigationPage() {
           </div>
         )}
         </div>}>
+        <div className="nr-nav-trip-meta"><span>Biloo · {trip.rideCategory}</span><span>{stage.badge}</span></div>
+        <div className="nr-nav-current-destination">
+          <small>{stage.target === "pickup" ? op("PICKUP") : op("DESTINATION")}</small>
+          <h1>{stage.destination}</h1>
+          <p><Icon name="clock" size={15} />{routeEtaMinutes === null ? op("Arrival estimate unavailable") : routeEtaMinutes === 0 ? op("You are at this stop") : `Arriving in about ${routeEtaMinutes} min`}</p>
+        </div>
         <div className="nr-nav-utility-row" aria-label="Trip quick actions">
           {riderPhone ? (
             <a href={`tel:${riderPhone}`} aria-label={op("Call rider")}><Icon name="phone" size={17} /> {op("Call")}</a>
@@ -859,13 +865,6 @@ export default function DriverNavigationPage() {
             </span>
           ))}
         </div>
-        <div className="nr-nav-trip-meta"><span>Biloo · {trip.rideCategory}</span><span>{stage.badge}</span></div>
-        <div className="nr-nav-current-destination">
-          <small>{stage.target === "pickup" ? op("PICKUP") : op("DESTINATION")}</small>
-          <h1>{stage.destination}</h1>
-          <p>{routeEtaMinutes === null ? op("Arrival estimate unavailable") : routeEtaMinutes === 0 ? op("You are at this stop") : `Arriving in about ${routeEtaMinutes} min`}</p>
-        </div>
-
         {message && <div className="nr-nav-action-error" role="alert"><Icon name="info" size={16} /><span>{message}</span></div>}
 
         {canNavigate && !activeRoute && <div className="nr-nav-handoff"><Icon name="info" size={15} /><span>{op("Live route guidance is unavailable. Check your location and connection; trip actions are still available.")}</span></div>}
@@ -873,16 +872,22 @@ export default function DriverNavigationPage() {
 
       {confirmAction && (
         <Dialog
+          className="biloo-trip-stage-dialog"
           title={op(confirmAction === "in_trip" ? "Start this trip?" : "Complete this trip?")}
           onClose={() => !busy && setConfirmAction(null)}
         >
-          <p className="nr-muted">
+          <div className="biloo-trip-stage-context">
+            <span className="biloo-trip-stage-icon"><Icon name={confirmAction === "in_trip" ? "navigation" : "check"} size={24} /></span>
+            <div><small>{op(confirmAction === "in_trip" ? "PICKUP" : "DESTINATION")}</small><strong>{confirmAction === "in_trip" ? trip.pickup : trip.destination}</strong></div>
+          </div>
+          <p className="biloo-trip-stage-note">
             {op(
               confirmAction === "in_trip"
                 ? "Start the trip only after the rider is with you and you are ready to leave the pickup."
                 : "Complete the trip only after the rider has reached the destination.",
             )}
           </p>
+          <div className="biloo-trip-stage-actions">
           <Button
             loading={busy}
             disabled={busy || !safeToUpdate}
@@ -897,6 +902,7 @@ export default function DriverNavigationPage() {
           <Button variant="secondary" disabled={busy} onClick={() => setConfirmAction(null)}>
             {op("Not yet")}
           </Button>
+          </div>
         </Dialog>
       )}
     </main>

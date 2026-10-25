@@ -1,10 +1,10 @@
 /* Biloo 2026 — one Driver trip-wrapper identity.
    This file is imported LAST by both operational screens. The Driver's
-   current navy and emerald identity supports both light and dark wrappers. No trip logic is changed. */
+   navy and gold identity supports both light and dark wrappers. No trip logic is changed. */
 .nr-driver-app-shell :is(.nr-driver-request-page,.nr-driver-navigation-page){
   --trip-brand:#007746;
   --trip-brand-strong:#041c30;
-  --trip-primary:#00c878;
+  --trip-primary:#f9c449;
   --trip-ink:#102334;
   --trip-surface:#ffffff;
   --trip-elevated:#edf2f5;
@@ -15,7 +15,7 @@
   --trip-stroke:rgba(0,200,120,.25);
   --trip-shadow:0 -12px 36px rgba(4,28,48,.14);
   --trip-action-text:#102334;
-  --trip-handle:#00c878;
+  --trip-handle:#f9c449;
   --trip-active-bg:#e9fbf3;
   --trip-active-text:#007746;
   color-scheme:light;
@@ -192,14 +192,14 @@
   font-weight:900!important;
 }
 .nr-driver-app-shell .nr-driver-request-page .nr-driver-sheet-footer .nr-request-actions-secondary .nr-request-pass{
-  color:#fff!important;
-  background:var(--trip-brand-strong)!important;
-  border:1px solid var(--trip-brand-strong)!important;
+  color:var(--trip-text)!important;
+  background:var(--trip-subtle)!important;
+  border:1px solid var(--trip-border)!important;
 }
 .nr-driver-app-shell .nr-driver-request-page .nr-driver-sheet-footer .nr-request-actions-secondary .nr-request-decline{
-  color:#fff!important;
-  background:#b93d54!important;
-  border:1px solid #b93d54!important;
+  color:#a83248!important;
+  background:#fff5f6!important;
+  border:1px solid #f0d9df!important;
 }
 .nr-driver-app-shell .nr-driver-request-page .nr-driver-sheet-footer .nr-request-actions :is(button:disabled){
   opacity:.46!important;
@@ -433,7 +433,7 @@
   overflow:hidden!important;
 }
 .nr-driver-app-shell .nr-driver-request-page .nr-request-sheet {
-  --nr-driver-footer-floor:258px;
+  --nr-driver-footer-floor:220px;
 }
 .nr-driver-app-shell .nr-driver-navigation-page .nr-nav-bottom-card {
   --nr-driver-footer-floor:132px;
@@ -473,8 +473,6 @@
 }
 .nr-driver-app-shell .nr-driver-request-page
   .nr-driver-sheet-footer .nr-request-actions,
-.nr-driver-app-shell .nr-driver-request-page
-  .nr-driver-sheet-footer .nr-request-actions-secondary,
 .nr-driver-app-shell .nr-driver-navigation-page
   .nr-driver-sheet-footer .nr-nav-pinned-actions,
 .nr-driver-app-shell .nr-driver-navigation-page
@@ -488,6 +486,13 @@
   padding:0!important;
 }
 .nr-driver-app-shell .nr-driver-request-page
+  .nr-driver-sheet-footer .nr-request-actions-secondary {
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:8px!important;
+  margin:0!important;
+}
+.nr-driver-app-shell .nr-driver-request-page
   .nr-driver-sheet-footer .nr-request-actions :is(.nr-request-accept,.nr-request-pass,.nr-request-decline),
 .nr-driver-app-shell .nr-driver-navigation-page
   .nr-driver-sheet-footer .nr-nav-pinned-actions :is(.nr-nav-stage-primary,.nr-nav-stage-secondary) {
@@ -496,7 +501,7 @@
   justify-content:center!important;
   width:100%!important;
   min-width:0!important;
-  min-height:52px!important;
+  min-height:46px!important;
   height:auto!important;
   margin:0!important;
   padding:11px 14px!important;
@@ -507,7 +512,7 @@
 }
 .nr-driver-app-shell .nr-driver-request-page
   .nr-driver-sheet-footer .nr-request-actions > .nr-request-accept {
-  min-height:58px!important;
+  min-height:54px!important;
   background:var(--trip-primary)!important;
   border-color:var(--trip-primary)!important;
   color:var(--trip-ink)!important;
@@ -607,4 +612,108 @@
 }
 .nr-driver-app-shell[data-theme="dark"]:has(.nr-driver-navigation-page) .nr-driver-menu-trigger>span{
   background:currentColor!important;
+}
+
+/* Trip decisions: the fare and stops precede the fixed response controls. */
+.nr-driver-app-shell .nr-driver-request-page .nr-request-heading {
+  align-items:center;
+  gap:12px;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-heading::before { display:none; }
+.nr-driver-app-shell .nr-driver-request-page .nr-request-heading h1 { font-size:23px!important; }
+.nr-driver-app-shell .nr-driver-request-page .nr-request-countdown {
+  width:54px!important;height:54px!important;min-height:54px!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-offer-value {
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:15px 0 13px;min-width:0;
+}
+.nr-request-offer-value>div { display:grid;gap:3px;min-width:0; }
+.nr-request-offer-value small { font-size:11px;color:var(--trip-muted); }
+.nr-request-offer-value strong { font-size:30px;line-height:1.1;letter-spacing:-.04em;font-variant-numeric:tabular-nums;color:var(--trip-text); }
+.nr-request-offer-value strong>span { font-size:13px;letter-spacing:0;font-weight:600; }
+.nr-request-category { display:flex;align-items:center;gap:6px;flex-shrink:0;padding:8px 10px;border-radius:10px;background:var(--trip-subtle);color:var(--trip-text);font-size:11px;text-transform:capitalize; }
+.nr-driver-app-shell .nr-driver-request-page .nr-request-route-compact {
+  display:block!important;margin:0!important;padding:13px 14px!important;
+  border:1px solid var(--trip-border);border-radius:16px;background:var(--trip-subtle);
+}
+.nr-request-route-compact .nr-request-route-copy { display:grid;gap:17px; }
+.nr-request-route-compact .nr-request-route-stop { position:relative;padding-left:23px;min-width:0; }
+.nr-request-route-compact .nr-request-route-stop::before {
+  content:"";position:absolute;left:0;top:6px;width:10px;height:10px;
+  border:2px solid var(--trip-brand);border-radius:50%;background:var(--trip-surface);
+}
+.nr-request-route-compact .nr-request-route-stop.destination::before { border-color:var(--trip-text);border-radius:3px; }
+.nr-request-route-compact .nr-request-route-stop.pickup::after {
+  content:"";position:absolute;left:4px;top:21px;bottom:-15px;width:1px;background:var(--trip-border);
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-route-compact small { font-size:10px;letter-spacing:.04em; }
+.nr-driver-app-shell .nr-driver-request-page .nr-request-route-compact strong { font-size:14px!important;line-height:1.35; }
+.nr-driver-app-shell .nr-driver-request-page .nr-request-route-compact .nr-request-route-stop.destination { text-align:left; }
+.nr-driver-app-shell .nr-driver-request-page .nr-request-sheet.nr-driver-sheet .nr-request-accept {
+  background:var(--trip-primary)!important;border-color:var(--trip-primary)!important;color:var(--trip-ink)!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-sheet.nr-driver-sheet .nr-request-actions button svg { color:inherit!important; }
+.nr-request-trip-facts { display:flex;align-items:center;flex-wrap:wrap;gap:8px 16px;padding:11px 0 0;font-size:12px;color:var(--trip-muted);font-variant-numeric:tabular-nums; }
+.nr-request-trip-facts>span { display:inline-flex;align-items:center;gap:5px; }
+.nr-driver-app-shell .nr-driver-request-page .nr-request-approach { margin:10px 0 2px;font-size:11px; }
+.nr-driver-app-shell[data-theme="dark"] .nr-driver-request-page .nr-request-decline {
+  background:#3b2334!important;border-color:#714153!important;color:#ffb6c5!important;
+}
+.nr-driver-app-shell[data-request-map="true"] .nr-driver-menu-trigger>span { background:currentColor!important; }
+.nr-driver-app-shell .nr-driver-request-page .nr-live-map-status {
+  position:absolute;z-index:6;left:16px;right:76px;top:90px;max-width:360px;
+  padding:10px 12px;border:1px solid var(--trip-border);border-radius:12px;
+  color:var(--trip-text);background:var(--trip-surface);font-size:11px;line-height:1.5;
+}
+
+/* Navigation keeps the next stop readable above its supporting controls. */
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-bottom-card .nr-driver-sheet-content {
+  display:flex;flex-direction:column;gap:0;padding:0 18px 12px!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-trip-meta { margin:0 0 10px;font-size:10px;letter-spacing:.06em; }
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-trip-meta>span:last-child { border-radius:7px;padding:4px 7px;background:var(--trip-active-bg);color:var(--trip-active-text)!important;font-size:9px; }
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-current-destination h1 { font-size:24px!important;line-height:1.2;overflow-wrap:anywhere; }
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-current-destination p { display:flex;align-items:center;gap:6px;font-size:12px;margin:7px 0 14px; }
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-trip-progress { order:3;margin:0;padding:12px 0 0;border-top:1px solid var(--trip-border);border-bottom:0; }
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-trip-progress small { font-size:10px; }
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-utility-row { margin:0 0 12px;gap:8px; }
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-utility-row :is(button,a) { min-height:44px!important;font-size:12px!important;font-weight:650!important;border-radius:12px!important; }
+.nr-driver-app-shell .nr-driver-navigation-page :is(.nr-nav-action-error,.nr-nav-handoff) { order:4; }
+
+/* Explicit dialog tokens prevent inherited white headings on white surfaces. */
+.nr-driver-app-shell .nr-driver-navigation-page dialog.biloo-trip-stage-dialog {
+  --nr-text:var(--trip-text);--nr-text-secondary:var(--trip-muted);
+  --nr-surface:var(--trip-surface);--nr-surface-raised:var(--trip-surface);
+  --nr-border:var(--trip-border);
+  width:min(440px,calc(100vw - 32px));max-height:calc(100dvh - 32px);
+  padding:0!important;border:1px solid var(--trip-border)!important;
+  border-radius:24px!important;background:var(--trip-surface)!important;color:var(--trip-text)!important;
+  box-shadow:0 24px 80px #041c3038;overflow-y:auto;
+}
+.biloo-trip-stage-dialog::backdrop { background:rgba(4,28,48,.48);backdrop-filter:blur(4px); }
+.nr-driver-app-shell .nr-driver-navigation-page .biloo-trip-stage-dialog .nr-dialog-head {
+  padding:20px 20px 0!important;border:0!important;gap:12px;align-items:flex-start;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .biloo-trip-stage-dialog h2 {
+  color:var(--trip-text)!important;font-size:23px!important;line-height:1.2!important;
+  letter-spacing:-.035em;margin:6px 0 0!important;font-weight:750;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .biloo-trip-stage-dialog .nr-icon-button {
+  flex:0 0 40px;width:40px;height:40px;min-height:40px!important;
+  border:1px solid var(--trip-border)!important;border-radius:12px;background:var(--trip-subtle)!important;color:var(--trip-text)!important;
+}
+.biloo-trip-stage-context { display:flex;align-items:center;gap:12px;margin:20px 20px 0;padding:13px;border:1px solid var(--trip-border);border-radius:16px;background:var(--trip-subtle); }
+.biloo-trip-stage-icon { width:42px;height:42px;flex:0 0 42px;display:grid;place-items:center;border-radius:12px;background:var(--trip-active-bg);color:var(--trip-active-text); }
+.biloo-trip-stage-context>div { display:grid;gap:4px;min-width:0; }
+.biloo-trip-stage-context small { font-size:10px;letter-spacing:.06em;color:var(--trip-muted); }
+.biloo-trip-stage-context strong { font-size:15px;line-height:1.35;color:var(--trip-text);overflow-wrap:anywhere; }
+.nr-driver-app-shell .nr-driver-navigation-page .biloo-trip-stage-note { margin:16px 20px 20px!important;padding:0!important;color:var(--trip-muted)!important;font-size:14px!important;line-height:1.6; }
+.biloo-trip-stage-actions { display:grid;gap:8px;padding:0 20px 20px; }
+.nr-driver-app-shell .nr-driver-navigation-page .biloo-trip-stage-actions .nr-button { width:100%;min-height:50px!important;border-radius:14px!important;box-shadow:none!important; }
+.nr-driver-app-shell .nr-driver-navigation-page .biloo-trip-stage-actions .nr-primary { background:var(--trip-primary)!important;border-color:var(--trip-primary)!important;color:var(--trip-ink)!important; }
+.nr-driver-app-shell .nr-driver-navigation-page .biloo-trip-stage-actions .nr-secondary { background:var(--trip-surface)!important;border:1px solid var(--trip-border)!important;color:var(--trip-text)!important; }
+@media (max-height:650px) {
+  .nr-driver-app-shell .nr-driver-navigation-page .nr-nav-trip-progress { display:none; }
+  .biloo-trip-stage-context { margin-top:12px; }
 }

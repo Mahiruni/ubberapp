@@ -1,4 +1,74 @@
-.nr-accepted-driver-card{background:var(--nr-surface,#fff);color:var(--nr-text,#102334);padding:14px 20px max(20px,env(safe-area-inset-bottom));overflow-y:auto;overscroll-behavior:contain;min-height:0;flex:1}.nr-identity-status{display:flex;justify-content:space-between;align-items:center;gap:12px}.nr-identity-status p{font-size:10px;letter-spacing:1.5px;color:var(--nr-text-secondary,#667587);margin:0 0 5px}.nr-identity-status h2{font-size:21px;line-height:1.25;letter-spacing:-.5px;margin:0;font-weight:700}.nr-identity-eta{background:var(--nr-emerald-soft,#e5fbf1);color:var(--nr-text,#102334);padding:9px 12px;border-radius:13px;max-width:110px;font-size:11px;text-align:center;flex-shrink:0}.nr-identity-eta b{display:block;font-size:26px;line-height:1.1;font-variant-numeric:tabular-nums}.nr-identity-person{display:flex;align-items:center;gap:15px;margin:19px 0 14px}.nr-identity-portrait{width:76px;height:76px;flex-shrink:0;border-radius:50%;background:#0b2b43;color:#fff;display:grid;place-items:center;overflow:hidden;font-size:25px;font-weight:650}.nr-identity-portrait img{width:100%;height:100%;object-fit:cover}.nr-identity-person h3{font-size:22px;letter-spacing:-.5px;line-height:1.2;margin:0 0 6px}.nr-identity-stats{display:flex;gap:12px;font-size:13px;color:var(--nr-text-secondary,#667587)}.nr-identity-verified{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--nr-emerald-pressed,#008750);margin:5px 0 0}.nr-identity-vehicle{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--nr-bg-secondary,#f5f7f9);padding:12px 14px;border-radius:14px}.nr-identity-vehicle strong{font-size:15px}.nr-identity-vehicle p{font-size:12px;color:var(--nr-text-secondary,#667587);margin:4px 0 0}.nr-identity-plate{font-size:16px;letter-spacing:.6px;border-left:1px solid var(--nr-border,#dfe6ea);padding-left:12px;white-space:normal;overflow-wrap:anywhere;max-width:45%}.nr-identity-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:14px 0}.nr-identity-actions button{min-height:52px;display:flex;flex-direction:column;gap:6px;align-items:center;justify-content:center;border:0;border-radius:12px;background:var(--nr-bg-secondary,#f5f7f9);color:var(--nr-text,#102334);font:inherit;font-size:11px;cursor:pointer;transition:background 200ms}.nr-identity-actions button:disabled{opacity:.45;cursor:not-allowed}.nr-identity-actions button:focus-visible{outline:3px solid #00c878;outline-offset:2px}.nr-identity-route{border-top:1px solid var(--nr-border,#e5eaee);padding-top:13px;display:grid;gap:12px}.nr-identity-route div{display:grid;gap:3px;padding-left:14px;border-left:2px solid #00c878}.nr-identity-route small{font-size:10px;color:var(--nr-text-secondary,#667587)}.nr-identity-route strong{font-size:13px;line-height:1.4}.nr-identity-fare{display:flex;justify-content:space-between;gap:12px;padding-top:15px;font-size:13px}.nr-identity-fare strong{font-variant-numeric:tabular-nums}.nr-identity-stale{display:block;color:var(--nr-text-secondary,#667587);margin-bottom:12px;font-size:11px}@media(max-width:360px){.nr-accepted-driver-card{padding-left:14px;padding-right:14px}.nr-identity-person h3{font-size:19px}.nr-identity-status h2{font-size:18px}.nr-identity-portrait{width:66px;height:66px}}@media(prefers-reduced-motion:reduce){.nr-identity-actions button{transition:none}}
-
-.nr-trip-experience[data-native-identity=true] .nr-flow-sheet-handle span{background:#00c878!important}
-.nr-identity-person{margin:12px 0}.nr-identity-portrait{width:64px;height:64px}.nr-identity-actions{margin:12px 0}.nr-identity-actions button{min-height:48px}
+/* The active journey owns these tokens inside the resizable sheet. */
+.nr-app .nr-trip-experience .nr-accepted-driver-card {
+  --journey-text:#10294f;--journey-muted:#596b80;--journey-surface:#fff;
+  --journey-subtle:#f5f7fa;--journey-line:#e2e8ef;--journey-accent:#f9c449;
+  --journey-success:#087954;
+  flex:1;min-height:0;padding:4px 18px max(16px,env(safe-area-inset-bottom));
+  background:var(--journey-surface);color:var(--journey-text);
+  overflow-y:auto;overscroll-behavior:contain;
+}
+.nr-app[data-theme="dark"] .nr-trip-experience .nr-accepted-driver-card {
+  --journey-text:#f4f7fb;--journey-muted:#b9c8db;--journey-surface:#0b2b43;
+  --journey-subtle:#10374f;--journey-line:#34536d;--journey-success:#76dab1;
+}
+.nr-app .nr-accepted-driver-card .nr-identity-status { display:flex;align-items:center;justify-content:space-between;gap:12px; }
+.nr-app .nr-accepted-driver-card .nr-identity-status>div { flex:1;min-width:0; }
+.nr-app .nr-accepted-driver-card .nr-identity-status p { margin:0 0 4px;color:var(--journey-muted);font-size:9px;font-weight:650;letter-spacing:.12em; }
+.nr-app .nr-accepted-driver-card .nr-identity-status h2 { margin:0;font-size:24px;font-weight:750;line-height:1.2;letter-spacing:-.04em;color:var(--journey-text);white-space:normal;overflow-wrap:anywhere; }
+.nr-app .nr-accepted-driver-card .nr-identity-eta { flex-shrink:0;max-width:100px;padding:8px 11px;border:1px solid var(--journey-line);border-radius:13px;background:var(--journey-subtle);color:var(--journey-text);font-size:10px;text-align:center; }
+.nr-app .nr-accepted-driver-card .nr-identity-eta b { display:block;font-size:26px;font-weight:750;line-height:1.1;font-variant-numeric:tabular-nums; }
+.nr-app .nr-accepted-driver-card .biloo-journey-progress { display:flex;gap:8px;list-style:none;margin:14px 0 8px;padding:0; }
+.nr-app .nr-accepted-driver-card .biloo-journey-progress li { display:flex;align-items:center;gap:5px;flex:1;min-width:0;color:var(--journey-muted); }
+.nr-app .nr-accepted-driver-card .biloo-journey-progress li>span { display:grid;place-items:center;flex:0 0 20px;width:20px;height:20px;border:1px solid var(--journey-line);border-radius:50%;font-size:10px; }
+.nr-app .nr-accepted-driver-card .biloo-journey-progress small { font-size:10px;line-height:1.3; }
+.nr-app .nr-accepted-driver-card .biloo-journey-progress li[data-complete="true"]>span { background:var(--journey-text);border-color:var(--journey-text);color:var(--journey-surface); }
+.nr-app .nr-accepted-driver-card .biloo-journey-progress li[aria-current="step"]>span { background:var(--journey-accent);border-color:var(--journey-accent);color:#08295f; }
+.nr-app .nr-accepted-driver-card .biloo-tracking-status { display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:0 0 12px;color:var(--journey-muted);font-size:10px;line-height:1.5; }
+.nr-app .nr-accepted-driver-card .biloo-tracking-status>span { width:6px;height:6px;flex:0 0 6px;border-radius:50%;background:#a67a29; }
+.nr-app .nr-accepted-driver-card .biloo-tracking-status[data-fresh="true"]>span { background:var(--journey-success); }
+.nr-app .nr-accepted-driver-card .biloo-journey-metrics { display:flex;flex-wrap:wrap;gap:8px 16px;margin:0 0 12px;padding:0;color:var(--journey-muted);font-size:12px;font-variant-numeric:tabular-nums; }
+.nr-app .nr-accepted-driver-card .biloo-journey-metrics>span { display:inline-flex;align-items:center;gap:5px; }
+.nr-app .nr-accepted-driver-card .nr-identity-driver { padding:12px;border:1px solid var(--journey-line);border-radius:17px;background:var(--journey-surface); }
+.nr-app .nr-accepted-driver-card .nr-identity-person { display:flex;align-items:center;gap:11px;margin:0; }
+.nr-app .nr-accepted-driver-card .nr-identity-person>div { min-width:0; }
+.nr-app .nr-accepted-driver-card .nr-identity-portrait { width:46px;height:46px;flex:0 0 46px;display:grid;place-items:center;overflow:hidden;border-radius:50%;background:var(--journey-subtle);color:var(--journey-text);font-size:18px;font-weight:650; }
+.nr-identity-portrait img { width:100%;height:100%;object-fit:cover; }
+.nr-app .nr-accepted-driver-card .nr-identity-person h3 { margin:0 0 4px;font-size:17px;font-weight:700;line-height:1.25;letter-spacing:-.02em;color:var(--journey-text);overflow-wrap:anywhere; }
+.nr-identity-stats { display:flex;flex-wrap:wrap;gap:9px;color:var(--journey-muted);font-size:11px; }
+.nr-identity-stats>span:first-child>span { color:#ad7810; }
+.nr-identity-verified { display:flex;align-items:center;gap:3px;margin:4px 0 0;font-size:10px;color:var(--journey-success); }
+.nr-app .nr-accepted-driver-card .nr-identity-vehicle { display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:11px;padding:10px 0 0;border:0;border-top:1px solid var(--journey-line);border-radius:0;background:transparent;color:var(--journey-text); }
+.nr-identity-vehicle>div { min-width:0; }
+.nr-app .nr-accepted-driver-card .nr-identity-vehicle strong { font-size:13px;line-height:1.4;overflow-wrap:anywhere; }
+.nr-app .nr-accepted-driver-card .nr-identity-vehicle p { margin:3px 0 0;color:var(--journey-muted);font-size:11px; }
+.nr-app .nr-accepted-driver-card .nr-identity-plate { max-width:45%;padding:6px 8px;border:1px solid var(--journey-line);border-radius:7px;color:var(--journey-text);font-size:13px;line-height:1.3;letter-spacing:.04em;font-variant-numeric:tabular-nums;overflow-wrap:anywhere; }
+.nr-app .nr-accepted-driver-card .nr-identity-actions { display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:12px 0; }
+.nr-app .nr-accepted-driver-card .nr-identity-actions button { display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;min-height:62px;min-width:0;padding:9px 3px;border:1px solid var(--journey-line);border-radius:13px;background:var(--journey-subtle);color:var(--journey-text);font:inherit;font-size:10px;line-height:1.3;cursor:pointer; }
+.nr-app .nr-accepted-driver-card .nr-identity-actions button:first-child { background:var(--journey-accent);border-color:var(--journey-accent);color:#08295f; }
+.nr-identity-actions button:disabled { opacity:.45;cursor:not-allowed; }
+.nr-identity-actions button:focus-visible,.nr-identity-details>summary:focus-visible { outline:3px solid #f9c449;outline-offset:2px; }
+.nr-identity-details { border-top:1px solid var(--journey-line); }
+.nr-identity-details>summary { display:flex;align-items:center;gap:10px;min-height:52px;list-style:none;cursor:pointer;font-size:12px;font-weight:650; }
+.nr-identity-details>summary::-webkit-details-marker { display:none; }
+.nr-identity-details>summary>svg { flex:0 0 16px;color:var(--journey-muted); }
+.nr-identity-details[open]>summary>svg { transform:rotate(90deg); }
+.nr-app .nr-accepted-driver-card .nr-identity-fare { display:grid;gap:2px;margin-left:auto;padding:0;text-align:right;font-size:12px; }
+.nr-identity-fare small { color:var(--journey-muted);font-size:9px;font-weight:450; }
+.nr-identity-fare strong { color:var(--journey-text);font-variant-numeric:tabular-nums; }
+.nr-app .nr-accepted-driver-card .nr-identity-route { display:grid;gap:16px;padding:10px 0 4px;border:0; }
+.nr-identity-route>div { position:relative;display:grid;gap:3px;padding-left:18px;border:0; }
+.nr-identity-route>div::before { content:"";position:absolute;left:0;top:4px;width:8px;height:8px;border:2px solid var(--journey-success);border-radius:50%; }
+.nr-identity-route>div:last-child::before { border-radius:2px;border-color:var(--journey-text); }
+.nr-identity-route small { color:var(--journey-muted);font-size:10px; }
+.nr-identity-route strong { color:var(--journey-text);font-size:13px;line-height:1.4;overflow-wrap:anywhere; }
+.nr-identity-last-update,.nr-identity-stale { display:block;margin:10px 0 0;color:var(--journey-muted);font-size:10px;line-height:1.5; }
+.nr-app .nr-accepted-driver-card .biloo-pickup-status { margin:10px 0 12px;padding:11px;border:1px solid var(--journey-line);background:var(--journey-subtle);color:var(--journey-text);border-radius:13px; }
+.nr-app .nr-accepted-driver-card .biloo-pickup-status strong { font-size:13px; }
+.nr-app .nr-accepted-driver-card .biloo-pickup-status p { margin:4px 0 0;color:var(--journey-muted);font-size:11px; }
+.nr-app .nr-accepted-driver-card .biloo-pickup-instructions { background:var(--journey-subtle);color:var(--journey-text);font-size:12px; }
+.nr-trip-experience[data-native-identity="true"] .nr-flow-sheet-handle span { background:#f9c449!important; }
+@media(max-width:360px) {
+  .nr-app .nr-trip-experience .nr-accepted-driver-card { padding-inline:14px; }
+  .nr-app .nr-accepted-driver-card .nr-identity-status h2 { font-size:21px; }
+  .nr-app .nr-accepted-driver-card .biloo-journey-progress small { font-size:9px; }
+}

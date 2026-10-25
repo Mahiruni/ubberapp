@@ -205,7 +205,8 @@ test('stale Driver tracking shows its timestamp and never presents a fresh ETA',
   } }));
   await page.goto('/');
   await expect(page.locator('.biloo-tracking-status')).toContainText('Location update delayed');
-  await expect(page.locator('.biloo-tracking-status')).toContainText('Last update');
+  await page.locator('.nr-identity-details > summary').click();
+  await expect(page.locator('.nr-identity-last-update time')).toBeVisible();
   await expect(page.locator('.nr-identity-eta')).toContainText('ETA unavailable');
   await expect(page.locator('.nr-identity-eta b')).toHaveCount(0);
 });
@@ -253,4 +254,25 @@ test('reduced motion removes journey entrance animations while keeping safety co
   await prepare(page, 'rider'); await page.goto('/');
   await expect(page.locator('.nr-accepted-driver-card .nr-identity-status h2')).toHaveCSS('animation-name', 'none');
   await expect(page.locator('.nr-identity-actions').getByRole('button', { name: 'Safety', exact: true })).toBeEnabled();
+});
+
+
+test('active Rider journey keeps contact controls compact and reveals route details on demand', async ({ page }, info) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await prepare(page, 'rider', { ...baseRide(), status: 'in_trip', started_at: new Date().toISOString() });
+  await page.goto('/');
+  const card = page.locator('.nr-accepted-driver-card');
+  await expect(card.getByRole('heading', { name: 'On trip', exact: true })).toBeVisible();
+  await expect(card.locator('.nr-identity-eta')).toContainText('min left');
+  for (const name of ['Call Driver', 'Chat', 'Share Trip', 'Safety']) {
+    await expect(card.getByRole('button', { name, exact: true })).toBeInViewport();
+  }
+  const details = card.locator('.nr-identity-details');
+  await expect(details).not.toHaveAttribute('open');
+  await page.screenshot({ animations: 'disabled', path: `/tmp/biloo-rider-active-${info.project.name}.png` });
+  await details.locator('summary').click();
+  await expect(card.locator('.nr-identity-route')).toContainText('Bole Atlas');
+  await expect(card.locator('.nr-identity-route')).toContainText('Bole Airport');
+  await expect(card.locator('.nr-identity-fare')).toContainText('180 ETB');
+  await expect(card.locator('.nr-identity-last-update time')).toBeVisible();
 });

@@ -698,7 +698,7 @@ export default function DriverRideRequestPage() {
             <div className="nr-request-heading">
               <div>
                 <span className="nr-request-eyebrow">Biloo · {op("New request")}</span>
-                <h1>New ride request</h1>
+                <h1>{op("New ride request")}</h1>
               </div>
               {offer.expires_at && secondsRemaining !== null && (
                 <div className="nr-request-deadline">
@@ -718,8 +718,16 @@ export default function DriverRideRequestPage() {
               )}
             </div>
 
+            <div className="nr-request-offer-value">
+              <div>
+                <small>{fare?.label || op("Estimated fare")}</small>
+                <strong>{fare ? <>{formatMoney(fare.value)} <span>ETB</span></> : op("Not provided")}</strong>
+              </div>
+              <span className="nr-request-category"><Icon name="navigation" size={18} />{request.ride_category}</span>
+            </div>
+
             <section
-              className="nr-request-route nr-request-route-horizontal"
+              className="nr-request-route nr-request-route-compact"
               role="group"
               aria-label={op("Pickup to destination")}
               data-driving={offer.status === "pending" && secondsRemaining !== 0 ? "true" : "false"}
@@ -734,23 +742,21 @@ export default function DriverRideRequestPage() {
                   <strong>{request.destination_location}</strong>
                 </div>
               </div>
-              <div className="nr-request-road">
-                <span className="nr-request-road-endpoint pickup" aria-hidden="true" />
-                <div className="nr-request-road-track">
-                  <span className="nr-request-road-car" aria-hidden="true"><Icon name="navigation" size={18}/></span>
-                  <span className="nr-request-road-distance">
-                    {request.estimated_trip_distance_km !== null && Number.isFinite(request.estimated_trip_distance_km)
-                      ? `${request.estimated_trip_distance_km.toFixed(1)} km`
-                      : op("Distance unavailable")}
-                  </span>
-                </div>
-                <span className="nr-request-road-endpoint destination" aria-hidden="true" />
-              </div>
             </section>
+
+            <div className="nr-request-trip-facts" aria-label={op("Trip estimate")}>
+              <span><Icon name="navigation" size={15} />{request.estimated_trip_distance_km !== null && Number.isFinite(request.estimated_trip_distance_km)
+                ? `${request.estimated_trip_distance_km.toFixed(1)} km`
+                : op("Distance unavailable")}</span>
+              {request.estimated_trip_duration_minutes !== null && Number.isFinite(request.estimated_trip_duration_minutes) && (
+                <span><Icon name="clock" size={15} />{Math.max(1, Math.round(request.estimated_trip_duration_minutes))} min</span>
+              )}
+            </div>
 
             {(approachMeta || offer.pickup_distance_km !== null || offer.pickup_eta_minutes !== null) && (
               <div className="nr-request-approach" data-traffic={approachMeta?.traffic || "unavailable"}>
                 <Icon name="navigation" size={15} />
+                <span>{op("To pickup")}</span>
                 <strong>
                   {(approachMeta?.distanceKm ?? offer.pickup_distance_km) !== null
                     ? `${(approachMeta?.distanceKm ?? offer.pickup_distance_km)!.toFixed(1)} km`
@@ -778,17 +784,6 @@ export default function DriverRideRequestPage() {
                 )}
               </div>
             )}
-
-            <div className="nr-request-summary">
-              <div><small>Ride</small><strong>{request.ride_category}</strong></div>
-              <div>
-                <small>{fare?.label || "Estimated fare"}</small>
-                <strong>{fare ? `${formatMoney(fare.value)} ETB` : "Not provided"}</strong>
-              </div>
-              {request.estimated_trip_duration_minutes !== null && (
-                <div><small>Estimated trip time</small><strong>{Math.max(1, Math.round(request.estimated_trip_duration_minutes))} min</strong></div>
-              )}
-            </div>
 
             {request.pickup_instructions && <p className="biloo-pickup-instructions"><Icon name="info" size={17}/><span>{request.pickup_instructions}</span></p>}
 
