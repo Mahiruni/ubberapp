@@ -22,6 +22,7 @@ export function sanitizeDriverVerificationDraft(raw: string): string {
     licenseExpiry: safe("licenseExpiry", 20),
     vehicle: safe("vehicle", 120),
     vehicleColor: safe("vehicleColor", 32),
+    vehicleBodyType: safe("vehicleBodyType", 20),
     plate: safe("plate", 60),
   });
 }

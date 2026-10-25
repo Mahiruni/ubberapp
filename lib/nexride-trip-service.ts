@@ -1,6 +1,7 @@
 import { supabase } from './supabase';
 import { nexrideApiFetch } from './nexride-api-auth';
 import { textValue, timestamp, validPoint, type Row, type TripSnapshot } from './nexride-trip-data';
+import { normalizeDriverMapAvatar, resolveDriverMapAvatar } from './biloo-driver-map-avatar';
 
 const activeStates = ['accepted', 'arrived_pickup', 'in_trip'];
 
@@ -128,6 +129,7 @@ export async function readRiderTrip(
               model: textValue(safeDriver.vehicle?.model),
               color: textValue(safeDriver.vehicle?.color),
               plate: textValue(safeDriver.vehicle?.plate),
+              mapAvatar: safeDriver.vehicle?.mapAvatar ? normalizeDriverMapAvatar(safeDriver.vehicle.mapAvatar) : resolveDriverMapAvatar({ model: safeDriver.vehicle?.model, color: safeDriver.vehicle?.color }),
             },
             verification:
               safeDriver.verification?.status === 'verified' &&
@@ -168,6 +170,7 @@ export async function readRiderTrip(
             lng: numeric(location.longitude)!,
             updatedAt: timestamp(location.recorded_at)!,
             accuracyMeters: numeric(location.accuracy_meters),
+            heading: numeric(location.heading_degrees),
           }
         : null,
     fare: estimatedFare != null ? { amount: estimatedFare, currency: 'ETB' } : undefined,

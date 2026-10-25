@@ -29,6 +29,12 @@ describe('Assigned driver identity route', () => {
     const response=await read(), body=await response.json(); expect(body.driver.id).toBe(driver);
     expect(body.driver.photo).toContain('private-portrait'); expect(body.driver.vehicle.plate).toBe('REAL-123');
     expect(mocks.signed).toHaveBeenCalledWith(`${driver}/portrait.jpg`,300);
+    expect(body.driver.vehicle.mapAvatar).toEqual({bodyType:'hatchback',color:'Silver',style:'signature'});
+  });
+  it('passes the same saved Biloo livery to the assigned Rider without changing vehicle color',async()=>{
+    mocks.user.mockResolvedValue({data:{user:{user_metadata:{vehicle:'Toyota Yaris',vehicle_body_type:'hatchback',biloo_driver_map_avatar:{style:'goldline',color:'Red'}}}}});
+    const body=await(await read()).json();
+    expect(body.driver.vehicle.mapAvatar).toEqual({bodyType:'hatchback',color:'Silver',style:'goldline'});
   });
   it('never resurrects a deleted portrait using editable auth metadata',async()=>{
     mocks.photoFrom.mockImplementation(() => query(null)); expect((await (await read()).json()).driver.photo).toBeNull();

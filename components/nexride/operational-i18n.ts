@@ -4,6 +4,8 @@ import { useCallback, useContext } from "react";
 import { LanguageContext } from "./ui";
 
 const am: Record<string, string> = {
+  "Map car avatar": "የካርታ መኪና አቫታር",
+  "Choose your Biloo finish": "የቢሉ ንድፍዎን ይምረጡ",
   "Unable to load account details. Please try again.": "የመለያዎን ዝርዝሮች መጫን አልተቻለም። እንደገና ይሞክሩ።",
   "Your account is temporarily unavailable. Your session has not been changed.": "መለያዎ ለጊዜው አይገኝም። የመግቢያ ክፍለ ጊዜዎ አልተቀየረም።",
   "Complete your active trip or outstanding payout before proceeding.": "ከመቀጠልዎ በፊት ንቁ ጉዞዎን ወይም ያልተጠናቀቀ ክፍያዎን ያጠናቅቁ።",

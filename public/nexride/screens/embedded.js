@@ -12,18 +12,19 @@
   const point=p=>p&&Number.isFinite(p.lat)&&Number.isFinite(p.lng)&&Math.abs(p.lat)<=90&&Math.abs(p.lng)<=180;
   const current=(booking,context)=>context?.trackingCurrent??(['approaching','arrived','in_trip'].includes(booking.status)&&navigator.onLine&&booking.tracking&&Date.now()-booking.tracking.updatedAt>=-5000&&Date.now()-booking.tracking.updatedAt<45000);
   const stop=()=>{cancelAnimationFrame(frame);frame=0;if(target&&car)car.setLatLng(target);target=null;};
-  const carMark = '<span class="nexride-map-car-badge" aria-hidden="true">Biloo</span>' +
-    '<svg class="nexride-map-car-svg" viewBox="0 0 56 36" aria-hidden="true" focusable="false">' +
-    '<path fill="rgba(4,28,48,.18)" d="M10 26c0 4 4 6 18 6s18-2 18-6H10Z"/>' +
-    '<path fill="#08295f" d="M8 21.5 12.2 12c1.2-2.8 3.2-4.2 6.2-4.2h19.2c3 0 5 1.4 6.2 4.2L48 21.5v7.2c0 1.7-1.3 3-3 3h-2.5c-1.7 0-3-1.3-3-3v-.8h-23v.8c0 1.7-1.3 3-3 3H11c-1.7 0-3-1.3-3-3v-7.2Z"/>' +
-    '<path fill="#dcecf3" d="m16.6 12.1-2.5 7h27.8l-2.5-7c-.4-1-1.2-1.5-2.3-1.5H18.9c-1.1 0-1.9.5-2.3 1.5Z"/>' +
-    '<path fill="#f9c449" d="M12.4 22.1h7.2v3.1h-7.2zm24 0h7.2v3.1h-7.2z"/>' +
-    '</svg>';
+  // Only allowlisted presentation values build this same-origin asset URL.
+  const avatarSource=avatar=>{
+   const body=['sedan','hatchback','suv','van'].includes(avatar?.bodyType)?avatar.bodyType:'sedan';
+   const color=['White','Black','Silver','Gray','Blue','Red','Green','Brown','Beige','Gold','Yellow','Orange'].includes(avatar?.color)?avatar.color:'unknown';
+   const style=['signature','goldline','executive'].includes(avatar?.style)?avatar.style:'signature';
+   return '/brand/driver-avatar?bodyType='+body+'&color='+color+'&style='+style;
+  };
+  const carMark='<img class="biloo-driver-car-art" width="48" height="82" alt="" draggable="false" src="'+avatarSource(null)+'"><span class="biloo-driver-car-label" aria-hidden="true">biloo</span>';
   const icon=kind=>L.divIcon({
-    className:'nexride-map-pin '+kind,
+    className:'nexride-map-pin '+kind+(kind==='vehicle'?' biloo-driver-car-marker':''),
     html:kind==='vehicle'?carMark:kind==='destination'?'D':'P',
-    iconSize:kind==='vehicle'?[64,60]:[32,32],
-    iconAnchor:kind==='vehicle'?[32,49]:[16,16]
+    iconSize:kind==='vehicle'?[60,86]:[32,32],
+    iconAnchor:kind==='vehicle'?[30,43]:[16,16]
   });
   let fitted=false;
   const fitOptions=()=>innerWidth<=760?{paddingTopLeft:[25,190],paddingBottomRight:[25,(document.querySelector('.ride-panel')?.getBoundingClientRect().height||300)+25],maxZoom:15}:{paddingTopLeft:[35,170],paddingBottomRight:[425,40],maxZoom:15};
@@ -57,6 +58,8 @@
       lastFix={...fix};
      }
      car?.getElement()?.classList.toggle('is-stale',!fresh||context.connected===false);
+     const element=car?.getElement(), art=element?.querySelector('.biloo-driver-car-art');
+     if(art){const source=avatarSource(booking.driver?.vehicle?.mapAvatar);if(art.getAttribute('src')!==source)art.src=source;art.style.setProperty('--biloo-car-heading',Number.isFinite(fix.heading)&&fix.heading>=0&&fix.heading<=360?fix.heading+'deg':'0deg');}
      accuracy?.remove();accuracy=null;if(Number.isFinite(fix.accuracyMeters)&&fix.accuracyMeters>0)accuracy=L.circle(next,{radius:fix.accuracyMeters,color:'#517684',weight:1,fillOpacity:.08}).addTo(map);
     }
     const points=[booking.pickup,booking.destination,fix,...(route||[])].filter(point).map(p=>[p.lat,p.lng]);if(!fitted&&points.length){map.fitBounds(points,fitOptions());fitted=true;}

@@ -24,18 +24,19 @@ describe("Private Driver license number draft migration", () => {
       licenseExpiry: "2027-10-01",
       vehicle: "Toyota",
       vehicleColor: "White",
+      vehicleBodyType: "sedan",
       plate: "A123",
       accountToken: "SHOULD-NOT-PERSIST",
     }));
     expect(draft).not.toContain("SENSITIVE-NUMBER");
     expect(draft).not.toContain("SHOULD-NOT-PERSIST");
     expect(JSON.parse(draft)).toEqual({
-      licenseExpiry:"2027-10-01",vehicle:"Toyota",vehicleColor:"White",plate:"A123",
+      licenseExpiry:"2027-10-01",vehicle:"Toyota",vehicleColor:"White",vehicleBodyType:"sedan",plate:"A123",
     });
   });
   it("does not carry arbitrary fields from a malformed legacy object", () => {
     expect(JSON.parse(sanitizeDriverVerificationDraft('{"licenseNumber":"ABC"}')))
-      .toEqual({licenseExpiry:"",vehicle:"",vehicleColor:"",plate:""});
+      .toEqual({licenseExpiry:"",vehicle:"",vehicleColor:"",vehicleBodyType:"",plate:""});
     expect(() => sanitizeDriverVerificationDraft("{not-json")).toThrow();
   });
 });

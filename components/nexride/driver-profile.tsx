@@ -234,6 +234,7 @@ export function DriverProfileScreen({
 
           <DriverSection title={say("Vehicle & payouts")} subtitle={say("Keep operating and settlement details current")}>
             <DriverRow icon="pin" title={say("Vehicle management")} detail={profile.vehiclePlate || profile.vehicle || say("Vehicle details and registration")} onClick={() => router.push("/driver/profile/vehicle")}/>
+            <DriverRow icon="pin" title={say("Map car avatar")} detail={say("Choose your Biloo finish")} onClick={() => router.push("/driver/profile/vehicle#map-avatar")}/>
             <DriverRow icon="wallet" title={say("Payout account")} detail={say("Manage your payout destination")} onClick={() => router.push("/driver/profile/payouts")}/>
           </DriverSection>
         </div>

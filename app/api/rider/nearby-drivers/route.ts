@@ -4,6 +4,8 @@ import { NEARBY_DRIVER_RADIUS_METERS, withinNearbyDriverRadius } from "../../../
 import { DRIVER_GPS_MAX_AGE_MS, DRIVER_GPS_MAX_ACCURACY_METERS } from "../../../../lib/nexride-driver-gps";
 import { authorizedRequestSupabase } from "../../../../lib/nexride-server-supabase";
 import { serverAdminSupabase } from "../../../../lib/nexride-server-admin";
+import { resolveDriverMapAvatar } from "../../../../lib/biloo-driver-map-avatar";
+import { driverAvatarMetadata } from "../../../../lib/biloo-driver-map-avatar-server";
 import {
   insideBounds,
   serviceBounds,
@@ -89,7 +91,7 @@ export async function GET(request: Request) {
     const newestGps = new Date(Date.now() - LOCATION_FRESHNESS_MS).toISOString();
     const { data: drivers, error: driversError } = await admin
       .from("drivers")
-      .select("id,location,gps_recorded_at,last_presence_at,gps_accuracy_meters")
+      .select("id,location,gps_recorded_at,last_presence_at,gps_accuracy_meters,vehicle,vehicle_color")
       .eq("review_status", "approved")
       .eq("is_online", true)
       .gte("gps_recorded_at", newestGps)
@@ -141,7 +143,7 @@ export async function GET(request: Request) {
 
     const pending = new Set((offers || []).map((offer) => offer.driver_id));
 
-    const vehicles = drivers
+    const candidates = drivers
       .flatMap((driver) => {
         if (
           typeof driver.id !== "string" ||
@@ -166,6 +168,8 @@ export async function GET(request: Request) {
 
         return [
           {
+            driverId: driver.id,
+            registeredVehicle: { model: driver.vehicle, color: driver.vehicle_color },
             key: createHash("sha256")
               .update(authorized.user.id + ":" + driver.id)
               .digest("hex")
@@ -179,6 +183,13 @@ export async function GET(request: Request) {
       })
       .sort((a, b) => a.distanceMeters - b.distanceMeters)
       .slice(0, MAX_DRIVER_RESULTS);
+
+    // Resolve cosmetic choices only after fresh GPS, range and eligibility checks.
+    // Return no Driver identity or model/plate to nearby supply viewers.
+    const vehicles = await Promise.all(candidates.map(async ({ driverId, registeredVehicle, ...vehicle }) => ({
+      ...vehicle,
+      avatar: resolveDriverMapAvatar(registeredVehicle, await driverAvatarMetadata(admin, driverId)),
+    })));
 
     return reply({
       status: "ready",

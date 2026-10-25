@@ -5,6 +5,7 @@ import type { Map as MapboxMap, Marker as MapboxMarker } from "mapbox-gl";
 import { Icon, Spinner } from "./ui";
 import { useDriverTheme } from "./driver-app-shell";
 import { applyBilooCityMapPalette, BILOO_STYLE_SWAP_OPTIONS } from "../../lib/biloo-map-palette";
+import { driverCarMarkerElement, useDriverMapAvatar } from "../../lib/biloo-driver-map-avatar-client";
 import "mapbox-gl/dist/mapbox-gl.css";
 
 export type NavigationCoordinate = { lat: number; lng: number };
@@ -30,6 +31,21 @@ const lngLat = (point: NavigationCoordinate): [number, number] => [point.lng, po
 
 const normalizedBearing = (bearing: number) => ((bearing + 180) % 360 + 360) % 360 - 180;
 
+/** Frame the actual GPS point above trip controls, with room for the whole car. */
+function navigationMapPadding(map: MapboxMap) {
+  const canvas = map.getContainer();
+  const rect = canvas.getBoundingClientRect();
+  const page = canvas.closest('.nr-driver-navigation-page');
+  const sheet = page?.querySelector('.nr-nav-bottom-card')?.getBoundingClientRect();
+  const guidance = page?.querySelector('.nr-nav-guidance')?.getBoundingClientRect();
+  const sidePanel = sheet && rect.width >= 760 && sheet.left > rect.left + rect.width * .45;
+  const top = Math.min(Math.max(110, (guidance?.bottom || rect.top) - rect.top + 55), Math.max(40, rect.height - 180));
+  const left = 55;
+  const right = Math.max(74, Math.min(sidePanel ? rect.right - sheet.left + 65 : 74, rect.width - left - 110));
+  const bottom = Math.min(sidePanel ? 75 : Math.max(110, sheet ? rect.bottom - sheet.top + 65 : 220), Math.max(55, rect.height - top - 110));
+  return { top, right, bottom, left };
+}
+
 export function DriverNavigationMap({
   vehicle,
   pickup,
@@ -50,6 +66,7 @@ export function DriverNavigationMap({
   heading: number | null;
 }) {
   const { resolvedTheme } = useDriverTheme();
+  const driverAvatar = useDriverMapAvatar(true);
   const container = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapboxMap | null>(null);
   const markers = useRef<MapboxMarker[]>([]);
@@ -63,6 +80,18 @@ export function DriverNavigationMap({
   const [styleKey, setStyleKey] = useState<MapStyleKey>(resolvedTheme === "dark" ? "dark" : "streets");
   const [layersOpen, setLayersOpen] = useState(false);
   const [bearing, setBearing] = useState(0);
+  const [cameraLayoutRevision, setCameraLayoutRevision] = useState(0);
+
+  useEffect(() => {
+    const page = container.current?.closest('.nr-driver-navigation-page');
+    if (!page) return;
+    let frame = 0;
+    const refresh = () => { cancelAnimationFrame(frame); frame = requestAnimationFrame(() => setCameraLayoutRevision(value => value + 1)); };
+    const observer = new ResizeObserver(refresh);
+    for (const element of [container.current, page.querySelector('.nr-nav-bottom-card'), page.querySelector('.nr-nav-guidance')]) if (element) observer.observe(element);
+    refresh();
+    return () => { cancelAnimationFrame(frame); observer.disconnect(); };
+  }, [mountedRevision]);
 
   useEffect(() => {
     let cancelled = false;
@@ -194,10 +223,11 @@ export function DriverNavigationMap({
       markers.current = [];
 
       const addMarker = (point: NavigationCoordinate, kind: "vehicle" | "pickup" | "destination", active: boolean) => {
-        const element = document.createElement("div");
-        element.className = `nr-driver-map-marker ${kind}${active ? " active" : ""}${gpsState !== "fresh" && kind === "vehicle" ? " stale" : ""}`;
-        if (kind === "vehicle" && Number.isFinite(heading)) element.style.setProperty("--nr-heading", `${Math.round(Number(heading))}deg`);
-        element.setAttribute("aria-hidden", "true");
+        const element = kind === "vehicle" ? driverCarMarkerElement("Your Biloo vehicle", driverAvatar, heading, bearing) : document.createElement("div");
+        element.classList.add("nr-driver-map-marker", kind);
+        if (active) element.classList.add("active");
+        if (gpsState !== "fresh" && kind === "vehicle") element.classList.add("stale");
+        if (kind !== "vehicle") element.setAttribute("aria-hidden", "true");
         const marker = new mapboxgl.default.Marker({ element, anchor: "center" }).setLngLat(lngLat(point)).addTo(mapRef.current!);
         markers.current.push(marker);
       };
@@ -208,7 +238,7 @@ export function DriverNavigationMap({
     });
 
     return () => { cancelled = true; };
-  }, [vehicle?.lat, vehicle?.lng, pickup?.lat, pickup?.lng, destination?.lat, destination?.lng, target, gpsState, heading, mountedRevision]);
+  }, [vehicle?.lat, vehicle?.lng, pickup?.lat, pickup?.lng, destination?.lat, destination?.lng, target, gpsState, heading, mountedRevision, driverAvatar, bearing]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -233,6 +263,8 @@ export function DriverNavigationMap({
         zoom: Math.max(15.8, map.getZoom()),
         bearing: Number.isFinite(heading) ? Number(heading) : map.getBearing(),
         pitch: 34,
+        padding: navigationMapPadding(map),
+        retainPadding: false,
         duration: matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 260,
       });
       return;
@@ -240,7 +272,7 @@ export function DriverNavigationMap({
 
     if (view === "overview" && points.length) {
       if (points.length === 1) {
-        map.easeTo({ center: lngLat(points[0]), zoom: 15, duration: 260 });
+        map.easeTo({ center: lngLat(points[0]), zoom: 15, padding: navigationMapPadding(map), retainPadding: false, duration: 260 });
         return;
       }
       const west = Math.min(...points.map((point) => point.lng));
@@ -248,23 +280,24 @@ export function DriverNavigationMap({
       const south = Math.min(...points.map((point) => point.lat));
       const north = Math.max(...points.map((point) => point.lat));
       map.fitBounds([[west, south], [east, north]], {
-        padding: { top: 110, right: 74, bottom: 220, left: 34 },
+        padding: navigationMapPadding(map),
+        retainPadding: false,
         maxZoom: 16,
         duration: matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 320,
       });
     }
-  }, [view, target, route, vehicle?.lat, vehicle?.lng, pickup?.lat, pickup?.lng, destination?.lat, destination?.lng, heading, mountedRevision]);
+  }, [view, target, route, vehicle?.lat, vehicle?.lng, pickup?.lat, pickup?.lng, destination?.lat, destination?.lng, heading, mountedRevision, cameraLayoutRevision]);
 
   const recenter = () => {
     const map = mapRef.current;
     if (!map) return;
     manualView.current = false;
     if (valid(vehicle)) {
-      map.easeTo({ center: lngLat(vehicle), zoom: Math.max(map.getZoom(), 16), duration: 260 });
+      map.easeTo({ center: lngLat(vehicle), zoom: Math.max(map.getZoom(), 16), padding: navigationMapPadding(map), retainPadding: false, duration: 260 });
       return;
     }
     const point = target === "pickup" ? pickup : destination;
-    if (valid(point)) map.easeTo({ center: lngLat(point), zoom: 15, duration: 260 });
+    if (valid(point)) map.easeTo({ center: lngLat(point), zoom: 15, padding: navigationMapPadding(map), retainPadding: false, duration: 260 });
   };
 
   const showCompass = Math.abs(normalizedBearing(bearing)) > 2;

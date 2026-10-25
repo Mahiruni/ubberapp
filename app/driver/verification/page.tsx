@@ -9,6 +9,7 @@ import type { DriverReviewStatus } from "../../../lib/nexride-driver-verificatio
 import { resolveSessionRole } from "../../../lib/nexride-account-role";
 import { nexrideApiFetch } from "../../../lib/nexride-api-auth";
 import { VEHICLE_COLOR_OPTIONS } from "../../../lib/nexride-vehicle";
+import { VEHICLE_BODY_TYPES, inferVehicleBodyType, normalizeVehicleBodyType } from "../../../lib/biloo-driver-map-avatar";
 import { unsubmittedDriverEvidencePaths, sanitizeDriverVerificationDraft } from "../../../lib/nexride-driver-evidence";
 import "../auth/driver-auth.css";
 import "../onboarding/driver-onboarding.css";
@@ -32,6 +33,7 @@ export default function DriverVerificationPage() {
   const [licenseExpiry, setLicenseExpiry] = useState("");
   const [vehicle, setVehicle] = useState("");
   const [vehicleColor, setVehicleColor] = useState("");
+  const [vehicleBodyType, setVehicleBodyType] = useState("");
   const [plate, setPlate] = useState("");
   const [licenseFile, setLicenseFile] = useState<File | null>(null);
   const [registrationFile, setRegistrationFile] = useState<File | null>(null);
@@ -92,6 +94,7 @@ export default function DriverVerificationPage() {
         setLicenseExpiry(data.license_expiry || "");
         setVehicle(data.vehicle || session.user.user_metadata?.vehicle || "");
         setVehicleColor(data.vehicle_color || session.user.user_metadata?.vehicle_color || "");
+        setVehicleBodyType(normalizeVehicleBodyType(session.user.user_metadata?.vehicle === data.vehicle ? session.user.user_metadata?.vehicle_body_type : '') || inferVehicleBodyType(data.vehicle || session.user.user_metadata?.vehicle));
         setPlate(data.vehicle_plate || session.user.user_metadata?.vehicle_plate || "");
         if (!["approved", "pending", "suspended"].includes(next || "draft")) {
           try {
@@ -101,6 +104,7 @@ export default function DriverVerificationPage() {
               if (typeof draft.licenseExpiry === "string") setLicenseExpiry(draft.licenseExpiry.slice(0, 20));
               if (typeof draft.vehicle === "string") setVehicle(draft.vehicle.slice(0, 120));
               if (typeof draft.vehicleColor === "string") setVehicleColor(draft.vehicleColor.slice(0, 32));
+              if (normalizeVehicleBodyType(draft.vehicleBodyType)) setVehicleBodyType(draft.vehicleBodyType);
               if (typeof draft.plate === "string") setPlate(draft.plate.slice(0, 60));
             }
           } catch {}
@@ -108,6 +112,7 @@ export default function DriverVerificationPage() {
       } else {
         setVehicle(session.user.user_metadata?.vehicle || "");
         setVehicleColor(session.user.user_metadata?.vehicle_color || "");
+        setVehicleBodyType(normalizeVehicleBodyType(session.user.user_metadata?.vehicle_body_type) || inferVehicleBodyType(session.user.user_metadata?.vehicle));
         setPlate(session.user.user_metadata?.vehicle_plate || "");
       }
       setLoading(false);
@@ -121,10 +126,10 @@ export default function DriverVerificationPage() {
       sessionStorage.setItem(
         "nexride.driver.verification.draft." + driverId,
         // Sensitive government document numbers must not persist in browser storage.
-        JSON.stringify({ licenseExpiry, vehicle, vehicleColor, plate }),
+        JSON.stringify({ licenseExpiry, vehicle, vehicleColor, vehicleBodyType, plate }),
       );
     } catch {}
-  }, [driverId, loading, status, editingApproved, licenseExpiry, vehicle, vehicleColor, plate]);
+  }, [driverId, loading, status, editingApproved, licenseExpiry, vehicle, vehicleColor, vehicleBodyType, plate]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -195,6 +200,7 @@ export default function DriverVerificationPage() {
           licenseExpiry,
           vehicle: vehicle.trim(),
           vehicleColor,
+          vehicleBodyType: vehicleBodyType || inferVehicleBodyType(vehicle),
           vehiclePlate: plate.trim(),
           licenseDocumentPath: licensePath,
           vehicleRegistrationPath: registrationPath,
@@ -261,9 +267,10 @@ export default function DriverVerificationPage() {
               <label>License expiry<input type="date" value={licenseExpiry} onChange={(e) => setLicenseExpiry(e.target.value)} required /></label>
             </div>
             <div className="driver-form-grid">
-              <label>Vehicle model<input value={vehicle} onChange={(e) => setVehicle(e.target.value)} placeholder="e.g. Toyota Corolla" required /></label>
+              <label>Vehicle model<input value={vehicle} onChange={(e) => { setVehicle(e.target.value); setVehicleBodyType(inferVehicleBodyType(e.target.value)); }} placeholder="e.g. Toyota Corolla" required /></label>
               <label>Vehicle color<select value={vehicleColor} onChange={(e) => setVehicleColor(e.target.value)} required><option value="">Choose color</option>{VEHICLE_COLOR_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.en}</option>)}</select></label>
             </div>
+            <label>Vehicle body type<select value={vehicleBodyType || inferVehicleBodyType(vehicle)} onChange={(e) => setVehicleBodyType(e.target.value)} required>{VEHICLE_BODY_TYPES.map(type => <option key={type.value} value={type.value}>{type.en}</option>)}</select></label>
             <label>Vehicle plate<input value={plate} onChange={(e) => setPlate(e.target.value)} required /></label>
             <label>Driver license document {existingLicensePath && <small>Already submitted — upload only to replace</small>}<input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" onChange={(e) => setLicenseFile(e.target.files?.[0] || null)} required={!existingLicensePath} /></label>
             <label>Vehicle registration document {existingRegistrationPath && <small>Already submitted — upload only to replace</small>}<input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" onChange={(e) => setRegistrationFile(e.target.files?.[0] || null)} required={!existingRegistrationPath} /></label>

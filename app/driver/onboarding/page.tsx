@@ -10,6 +10,7 @@ import { nexrideAuthRedirectUrl } from "../../../lib/nexride-auth-url";
 import { resolveSessionRole } from "../../../lib/nexride-account-role";
 import { authErrorKey } from "../../../lib/nexride-auth-errors";
 import { VEHICLE_COLOR_OPTIONS } from "../../../lib/nexride-vehicle";
+import { VEHICLE_BODY_TYPES, inferVehicleBodyType } from "../../../lib/biloo-driver-map-avatar";
 import { normalizeEthiopianPhone } from "../../../lib/nexride-identity";
 import "../auth/driver-auth.css";
 import "./driver-onboarding.css";
@@ -28,6 +29,7 @@ export default function DriverOnboarding() {
   const [showPassword, setShowPassword] = useState(false);
   const [vehicle, setVehicle] = useState("");
   const [vehicleColor, setVehicleColor] = useState("");
+  const [vehicleBodyType, setVehicleBodyType] = useState("");
   const [plate, setPlate] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -95,6 +97,7 @@ export default function DriverOnboarding() {
           phone: normalizeEthiopianPhone(phone) || phone.trim(),
           vehicle: vehicle.trim(),
           vehicle_color: vehicleColor,
+          vehicle_body_type: vehicleBodyType || inferVehicleBodyType(vehicle),
           vehicle_plate: plate.trim(),
           driver_onboarding_complete: true,
         },
@@ -132,6 +135,7 @@ export default function DriverOnboarding() {
           phone: normalizeEthiopianPhone(phone) || phone.trim(),
           vehicle: vehicle.trim(),
           vehicle_color: vehicleColor,
+          vehicle_body_type: vehicleBodyType || inferVehicleBodyType(vehicle),
           vehicle_plate: plate.trim(),
           driver_onboarding_complete: true,
         },
@@ -193,6 +197,7 @@ export default function DriverOnboarding() {
                     </div>
                   </label>
                 </div>
+                <label><span>{say("Vehicle body type", "የመኪና አይነት")}</span><div className="nr-auth-input nr-auth-select-row"><Icon name="settings" size={19}/><select value={vehicleBodyType || (vehicle ? inferVehicleBodyType(vehicle) : '')} onChange={(e) => setVehicleBodyType(e.target.value)} required aria-label={say("Vehicle body type", "የመኪና አይነት")}><option value="">{say("Choose body type", "የመኪና አይነት ይምረጡ")}</option>{VEHICLE_BODY_TYPES.map(type => <option key={type.value} value={type.value}>{language === "am" ? type.am : type.en}</option>)}</select></div><small>{say("Used for your Biloo car avatar on the map.", "በካርታ ላይ ለሚታየው የቢሉ መኪና አቫታር ይጠቅማል።")}</small></label>
                 <label><span>{say("Plate number", "የሰሌዳ ቁጥር")}</span><div className="nr-auth-input"><Icon name="card" size={19}/><input value={plate} onChange={(e) => setPlate(e.target.value)} placeholder="2-A12345" required /></div></label>
               </div>
 

@@ -11,7 +11,7 @@ const driver = read("components/nexride/driver.tsx");
 const styles = read("app/live-location.css");
 
 describe("Biloo live device markers", () => {
-  it("renders the selected premium Rider character and preserves the black Driver car", () => {
+  it("renders the selected Rider character or the registered Biloo Driver car", () => {
     const start = map.indexOf("const locationMarkerElement = ");
     const end = map.indexOf("const searchAreaElement = ", start);
     expect(start).toBeGreaterThan(0);
@@ -20,9 +20,9 @@ describe("Biloo live device markers", () => {
     expect(marker).toContain('role === "rider"');
     expect(marker).toContain('data'); // marker role attributes are set on the DOM node
     expect(marker).toContain("root.dataset.markerRole = role");
-    expect(marker).toContain('fill="#111111"');
-    expect(marker).toContain('role === "rider" ? mapAvatarSvg(avatar)');
-    expect(marker.match(/<svg /g)).toHaveLength(1);
+    expect(marker).toContain('if (role === "driver") updateDriverCarMarker(root, driverAvatar)');
+    expect(marker).toContain('mapAvatarSvg(avatar)');
+    expect(marker).not.toContain('<svg ');
     expect(mapAvatarSvg({ ...DEFAULT_MAP_AVATAR, preset: 19 })).toContain('character-20-v2.webp');
     expect(marker).toContain('setAttribute("role", "img")');
     expect(marker).toContain('setAttribute("aria-label", label)');
@@ -65,7 +65,7 @@ describe("Biloo live device markers", () => {
     expect(map).toContain('anchor: markerRole === "rider" ? RIDER_MAP_AVATAR_SIZE.anchor : "center"');
   });
 
-  it("leaves the Driver car unchanged and dims stale Rider artwork", () => {
+  it("isolates Rider styling and dims stale Rider artwork", () => {
     const avatarStyles = styles.slice(styles.indexOf("/* Override both legacy"));
     expect(avatarStyles).not.toContain('[data-marker-role="driver"]');
     expect(avatarStyles).toContain('.is-stale>.biloo-rider-avatar-art');

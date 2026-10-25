@@ -1,6 +1,7 @@
 import { authorizedRequestSupabase } from "../../../../lib/nexride-server-supabase";
 import { serverAdminSupabase } from "../../../../lib/nexride-server-admin";
 import { normalizeVehicleColor } from "../../../../lib/nexride-vehicle";
+import { inferVehicleBodyType, normalizeVehicleBodyType } from "../../../../lib/biloo-driver-map-avatar";
 import { isDriverDocumentPath, isDriverDocumentEvidence } from "../../../../lib/nexride-driver-document-evidence";
 
 const reply = (body: unknown, status = 200) =>
@@ -27,6 +28,7 @@ export async function POST(request: Request) {
   const licenseExpiry = text(body.licenseExpiry, 20);
   const vehicle = text(body.vehicle, 120);
   const vehicleColor = normalizeVehicleColor(body.vehicleColor);
+  const vehicleBodyType = normalizeVehicleBodyType(body.vehicleBodyType) || inferVehicleBodyType(vehicle);
   const vehiclePlate = text(body.vehiclePlate, 60);
   const licenseDocumentPath = text(body.licenseDocumentPath, 300);
   const vehicleRegistrationPath = text(body.vehicleRegistrationPath, 300);
@@ -121,7 +123,7 @@ export async function POST(request: Request) {
     await admin.auth.admin.updateUserById(ownerId, {
       user_metadata: {
         ...(authorized.user.user_metadata || {}),
-        vehicle, vehicle_color: vehicleColor, vehicle_plate: vehiclePlate,
+        vehicle, vehicle_color: vehicleColor, vehicle_body_type: vehicleBodyType, vehicle_plate: vehiclePlate,
       },
     }).catch(() => {});
 

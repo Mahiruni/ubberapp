@@ -14,6 +14,8 @@ import { riderHomeLocationCameraOffset } from "../../lib/biloo-map-camera";
 import { nexrideApiFetch } from "../../lib/nexride-api-auth";
 import { validPoint as validTripPoint, type TripSnapshot } from '../../lib/nexride-trip-data';
 import { withinNearbyDriverRadius } from "../../lib/nexride-nearby-vehicles";
+import { normalizeDriverMapAvatar, resolveDriverMapAvatar, type DriverMapAvatar } from "../../lib/biloo-driver-map-avatar";
+import { driverCarMarkerElement, updateDriverCarMarker, useDriverMapAvatar } from "../../lib/biloo-driver-map-avatar-client";
 import { driverRadarCollection, driverGpsQuality } from "../../lib/nexride-driver-radar";
 import {
   formatDistance,
@@ -137,26 +139,18 @@ const endpointElement = (kind: "pickup" | "destination") => {
   return root;
 };
 
-/** Small, original black location glyphs — never a colored GPS dot.
- * The person represents a Rider; the top-down car represents a Driver.
- * Only trusted, hard-coded SVG markup enters the Mapbox DOM element.
- */
+/** A Rider character or the Driver's registered Biloo car, at real GPS only. */
 export type BilooLocationMarkerRole = "rider" | "driver";
 
-const locationMarkerElement = (label: string, role: BilooLocationMarkerRole, avatar: MapAvatar = DEFAULT_MAP_AVATAR) => {
+const locationMarkerElement = (label: string, role: BilooLocationMarkerRole, avatar: MapAvatar = DEFAULT_MAP_AVATAR, driverAvatar: DriverMapAvatar | null = null) => {
   const root = document.createElement("div");
   root.className = "nr-live-location-marker nr-location-identity";
   root.dataset.markerRole = role;
   if (role === "rider") root.classList.add("biloo-custom-map-avatar");
   root.setAttribute("role", "img");
   root.setAttribute("aria-label", label);
-  root.innerHTML = role === "rider" ? mapAvatarSvg(avatar) : '<svg class="nr-location-identity-glyph" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">' +
-      '<path d="M17 6.5h14c3.1 0 5.5 2.7 5.5 5.8v23.4c0 3.1-2.4 5.8-5.5 5.8H17c-3.1 0-5.5-2.7-5.5-5.8V12.3c0-3.1 2.4-5.8 5.5-5.8Z" fill="#111111" stroke="white" stroke-width="1.7"/>' +
-      '<path d="M17.5 13.1h13l2.1 8.1H15.4l2.1-8.1Z" fill="white"/>' +
-      '<path d="M15 30.5h18v4H15v-4Z" fill="white"/>' +
-      '<path d="M11.5 24h5v9h-5v-9Zm20 0h5v9h-5v-9Z" fill="#111111" stroke="white" stroke-width="1.1"/>' +
-      '<path d="M17 38h14" stroke="white" stroke-width="1.7" stroke-linecap="round"/>' +
-      '</svg>';
+  if (role === "driver") updateDriverCarMarker(root, driverAvatar);
+  else root.innerHTML = mapAvatarSvg(avatar);
   return root;
 };
 
@@ -174,23 +168,13 @@ type NearbyDriver = {
   lng: number;
   updatedAt: string;
   distanceMeters: number;
+  avatar: DriverMapAvatar;
+  heading?: number;
 };
 
-const nearbyVehicleElement = (label: string) => {
-  const root = document.createElement("div");
-  root.className = "nr-nearby-car-marker";
-  root.setAttribute("role", "img");
-  root.setAttribute("aria-label", label);
-  root.innerHTML =
-    '<span class="nr-nearby-car-brand" aria-hidden="true">Biloo</span>' +
-    '<span class="nr-nearby-car-body" aria-hidden="true">' +
-    '<svg viewBox="0 0 56 36" focusable="false">' +
-    '<path class="nr-nearby-car-shadow" d="M10 26c0 4 4 6 18 6s18-2 18-6H10Z"/>' +
-    '<path class="nr-nearby-car-shell" d="M8 21.5 12.2 12c1.2-2.8 3.2-4.2 6.2-4.2h19.2c3 0 5 1.4 6.2 4.2L48 21.5v7.2c0 1.7-1.3 3-3 3h-2.5c-1.7 0-3-1.3-3-3v-.8h-23v.8c0 1.7-1.3 3-3 3H11c-1.7 0-3-1.3-3-3v-7.2Z"/>' +
-    '<path class="nr-nearby-car-glass" d="m16.6 12.1-2.5 7h27.8l-2.5-7c-.4-1-1.2-1.5-2.3-1.5H18.9c-1.1 0-1.9.5-2.3 1.5Z"/>' +
-    '<path class="nr-nearby-car-accent" d="M12.4 22.1h7.2v3.1h-7.2zm24 0h7.2v3.1h-7.2z"/>' +
-    '<path class="nr-nearby-car-grille" d="M22.2 24.2h11.6c.8 0 1.4.6 1.4 1.4v.7H20.8v-.7c0-.8.6-1.4 1.4-1.4Z"/>' +
-    "</svg></span>";
+const nearbyVehicleElement = (label: string, avatar: DriverMapAvatar, heading?: number, bearing = 0) => {
+  const root = driverCarMarkerElement(label, avatar, heading, bearing);
+  root.classList.add("nr-nearby-car-marker");
   return root;
 };
 
@@ -585,7 +569,7 @@ export function RiderMap({
   assignedTrip?: TripSnapshot | null;
   /** Real GPS-centered 500 m and 1 km rings, never simulated Rider positions. */
   showDriverRadar?: boolean;
-  /** Your own device marker: Rider = black person, Driver = black car. */
+  /** Your own device marker: Rider character or registered Biloo Driver car. */
   markerRole?: BilooLocationMarkerRole;
   onStartRoute?: () => void;
 }) {
@@ -597,6 +581,9 @@ export function RiderMap({
   const liveMarkerRole = useRef<BilooLocationMarkerRole | null>(null);
   const [riderMapAvatar, setRiderMapAvatar] = useState<MapAvatar>(DEFAULT_MAP_AVATAR);
   const riderMapAvatarRef = useRef<MapAvatar>(DEFAULT_MAP_AVATAR);
+  const driverMapAvatar = useDriverMapAvatar(markerRole === "driver");
+  const driverMapAvatarRef = useRef<DriverMapAvatar | null>(null);
+  driverMapAvatarRef.current = driverMapAvatar;
 
   const liveMarkerAnimation = useRef<number | null>(null);
   const liveMarkerLngLat = useRef<[number, number] | null>(null);
@@ -667,12 +654,15 @@ export function RiderMap({
   const [styleKey, setStyleKey] = useState<MapStyleKey>(preferredStyle || "streets");
   const [layerMenuOpen, setLayerMenuOpen] = useState(false);
   const [bearing, setBearing] = useState(0);
+  useEffect(() => {
+    if (markerRole === "driver" && liveMarkerRole.current === "driver" && liveMarker.current) updateDriverCarMarker(liveMarker.current.getElement(), driverMapAvatar, position?.heading, bearing);
+  }, [driverMapAvatar, markerRole, position?.heading, bearing]);
   const [fasterNotice, setFasterNotice] = useState<number | null>(null);
   const [gpsStale, setGpsStale] = useState(false);
   const [nearbyDrivers, setNearbyDrivers] = useState<NearbyDriver[]>([]);
   const assignedFix = assignedTrip && ['approaching','arrived','in_trip'].includes(assignedTrip.status) ? assignedTrip.tracking : null;
   const assignedDrivers: NearbyDriver[] = assignedFix && (!assignedTrip?.driver || assignedFix.driverId === assignedTrip.driver.id)
-    ? [{ key: assignedFix.driverId, lat: assignedFix.lat, lng: assignedFix.lng, updatedAt: new Date(assignedFix.updatedAt).toISOString(), distanceMeters: 0 }] : [];
+    ? [{ key: assignedFix.driverId, lat: assignedFix.lat, lng: assignedFix.lng, updatedAt: new Date(assignedFix.updatedAt).toISOString(), distanceMeters: 0, heading: assignedFix.heading, avatar: assignedTrip?.driver?.vehicle.mapAvatar || resolveDriverMapAvatar({ model: assignedTrip?.driver?.vehicle.model, color: assignedTrip?.driver?.vehicle.color }) }] : [];
   const displayedDrivers = assignedTrip ? assignedDrivers : nearbyDrivers;
   const liveFrame = useRef('');
   driverRadarRef.current = showDriverRadar;
@@ -1193,7 +1183,9 @@ export function RiderMap({
             : (language === "am" ? "የእርስዎ አካባቢ" : "Your location"),
           markerRole,
           riderMapAvatarRef.current,
+          driverMapAvatarRef.current,
         );
+        if (markerRole === "driver") updateDriverCarMarker(markerElement, driverMapAvatarRef.current, position.heading, currentMap.getBearing());
         markerElement.classList.toggle("is-stale", gpsStale);
         markerElement.classList.toggle(
           "is-paused",
@@ -1333,6 +1325,7 @@ export function RiderMap({
             updatedAt:
               typeof item.updatedAt === "string" ? item.updatedAt : "",
             distanceMeters: Number(item.distanceMeters),
+            avatar: normalizeDriverMapAvatar(item.avatar),
           }))
           .filter(
             (item: NearbyDriver) =>
@@ -1352,7 +1345,8 @@ export function RiderMap({
             item.key === next[index].key &&
             item.lat === next[index].lat &&
             item.lng === next[index].lng &&
-            item.updatedAt === next[index].updatedAt
+            item.updatedAt === next[index].updatedAt &&
+            JSON.stringify(item.avatar) === JSON.stringify(next[index].avatar)
           )) return current;
           return next;
         });
@@ -1443,9 +1437,10 @@ export function RiderMap({
             element: nearbyVehicleElement(
               language === "am"
                 ? "Biloo ሹፌር በአቅራቢያ"
-                : "Biloo driver nearby",
+                : assignedTrip ? "Your driver's vehicle" : "Biloo driver nearby",
+              driver.avatar, driver.heading, bearing,
             ),
-            anchor: "bottom",
+            anchor: "center",
           })
             .setLngLat(target)
             .addTo(currentMap);
@@ -1454,8 +1449,12 @@ export function RiderMap({
             lngLat: target,
             animation: null,
           });
+          marker.getElement().classList.toggle('is-stale', Date.now() - Date.parse(driver.updatedAt) > 45_000);
           continue;
         }
+
+        updateDriverCarMarker(existing.marker.getElement(), driver.avatar, driver.heading, bearing);
+        existing.marker.getElement().classList.toggle('is-stale', Date.now() - Date.parse(driver.updatedAt) > 45_000);
 
         if (
           existing.lngLat[0] === target[0] &&
@@ -1503,7 +1502,7 @@ export function RiderMap({
     return () => {
       disposed = true;
     };
-  }, [displayedDrivers, assignedTrip, showNearbyDrivers, mounted, language]);
+  }, [displayedDrivers, assignedTrip, showNearbyDrivers, mounted, language, bearing]);
 
   useEffect(() => {
     const map = mapRef.current;

@@ -1,12 +1,13 @@
+import { resolveDriverMapAvatar, type DriverMapAvatar } from './biloo-driver-map-avatar';
 // Narrow presentation data. Never infer travel, arrival, payment, or verification.
 export type Row = Record<string, unknown>;
 export type Point = { lat: number; lng: number };
 export type TripSnapshot = {
   id: string; revision: number; status: 'approaching' | 'arrived' | 'reassigning' | 'in_trip' | 'completed' | 'cancelled';
   category?: string; driver: null | { id: string; name?: string; photo?: string; contactPhone?: string; rating?: number; tripCount?: number;
-    vehicle: { model?: string; color?: string; plate?: string }; verification?: { status: 'verified'; source: string; verifiedAt: number } };
+    vehicle: { model?: string; color?: string; plate?: string; mapAvatar?: DriverMapAvatar }; verification?: { status: 'verified'; source: string; verifiedAt: number } };
   pickup: Partial<Point> & { name?: string; instructions?: string }; destination: Partial<Point> & { name?: string };
-  tracking: null | (Point & { driverId: string; updatedAt: number; accuracyMeters?: number; etaMinutes?: number; etaUpdatedAt?: number; route?: Point[] });
+  tracking: null | (Point & { driverId: string; updatedAt: number; accuracyMeters?: number; heading?: number; etaMinutes?: number; etaUpdatedAt?: number; route?: Point[] });
   route?: { id: string; points: Point[] }; metrics?: { arrivalAt?: number; remainingMeters?: number; updatedAt: number };
   delayedArrival?: boolean; fare?: { amount: number; currency: string }; finalAmount?: { amount: number; currency: string };
   completedAt?: number; startedAt?: number; arrivedAt?: number; estimatedDistanceMeters?: number;
@@ -59,7 +60,7 @@ export function normalizeTrip(trip: Row, parts: { profile?: Row | null; driver?:
   const displayDriver = driverId && status !== 'reassigning' && status !== 'cancelled' ? {
     id: driverId, name: textValue(p.full_name), photo: textValue(p.avatar_url), contactPhone: textValue(p.phone),
     rating: numberValue(d.rating), tripCount: numberValue(d.completed_trips),
-    vehicle: { model: [textValue(v.make), textValue(v.model)].filter(Boolean).join(' ') || undefined, color: textValue(v.color), plate: textValue(v.plate_number ?? v.license_plate ?? v.plate) },
+    vehicle: { model: [textValue(v.make), textValue(v.model)].filter(Boolean).join(' ') || undefined, color: textValue(v.color), plate: textValue(v.plate_number ?? v.license_plate ?? v.plate), mapAvatar: resolveDriverMapAvatar({ model: [textValue(v.make), textValue(v.model)].filter(Boolean).join(' '), color: v.color }, { biloo_driver_map_avatar: { style: d.map_avatar_style } }) },
     verification: d.review_status === 'approved' && verifiedAt ? { status: 'verified' as const, source: 'driver_review', verifiedAt } : undefined,
   } : null;
   return {

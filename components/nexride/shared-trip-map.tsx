@@ -2,11 +2,13 @@
 
 import { useEffect,useRef,useState } from "react";
 import type { Map as MapboxMap,Marker as MapboxMarker } from "mapbox-gl";
+import type { DriverMapAvatar } from '../../lib/biloo-driver-map-avatar';
+import { driverCarMarkerElement, updateDriverCarMarker } from '../../lib/biloo-driver-map-avatar-client';
 import "mapbox-gl/dist/mapbox-gl.css";
 
 export type SharedDriverPoint={lat:number;lng:number;updatedAt:string;accuracyMeters:number};
 
-export function SharedTripMap({point}:{point:SharedDriverPoint|null}) {
+export function SharedTripMap({point,avatar}:{point:SharedDriverPoint|null;avatar?:DriverMapAvatar}) {
  const node=useRef<HTMLDivElement>(null);
  const map=useRef<MapboxMap|null>(null);
  const marker=useRef<MapboxMarker|null>(null);
@@ -38,14 +40,13 @@ export function SharedTripMap({point}:{point:SharedDriverPoint|null}) {
    if(map.current!==next)return;
    const lngLat:[number,number]=[point.lng,point.lat];
    if(!marker.current){
-    const el=document.createElement("div");
-    el.className="nr-share-map-marker";
-    el.setAttribute("aria-label","Latest verified Driver location");
+    const el=driverCarMarkerElement("Latest verified Driver location",avatar);
+    el.classList.add("nr-share-map-marker");
     marker.current=new mapboxgl.Marker({element:el,anchor:"center"}).setLngLat(lngLat).addTo(next);
     next.jumpTo({center:lngLat,zoom:14.5});
-   }else marker.current.setLngLat(lngLat);
+   }else {marker.current.setLngLat(lngLat);updateDriverCarMarker(marker.current.getElement(),avatar);}
   }).catch(()=>{});
- },[available,point?.lat,point?.lng]);
+ },[available,point?.lat,point?.lng,avatar?.bodyType,avatar?.color,avatar?.style]);
  return <div className="nr-share-map-container" aria-label="Live trip location map">
    <div ref={node} className="nr-share-map-canvas"/>
    {(!point||unavailable)&&<div className="nr-share-map-message" role="status">

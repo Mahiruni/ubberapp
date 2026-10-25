@@ -2,12 +2,14 @@
 import { useParams } from "next/navigation";
 import { useCallback,useEffect,useState } from "react";
 import { SharedTripMap,type SharedDriverPoint } from "../../../../components/nexride/shared-trip-map";
+import type { DriverMapAvatar } from "../../../../lib/biloo-driver-map-avatar";
 import "./share.css";
 
 type LiveData={
  status:"active";
  trip:{stage:string;pickup:string;destination:string;category:string};
  driverLocation:SharedDriverPoint|null;
+ driverAvatar?:DriverMapAvatar;
  expiresAt:string;lastCheckedAt:string;
 };
 type State="loading"|"active"|"ended"|"unavailable";
@@ -71,7 +73,7 @@ export default function PrivateTripViewer(){
        <div><span className="nr-public-pin">●</span><span><small>PICKUP</small><strong>{details?.pickup||"Pickup location not available"}</strong></span></div>
        <div><span className="nr-public-pin last">●</span><span><small>DESTINATION</small><strong>{details?.destination||"Destination not available"}</strong></span></div>
       </div>
-      <SharedTripMap point={point||null}/>
+      <SharedTripMap point={point||null} avatar={live.driverAvatar}/>
       <p className="nr-public-gps">{point
        ? "Latest verified Driver GPS: "+new Date(point.updatedAt).toLocaleTimeString()+ " · accuracy ~"+point.accuracyMeters+" m"
        : "Current Driver location unavailable or stale. Biloo does not estimate a position."}</p>

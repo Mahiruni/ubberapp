@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useOperationalTranslation } from "../../../../components/nexride/operational-i18n";
 import { Icon } from "../../../../components/nexride/ui";
+import { DriverMapAvatarStudio } from "../../../../components/nexride/driver-map-avatar-studio";
 import { supabase } from "../../../../lib/supabase";
 import {
   documentStatus,
@@ -58,21 +59,11 @@ export default function DriverVehiclePage() {
   return (
     <main className="nr-app nr-driver-profile-subpage" data-mode="driver">
       <div className="nr-driver-profile-subwrap">
-        <header className="nr-profile-subhead">
-          <button className="nr-driver-icon-btn" onClick={() => router.push("/driver/profile")} aria-label={say("Back to driver profile")}>
-            <Icon name="back" />
-          </button>
-          <div>
-            <span className="nr-driver-kicker">Biloo · {say("Driver account")}</span>
-            <h1>{say("Vehicle")}</h1>
-            <p>{say("Your verified vehicle details.")}</p>
-          </div>
-        </header>
-
         {loading ? (
           <div className="nr-driver-profile-loading" aria-busy="true"><span className="wide" /><span className="panel" /></div>
         ) : profile ? (
           <>
+            <DriverMapAvatarStudio />
             <section className="nr-profile-panel">
               <div className="nr-profile-panel-head">
                 <div>

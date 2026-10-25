@@ -1,4 +1,6 @@
 import { serverAdminSupabase } from "../../../../../lib/nexride-server-admin";
+import { resolveDriverMapAvatar } from "../../../../../lib/biloo-driver-map-avatar";
+import { driverAvatarMetadata } from "../../../../../lib/biloo-driver-map-avatar-server";
 import {
  activeTripStatuses,hashTripShareToken,tripShareToken,
  tripShareLocation,safeTripShareText,
@@ -33,6 +35,10 @@ export async function GET(_request:Request,context:Context) {
     .eq("ride_request_id",trip.id).eq("driver_id",trip.assigned_driver_id)
     .maybeSingle();
   if(locationError)return reply({status:"unavailable"},503);
+  const [vehicle, metadata] = await Promise.all([
+    admin.from('drivers').select('vehicle,vehicle_color').eq('id',trip.assigned_driver_id).maybeSingle(),
+    driverAvatarMetadata(admin,trip.assigned_driver_id),
+  ]);
   return reply({
     status:"active",
     trip:{
@@ -42,6 +48,7 @@ export async function GET(_request:Request,context:Context) {
       category:safeTripShareText(trip.ride_category,40),
     },
     driverLocation:tripShareLocation(location),
+    driverAvatar:resolveDriverMapAvatar({model:vehicle.data?.vehicle,color:vehicle.data?.vehicle_color},metadata),
     expiresAt:share.expires_at,
     lastCheckedAt:new Date().toISOString(),
   });

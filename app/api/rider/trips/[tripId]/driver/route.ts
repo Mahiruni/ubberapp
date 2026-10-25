@@ -1,6 +1,7 @@
 import { authorizedRequestSupabase } from "../../../../../../lib/nexride-server-supabase";
 import { serverAdminSupabase } from "../../../../../../lib/nexride-server-admin";
 import { normalizeVehicleColor } from "../../../../../../lib/nexride-vehicle";
+import { resolveDriverMapAvatar } from "../../../../../../lib/biloo-driver-map-avatar";
 
 const reply = (body: unknown, status = 200) =>
   Response.json(body, {
@@ -133,6 +134,7 @@ export async function GET(request: Request, context: RouteContext) {
           model: model || null,
           color: color || null,
           plate: plate || null,
+          mapAvatar: resolveDriverMapAvatar({ model, color }, metadata),
         },
         verification: verified
           ? {
