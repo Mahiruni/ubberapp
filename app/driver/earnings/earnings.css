@@ -413,3 +413,49 @@
 @media(prefers-reduced-motion:reduce) {
   .nr-driver-app-shell .biloo-earnings-eight * {scroll-behavior:auto}
 }
+
+/* Biloo Earnings #8 accessibility hotfix: readable content on navy hero. */
+.nr-driver-app-shell .biloo-earnings-eight .nr-earnings-total-card,
+.nr-driver-app-shell .biloo-earnings-eight .nr-earnings-total-card p,
+.nr-driver-app-shell .biloo-earnings-eight .nr-earnings-total-card .nr-earnings-definition,
+.nr-driver-app-shell .biloo-earnings-eight .nr-earnings-total-card .nr-earnings-total-top span,
+.nr-driver-app-shell .biloo-earnings-eight .nr-earnings-total-card .nr-earnings-total-top small,
+.nr-driver-app-shell .biloo-earnings-eight .nr-earnings-total-card .nr-earnings-chart-head,
+.nr-driver-app-shell .biloo-earnings-eight .nr-earnings-total-card .nr-earnings-chart-head span,
+.nr-driver-app-shell .biloo-earnings-eight .nr-earnings-total-card .nr-earnings-chart-head small,
+.nr-driver-app-shell .biloo-earnings-eight .nr-earnings-total-card .nr-earnings-chart-labels,
+.nr-driver-app-shell .biloo-earnings-eight .nr-earnings-total-card .nr-earnings-chart-labels span,
+.nr-driver-app-shell .biloo-earnings-eight .nr-earnings-total-card .nr-earnings-chart-summary {
+  color:#f0f5fc!important;
+  opacity:1!important;
+}
+.nr-driver-app-shell .biloo-earnings-eight .nr-earnings-total-card .nr-earnings-total,
+.nr-driver-app-shell .biloo-earnings-eight .nr-earnings-total-card .nr-earnings-total small {
+  color:#fff!important;
+  opacity:1!important;
+}
+.nr-driver-app-shell .biloo-earnings-eight .nr-earnings-total-card .nr-earnings-partial-badge {
+  color:#5d430a!important;
+  background:#fff0c4!important;
+  border-color:#e6c66d!important;
+  opacity:1!important;
+}
+.nr-driver-app-shell .biloo-earnings-eight .nr-earnings-total-card .nr-earnings-chart-empty {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:104px;
+  padding:16px;
+  background:#f1f5fa!important;
+  color:#33465d!important;
+  font-size:13px!important;
+  font-weight:650;
+  text-align:center;
+  opacity:1!important;
+}
+.nr-driver-app-shell .biloo-earnings-eight .nr-earnings-total-card .nr-earnings-chart {
+  border-top-color:rgba(255,255,255,.24)!important;
+}
+.nr-driver-app-shell .biloo-earnings-eight .nr-earnings-total-card .nr-earnings-chart-labels {
+  font-weight:650;
+}
