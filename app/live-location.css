@@ -375,3 +375,19 @@ html[data-nr-data-saver] .nr-live-location-marker.nr-location-identity.biloo-cus
     animation:none!important;
   }
 }
+
+/* Biloo pickup poses: only the character artwork moves, not its GPS anchor. */
+.nr-live-location-marker[data-marker-role="rider"][data-pickup-motion="walk"]:not(.is-stale):not(.is-paused) .biloo-rider-avatar-art {
+  transform-origin: 50% 95%;
+  animation: biloo-pickup-walk 700ms ease-in-out infinite alternate;
+}
+.nr-live-location-marker[data-marker-role="rider"][data-pickup-motion="wave"]:not(.is-stale):not(.is-paused) .biloo-rider-avatar-art {
+  transform-origin: 50% 90%;
+  animation: biloo-pickup-wave 1100ms ease-in-out infinite;
+}
+@keyframes biloo-pickup-walk { from { transform: translateY(0) rotate(-3deg); } to { transform: translateY(-3px) rotate(3deg); } }
+@keyframes biloo-pickup-wave { 0%,100% { transform: rotate(0); } 30% { transform: rotate(-9deg); } 65% { transform: rotate(7deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .nr-live-location-marker[data-pickup-motion] .biloo-rider-avatar-art { animation: none !important; }
+}
+html[data-nr-data-saver] .nr-live-location-marker[data-pickup-motion] .biloo-rider-avatar-art { animation: none !important; }
