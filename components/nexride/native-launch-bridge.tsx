@@ -26,18 +26,8 @@ export function NexRideNativeLaunchBridge() {
         if (disposed) return;
         void SplashScreen.hide({ fadeOutDuration: 160 }).catch(() => {});
         setLaunch(null);
-        // Android owns the Allow / Don't allow dialog. Request only if not decided.
-        // Never block navigation if notifications are declined or unavailable.
-        void (async () => {
-          const { PushNotifications } = await import("@capacitor/push-notifications");
-          const permission = await PushNotifications.checkPermissions();
-          if (permission.receive !== "prompt" && permission.receive !== "prompt-with-rationale") return;
-          const role = info?.id === "com.nexride.driver" ? "driver"
-            : info?.id === "com.nexride.rider" ? "rider" : null;
-          if (!role) return;
-          const { enableNexRideNativeNotifications } = await import("../../lib/nexride-native-reliability");
-          await enableNexRideNativeNotifications(role);
-        })().catch(() => {});
+        // Notification permission is requested from settings after user opt-in.
+
       }, 1400);
     })().catch(() => {
       // Capacitor's bounded auto-hide remains the fallback.
