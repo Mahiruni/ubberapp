@@ -1165,3 +1165,204 @@
 @media(prefers-reduced-motion:reduce) {
   .nr-driver-app-shell .nr-driver-request-page .nr-request-countdown-ring .progress {transition:none}
 }
+
+
+/* BILOO PRESTIGE / SELECTED DESIGN 2 — incoming Rider request.
+   Premium visual treatment only: real offer timer, fare, route and server
+   decisions remain the sole sources of truth. Never display sample people. */
+.nr-driver-app-shell .nr-driver-request-page {
+  --biloo-prestige-gold:#e3b143;
+  background:#eaf2f7!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-driver-request-map{
+  inset:0 0 35% 0;
+  background:#eaf2f7!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-driver-request-map .nr-map{
+  filter:saturate(.82) contrast(.97) brightness(1.06)!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-sheet {
+  border-radius:28px 28px 0 0!important;
+  background:#fff!important;
+  color:#0b2854!important;
+  border:1px solid #e1e9f1!important;
+  box-shadow:0 -14px 48px rgba(9,33,67,.17)!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-sheet>.nr-driver-sheet-content{
+  padding:0 15px 12px!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-heading {
+  align-items:center!important;
+  gap:10px!important;
+  padding:3px 0 12px;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-heading>div:first-child {
+  min-width:0;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-eyebrow {
+  width:max-content;
+  max-width:100%;
+  display:inline-flex!important;
+  align-items:center;
+  gap:6px;
+  padding:6px 10px;
+  border-radius:999px;
+  background:#fff1cc!important;
+  color:#7a5311!important;
+  font-size:10px!important;
+  font-weight:850!important;
+  letter-spacing:.025em!important;
+  line-height:1.2;
+  text-transform:none;
+  margin:0 0 7px!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-eyebrow svg {flex:0 0 15px;color:#775019!important;}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-heading h1 {
+  margin:0!important;
+  font-size:clamp(21px,5vw,27px)!important;
+  line-height:1.1!important;
+  font-weight:860!important;
+  letter-spacing:-.04em!important;
+  color:#08295f!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-countdown {
+  width:62px!important;
+  height:62px!important;
+  min-width:62px!important;
+  border:0!important;
+  background:#fff!important;
+  box-shadow:none!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-countdown-ring .progress {stroke:#d69b2d!important;}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-countdown strong {
+  font-size:16px!important;
+  font-variant-numeric:tabular-nums;
+  color:#08295f!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-offer-value {
+  border-radius:15px!important;
+  border:1px solid #e1e9f2!important;
+  background:#f7f9fc!important;
+  margin:0 0 10px!important;
+  padding:10px 12px!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-offer-value strong {
+  color:#08295f!important;
+  font-size:clamp(18px,4.8vw,22px)!important;
+  font-variant-numeric:tabular-nums;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-route-compact {
+  margin:0!important;
+  padding:12px 13px!important;
+  border:1px solid #e1e9f2!important;
+  border-radius:18px!important;
+  background:#fff!important;
+  color:#092d5f!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-route-compact .nr-request-route-stop {
+  padding-left:25px;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-route-compact .nr-request-route-stop.pickup::before {
+  border-color:#1479dc!important;
+  background:#1479dc!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-route-compact .nr-request-route-stop.destination::before {
+  border-radius:50%!important;
+  border-color:#dfa928!important;
+  background:#dfa928!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-route-compact .nr-request-route-stop strong{
+  color:#102b52!important;
+  font-size:13px!important;
+  font-weight:780!important;
+  overflow-wrap:anywhere;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-trip-facts {
+  gap:8px 13px;
+  font-size:11px;
+  padding:9px 0 0;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-approach {
+  padding:9px 10px!important;
+  border-radius:12px;
+  background:#f3f7fa;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-request-sheet>.nr-driver-sheet-footer {
+  padding:10px 13px max(14px,env(safe-area-inset-bottom,0px))!important;
+  background:#fff!important;
+  border-top:1px solid #e4ebf3!important;
+  box-shadow:0 -5px 18px rgba(8,41,95,.045)!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-driver-sheet-footer .nr-request-actions {
+  display:grid!important;
+  grid-template-columns:minmax(0,.95fr) minmax(0,1.5fr)!important;
+  gap:8px!important;
+  align-items:stretch!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-driver-sheet-footer .nr-request-actions>.nr-request-accept {
+  grid-column:2;
+  grid-row:1;
+  min-width:0!important;
+  min-height:75px!important;
+  height:100%;
+  padding:10px!important;
+  background:linear-gradient(115deg,#07976d,#00c878)!important;
+  border-color:#00a874!important;
+  border-radius:17px!important;
+  color:#fff!important;
+  font-size:15px!important;
+  font-weight:850!important;
+  box-shadow:0 3px 12px rgba(0,157,108,.14)!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-driver-sheet-footer .nr-request-actions-secondary {
+  grid-column:1;
+  grid-row:1;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-template-rows:1fr auto;
+  gap:4px!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-driver-sheet-footer .nr-request-actions-secondary .nr-request-decline {
+  grid-row:1;
+  min-height:43px!important;
+  border:1px solid #e6ccd2!important;
+  border-radius:14px!important;
+  background:#fff!important;
+  color:#b42d43!important;
+  font-size:12px!important;
+}
+.nr-driver-app-shell .nr-driver-request-page .nr-driver-sheet-footer .nr-request-actions-secondary .nr-request-pass {
+  grid-row:2;
+  min-height:29px!important;
+  padding:3px!important;
+  border:0!important;
+  border-radius:9px!important;
+  background:transparent!important;
+  color:#62758f!important;
+  font-size:10px!important;
+}
+.nr-driver-app-shell[data-theme="dark"] .nr-driver-request-page .nr-request-sheet,
+.nr-driver-app-shell[data-theme="dark"] .nr-driver-request-page .nr-request-sheet>.nr-driver-sheet-footer {
+  background:#102b46!important;
+  color:#f5f8fc!important;
+  border-color:#31516b!important;
+}
+.nr-driver-app-shell[data-theme="dark"] .nr-driver-request-page .nr-request-route-compact,
+.nr-driver-app-shell[data-theme="dark"] .nr-driver-request-page .nr-request-offer-value {
+  background:#193952!important;
+  border-color:#36566e!important;
+}
+.nr-driver-app-shell[data-theme="dark"] .nr-driver-request-page :is(.nr-request-heading h1,.nr-request-route-compact .nr-request-route-stop strong,.nr-request-offer-value strong){
+  color:#fff!important;
+}
+.nr-driver-app-shell[data-theme="dark"] .nr-driver-request-page .nr-request-countdown{background:#163753!important;}
+.nr-driver-app-shell[data-theme="dark"] .nr-driver-request-page .nr-request-countdown strong{color:#f6f9fc!important;}
+.nr-driver-app-shell[data-theme="dark"] .nr-driver-request-page .nr-request-approach{background:#183d56!important;}
+@media(max-width:370px){
+  .nr-driver-app-shell .nr-driver-request-page .nr-request-sheet>.nr-driver-sheet-content{padding-inline:10px!important;}
+  .nr-driver-app-shell .nr-driver-request-page .nr-driver-sheet-footer .nr-request-actions{grid-template-columns:minmax(0,1fr) minmax(0,1.22fr)!important;}
+  .nr-driver-app-shell .nr-driver-request-page .nr-driver-sheet-footer .nr-request-actions>.nr-request-accept {font-size:13px!important;}
+}
+@media(prefers-reduced-motion:reduce){
+  .nr-driver-app-shell .nr-driver-request-page .nr-request-sheet :is(button,.nr-request-countdown-ring){transition:none!important;animation:none!important;}
+}
