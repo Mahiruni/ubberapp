@@ -685,3 +685,35 @@
 .nr-driver-home-cockpit .nr-driver-home-swipe{
   padding-bottom:max(10px,env(safe-area-inset-bottom,0px));
 }
+
+/* Biloo day/night map cockpit: align overlays, compact sheet and controls. */
+.nr-driver-app-shell[data-theme="dark"] .nr-driver-home-cockpit .biloo-driver-first-wrapper{
+  background:#102c46!important;border-color:#31516b!important;color:#f4f8fc!important;
+  box-shadow:0 10px 28px rgba(0,12,28,.36)!important;
+}
+.nr-driver-app-shell[data-theme="dark"] .nr-driver-home-cockpit .biloo-driver-first-wrapper .nr-driver-home-control-state strong,
+.nr-driver-app-shell[data-theme="dark"] .nr-driver-home-cockpit .biloo-driver-first-availability-copy strong{
+  color:#f4f8fc!important;
+}
+.nr-driver-app-shell[data-theme="dark"] .nr-driver-home-cockpit .biloo-driver-first-wrapper .nr-driver-home-control-state small,
+.nr-driver-app-shell[data-theme="dark"] .nr-driver-home-cockpit .biloo-driver-first-availability-copy span{
+  color:#b9cbd9!important;
+}
+.nr-driver-app-shell[data-theme="dark"] .nr-driver-home-cockpit .biloo-driver-first-availability{
+  background:#193952!important;border-color:#36566e!important;
+}
+.nr-driver-app-shell[data-theme="dark"] .nr-driver-home-cockpit .biloo-driver-first-links button{
+  background:#193952!important;border-color:#36566e!important;color:#f4f8fc!important;
+}
+.nr-driver-app-shell[data-theme="dark"] .nr-driver-home-cockpit .biloo-driver-first-handle::after{
+  background:#7490a8!important;
+}
+.nr-driver-app-shell[data-theme="dark"] .nr-driver-home-map-canvas .nr-map-touch-control{
+  background:#102c46!important;border-color:#36566e!important;color:#f4f8fc!important;
+}
+.nr-driver-app-shell[data-theme="dark"] .nr-driver-home-map-canvas .nr-map-layer-menu{
+  background:#102c46!important;border-color:#36566e!important;color:#f4f8fc!important;
+}
+@media(prefers-reduced-motion:reduce){
+  .nr-driver-home-cockpit .biloo-driver-first-wrapper{transition:none!important}
+}
