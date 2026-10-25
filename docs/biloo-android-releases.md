@@ -43,12 +43,40 @@ The public certificate fingerprint comes from `keytool -list -v -keystore /path/
 
 The existing Firebase validator checks the selected package ID and Android configuration format before writing the temporary native configuration. The final APK verifier also requires compiled Firebase app and sender resources. No Rider key or Firebase setting is used as a fallback for missing Driver configuration.
 
+### Configure signing from your computer
+
+The setup helper reads an **existing** keystore on your computer. It never creates a replacement production key. You need Python 3 and Java's `keytool`; uploading the settings also requires [GitHub CLI](https://cli.github.com/) authenticated to `github.com` with permission to manage this repository's Actions settings.
+
+From your checkout, first verify the Rider key locally:
+
+```sh
+python3 scripts/configure-android-release.py --role rider --keystore "/path/to/rider-release.jks" --alias "YOUR_ALIAS"
+```
+
+Passwords are entered at hidden terminal prompts. Enter an empty key password only when it matches the keystore password. The command checks actual private-key access and shows the public certificate fingerprint and setting names. This default mode does not contact GitHub or change its settings. Compare the fingerprint with the established release certificate described above.
+
+To upload the checked settings, run the same command with `--apply --expected-cert "YOUR_CERTIFICATE_SHA256"`:
+
+```sh
+python3 scripts/configure-android-release.py --role rider --keystore "/path/to/rider-release.jks" --alias "YOUR_ALIAS" --apply --expected-cert "YOUR_CERTIFICATE_SHA256"
+```
+
+Repeat for `--role driver` with the Driver keystore and certificate. The helper writes only that role's four signing secrets and certificate variable to `github.com/Mahiruni/ubberapp`. It rejects debug keys, unusable private keys, mismatched fingerprints and replacement of an already pinned certificate. Secret values go to `gh` through standard input, never command arguments or generated configuration files. The CLI performs secret encryption before upload ([official command reference](https://cli.github.com/manual/gh_secret_set)). Firebase settings are configured separately using the table above.
+
+These GitHub writes are separate API operations. If a network or permission failure interrupts them, rerun with the same certificate to finish; the helper reports failure rather than claiming all settings are ready. It does not automatically start a workflow or publish an APK.
+
 ## Produce signed APKs
 
 1. Open **Actions → Biloo Android release pipeline → Run workflow** on `main`.
 2. Enable **Build signed release APKs using the existing Rider/Driver signing keys**.
 3. Both unsigned release checks must pass before either signing job starts.
 4. Download each `Biloo-<role>-signed-release-<run>` artifact. It contains the APK, a SHA-256 checksum and public `release-manifest.json`.
+
+After both roles and Firebase settings are configured, the equivalent CLI command is:
+
+```sh
+gh workflow run android-apks.yml --repo github.com/Mahiruni/ubberapp --ref main -f signed_release=true
+```
 
 The signing step opens the supplied existing keystore, checks its certificate against the configured fingerprint, and writes it only to a private temporary directory. Gradle reads passwords from step environment variables. The final verification checks the compiled package ID, version, HTTPS role entry point, release flags, Firebase resource presence and the APK's actual v2/v3 signing certificate. A mismatch fails the job. Temporary signing material is removed after the job. Secret-bearing jobs run only for a deliberate manual release on `main`.
 
