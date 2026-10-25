@@ -564,13 +564,43 @@
 .nr-driver-home-cockpit .biloo-driver-first-wrapper {
   display:flex;
   flex-direction:column;
-  gap:12px;
+  gap:10px;
   background:#fff;
   border:1px solid #e1e8f0;
   border-radius:24px;
   padding:14px 16px 16px;
   box-shadow:0 8px 26px rgba(8,41,95,.085);
   color:#08295f;
+}
+/* The status chip and alert action get the first row; the title uses its own
+   full-width line so it never disappears behind Online on narrow Android devices. */
+.nr-driver-home-cockpit .biloo-driver-first-wrapper .nr-driver-home-control-heading {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) max-content;
+  align-items:center;
+  column-gap:8px;
+  row-gap:6px;
+}
+.nr-driver-home-cockpit .biloo-driver-first-wrapper .nr-driver-home-control-state {
+  display:contents;
+}
+.nr-driver-home-cockpit .biloo-driver-first-wrapper .nr-driver-home-control-brand {
+  grid-column:1;
+  grid-row:1;
+  min-width:0;
+}
+.nr-driver-home-cockpit .biloo-driver-first-wrapper .nr-driver-home-control-state>strong {
+  grid-column:1 / -1;
+  grid-row:2;
+  min-width:0;
+  line-height:1.15;
+  white-space:normal;
+}
+.nr-driver-home-cockpit .biloo-driver-first-wrapper .nr-driver-home-control-tools {
+  grid-column:2;
+  grid-row:1;
+  justify-content:flex-end;
+  gap:6px;
 }
 .nr-driver-home-cockpit .biloo-driver-first-handle {
   width:42px;
@@ -591,13 +621,6 @@
   font-weight:800;
   letter-spacing:.1em;
   color:#9b741d;
-}
-.nr-driver-home-cockpit .biloo-driver-first-wrapper .nr-driver-home-control-state small {
-  display:block;
-  font-size:12px;
-  line-height:1.45;
-  color:#63748b;
-  max-width:32ch;
 }
 .nr-driver-home-cockpit .biloo-driver-first-availability {
   display:grid;
@@ -678,7 +701,6 @@
 .nr-driver-home-cockpit .biloo-driver-first-wrapper.is-map-sheet-compact{
   gap:8px;padding-top:10px;
 }
-.nr-driver-home-cockpit .biloo-driver-first-wrapper.is-map-sheet-compact .nr-driver-home-control-state small,
 .nr-driver-home-cockpit .biloo-driver-first-wrapper.is-map-sheet-compact .biloo-driver-first-links{
   display:none;
 }
@@ -695,7 +717,6 @@
 .nr-driver-app-shell[data-theme="dark"] .nr-driver-home-cockpit .biloo-driver-first-availability-copy strong{
   color:#f4f8fc!important;
 }
-.nr-driver-app-shell[data-theme="dark"] .nr-driver-home-cockpit .biloo-driver-first-wrapper .nr-driver-home-control-state small,
 .nr-driver-app-shell[data-theme="dark"] .nr-driver-home-cockpit .biloo-driver-first-availability-copy span{
   color:#b9cbd9!important;
 }
