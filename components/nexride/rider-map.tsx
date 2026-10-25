@@ -24,6 +24,8 @@ import {
 } from "../../lib/location";
 import { AVATAR_STORAGE, DEFAULT_MAP_AVATAR, RIDER_MAP_AVATAR_SIZE, loadMapAvatar, mapAvatarSvg, normalizeMapAvatar, type MapAvatar } from "../../lib/biloo-rider-map-avatar";
 import { applyBilooCityMapPalette, BILOO_STYLE_SWAP_OPTIONS } from "../../lib/biloo-map-palette";
+import { useRiderMotion } from './use-rider-motion';
+import { pickupSignal } from './use-pickup-signal';
 import "mapbox-gl/dist/mapbox-gl.css";
 import "@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css";
 
@@ -150,7 +152,7 @@ const locationMarkerElement = (label: string, role: BilooLocationMarkerRole, ava
   root.setAttribute("role", "img");
   root.setAttribute("aria-label", label);
   if (role === "driver") updateDriverCarMarker(root, driverAvatar);
-  else root.innerHTML = mapAvatarSvg(avatar);
+  else root.innerHTML = mapAvatarSvg(avatar, 'map', true);
   return root;
 };
 
@@ -585,16 +587,28 @@ export function RiderMap({
   const driverMapAvatarRef = useRef<DriverMapAvatar | null>(null);
   driverMapAvatarRef.current = driverMapAvatar;
 
-  // Animate the artwork only; never displace the actual GPS-anchored Mapbox marker.
+  const [waveSignalKey, setWaveSignalKey] = useState('');
+  useEffect(() => {
+    setWaveSignalKey('');
+    const signalSent = (event: Event) => {
+      const detail = (event as CustomEvent).detail;
+      const signal = pickupSignal(detail?.signal);
+      if (detail?.tripId === assignedTrip?.id && signal) setWaveSignalKey(`${detail.tripId}:${signal.id}`);
+    };
+    window.addEventListener('biloo:pickup-signal-sent', signalSent);
+    return () => window.removeEventListener('biloo:pickup-signal-sent', signalSent);
+  }, [assignedTrip?.id]);
+  const riderOnboard = assignedTrip?.status === 'in_trip';
+  const riderPose = useRiderMotion({ position, enabled: markerRole === 'rider' && status === 'ready', onboard: riderOnboard,
+    waveKey: waveSignalKey, arrivalKey: assignedTrip?.status === 'arrived' ? assignedTrip.id : '' });
+  const riderPoseRef = useRef(riderPose);
+  riderPoseRef.current = riderPose;
   useEffect(() => {
     const root = liveMarker.current?.getElement();
     if (!root) return;
-    const fresh = assignedTrip?.tracking && Date.now() - assignedTrip.tracking.updatedAt < 90_000;
-    const approaching = assignedTrip?.status === "approaching" && fresh;
-    const arrived = assignedTrip?.status === "arrived";
-    root.dataset.pickupMotion = markerRole === "rider" && arrived ? "wave" :
-      markerRole === "rider" && approaching ? "walk" : "idle";
-  }, [assignedTrip?.status, assignedTrip?.tracking?.updatedAt, markerRole, position]);
+    root.dataset.pickupMotion = riderPose;
+    root.dataset.onboard = String(markerRole === 'rider' && riderOnboard);
+  }, [riderPose, riderOnboard, markerRole, position]);
 
   const liveMarkerAnimation = useRef<number | null>(null);
   const liveMarkerLngLat = useRef<[number, number] | null>(null);
@@ -621,7 +635,7 @@ export function RiderMap({
     riderMapAvatarRef.current = riderMapAvatar;
     if (markerRole !== "rider") return;
     const el = liveMarker.current?.getElement();
-    if (el && liveMarkerRole.current === "rider") el.innerHTML = mapAvatarSvg(riderMapAvatar);
+    if (el && liveMarkerRole.current === "rider") el.innerHTML = mapAvatarSvg(riderMapAvatar, 'map', true);
   }, [riderMapAvatar, markerRole]);
   const pickupMarker = useRef<MapboxMarker | null>(null);
   const destinationMarker = useRef<MapboxMarker | null>(null);
@@ -1197,8 +1211,8 @@ export function RiderMap({
           driverMapAvatarRef.current,
         );
         if (markerRole === "driver") updateDriverCarMarker(markerElement, driverMapAvatarRef.current, position.heading, currentMap.getBearing());
-        markerElement.dataset.pickupMotion = markerRole === "rider" && assignedTrip?.status === "arrived" ? "wave" :
-          markerRole === "rider" && assignedTrip?.status === "approaching" && assignedTrip.tracking && Date.now() - assignedTrip.tracking.updatedAt < 90_000 ? "walk" : "idle";
+        markerElement.dataset.pickupMotion = riderPoseRef.current;
+        markerElement.dataset.onboard = String(markerRole === 'rider' && assignedTrip?.status === 'in_trip');
         markerElement.classList.toggle("is-stale", gpsStale);
         markerElement.classList.toggle(
           "is-paused",

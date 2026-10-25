@@ -21,7 +21,7 @@ describe("Biloo live device markers", () => {
     expect(marker).toContain('data'); // marker role attributes are set on the DOM node
     expect(marker).toContain("root.dataset.markerRole = role");
     expect(marker).toContain('if (role === "driver") updateDriverCarMarker(root, driverAvatar)');
-    expect(marker).toContain('mapAvatarSvg(avatar)');
+    expect(marker).toContain("mapAvatarSvg(avatar, 'map', true)");
     expect(marker).not.toContain('<svg ');
     expect(mapAvatarSvg({ ...DEFAULT_MAP_AVATAR, preset: 19 })).toContain('character-20-v2.webp');
     expect(marker).toContain('setAttribute("role", "img")');

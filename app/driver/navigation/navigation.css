@@ -1,4 +1,6 @@
 .nr-driver-navigation-page{min-height:100dvh;height:100dvh;position:relative;overflow:hidden;background:#031522;color:#f5f9fc}
+.nr-driver-navigation-page .biloo-rider-pickup-signal { display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:0 0 10px;padding:10px 12px;border:1px solid var(--trip-border,#dde5ed);border-radius:12px;background:var(--trip-subtle,#f2f6f9);color:var(--trip-text,#102334);font-size:12px;font-weight:650;line-height:1.4; }
+.nr-driver-navigation-page .biloo-rider-pickup-signal small { margin-left:auto;color:var(--trip-muted,#667587);font-size:10px;font-weight:450; }
 .nr-navigation-map{position:absolute;inset:0;overflow:hidden;background:#041827}.nr-navigation-map>svg{width:100%;height:100%;display:block}
 .nr-nav-map-ground{fill:#061c2c}.nr-nav-map-block{fill:#0a273a}.nr-nav-map-road-edge{fill:none;stroke:#03121d;stroke-width:31;stroke-linecap:round;stroke-linejoin:round}.nr-nav-map-road{fill:none;stroke:#17384d;stroke-width:20;stroke-linecap:round;stroke-linejoin:round}.nr-nav-map-minor{fill:none;stroke:#102f43;stroke-width:10;stroke-linecap:round}
 .nr-nav-route-casing{fill:none;stroke:#d7edff;stroke-width:16;stroke-linecap:round;stroke-linejoin:round;opacity:.88}.nr-nav-route{fill:none;stroke:#1688ff;stroke-width:9;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 7px rgba(22,136,255,.42))}

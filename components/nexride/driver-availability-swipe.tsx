@@ -92,7 +92,14 @@ export function DriverAvailabilitySwipe({
     setDragOffset(null);
   };
 
-  const confirmToggle = () => {\n    if (typeof navigator !== "undefined" && "vibrate" in navigator) {\n      try { navigator.vibrate(12); } catch { /* Optional Android haptics. */ }\n    }\n    void onToggle();\n  };\n\n  const activate = () => {
+  const confirmToggle = () => {
+    if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+      try { navigator.vibrate(12); } catch { /* Optional Android haptics. */ }
+    }
+    void onToggle();
+  };
+
+  const activate = () => {
     if (suppressClickRef.current) {
       suppressClickRef.current = false;
       return;

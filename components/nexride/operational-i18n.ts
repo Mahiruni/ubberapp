@@ -4,6 +4,8 @@ import { useCallback, useContext } from "react";
 import { LanguageContext } from "./ui";
 
 const am: Record<string, string> = {
+  "Your rider is at pickup": "ተሳፋሪዎ መነሻ ላይ ነው",
+  "Sent in trip chat": "በጉዞ ውይይቱ ተልኳል",
   "Your account": "የእርስዎ መለያ",
   "Display mode": "የማሳያ ገጽታ",
   "Day mode": "የቀን ገጽታ",

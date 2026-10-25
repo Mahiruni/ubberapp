@@ -67,6 +67,13 @@
 .nr-app .nr-accepted-driver-card .biloo-pickup-status p { margin:4px 0 0;color:var(--journey-muted);font-size:11px; }
 .nr-app .nr-accepted-driver-card .biloo-pickup-instructions { background:var(--journey-subtle);color:var(--journey-text);font-size:12px; }
 .nr-trip-experience[data-native-identity="true"] .nr-flow-sheet-handle span { background:#f9c449!important; }
+.nr-app .nr-accepted-driver-card .biloo-pickup-wave { display:flex;align-items:center;gap:10px;margin:0 0 12px;padding:10px;border:1px solid var(--journey-line);border-radius:13px;background:var(--journey-subtle); }
+.nr-app .nr-accepted-driver-card .biloo-pickup-wave button { display:flex;align-items:center;justify-content:center;gap:7px;min-height:44px;flex-shrink:0;padding:10px 14px;border:1px solid var(--journey-accent);border-radius:10px;background:var(--journey-accent);color:#08295f;font:inherit;font-size:12px;font-weight:700;cursor:pointer; }
+.nr-app .nr-accepted-driver-card .biloo-pickup-wave button:disabled { opacity:.75;cursor:default; }
+.nr-app .nr-accepted-driver-card .biloo-pickup-wave button:focus-visible { outline:3px solid var(--journey-text);outline-offset:3px; }
+.nr-app .nr-accepted-driver-card .biloo-pickup-wave p { margin:0;color:var(--journey-muted);font-size:11px;line-height:1.5; }
+.nr-app .nr-accepted-driver-card .biloo-pickup-wave p[role="alert"] { color:var(--journey-text); }
+@media(max-width:360px) { .nr-app .nr-accepted-driver-card .biloo-pickup-wave { flex-wrap:wrap; } }
 @media(max-width:360px) {
   .nr-app .nr-trip-experience .nr-accepted-driver-card { padding-inline:14px; }
   .nr-app .nr-accepted-driver-card .nr-identity-status h2 { font-size:21px; }

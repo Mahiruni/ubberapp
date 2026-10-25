@@ -6,6 +6,7 @@
   box-shadow:none!important;filter:none!important;contain:layout style!important;overflow:visible!important;isolation:isolate;pointer-events:none!important;z-index:21!important;
 }
 .biloo-driver-car-marker.biloo-driver-car-marker::before,.biloo-driver-car-marker.biloo-driver-car-marker::after {display:none!important;content:none!important}
+.biloo-driver-car-marker.biloo-driver-car-marker:is(.mapboxgl-marker,.leaflet-marker-icon) {position:absolute!important}
 .biloo-driver-car-marker>.biloo-driver-car-art {display:block;width:32px!important;height:55px!important;max-width:none!important;max-height:none!important;margin:0 auto!important;object-fit:contain;transform:rotate(var(--biloo-car-heading,0deg));transform-origin:center;filter:drop-shadow(0 0 1px #fff) drop-shadow(0 0 1px #fff);transition:transform .3s ease;}
 .biloo-driver-car-marker>.biloo-driver-car-label {position:absolute;left:50%;bottom:-3px;transform:translateX(-50%);padding:2px 6px;line-height:1;font:800 9px/1.1 Inter,Arial,sans-serif;letter-spacing:-.3px;border-radius:10px;background:#08295f;color:#fff;border:1px solid #f9c449;box-shadow:0 2px 4px #08295f26;white-space:nowrap}
 .biloo-driver-car-marker:is(.is-stale,.stale)>.biloo-driver-car-art {opacity:.58;filter:grayscale(.75) drop-shadow(0 0 1px #fff)}

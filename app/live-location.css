@@ -376,18 +376,35 @@ html[data-nr-data-saver] .nr-live-location-marker.nr-location-identity.biloo-cus
   }
 }
 
-/* Biloo pickup poses: only the character artwork moves, not its GPS anchor. */
-.nr-live-location-marker[data-marker-role="rider"][data-pickup-motion="walk"]:not(.is-stale):not(.is-paused) .biloo-rider-avatar-art {
-  transform-origin: 50% 95%;
-  animation: biloo-pickup-walk 700ms ease-in-out infinite alternate;
+/* The texture is articulated inside a fixed GPS marker. Never animate its root. */
+.biloo-custom-map-avatar .biloo-rider-avatar-art { overflow:visible; }
+.mapboxgl-marker.nr-live-location-marker.nr-location-identity.biloo-custom-map-avatar[data-marker-role="rider"] { position:absolute!important; }
+.biloo-rider-leg-left { transform-origin:84px 202px; }
+.biloo-rider-leg-right { transform-origin:108px 202px; }
+.nr-live-location-marker[data-marker-role="rider"][data-onboard="true"] { visibility:hidden; }
+.biloo-rider-walk-pose,.biloo-rider-wave-pose { display:none; }
+.biloo-custom-map-avatar:not(.is-stale):not(.is-paused) .biloo-rider-still {
+  transform-origin:96px 320px;animation:biloo-rider-breathe 4s ease-in-out infinite;
 }
-.nr-live-location-marker[data-marker-role="rider"][data-pickup-motion="wave"]:not(.is-stale):not(.is-paused) .biloo-rider-avatar-art {
-  transform-origin: 50% 90%;
-  animation: biloo-pickup-wave 1100ms ease-in-out infinite;
+.biloo-custom-map-avatar:is([data-pickup-motion="walk"],[data-pickup-motion="jog"]):not(.is-stale):not(.is-paused) {
+  --rider-stride:3deg;--rider-cadence:820ms;
 }
-@keyframes biloo-pickup-walk { from { transform: translateY(0) rotate(-3deg); } to { transform: translateY(-3px) rotate(3deg); } }
-@keyframes biloo-pickup-wave { 0%,100% { transform: rotate(0); } 30% { transform: rotate(-9deg); } 65% { transform: rotate(7deg); } }
-@media (prefers-reduced-motion: reduce) {
-  .nr-live-location-marker[data-pickup-motion] .biloo-rider-avatar-art { animation: none !important; }
+.biloo-custom-map-avatar[data-pickup-motion="jog"]:not(.is-stale):not(.is-paused) { --rider-stride:6deg;--rider-cadence:510ms; }
+.biloo-custom-map-avatar:is([data-pickup-motion="walk"],[data-pickup-motion="jog"],[data-pickup-motion="wave"]):not(.is-stale):not(.is-paused) .biloo-rider-still { display:none; }
+.biloo-custom-map-avatar:is([data-pickup-motion="walk"],[data-pickup-motion="jog"]):not(.is-stale):not(.is-paused) .biloo-rider-walk-pose { display:block; }
+.biloo-custom-map-avatar:is([data-pickup-motion="walk"],[data-pickup-motion="jog"]):not(.is-stale):not(.is-paused) .biloo-rider-leg-left { animation:biloo-rider-stride var(--rider-cadence) ease-in-out infinite alternate; }
+.biloo-custom-map-avatar:is([data-pickup-motion="walk"],[data-pickup-motion="jog"]):not(.is-stale):not(.is-paused) .biloo-rider-leg-right { animation:biloo-rider-stride var(--rider-cadence) ease-in-out infinite alternate-reverse; }
+.biloo-custom-map-avatar[data-pickup-motion="wave"]:not(.is-stale):not(.is-paused) .biloo-rider-wave-pose { display:block; }
+.biloo-custom-map-avatar[data-pickup-motion="wave"]:not(.is-stale):not(.is-paused) .biloo-rider-wave-hand { animation:biloo-rider-wave 850ms ease-in-out 7; }
+@keyframes biloo-rider-breathe { 0%,100% { transform:scaleY(1); } 50% { transform:scaleY(1.006); } }
+@keyframes biloo-rider-stride { from { transform:rotate(calc(-1 * var(--rider-stride))); } to { transform:rotate(var(--rider-stride)); } }
+@keyframes biloo-rider-wave {
+  0%,100% { transform:rotate(-5deg); }
+  50% { transform:rotate(7deg); }
 }
-html[data-nr-data-saver] .nr-live-location-marker[data-pickup-motion] .biloo-rider-avatar-art { animation: none !important; }
+.biloo-custom-map-avatar.is-stale .biloo-rider-rig *,
+.biloo-custom-map-avatar.is-paused .biloo-rider-rig *,
+html[data-nr-data-saver] .biloo-rider-rig * { animation:none!important;transform:none!important; }
+@media(prefers-reduced-motion:reduce) {
+  .biloo-rider-rig * { animation:none!important;transform:none!important; }
+}

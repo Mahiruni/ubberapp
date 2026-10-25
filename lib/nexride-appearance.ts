@@ -15,7 +15,8 @@ export function useAppearance(role: 'rider' | 'driver') {
   const fallback: AppearancePreference = 'light';
   const [preference, setState] = useState<AppearancePreference>(fallback);
   const [systemDark, setSystemDark] = useState(false);
-  const [error, setError] = useState(false);\n  // Explicit theme choices remain authoritative; System follows Android changes.
+  const [error, setError] = useState(false);
+  // Explicit theme choices remain authoritative; System follows Android changes.
   useEffect(() => {
     const media = window.matchMedia('(prefers-color-scheme: dark)');
     const read = () => {

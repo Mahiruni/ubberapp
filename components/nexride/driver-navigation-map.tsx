@@ -6,6 +6,8 @@ import { Icon, Spinner } from "./ui";
 import { useDriverTheme } from "./driver-app-shell";
 import { applyBilooCityMapPalette, BILOO_STYLE_SWAP_OPTIONS } from "../../lib/biloo-map-palette";
 import { driverCarMarkerElement, useDriverMapAvatar } from "../../lib/biloo-driver-map-avatar-client";
+import { mapAvatarSvg, RIDER_MAP_AVATAR_SIZE, type MapAvatar } from '../../lib/biloo-rider-avatar-art';
+import { useRiderMotion } from './use-rider-motion';
 import "mapbox-gl/dist/mapbox-gl.css";
 
 export type NavigationCoordinate = { lat: number; lng: number };
@@ -55,6 +57,9 @@ export function DriverNavigationMap({
   view,
   gpsState,
   heading,
+  riderAvatar = null,
+  riderWaveKey = '',
+  riderArrivalKey = '',
 }: {
   vehicle: NavigationCoordinate | null;
   pickup: NavigationCoordinate | null;
@@ -64,12 +69,18 @@ export function DriverNavigationMap({
   view: MapView;
   gpsState: GpsState;
   heading: number | null;
+  riderAvatar?: MapAvatar | null;
+  riderWaveKey?: string;
+  riderArrivalKey?: string;
 }) {
   const { resolvedTheme } = useDriverTheme();
   const driverAvatar = useDriverMapAvatar(true);
   const container = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapboxMap | null>(null);
   const markers = useRef<MapboxMarker[]>([]);
+  const riderMarker = useRef<MapboxMarker | null>(null);
+  const riderTexture = useRef('');
+  const riderPose = useRiderMotion({ enabled: target === 'pickup' && !!riderAvatar, waveKey: riderWaveKey, arrivalKey: riderArrivalKey });
   const manualView = useRef(false);
   const lastCameraView = useRef<MapView>(view);
   const lastCameraTarget = useRef<"pickup" | "destination">(target);
@@ -149,6 +160,7 @@ export function DriverNavigationMap({
       cancelled = true;
       markers.current.forEach((marker) => marker.remove());
       markers.current = [];
+      riderMarker.current?.remove(); riderMarker.current = null;
       mapRef.current?.remove();
       mapRef.current = null;
     };
@@ -233,12 +245,43 @@ export function DriverNavigationMap({
       };
 
       if (valid(vehicle)) addMarker(vehicle, "vehicle", false);
-      if (valid(pickup)) addMarker(pickup, "pickup", target === "pickup");
+      if (valid(pickup) && !(target === 'pickup' && riderAvatar)) addMarker(pickup, "pickup", target === "pickup");
       if (valid(destination)) addMarker(destination, "destination", target === "destination");
     });
 
     return () => { cancelled = true; };
-  }, [vehicle?.lat, vehicle?.lng, pickup?.lat, pickup?.lng, destination?.lat, destination?.lng, target, gpsState, heading, mountedRevision, driverAvatar, bearing]);
+  }, [vehicle?.lat, vehicle?.lng, pickup?.lat, pickup?.lng, destination?.lat, destination?.lng, target, gpsState, heading, mountedRevision, driverAvatar, bearing, !!riderAvatar]);
+
+  useEffect(() => {
+    if (target !== 'pickup' || !riderAvatar || !valid(pickup)) {
+      riderMarker.current?.remove(); riderMarker.current = null; riderTexture.current = ''; return;
+    }
+    let cancelled = false;
+    void import('mapbox-gl').then(mapboxgl => {
+      if (cancelled || !mapRef.current) return;
+      if (!riderMarker.current) {
+        const element = document.createElement('div');
+        element.className = 'nr-live-location-marker nr-location-identity biloo-custom-map-avatar biloo-assigned-rider-marker';
+        element.dataset.markerRole = 'rider'; element.setAttribute('role', 'img');
+        element.setAttribute('aria-label', 'Rider avatar at the booked pickup point');
+        riderMarker.current = new mapboxgl.default.Marker({ element, anchor: RIDER_MAP_AVATAR_SIZE.anchor }).setLngLat(lngLat(pickup)).addTo(mapRef.current);
+      }
+      const element = riderMarker.current.getElement();
+      const key = JSON.stringify(riderAvatar);
+      if (riderTexture.current !== key) { element.innerHTML = mapAvatarSvg(riderAvatar, 'assigned-rider', true); riderTexture.current = key; }
+      element.dataset.pickupMotion = riderPose;
+      riderMarker.current.setLngLat(lngLat(pickup));
+    });
+    return () => { cancelled = true; };
+  }, [target, riderAvatar, riderPose, pickup?.lat, pickup?.lng, mountedRevision]);
+
+  useEffect(() => {
+    const sync = () => riderMarker.current?.getElement().classList.toggle('is-paused', document.hidden || document.documentElement.hasAttribute('data-nr-data-saver'));
+    sync();
+    document.addEventListener('visibilitychange', sync);
+    const observer = new MutationObserver(sync); observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-nr-data-saver'] });
+    return () => { document.removeEventListener('visibilitychange', sync); observer.disconnect(); };
+  }, [mountedRevision, riderAvatar]);
 
   useEffect(() => {
     const map = mapRef.current;

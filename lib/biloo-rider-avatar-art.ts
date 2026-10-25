@@ -33,6 +33,10 @@ export function riderAvatarSource(preset: number): string {
   return `/avatars/rider/character-${String(safe + 1).padStart(2, '0')}-v2.webp`;
 }
 
+export function riderWaveAvatarSource(preset: number): string {
+  return riderAvatarSource(preset).replace('-v2.webp', '-wave-v1.webp');
+}
+
 function tintMatrix(color: string, midpoint: number): string {
   const channels = [1, 3, 5].map(offset => parseInt(color.slice(offset, offset + 2), 16) / 255 / midpoint);
   return channels.map(channel => `${channel * .2126} ${channel * .7152} ${channel * .0722} 0 0`).join(' ') + ' 0 0 0 1 0';
@@ -43,7 +47,7 @@ function tintMatrix(color: string, midpoint: number): string {
  * including light/shadow texture, without recoloring the whole character.
  * All URLs, colors, identifiers and attributes come from normalized constants.
  */
-export function mapAvatarSvg(value: MapAvatar, instance = 'map'): string {
+export function mapAvatarSvg(value: MapAvatar, instance = 'map', rigged = false): string {
   const a = normalizeMapAvatar(value);
   const id = `biloo-avatar-${instance.replace(/[^a-zA-Z0-9_-]/g, '')}-${a.preset}-${a.skin}-${a.hair}-${a.outfit}`;
   let input = 'SourceGraphic';
@@ -59,5 +63,24 @@ export function mapAvatarSvg(value: MapAvatar, instance = 'map'): string {
   if (a.skin !== DEFAULT_MAP_AVATAR.skin) tint('skin', '9 -7 -3 0 -.25', AVATAR_SKINS[a.skin], .48, '2 2 1 0 -.45');
   if (a.hair !== DEFAULT_MAP_AVATAR.hair) tint('hair', '-3 -4 -1 0 1.2', AVATAR_HAIR[a.hair], .11, '8 0 -8 0 .3');
   if (a.outfit !== DEFAULT_MAP_AVATAR.outfit) tint('outfit', '-10 1 10 0 -.18', AVATAR_OUTFITS[a.outfit], .22);
-  return `<svg class="biloo-rider-avatar-art" data-avatar-preset="${a.preset}" data-artwork="premium-v2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 320" width="192" height="320" aria-hidden="true" focusable="false">${filters ? `<defs><filter id="${id}" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">${filters}</filter></defs>` : ''}<image href="${riderAvatarSource(a.preset)}" width="192" height="320" preserveAspectRatio="xMidYMax meet"${filters ? ` filter="url(#${id})"` : ''}/></svg>`;
+  const filter = filters ? `<filter id="${id}" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">${filters}</filter>` : '';
+  const texture = `<image ${rigged ? `id="${id}-texture" ` : ''}href="${riderAvatarSource(a.preset)}" width="192" height="320" preserveAspectRatio="xMidYMax meet"${filters ? ` filter="url(#${id})"` : ''}/>`;
+  // A separate, identity-matched pose gives every character a natural bent
+  // elbow and open hand. Only the palm gently turns; the body is never rocked.
+  const wristX = [143,151,151,155,151,153,158,162,153,157,157,157,155,160,160,159,154,162,158,158][a.preset];
+  const wristY = [69,78,77,87,76,80,87,96,79,90,81,88,78,91,85,88,80,87,80,88][a.preset];
+  const hand = `M ${wristX - 20} 0 H 192 V ${wristY + 1} H ${wristX - 9} L ${wristX - 20} ${wristY - 20} Z`;
+  const waveTexture = `<image id="${id}-wave-texture" href="${riderWaveAvatarSource(a.preset)}" width="192" height="320"${filters ? ` filter="url(#${id})"` : ''}/>`;
+  const rig = rigged ? `<defs>${filter}${texture}${waveTexture}
+    <clipPath id="${id}-upper"><rect width="192" height="200"/></clipPath>
+    <clipPath id="${id}-leg-left"><rect x="0" y="199" width="97" height="121"/></clipPath>
+    <clipPath id="${id}-leg-right"><rect x="96" y="199" width="96" height="121"/></clipPath>
+    <clipPath id="${id}-hand"><path d="${hand}"/></clipPath>
+    <mask id="${id}-wave-body" maskUnits="userSpaceOnUse" x="0" y="0" width="192" height="320"><rect width="192" height="320" fill="white"/><path d="${hand}" fill="black"/></mask>
+  </defs><g class="biloo-rider-rig">
+    <g class="biloo-rider-still"><use href="#${id}-texture"/></g>
+    <g class="biloo-rider-walk-pose"><g clip-path="url(#${id}-upper)"><use href="#${id}-texture"/></g>${['left','right'].map(side => `<g class="biloo-rider-leg-${side}"><g clip-path="url(#${id}-leg-${side})"><use href="#${id}-texture"/></g></g>`).join('')}</g>
+    <g class="biloo-rider-wave-pose"><use href="#${id}-wave-texture" mask="url(#${id}-wave-body)"/><g class="biloo-rider-wave-hand" style="transform-origin:${wristX}px ${wristY}px"><g clip-path="url(#${id}-hand)"><use href="#${id}-wave-texture"/></g></g></g>
+  </g>` : `${filter ? `<defs>${filter}</defs>` : ''}${texture}`;
+  return `<svg class="biloo-rider-avatar-art" data-avatar-preset="${a.preset}" data-artwork="premium-v2"${rigged ? ' data-rigged="true"' : ''} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 320" width="192" height="320" aria-hidden="true" focusable="false">${rig}</svg>`;
 }

@@ -4,6 +4,7 @@ import type { TripSnapshot } from '../../lib/nexride-trip-data';
 import { Icon, LanguageContext, useTranslation } from './ui';
 import { elapsedLabel, freshDriverFix } from '../../lib/biloo-journey';
 import { useRouter } from 'next/navigation';
+import { PickupWaveButton } from './pickup-wave-button';
 import './accepted-driver-card.css';
 export function AcceptedDriverCard({ snapshot, photo, photoStale, onPhotoError, tripId, safety }: {
   snapshot: TripSnapshot | null; photo: string; photoStale: boolean; onPhotoError: () => void; tripId: string; safety: () => void;
@@ -36,6 +37,7 @@ export function AcceptedDriverCard({ snapshot, photo, photoStale, onPhotoError, 
       <span aria-hidden="true"/>{trackingFresh ? say('Driver location live', 'የአሽከርካሪው ቀጥታ ቦታ') : tracking ? say('Location update delayed', 'የቦታ ዝመና ዘግይቷል') : say('Waiting for a live driver location', 'የአሽከርካሪውን ቦታ በመጠባበቅ ላይ')}
     </p>}
     {snapshot?.status === 'arrived' && <div className="biloo-pickup-status"><Icon name="pin" size={20}/><div><strong>{say('Meet your driver at pickup', 'መነሻ ላይ ከአሽከርካሪዎ ጋር ይገናኙ')}</strong><p>{snapshot.arrivedAt ? `${say('Waiting', 'በመጠባበቅ ላይ')} ${elapsedLabel((now - snapshot.arrivedAt) / 1000)}` : say('Your driver confirmed arrival', 'አሽከርካሪዎ መድረሱን አረጋግጧል')}</p></div></div>}
+    {(snapshot?.status === 'approaching' || snapshot?.status === 'arrived') && <PickupWaveButton key={tripId} tripId={tripId}/>}
     {snapshot?.status === 'in_trip' && (remaining != null || arrival != null) && <div className="biloo-journey-metrics">
       {remaining != null && <span><Icon name="navigation" size={16}/>{(remaining / 1000).toFixed(1)} km {say('remaining', 'ይቀራል')}</span>}
       {arrival != null && <span><Icon name="clock" size={16}/>{say('Arrival', 'መድረሻ')} {new Date(arrival).toLocaleTimeString(language === 'am' ? 'am-ET' : 'en-ET', { hour: '2-digit', minute: '2-digit' })}</span>}

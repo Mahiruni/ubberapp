@@ -14,6 +14,7 @@ import { resolveSessionRole } from "../../../lib/nexride-account-role";
 import { emitNexRideFeedback } from "../../../lib/nexride-feedback";
 import { nextNexRideManeuver } from "../../../lib/nexride-navigation-guidance";
 import { TripCompletionCard } from "../../../components/nexride/trip-completion-card";
+import { usePickupSignal } from '../../../components/nexride/use-pickup-signal';
 import type { TripSnapshot } from "../../../lib/nexride-trip-data";
 import "../../nexride.css";
 import "./navigation.css";
@@ -102,6 +103,7 @@ export default function DriverNavigationPage() {
   // A cached trip is for orientation only. Stage mutations require a fresh
   // confirmation of ownership and status from Supabase after connectivity recovers.
   const [safeToUpdate, setSafeToUpdate] = useState(false);
+  const riderPickup = usePickupSignal(trip?.requestId || '', safeToUpdate && (trip?.status === 'accepted' || trip?.status === 'arrived_pickup'));
   const [showingSavedTrip, setShowingSavedTrip] = useState(false);
   const [riderPhone, setRiderPhone] = useState("");
   const [loading, setLoading] = useState(true);
@@ -782,7 +784,8 @@ export default function DriverNavigationPage() {
         <Icon name="info" size={17} />
         <span>{showingSavedTrip ? "Saved trip · " : ""}Reconnecting — trip actions paused until the latest stage is confirmed.</span>
       </div>}
-      <DriverNavigationMap vehicle={position} pickup={trip.pickupCoordinate} destination={trip.destinationCoordinate} route={nativeRoute?.target === stage.target ? nativeRoute.geometry : []} target={stage.target} view={mapView} gpsState={gpsState} heading={position?.heading ?? null} />
+      <DriverNavigationMap vehicle={position} pickup={trip.pickupCoordinate} destination={trip.destinationCoordinate} route={nativeRoute?.target === stage.target ? nativeRoute.geometry : []} target={stage.target} view={mapView} gpsState={gpsState} heading={position?.heading ?? null}
+        riderAvatar={riderPickup?.avatar} riderWaveKey={riderPickup?.signal?.id} riderArrivalKey={trip.status === 'arrived_pickup' ? trip.requestId : ''}/>
 
       <button className="nr-nav-home" onClick={() => router.replace("/driver/home")} aria-label={op("Driver home")}><Icon name="home" size={19} /></button>
 
@@ -833,6 +836,7 @@ export default function DriverNavigationPage() {
         )}
         </div>}>
         <div className="nr-nav-trip-meta"><span>Biloo · {trip.rideCategory}</span><span>{stage.badge}</span></div>
+        {riderPickup?.signal && <p className="biloo-rider-pickup-signal" role="status"><span aria-hidden="true">👋</span>{op('Your rider is at pickup')}<small>{op('Sent in trip chat')}</small></p>}
         <div className="nr-nav-current-destination">
           <small>{stage.target === "pickup" ? op("PICKUP") : op("DESTINATION")}</small>
           <h1>{stage.destination}</h1>

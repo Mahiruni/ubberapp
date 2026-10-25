@@ -5,13 +5,17 @@ import { mkdir } from 'node:fs/promises';
 // Keep the largest connected silhouette in each cell so a neighboring
 // character's shoes/hair at a cell boundary never leak into another avatar.
 const source = process.argv[2] || 'assets/rider-avatars/collection-v2.png';
+const pose = process.argv[3] === 'wave' ? 'wave-v1' : 'v2';
 const output = 'public/avatars/rider';
 const metadata = await sharp(source).metadata();
 await mkdir(output, { recursive: true });
 
 for (let preset = 0; preset < 20; preset++) {
   const col = preset % 4, row = Math.floor(preset / 4);
-  const left = Math.round(col * metadata.width / 4), top = Math.round(row * metadata.height / 5);
+  const left = Math.round(col * metadata.width / 4);
+  // In the waving atlas, the previous row's shoe touches character 14's
+  // hair at the cell edge. Crop that six-pixel gutter before isolating it.
+  const top = Math.round(row * metadata.height / 5) + (pose === 'wave-v1' && preset === 13 ? 6 : 0);
   const width = Math.round((col + 1) * metadata.width / 4) - left;
   const height = Math.round((row + 1) * metadata.height / 5) - top;
   const cell = await sharp(source).extract({ left, top, width, height }).png().toBuffer();
@@ -51,6 +55,6 @@ for (let preset = 0; preset < 20; preset++) {
     .extract({ left: x0, top: y0, width: x1 - x0 + 1, height: y1 - y0 + 1 }).png().toBuffer();
   await sharp(isolated).resize(192, 320, { fit: 'contain', position: 'bottom', background: '#00000000' })
     .webp({ quality: 88, alphaQuality: 100, effort: 4 })
-    .toFile(`${output}/character-${String(preset + 1).padStart(2, '0')}-v2.webp`);
+    .toFile(`${output}/character-${String(preset + 1).padStart(2, '0')}-${pose}.webp`);
 }
 console.log('Packaged 20 transparent Rider characters.');

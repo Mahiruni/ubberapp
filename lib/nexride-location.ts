@@ -8,6 +8,7 @@ export type RiderLocation = {
   accuracy: number;
   timestamp: number;
   heading: number | null;
+  speed?: number | null;
 };
 
 export type LocationStatus =
@@ -77,6 +78,7 @@ export function useRiderLocation() {
               lng: result.coords.longitude,
               accuracy: result.coords.accuracy,
               timestamp: result.timestamp || Date.now(),
+              speed: typeof result.coords.speed === "number" && Number.isFinite(result.coords.speed) && result.coords.speed >= 0 ? result.coords.speed : null,
               heading:
                 typeof result.coords.heading === "number" &&
                 Number.isFinite(result.coords.heading)
