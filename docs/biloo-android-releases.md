@@ -24,9 +24,35 @@ Use `driver` in a separate checkout for the other application. Preparation refus
 
 `native/android/release.json` owns the public version name, SDK versions and role identity. The APK version code is `versionCodeBase + GITHUB_RUN_NUMBER` (currently `100000 + run number`). Both roles in a run share a version code; retrying that run preserves its identity. New workflow runs increment it. Preserve the workflow filename/counter and never lower the base or reuse an already distributed version code for a changed APK. Update `versionName` intentionally for a public release. Android requires the next update's version code to exceed the installed release.
 
+## First signed release
+
+For Biloo's first signed releases, run `scripts/create-android-release-keys.py` **on your own computer**. It creates a separate encrypted PKCS#12 keystore for Rider and Driver, with RSA 3072-bit keys and 10,000-day certificate validity. The keys remain outside Git. Python 3.9+ and Java 21 (`keytool`) are required; GitHub configuration also needs [GitHub CLI](https://cli.github.com/) authenticated to `github.com` with permission to manage this repository's Actions settings.
+
+Choose a private local directory and a separate backup location, preferably on an encrypted external drive. Replace the backup path below with your real backup location:
+
+```sh
+python3 scripts/create-android-release-keys.py --output-dir "$HOME/BilooKeys" --backup-dir "/your/backup/BilooKeys"
+```
+
+You enter and confirm a password of at least 16 characters for each app at hidden terminal prompts. Keep both passwords in your password manager. The command saves the two password-protected keystores and a public `release-identities.json` record in **both** directories and verifies that the backup bytes match. It does not contact GitHub by default. Key/backup directories must be separate, non-nested, and outside every Git checkout. Store the backup somewhere that survives loss of the original computer; two directories on the same disk do not provide that protection.
+
+The files are `biloo-rider-release.p12` (alias `biloo-rider-release`) and `biloo-driver-release.p12` (alias `biloo-driver-release`). The keystore and private key use the same password for each app, as expected by the PKCS#12 signing setup. Passwords are not written to the identity record or passed in command arguments.
+
+After checking your saved files, run the same command with the same directories and passwords plus `--configure --start-release`:
+
+```sh
+python3 scripts/create-android-release-keys.py --output-dir "$HOME/BilooKeys" --backup-dir "/your/backup/BilooKeys" --configure --start-release
+```
+
+This reuses the saved keys, configures both apps' signing secrets and certificate variables through `gh`, checks that both role-specific Firebase secret names exist, then requests the signed APK workflow on `main`. The build still validates the actual Firebase configurations and APK signatures. `--configure` alone uploads the settings without starting a build. Follow the run at [GitHub Actions](https://github.com/Mahiruni/ubberapp/actions) and download the verified signed artifacts after it succeeds.
+
+Interrupted setup can be resumed with the same directories and passwords. Missing originals are restored from their verified backup. A missing backup can be recreated from the original. If an identity is recorded but both key files are lost, the command refuses to generate a replacement. It also refuses to overwrite differing backups or change an already pinned GitHub certificate. If GitHub configuration fails after key creation, preserve these files and rerun the same command; do not generate a different identity to retry.
+
+The assistant's GitHub connection cannot set Actions secrets or dispatch this manual release workflow, so this owner-run step is required. No production signing key is created in the assistant workspace or saved to the repository. Automated tests generate temporary keys only.
+
 ## Configure the existing signing identity
 
-The pipeline does not create production keys. Reuse each application's existing production keystore and retain an independent backup. If no production key has ever been established, its owner must create and back up the first release identity before configuring this workflow. Do not replace a published signing key to make CI pass.
+The CI pipeline does not create production keys. Reuse each application's existing production keystore and retain an independent backup. If no production key has ever been established, use the first-release procedure above. Do not replace a published signing key to make CI pass.
 
 In this repository's **Settings → Secrets and variables → Actions**, configure these values for each role:
 
