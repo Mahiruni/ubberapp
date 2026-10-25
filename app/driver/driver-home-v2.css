@@ -717,3 +717,63 @@
 @media(prefers-reduced-motion:reduce){
   .nr-driver-home-cockpit .biloo-driver-first-wrapper{transition:none!important}
 }
+
+/* Biloo Driver: compact top-center GPS presence indicator.
+   Below Android's status bar, above map interactions, never covering controls. */
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-cockpit .nr-driver-presence-label {
+  box-sizing:border-box;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  position:absolute;
+  z-index:18;
+  top:max(48px,calc(env(safe-area-inset-top,0px) + 12px));
+  left:50%;
+  right:auto;
+  width:max-content;
+  max-width:min(290px,calc(100vw - 106px));
+  transform:translateX(-50%);
+  margin:0;
+  padding:7px 12px;
+  border:1px solid rgba(184,207,229,.24);
+  border-radius:999px;
+  background:rgba(13,34,55,.94);
+  color:#f7faff;
+  text-align:center;
+  font-size:11px;
+  font-weight:650;
+  letter-spacing:.005em;
+  line-height:1.2;
+  pointer-events:none;
+  box-shadow:0 5px 16px rgba(8,27,49,.16);
+  -webkit-backdrop-filter:blur(12px);
+  backdrop-filter:blur(12px);
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-cockpit .nr-driver-presence-label>svg {
+  display:block;
+  flex:0 0 14px;
+  width:14px;
+  height:14px;
+  color:inherit;
+  stroke-width:2.1;
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-cockpit .nr-driver-presence-copy {
+  display:block;
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-cockpit .nr-driver-presence-label[data-ready="true"] {
+  border-color:rgba(0,200,120,.45);
+  color:#6aebae;
+}
+@media(max-width:380px) {
+  .nr-driver-app-shell[data-home="true"] .nr-driver-home-cockpit .nr-driver-presence-label {
+    max-width:calc(100vw - 102px);
+    padding:7px 9px;
+    gap:5px;
+    font-size:10px;
+  }
+}
