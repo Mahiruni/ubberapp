@@ -25,6 +25,8 @@ import { supabase } from "../../lib/supabase";
 import { resolveSessionRole } from "../../lib/nexride-account-role";
 import { nexrideApiFetch } from "../../lib/nexride-api-auth";
 import { driverGpsHealth } from "../../lib/nexride-driver-gps";
+import { useDriverMapAvatar } from "../../lib/biloo-driver-map-avatar-client";
+import { driverMapAvatarSource } from "../../lib/biloo-driver-map-avatar";
 import { emitNexRideFeedback } from "../../lib/nexride-feedback";
 import { enableNexRideNativeNotifications, getNexRideNativeAppRole } from "../../lib/nexride-native-reliability";
 import "../../app/driver/driver-dashboard.css";
@@ -134,6 +136,8 @@ export function DriverWorkspace({
   const { resolvedTheme } = useDriverTheme();
   const [state, setState] = useState<DriverState>(emptyState);
   const [driverId, setDriverId] = useState("");
+  // Reuse the Driver’s own registered car avatar rather than displaying a stock vehicle.
+  const prestigeCar = useDriverMapAvatar(screen === "home" && Boolean(driverId));
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState("");
@@ -792,6 +796,11 @@ export function DriverWorkspace({
                 <strong>{state.online ? say("You're online", "መስመር ላይ ነዎት") : say("You're offline", "ከመስመር ውጭ ነዎት")}</strong>
                 <span>{state.online ? say("Waiting for nearby ride requests", "የአቅራቢያ ጉዞ ጥያቄዎችን በመጠባበቅ ላይ") : say("Swipe below to become available", "ለመገኘት ከታች ያንሸራትቱ")}</span>
               </div>
+              {prestigeCar && !compactMapSheet && (
+                <div className="biloo-prestige-vehicle" aria-hidden="true">
+                  <img src={driverMapAvatarSource(prestigeCar)} alt="" width={52} height={86} draggable={false} />
+                </div>
+              )}
             <DriverAvailabilitySwipe
               online={state.online}
               updating={updating}
@@ -801,8 +810,9 @@ export function DriverWorkspace({
             />
             </div>
             <div className="biloo-driver-first-links" aria-label={say("Driver shortcuts", "የአሽከርካሪ አቋራጮች")}>
-              <button type="button" onClick={() => navigate("earnings")}><Icon name="wallet" size={17}/><span>{say("Earnings", "ገቢ")}</span><Icon name="arrow" size={14}/></button>
-              <button type="button" onClick={onSafety}><Icon name="shield" size={17}/><span>{say("Safety & support", "ደህንነት እና ድጋፍ")}</span><Icon name="arrow" size={14}/></button>
+              <button type="button" onClick={() => navigate("earnings")}><Icon name="wallet" size={19}/><span>{say("Earnings", "ገቢ")}</span></button>
+              <button type="button" onClick={() => router.push("/driver/activity")}><Icon name="clock" size={19}/><span>{say("Activity", "እንቅስቃሴ")}</span></button>
+              <button type="button" onClick={onSafety}><Icon name="shield" size={19}/><span>{say("Safety", "ደህንነት")}</span></button>
             </div>
           </div>
         </div>
