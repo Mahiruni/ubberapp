@@ -1,6 +1,7 @@
 'use client';
 import { useContext, useEffect, useRef, useState } from 'react';
 import { Button, Icon, LanguageContext } from './ui';
+import './trip-completion-premium.css';
 import type { TripSnapshot } from '../../lib/nexride-trip-data';
 import { submitRiderRating } from '../../lib/nexride-trip-service';
 
@@ -31,6 +32,7 @@ export function TripCompletionCard({ snapshot, role = 'rider', onDone, onHistory
   const duration = snapshot.startedAt && snapshot.completedAt && snapshot.completedAt >= snapshot.startedAt
     ? Math.max(1, Math.round((snapshot.completedAt - snapshot.startedAt) / 60_000)) : null;
   const payment = snapshot.payment.status;
+  const cash = snapshot.payment.method?.toLowerCase() === 'cash';
   return <article className="biloo-completion-card" aria-label={say('Trip receipt and rating', 'የጉዞ ደረሰኝ እና ደረጃ')}>
     <header><span className="biloo-arrival-mark"><Icon name="check" size={26}/></span>
       <span className="biloo-journey-eyebrow">BILOO · {say('JOURNEY COMPLETE', 'ጉዞ ተጠናቋል')}</span>
@@ -40,10 +42,10 @@ export function TripCompletionCard({ snapshot, role = 'rider', onDone, onHistory
     <div className="biloo-receipt-fare"><small>{say('Final confirmed fare', 'የመጨረሻ የተረጋገጠ ዋጋ')}</small>
       <strong>{fare ? <>{fare.amount.toLocaleString(language === 'am' ? 'am-ET' : 'en-ET', { maximumFractionDigits: 2 })}<span> ETB</span></> : '—'}</strong>
       <span className="biloo-payment-state" data-status={payment}><Icon name={payment === 'paid' ? 'check' : 'clock'} size={15}/>
-        {payment === 'paid' ? say('Payment recorded as paid', 'ክፍያ ተከፍሏል ተብሎ ተመዝግቧል')
+        {payment === 'paid' ? (cash ? say('Cash payment recorded · driver collects fare', 'የጥሬ ገንዘብ ክፍያ ተመዝግቧል') : say('Payment completed', 'ክፍያ ተጠናቋል'))
           : payment === 'pending' ? say('Payment pending', 'ክፍያ በመጠባበቅ ላይ')
           : payment === 'failed' ? say('Payment needs attention', 'ክፍያ እርምጃ ይፈልጋል') : say('Payment status unavailable', 'የክፍያ ሁኔታ አይገኝም')}</span>
-      {payment !== 'paid' && <p>{say('Trip completion does not confirm payment.', 'ጉዞ መጠናቀቁ ክፍያን አያረጋግጥም።')}</p>}
+      {payment !== 'paid' && <p>{cash ? say('Cash payment is awaiting the recorded completion update. Driver earnings are tracked separately.', 'የጥሬ ገንዘብ ክፍያ ማረጋገጫ በመጠባበቅ ላይ ነው።') : say('Trip completion does not confirm digital payment.', 'ጉዞ መጠናቀቁ ዲጂታል ክፍያን አያረጋግጥም።')}</p>}
     </div>
     <div className="biloo-journey-stops">
       <div><span className="biloo-stop-dot"/><div><small>{say('Pickup', 'መነሻ')}</small><strong>{snapshot.pickup.name || '—'}</strong></div></div>
