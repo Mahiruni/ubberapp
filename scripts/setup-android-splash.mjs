@@ -23,7 +23,6 @@ styles = styles.replace(/<style name="AppTheme.NoActionBarLaunch"[^>]*>[\s\S]*?<
         <item name="windowSplashScreenAnimatedIcon">@drawable/nexride_splash_wordmark</item>
         <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
         <item name="android:windowLightStatusBar">false</item>
-        <item name="android:windowLightNavigationBar">false</item>
         <item name="android:statusBarColor">#08295F</item>
         <item name="android:navigationBarColor">#08295F</item>
     </style>`);
@@ -35,9 +34,10 @@ writeFileSync(join(legacyDrawable, "nexride_launch.xml"), `<layer-list xmlns:and
   <item><shape android:shape="rectangle"><solid android:color="#08295F" /></shape></item>
   <item android:width="288dp" android:height="288dp" android:gravity="center" android:drawable="@drawable/nexride_splash_wordmark" />
 </layer-list>\n`);
-const v31 = join(res,"values-v31");
-mkdirSync(v31,{recursive:true});
-writeFileSync(join(v31,"nexride-splash.xml"), `<?xml version="1.0" encoding="utf-8"?>
+for (const qualifier of ["values-v27", "values-v31"]) {
+const versioned = join(res, qualifier);
+mkdirSync(versioned,{recursive:true});
+writeFileSync(join(versioned,"nexride-splash.xml"), `<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">#08295F</item>
@@ -49,4 +49,5 @@ writeFileSync(join(v31,"nexride-splash.xml"), `<?xml version="1.0" encoding="utf
         <item name="android:navigationBarColor">#08295F</item>
     </style>
 </resources>\n`);
+}
 console.log(`Configured single native violet/white Biloo ${role} launch theme.`);

@@ -13,7 +13,7 @@ Audited `Mahiruni/ubberapp` without replacing its existing Next.js application, 
 - `components/nexride/native-navigation-bridge.tsx`: Capacitor plugin bridge that only executes on a native platform.
 - `scripts/setup-android-splash.mjs`: utility to run *after* generating a Capacitor Android source project.
 
-**Repository limitation:** At audit time, `capacitor.config.ts`, `capacitor.config.json`, `android/app/src/main/AndroidManifest.xml`, and `android/app/build.gradle` were absent. Therefore this repository is confirmed to support a browser/PWA build, with native-capable *JavaScript integration code*, but NOT a verified, buildable Android project. Do not claim there is a signed APK/AAB, a verified Android notification channel, native predictive Back, a native splash, or Android system-bar configuration without an Android source/build and device testing.
+**Initial audit limitation:** At the initial audit, `capacitor.config.ts`, `capacitor.config.json`, `android/app/src/main/AndroidManifest.xml`, and `android/app/build.gradle` were absent. Native build verification was therefore unavailable. Subsequent native templates and `.github/workflows/android-apks.yml` now generate separate Rider and Driver projects. The release pipeline pins Capacitor/SDK/Gradle versions, fixes the native Java generation errors, compiles/tests/lints release variants, assigns increasing version codes and verifies APK metadata. See [the release procedure](biloo-android-releases.md) for the signing configuration and build verification boundaries. A generated project and successful web build alone still do not establish a signed production release or device behavior.
 
 ## Changes delivered in this phase
 
@@ -30,8 +30,8 @@ These are code-level changes. A successful Next.js/Vercel build validates the we
 
 ## Native package work to prioritize next
 
-1. Decide whether Biloo ships **one dual-role APK** or separately installable Rider and Driver APKs. Preserve one Supabase auth identity regardless. This decision determines package IDs, deep link ownership, icons, notification channels and distribution.
-2. Add a Capacitor configuration and source-controlled `android/` project linked to the existing Biloo production origin/build. Restrict navigation and bridges to trusted origins; do not embed secrets in Android resources.
+1. Complete production signing configuration for the separately installable Rider (`com.nexride.rider`) and Driver (`com.nexride.driver`) APKs, preserving the existing release certificates. The release pipeline intentionally does not replace signing identities or publish unverified APKs.
+2. Verify the generated native projects from the tracked templates and preparation scripts against the production origin. Generated `android/` projects are disposable build output; changes belong in the tracked templates/scripts. Restrict navigation and bridges to trusted origins; do not embed private credentials in Android resources.
 3. Implement Android 15+ edge-to-edge support using real `WindowInsets`, accounting for gesture navigation, status bars and display cutouts. Test native system-icon contrast on light/dark screens.
 4. Use supported splash resources, adaptive icons, Android version codes, backup restrictions, secure release signing and runtime notification permissions. Only enable camera/location/microphone permissions for actual features.
 5. Verify AndroidX predictive Back integration against current Android guidance and test root gesture, keyboard, modal, navigation, account logout and active-trip behavior.

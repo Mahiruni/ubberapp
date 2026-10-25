@@ -19,6 +19,8 @@ test.each(["rider", "driver"])("%s native splash preserves runtime theme and fit
   expect(first).toContain(runtime);
   expect(first).toContain('name="postSplashScreenTheme">@style/AppTheme.NoActionBar');
   expect(first).toContain('name="windowSplashScreenBackground">#08295F');
+  expect(first).not.toContain('android:windowLightNavigationBar');
+  expect(readFileSync(join(res,"values-v27/nexride-splash.xml"),"utf8")).toContain('android:windowLightNavigationBar');
   expect(first).not.toContain("setKeepOnScreenCondition");
   const icon = sharp(join(res,"drawable-nodpi/nexride_splash_wordmark.png"));
   const { data, info } = await icon.raw().toBuffer({ resolveWithObject: true });

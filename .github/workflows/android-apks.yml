@@ -1,270 +1,158 @@
-name: Build Biloo Android APKs
+name: Biloo Android release pipeline
 
 'on':
   workflow_dispatch:
+    inputs:
+      signed_release:
+        description: Build signed release APKs using the existing Rider/Driver signing keys
+        type: boolean
+        default: false
   pull_request:
     branches: [main]
-    paths:
-      - ".github/workflows/android-apks.yml"
-      - "native/android/**"
-      - "scripts/setup-android-reliability.mjs"
-      - "scripts/setup-android-splash.mjs"
-      - "scripts/setup-android-app-lock.mjs"
-      - "lib/nexride-app-lock.ts"
-      - "components/nexride/app-lock-settings.tsx"
-      - "lib/nexride-live-trip.ts"
-      - "components/nexride/trip-experience.tsx"
-      - "app/driver/navigation/page.tsx"
+    paths: &android_paths
+      - '.github/workflows/android-apks.yml'
+      - 'native/android/**'
+      - 'scripts/*android*'
+      - 'scripts/generate-brand-assets.mjs'
+      - 'scripts/generate-nexride-alert-sound.py'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'tests/unit/biloo-android-release.test.ts'
+      - 'tests/native/**'
   push:
     branches: [main]
-    paths:
-      - ".github/workflows/android-apks.yml"
-      - "public/brand/biloo-rider.svg"
-      - "public/brand/biloo-driver.svg"
-      - "components/nexride/ui.tsx"
-      - "app/identity-experience.css"
-      - "scripts/generate-brand-assets.mjs"
-      - "scripts/sync-android-icons.mjs"
-      - "scripts/setup-android-splash.mjs"
-      - "scripts/setup-android-app-lock.mjs"
-      - "lib/nexride-app-lock.ts"
-      - "components/nexride/app-lock-settings.tsx"
-      - "package.json"
-      - "components/nexride/native-navigation-bridge.tsx"
-      - "lib/nexride-native-navigation.ts"
-      - "components/nexride/use-sheet-motion.ts"
-      - "app/page.tsx"
-      - "app/driver/home/page.tsx"
-      - "scripts/setup-android-reliability.mjs"
-      - "native/android/**"
-      - "lib/nexride-live-trip.ts"
-      - "components/nexride/trip-experience.tsx"
-      - "app/driver/navigation/page.tsx"
-      - "lib/nexride-native-reliability.ts"
-      - "components/nexride/native-push-bootstrap.tsx"
-      - "lib/nexride-native-share.ts"
-      - "app/safety/page.tsx"
-      - "scripts/harden-android-push-notifications.mjs"
-      - "scripts/generate-nexride-alert-sound.py"
-      - "native/android/NexRideDriverAlertChannels.java"
+    paths: *android_paths
 
 permissions:
   contents: read
 
+concurrency:
+  group: biloo-android-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
+
 jobs:
-  apk:
-    name: Build ${{ matrix.role }} APK
-    runs-on: ubuntu-latest
+  verify:
+    name: Verify ${{ matrix.role }} release build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
         role: [rider, driver]
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Node 24
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: 24
           cache: npm
-
-      - name: Set up Java 21
-        uses: actions/setup-java@v4
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
         with:
           distribution: temurin
-          java-version: "21"
-
-      - name: Install web dependencies
-        # Some legacy package-lock entries predate Mapbox additions. Let npm
-        # resolve the tracked package.json rather than abort on npm ci drift.
-        run: npm install --no-audit --no-fund
-
-      - name: Install Capacitor build tooling
-        run: npm install --no-save @capacitor/core@8 @capacitor/cli@8 @capacitor/android@8 @capacitor/app@8 @capacitor/push-notifications@8 @capacitor/share@8 @capacitor/splash-screen@8.0.2
-
-      - name: Patch native push permission crash safeguards
-        shell: bash
+          java-version: '21'
+      - run: npm ci --no-audit --no-fund
+      - name: Check Android generation and release rules
+        run: npm run test:android
+      - name: Prepare the isolated role and increasing build number
+        run: node scripts/prepare-android.mjs '${{ matrix.role }}' "$GITHUB_RUN_NUMBER"
+      - name: Verify SDK tools
         run: |
-          node scripts/harden-android-push-notifications.mjs
-          grep -q 'nexRideAlertsEnabled' node_modules/@capacitor/push-notifications/android/src/main/java/com/capacitorjs/plugins/pushnotifications/PushNotificationsPlugin.java
-          grep -q 'notification_channel_unavailable' node_modules/@capacitor/push-notifications/android/src/main/java/com/capacitorjs/plugins/pushnotifications/PushNotificationsPlugin.java
-
-      - name: Configure native shell
-        # 12s is a failure ceiling, not a minimum: the web readiness bridge hides
-        # the single native splash as soon as welcome/home/error content is ready.
-        shell: bash
-        run: |
-          if [ "${{ matrix.role }}" = "rider" ]; then
-            APP_ID="com.nexride.rider"
-            APP_NAME="Biloo Rider"
-            START_PATH="/rider"
-          else
-            APP_ID="com.nexride.driver"
-            APP_NAME="Biloo Driver"
-            START_PATH="/driver"
-          fi
-
-          cat > capacitor.config.json <<EOF
-          {
-            "appId": "$APP_ID",
-            "appName": "$APP_NAME",
-            "webDir": "public",
-            "server": {
-              "url": "https://ubberapp.vercel.app$START_PATH",
-              "cleartext": false,
-              "androidScheme": "https"
-            },
-            "android": {
-              "allowMixedContent": false
-            },
-            "plugins": {
-              "SplashScreen": {
-                "launchAutoHide": true,
-                "launchShowDuration": 12000,
-                "launchFadeOutDuration": 160,
-                "backgroundColor": "#08295F",
-                "androidSplashResourceName": "nexride_launch",
-                "showSpinner": false
-              }
-            }
-          }
-          EOF
-
-      - name: Create Android project
-        run: npx cap add android
-
-      - name: Sync native navigation plugin
-        run: npx cap sync android
-
-      - name: Brand supported Android launch screen
-        run: node scripts/setup-android-splash.mjs "${{ matrix.role }}"
-
-      - name: Install native Driver GPS and role-specific Firebase settings
-        env:
-          FIREBASE_CONFIG_B64: ${{ matrix.role == 'driver' && secrets.NEXRIDE_DRIVER_GOOGLE_SERVICES_BASE64 || secrets.NEXRIDE_RIDER_GOOGLE_SERVICES_BASE64 }}
-        run: |
-          node scripts/setup-android-reliability.mjs "${{ matrix.role }}"
-          python3 scripts/validate-android-firebase-config.py "${{ matrix.role }}"
-          NATIVE_DIR="android/app/src/main/java/com/nexride/${{ matrix.role }}"
-          grep -q 'registerPlugin(NexRideLiveTripPlugin.class)' "$NATIVE_DIR/MainActivity.java"
-          grep -q 'Notification.ProgressStyle' "$NATIVE_DIR/NexRideLiveTripPlugin.java"
-          grep -q 'setRequestPromotedOngoing' "$NATIVE_DIR/NexRideLiveTripPlugin.java"
-          grep -q 'POST_PROMOTED_NOTIFICATIONS' android/app/src/main/AndroidManifest.xml
-          if [ "${{ matrix.role }}" = "driver" ]; then
-            python3 scripts/generate-nexride-alert-sound.py
-            test -s android/app/src/main/res/raw/nexride_ride_request.wav
-            grep -q 'NexRideDriverAlertChannels.ensure(this)' android/app/src/main/java/com/nexride/driver/MainActivity.java
-            grep -q 'nexride_driver_requests_v2' android/app/src/main/java/com/nexride/driver/NexRideDriverAlertChannels.java
-          fi
-
-      - name: Install native App Lock gate and security tests
-        run: node scripts/setup-android-app-lock.mjs "${{ matrix.role }}"
-
-      - name: Harden Android manifest
-        shell: bash
-        run: |
-          MANIFEST="android/app/src/main/AndroidManifest.xml"
-          python3 - <<'PY'
-          from pathlib import Path
-          p=Path("android/app/src/main/AndroidManifest.xml")
-          s=p.read_text()
-          permissions = (
-              '    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />\n'
-              '    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />\n'
-              '    <uses-permission android:name="android.permission.CAMERA" />\n'
-              '    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />\n'
-          )
-          if "ACCESS_FINE_LOCATION" not in s:
-              s=s.replace("<application", permissions+"\n    <application", 1)
-          s=s.replace('android:usesCleartextTraffic="true"', 'android:usesCleartextTraffic="false"')
-          # Capacitor AndroidX navigation also receives Android predictive Back callbacks.
-          if 'android:enableOnBackInvokedCallback=' not in s:
-              s=s.replace('<application', '<application android:enableOnBackInvokedCallback="true"', 1)
-          p.write_text(s)
-          PY
-
-      - name: Install role-specific Android launcher assets
-        shell: bash
-        run: |
-          node scripts/sync-android-icons.mjs "${{ matrix.role }}"
-          test -s android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
-          test -s android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png
-
-      - name: Verify role isolation and security
-        shell: bash
-        run: |
-          grep -q '"cleartext": false' capacitor.config.json
-          if [ "${{ matrix.role }}" = "rider" ]; then
-            grep -q 'com.nexride.rider' capacitor.config.json
-            grep -q '/rider' capacitor.config.json
-          else
-            grep -q 'com.nexride.driver' capacitor.config.json
-            grep -q '/driver' capacitor.config.json
-          fi
-          grep -q 'ACCESS_FINE_LOCATION' android/app/src/main/AndroidManifest.xml
-          grep -q 'CAMERA' android/app/src/main/AndroidManifest.xml
-          grep -q 'android:enableOnBackInvokedCallback="true"' android/app/src/main/AndroidManifest.xml
-          grep -q 'capacitor-app' android/capacitor.settings.gradle
-          grep -q 'capacitor-push-notifications' android/capacitor.settings.gradle
-          grep -q 'capacitor-share' android/capacitor.settings.gradle
-          grep -q 'capacitor-splash-screen' android/capacitor.settings.gradle
-          grep -q 'Theme.SplashScreen' android/app/src/main/res/values/styles.xml
-          grep -q 'nexride_splash_wordmark' android/app/src/main/res/values/styles.xml
-          test -s android/app/src/main/res/drawable-nodpi/nexride_splash_wordmark.png
-          grep -q 'POST_PROMOTED_NOTIFICATIONS' android/app/src/main/AndroidManifest.xml
-          grep -q 'registerPlugin(NexRideLiveTripPlugin.class)' android/app/src/main/java/com/nexride/${{ matrix.role }}/MainActivity.java
-          if [ "${{ matrix.role }}" = "driver" ]; then
-            grep -q 'foregroundServiceType="location"' android/app/src/main/AndroidManifest.xml
-            grep -q 'registerPlugin(NexRideDriverLocationPlugin.class)' android/app/src/main/java/com/nexride/driver/MainActivity.java
-            test -s android/app/src/main/res/raw/nexride_ride_request.wav
-          fi
-
-      - name: Build debug APK
+          test -s "$ANDROID_HOME/platforms/android-36/android.jar"
+          test -x "$ANDROID_HOME/build-tools/36.0.0/aapt"
+          test -x "$ANDROID_HOME/build-tools/36.0.0/apksigner"
+      - name: Compile, test and lint the real release variant
         working-directory: android
-        run: ./gradlew testDebugUnitTest assembleDebug
-
-      - name: Verify Firebase is compiled into the APK
-        shell: bash
-        run: |
-          set -euo pipefail
-          APK="android/app/build/outputs/apk/debug/app-debug.apk"
-          test -s "$APK"
-          test -s android/app/google-services.json
-          # Verify the *packaged* Android resources, not a Gradle plugin
-          # intermediate directory, which changes between AGP versions.
-          AAPT="$(find "${ANDROID_HOME}/build-tools" -maxdepth 2 -type f -name aapt -print | sort -V | tail -n 1)"
-          if [ -z "$AAPT" ] || [ ! -x "$AAPT" ]; then
-            echo "::error::Android SDK aapt is unavailable for Firebase APK verification"
-            exit 1
-          fi
-          "$AAPT" dump resources "$APK" > /tmp/nexride-apk-resources.txt
-          for resource in google_app_id gcm_defaultSenderId; do
-            if ! grep -Fq "string/$resource" /tmp/nexride-apk-resources.txt; then
-              echo "::error::Firebase resource $resource is missing from ${{ matrix.role }} APK"
-              exit 1
-            fi
-          done
-          echo "Firebase application ID and FCM sender resources are compiled in Biloo ${{ matrix.role }} APK."
-
-      - name: Stage APK
-        shell: bash
-        run: |
-          mkdir -p dist
-          cp android/app/build/outputs/apk/debug/app-debug.apk "dist/Biloo-${{ matrix.role }}-debug.apk"
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
+        run: ./gradlew --no-daemon --max-workers=2 testReleaseUnitTest lintRelease assembleRelease
+      - name: Verify unsigned build identity, version and release flags
+        run: python3 scripts/verify-android-release.py --apk android/app/build/outputs/apk/release/app-release-unsigned.apk --out dist/android/verification
+      - name: Upload build verification only (not an installable release)
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
-          name: Biloo-${{ matrix.role }}-APK
-          path: dist/Biloo-${{ matrix.role }}-debug.apk
+          name: Biloo-${{ matrix.role }}-unsigned-verification-${{ github.run_number }}
+          path: dist/android/verification/
           if-no-files-found: error
-          retention-days: 14
-
-      - name: Upload Android project for release hardening
-        uses: actions/upload-artifact@v4
-        with:
-          name: Biloo-${{ matrix.role }}-Android-project
-          path: android/
           retention-days: 7
+      - name: Upload Android test/lint reports
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: Biloo-${{ matrix.role }}-checks-${{ github.run_number }}
+          path: |
+            android/app/build/reports/tests/
+            android/app/build/reports/lint-results-release.*
+          if-no-files-found: ignore
+          retention-days: 7
+
+  signed_release:
+    name: Sign and verify ${{ matrix.role }} APK
+    needs: verify
+    if: github.event_name == 'workflow_dispatch' && inputs.signed_release == true && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - role: rider
+            prefix: RIDER
+          - role: driver
+            prefix: DRIVER
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 24
+          cache: npm
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - run: npm ci --no-audit --no-fund
+      - name: Prepare release package
+        run: node scripts/prepare-android.mjs '${{ matrix.role }}' "$GITHUB_RUN_NUMBER"
+      - name: Validate the production Firebase app
+        env:
+          FIREBASE_CONFIG_B64: ${{ secrets[format('NEXRIDE_{0}_GOOGLE_SERVICES_BASE64', matrix.prefix)] }}
+        run: python3 scripts/validate-android-firebase-config.py '${{ matrix.role }}'
+      - name: Verify the existing release signing identity
+        env:
+          BILOO_KEYSTORE_BASE64: ${{ secrets[format('BILOO_{0}_KEYSTORE_BASE64', matrix.prefix)] }}
+          BILOO_ANDROID_STORE_PASSWORD: ${{ secrets[format('BILOO_{0}_STORE_PASSWORD', matrix.prefix)] }}
+          BILOO_ANDROID_KEY_ALIAS: ${{ secrets[format('BILOO_{0}_KEY_ALIAS', matrix.prefix)] }}
+          BILOO_ANDROID_KEY_PASSWORD: ${{ secrets[format('BILOO_{0}_KEY_PASSWORD', matrix.prefix)] }}
+          BILOO_ANDROID_CERT_SHA256: ${{ vars[format('BILOO_{0}_CERT_SHA256', matrix.prefix)] }}
+        run: python3 scripts/prepare-android-signing.py
+      - name: Build the signed release
+        working-directory: android
+        env:
+          BILOO_ANDROID_STORE_PASSWORD: ${{ secrets[format('BILOO_{0}_STORE_PASSWORD', matrix.prefix)] }}
+          BILOO_ANDROID_KEY_ALIAS: ${{ secrets[format('BILOO_{0}_KEY_ALIAS', matrix.prefix)] }}
+          BILOO_ANDROID_KEY_PASSWORD: ${{ secrets[format('BILOO_{0}_KEY_PASSWORD', matrix.prefix)] }}
+        run: ./gradlew --no-daemon --max-workers=2 assembleRelease
+      - name: Verify signature, Firebase resources and APK metadata
+        env:
+          BILOO_ANDROID_CERT_SHA256: ${{ vars[format('BILOO_{0}_CERT_SHA256', matrix.prefix)] }}
+        run: python3 scripts/verify-android-release.py --apk android/app/build/outputs/apk/release/app-release.apk --signed --firebase --out dist/android/release
+      - name: Upload verified signed APK and checksums
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: Biloo-${{ matrix.role }}-signed-release-${{ github.run_number }}
+          path: dist/android/release/
+          if-no-files-found: error
+          retention-days: 30
+      - name: Remove temporary signing key
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+          value = os.environ.get('BILOO_ANDROID_KEYSTORE_FILE')
+          if value:
+              key = Path(value)
+              if key.parent.parent == Path(os.environ['RUNNER_TEMP']) and key.parent.name.startswith('biloo-signing-'):
+                  key.unlink(missing_ok=True)
+                  key.parent.rmdir()
+          PY

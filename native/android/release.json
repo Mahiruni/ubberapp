@@ -1,0 +1,15 @@
+{
+  "versionName": "1.0.0",
+  "versionCodeBase": 100000,
+  "compileSdk": 36,
+  "targetSdk": 36,
+  "minSdk": 24,
+  "buildTools": "36.0.0",
+  "gradleVersion": "8.14.3",
+  "gradleSha256": "bd71102213493060956ec229d946beee57158dbd89d0e62b91bca0fa2c5f3531",
+  "origin": "https://ubberapp.vercel.app",
+  "roles": {
+    "rider": { "applicationId": "com.nexride.rider", "name": "Biloo Rider", "startPath": "/rider" },
+    "driver": { "applicationId": "com.nexride.driver", "name": "Biloo Driver", "startPath": "/driver" }
+  }
+}

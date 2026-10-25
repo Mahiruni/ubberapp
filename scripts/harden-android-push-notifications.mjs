@@ -9,6 +9,11 @@ import fs from "node:fs";
 
 const file = "node_modules/@capacitor/push-notifications/android/src/main/java/com/capacitorjs/plugins/pushnotifications/PushNotificationsPlugin.java";
 let code = fs.readFileSync(file, "utf8");
+if (code.includes('private boolean nexRideAlertsEnabled()')) {
+  if (!code.includes('notification_channel_unavailable') || !code.includes('firebase_initialization_unavailable')) throw Error('Incomplete existing Android push safety patch');
+  console.log('Biloo Android push crash guard already installed.');
+  process.exit(0);
+}
 
 const startMarker = "    @PluginMethod\n    public void checkPermissions(PluginCall call) {";
 const endMarker = "    @PluginMethod\n    public void unregister(PluginCall call) {";

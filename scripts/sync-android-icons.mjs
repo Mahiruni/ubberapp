@@ -3,10 +3,9 @@
  * Run: node scripts/sync-android-icons.mjs rider|driver
  */
 import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join } from "node:path";
 
-const root = join(dirname(fileURLToPath(import.meta.url)), "..");
+const root = process.cwd();
 const role = process.argv[2];
 if (!["rider", "driver"].includes(role)) {
   throw new Error("Expected Biloo role: rider or driver");

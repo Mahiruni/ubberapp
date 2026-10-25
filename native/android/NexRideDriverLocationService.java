@@ -21,7 +21,8 @@ public final class NexRideDriverLocationService extends Service implements Locat
   private final ExecutorService network=Executors.newSingleThreadExecutor();
   private LocationManager manager;
   private volatile String bearer="";
-  private long lastUpload=0;\n  private volatile boolean unauthorized=false;
+  private long lastUpload=0;
+  private volatile boolean unauthorized=false;
   public static boolean isRunning(){return running;}
   @Override public void onCreate(){
     super.onCreate();
@@ -33,7 +34,8 @@ public final class NexRideDriverLocationService extends Service implements Locat
     if(intent==null || STOP.equals(intent.getAction())){stopSelf();return START_NOT_STICKY;}
     String token=intent.getStringExtra(TOKEN);
     if(token==null || token.length()<20){stopSelf();return START_NOT_STICKY;}
-    bearer=token;\n    unauthorized=false;
+    bearer=token;
+    unauthorized=false;
     if(checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)!=PackageManager.PERMISSION_GRANTED &&
        checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION)!=PackageManager.PERMISSION_GRANTED){
       stopSelf();return START_NOT_STICKY;
@@ -78,7 +80,14 @@ public final class NexRideDriverLocationService extends Service implements Locat
         connection.setRequestProperty("Authorization","Bearer "+token);
         connection.setRequestProperty("Content-Type","application/json");
         try(OutputStream out=connection.getOutputStream()){out.write(body);}
-        int status=connection.getResponseCode();\n        // A revoked or expired session must not continue broadcasting GPS.\n        // The foreground UI will reconcile and restart with a refreshed JWT.\n        if(status==401 || status==403){\n          unauthorized=true;\n          bearer="";\n          stopSelf();\n        }
+        int status=connection.getResponseCode();
+        // A revoked or expired session must not continue broadcasting GPS.
+        // The foreground UI will reconcile and restart with a refreshed JWT.
+        if(status==401 || status==403){
+          unauthorized=true;
+          bearer="";
+          stopSelf();
+        }
       }catch(Exception ignored){}finally{if(connection!=null)connection.disconnect();}
     });
   }

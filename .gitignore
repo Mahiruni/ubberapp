@@ -40,3 +40,17 @@ public/driver-apple-touch-icon.png
 public/icons/driver-icon-*.png
 public/icons/driver-adaptive-*.png
 public/icons/rider-adaptive-*.png
+
+# Generated Android workspaces, build output and private signing material
+/android/
+/capacitor.config.json
+/dist/android/
+/android-signing/
+*.jks
+*.keystore
+*.p12
+keystore.properties
+google-services.json
+__pycache__/
+/public/cordova.js
+/public/cordova_plugins.js

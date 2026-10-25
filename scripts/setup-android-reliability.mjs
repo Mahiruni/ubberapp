@@ -50,7 +50,7 @@ if(!source.includes("registerPlugin(NexRideLiveTripPlugin.class);"))
 // Insets are applied to the WebView content rather than hiding system bars.
 if(!source.includes("BilooSystemBars.apply(this);")){
   source=source.replace("    super.onCreate(savedInstanceState);",
-    "    super.onCreate(savedInstanceState);\\n    BilooSystemBars.apply(this);");
+    "    super.onCreate(savedInstanceState);\n    BilooSystemBars.apply(this);");
 }
 fs.writeFileSync(path.join(folder,"BilooSystemBars.java"),
   fs.readFileSync("native/android/BilooSystemBars.java","utf8")
