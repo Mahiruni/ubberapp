@@ -64,8 +64,8 @@ export function NexRideNativePushBootstrap() {
             const { data, error } = await supabase.from("ride_request_offers")
               .select("status,expires_at")
               .eq("id", match[1]).maybeSingle();
-            if (!error && (!data || data.status !== "pending" ||
-                (data.expires_at && Date.parse(data.expires_at) <= Date.now()))) {
+            if (error || !data || data.status !== "pending" ||
+                (data.expires_at && Date.parse(data.expires_at) <= Date.now())) {
               destination = "/driver/activity";
             }
           }
@@ -83,7 +83,7 @@ export function NexRideNativePushBootstrap() {
         }
       });
       authSubscription = data.subscription;
-      window.addEventListener("focus", syncIfPermitted);
+      window.addEventListener("focus", syncIfPermitted);\n      window.addEventListener("biloo:native-resume", syncIfPermitted);
       document.addEventListener("visibilitychange", onVisible);
       await syncIfPermitted();
     })().catch(() => {});
@@ -93,7 +93,7 @@ export function NexRideNativePushBootstrap() {
     }
     return () => {
       removed = true;
-      window.removeEventListener("focus", syncIfPermitted);
+      window.removeEventListener("focus", syncIfPermitted);\n      window.removeEventListener("biloo:native-resume", syncIfPermitted);
       document.removeEventListener("visibilitychange", onVisible);
       authSubscription?.unsubscribe();
       void Promise.all(subscriptions.map(s => s.remove()));
