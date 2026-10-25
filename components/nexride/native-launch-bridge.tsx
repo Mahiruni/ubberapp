@@ -9,7 +9,8 @@ export function NexRideNativeLaunchBridge() {
   useEffect(() => {
     let disposed = false;
     let stop: (() => void) | undefined;
-    let timer: ReturnType<typeof setTimeout> | undefined;\n    let readyTimer: ReturnType<typeof setTimeout> | undefined;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let readyTimer: ReturnType<typeof setTimeout> | undefined;
     void (async () => {
       const [{ Capacitor }, { SplashScreen }, { App }] = await Promise.all([
         import("@capacitor/core"), import("@capacitor/splash-screen"), import("@capacitor/app"),
@@ -35,7 +36,8 @@ export function NexRideNativeLaunchBridge() {
     return () => {
       disposed = true;
       stop?.();
-      if (timer) clearTimeout(timer);\n      if (readyTimer) clearTimeout(readyTimer);
+      if (timer) clearTimeout(timer);
+      if (readyTimer) clearTimeout(readyTimer);
     };
   }, []);
   if (!launch) return null;
