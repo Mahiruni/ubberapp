@@ -46,6 +46,13 @@ if(!installed){
 }
 if(!source.includes("registerPlugin(NexRideLiveTripPlugin.class);"))
   throw Error("Could not register NexRide Android Live Trip plugin");
+// Keep Android-owned status/navigation icons visible on edge-to-edge devices.
+// Insets are applied to the WebView content rather than hiding system bars.
+if(!source.includes("BilooSystemBars.apply(this);")){
+  source=source.replace("    super.onCreate(savedInstanceState);",
+    "    super.onCreate(savedInstanceState);\\n    BilooSystemBars.apply(this);");
+}
+fs.copyFileSync("native/android/BilooSystemBars.java",path.join(folder,"BilooSystemBars.java"));
 fs.writeFileSync(main,source);
 
 const manifest=path.join(base,"AndroidManifest.xml");
