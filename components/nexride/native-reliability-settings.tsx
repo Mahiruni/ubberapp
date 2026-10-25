@@ -1,11 +1,29 @@
 "use client";
 import { useEffect, useState } from "react";
-import { enableNexRideNativeNotifications } from "../../lib/nexride-native-reliability";
+import { enableNexRideNativeNotifications, nativeDriverGpsStatus, openNativeDriverSettings, type NativeDriverGpsStatus } from "../../lib/nexride-native-reliability";
 
 export function NativeReliabilitySettings({ role }: { role: "rider" | "driver" }) {
   const [native, setNative] = useState(false);
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const [tracking, setTracking] = useState<(NativeDriverGpsStatus & { checkedAt: number }) | null>(null);
+  useEffect(() => {
+    if (!native || role !== "driver") return;
+    let disposed = false;
+    const refresh = () => {
+      if (document.visibilityState === "hidden") return;
+      void nativeDriverGpsStatus().then(status => { if (!disposed) setTracking(status ? { ...status, checkedAt: Date.now() } : null); }).catch(() => {});
+    };
+    refresh();
+    const timer = window.setInterval(refresh, 15000);
+    window.addEventListener("biloo:native-resume", refresh);
+    document.addEventListener("visibilitychange", refresh);
+    return () => {
+      disposed = true; window.clearInterval(timer);
+      window.removeEventListener("biloo:native-resume", refresh);
+      document.removeEventListener("visibilitychange", refresh);
+    };
+  }, [native, role]);
   useEffect(() => {
     let mounted = true;
     void import("@capacitor/core").then(({ Capacitor }) => {
@@ -41,6 +59,20 @@ export function NativeReliabilitySettings({ role }: { role: "rider" | "driver" }
     finally { setBusy(false); }
   };
   return <section className="nr-permission-settings" aria-label="Native Android reliability">
+    {role === "driver" && <div className="nr-settings-block">
+      <div><strong>GPS with the screen locked</strong>
+        <small>{tracking?.locationEnabled === false ? "Turn on Android Location to share your position."
+          : tracking && !tracking.state ? "Install the updated Biloo Driver APK to enable this feature."
+          : tracking?.running && tracking.state === "ready" && tracking.checkedAt >= (tracking.lastUploadAt ?? 0) && tracking.checkedAt - (tracking.lastUploadAt ?? 0) < 60000 ? "Native location sharing is active while you are Online."
+          : tracking?.running ? "Waiting for a fresh GPS fix or connection."
+          : "Go Online with Biloo Driver open to start location sharing."}</small>
+        {tracking?.batteryExempt === false && <small>Allow background battery use in Android app settings for longer locked-screen sessions.</small>}
+      </div>
+      <button type="button" onClick={() => void openNativeDriverSettings().catch(() => setMessage("Open Android Settings → Apps → Biloo Driver → Battery and allow background use."))}
+        style={{ padding: "11px 14px", background: "var(--nr-surface, #f1f5f4)", color: "var(--nr-text, #173329)", border: "1px solid var(--nr-border, #d5e0dc)", borderRadius: 12, minHeight: 44 }}>
+        Android settings
+      </button>
+    </div>}
     <div className="nr-settings-block">
       <div><strong>Android ride alerts</strong>
         <small>{role === "driver" ? "Receive eligible ride requests while Biloo is in the background." :

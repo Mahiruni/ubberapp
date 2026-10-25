@@ -8,6 +8,8 @@ import { Button, Dialog, Icon } from "../../../components/nexride/ui";
 import { useOperationalTranslation } from "../../../components/nexride/operational-i18n";
 import { supabase } from "../../../lib/supabase";
 import { nexrideApiFetch } from "../../../lib/nexride-api-auth";
+import { nativeDriverGpsStatus } from "../../../lib/nexride-native-reliability";
+import { gpsFixUsable } from "../../../lib/nexride-driver-gps";
 import { storeDriverTrip, readDriverTrip, clearDriverTrip } from "../../../lib/nexride-offline-recovery";
 import { updateNexRideLiveTrip,clearNexRideLiveTrip } from "../../../lib/nexride-live-trip";
 import { resolveSessionRole } from "../../../lib/nexride-account-role";
@@ -452,6 +454,22 @@ export default function DriverNavigationPage() {
 
     void (async () => {
       try {
+        const native = await nativeDriverGpsStatus();
+        if (native?.running && native.tripTracking === true) return;
+        if (!gpsFixUsable({ latitude: position.lat, longitude: position.lng,
+          accuracy: position.accuracy ?? Number.NaN, timestamp: position.timestamp })) return;
+        // The new native service is the single trip publisher while active.
+        // Legacy APKs and foreground browser navigation keep their existing path.
+        if (now - lastAvailabilityAtRef.current >= 12000) {
+          lastAvailabilityAtRef.current = now;
+          void nexrideApiFetch("/api/driver/availability", {
+            method: "PATCH",
+            body: JSON.stringify({ location: {
+              latitude: position.lat, longitude: position.lng, accuracy: position.accuracy,
+              fix_timestamp: position.timestamp,
+            } }),
+          });
+        }
         const { error: shareError } = await supabase
           .from("ride_driver_locations")
           .upsert(payload, { onConflict: "ride_request_id" });
@@ -462,24 +480,12 @@ export default function DriverNavigationPage() {
         lastSharedAtRef.current = Date.now();
         lastSharedPositionRef.current = position;
         setLocationShareError("");
+      } catch {
+        setLocationShareError(op("Live location could not be shared with your rider. Check your connection."));
       } finally {
         sharingRef.current = false;
       }
     })();
-
-    if (now - lastAvailabilityAtRef.current >= 12000) {
-      lastAvailabilityAtRef.current = now;
-      void nexrideApiFetch("/api/driver/availability", {
-        method: "PATCH",
-        body: JSON.stringify({
-          location: {
-            latitude: position.lat,
-            longitude: position.lng,
-            accuracy: position.accuracy,
-          },
-        }),
-      });
-    }
   }, [driverId, position, trip]);
 
   useEffect(() => {

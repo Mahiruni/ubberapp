@@ -8,7 +8,7 @@ import { explicitSignOutRole } from "../../lib/nexride-startup";
 import { emitNexRideFeedback } from "../../lib/nexride-feedback";
 import { eligibleDriverOffer, shouldOpenDriverOffer } from "../../lib/nexride-driver-presence";
 import { gpsFixUsable, DRIVER_GPS_HEARTBEAT_MS, DRIVER_GPS_SYNC_MIN_INTERVAL_MS } from "../../lib/nexride-driver-gps";
-import { startNativeDriverGps, stopNativeDriverGps } from "../../lib/nexride-native-reliability";
+import { nativeDriverGpsStatus, startNativeDriverGps, stopNativeDriverGps } from "../../lib/nexride-native-reliability";
 
 export const DRIVER_AVAILABILITY_CHANGED = "nexride:driver-availability-changed";
 
@@ -49,6 +49,7 @@ export function DriverSessionBridge() {
         void stopNativeDriverGps();
         return;
       }
+      if (document.visibilityState === "hidden") return;
       if (Date.now() - lastNativeAttempt < 20000) return;
       lastNativeAttempt = Date.now();
       void startNativeDriverGps().then(started => {
@@ -61,6 +62,7 @@ export function DriverSessionBridge() {
           navigator.geolocation?.clearWatch(gpsWatch);
           gpsWatch = null;
         }
+        if (!started) startGps();
       }).catch(() => {});
     };
     let offerChannel: ReturnType<typeof supabase.channel> | null = null;
@@ -165,7 +167,7 @@ export function DriverSessionBridge() {
       }
     };
     const startGps = () => {
-      if (!activeOnline || nativeGpsActive || gpsWatch !== null || !navigator.geolocation) return;
+      if (!activeOnline || nativeGpsActive || gpsWatch !== null || !navigator.geolocation || document.visibilityState === "hidden") return;
       gpsWatch = navigator.geolocation.watchPosition(sendGps, () => {
         // Do not silently take the driver offline when Android suspends GPS.
         // On returning to the app, location/availability are rechecked.
@@ -174,7 +176,13 @@ export function DriverSessionBridge() {
 
     // A native GPS service can outlive the WebView and must receive rotated
     // Supabase access tokens. Never leave a stale JWT in the foreground service.
-    const { data: nativeAuthListener } = supabase.auth.onAuthStateChange(event => {
+    const { data: nativeAuthListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN" && driverId && session?.user.id !== driverId) {
+        activeOnline = false; nativeGpsActive = false; driverId = "";
+        stopGps(); void stopNativeDriverGps();
+        window.location.assign("/driver"); // Re-bootstrap the newly signed-in account.
+        return;
+      }
       if (event === "TOKEN_REFRESHED" && mounted && activeOnline) {
         lastNativeAttempt = 0;
         syncNativeGps(); // Re-start is idempotent: the Android service swaps its bearer.
@@ -204,8 +212,16 @@ export function DriverSessionBridge() {
     };
     const onVisibility = () => {
       if (document.visibilityState === "visible") onResume();
+      else stopGps(); // Only the native foreground service owns locked-screen GPS.
       // Do not stop availability, clear the offer subscription, or turn
       // offline on hide. The OS may pause JS and GPS until the app resumes.
+    };
+    const onNativeSessionInvalidated = () => {
+      if (!mounted) return;
+      const hadDriver = Boolean(driverId);
+      activeOnline = false; nativeGpsActive = false; driverId = "";
+      stopGps(); void stopNativeDriverGps();
+      if (hadDriver) router.replace("/driver/sign-in");
     };
 
     const bootstrap = async () => {
@@ -275,6 +291,7 @@ export function DriverSessionBridge() {
     window.addEventListener("biloo:native-resume", onResume);
     window.addEventListener("online", onResume);
     window.addEventListener(DRIVER_AVAILABILITY_CHANGED, onResume);
+    window.addEventListener("biloo:native-session-invalidated", onNativeSessionInvalidated);
     document.addEventListener("visibilitychange", onVisibility);
     // Poll when permitted. Suspended timers aren't relied on for correctness.
     const interval = window.setInterval(() => {
@@ -287,19 +304,36 @@ export function DriverSessionBridge() {
     // obtains a fresh fix, and the server remains authoritative.
     const gpsHeartbeat = window.setInterval(() => {
       if (!mounted || !activeOnline || !navigator.onLine ||
-          document.visibilityState !== "visible" || gpsUploadInFlight) return;
+          document.visibilityState !== "visible" || nativeGpsActive || gpsUploadInFlight) return;
       navigator.geolocation?.getCurrentPosition(sendGps, () => {}, {
         enableHighAccuracy: true, maximumAge: 5_000, timeout: 12_000,
       });
+    }, DRIVER_GPS_HEARTBEAT_MS);
+    const nativeHealth = window.setInterval(() => {
+      if (!mounted || !activeOnline || document.visibilityState !== "visible") return;
+      void nativeDriverGpsStatus().then(status => {
+        if (!mounted || !activeOnline || !status) return;
+        nativeGpsActive = status.running;
+        if (status.running) stopGps();
+        else { syncNativeGps(); startGps(); }
+        const at = status.lastUploadAt ?? 0;
+        const age = Date.now() - at;
+        const fresh = status.running && at > 0 && age >= 0 && age < 60_000;
+        window.dispatchEvent(new CustomEvent("nexride:driver-gps-sync", {
+          detail: { status: fresh ? "synced" : "waiting", gpsStatus: fresh ? "ready" : "waiting", at },
+        }));
+      }).catch(() => {});
     }, DRIVER_GPS_HEARTBEAT_MS);
     return () => {
       mounted = false;
       window.clearInterval(interval);
       window.clearInterval(gpsHeartbeat);
+      window.clearInterval(nativeHealth);
       window.removeEventListener("focus", onResume);
       window.removeEventListener("biloo:native-resume", onResume);
       window.removeEventListener("online", onResume);
       window.removeEventListener(DRIVER_AVAILABILITY_CHANGED, onResume);
+      window.removeEventListener("biloo:native-session-invalidated", onNativeSessionInvalidated);
       document.removeEventListener("visibilitychange", onVisibility);
       nativeAuthListener.subscription.unsubscribe();
       stopGps();

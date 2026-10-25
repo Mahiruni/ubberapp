@@ -12,8 +12,17 @@ const live=fs.readFileSync("native/android/NexRideLiveTripPlugin.java","utf8")
 fs.writeFileSync(path.join(folder,"NexRideLiveTripPlugin.java"),live);
 
 if(role==="driver"){
-  for(const name of ["NexRideDriverLocationService.java","NexRideDriverLocationPlugin.java","NexRideDriverAlertChannels.java"])
+  for(const name of ["NexRideDriverLocationService.java","NexRideDriverLocationPlugin.java","NexRideDriverAlertChannels.java","BilooDriverSession.java","BilooDriverSessionStore.java"])
     fs.copyFileSync(path.join("native/android",name),path.join(folder,name));
+  const testFolder="android/app/src/test/java/com/nexride/driver";
+  fs.mkdirSync(testFolder,{recursive:true});
+  fs.copyFileSync("native/android/test/BilooDriverSessionTest.java",path.join(testFolder,"BilooDriverSessionTest.java"));
+  const gradle="android/app/build.gradle";
+  let build=fs.readFileSync(gradle,"utf8");
+  if(!build.includes("org.json:json:")) build+='\ndependencies { testImplementation "org.json:json:20240303" }\n';
+  fs.writeFileSync(gradle,build);
+  fs.mkdirSync(path.join(base,"res/xml"),{recursive:true});
+  fs.copyFileSync("native/android/biloo_data_extraction_rules.xml",path.join(base,"res/xml/biloo_data_extraction_rules.xml"));
 }
 
 const main=path.join(folder,"MainActivity.java");
@@ -63,7 +72,9 @@ if(!xml.includes('android:name="android.permission.POST_PROMOTED_NOTIFICATIONS"'
   xml=xml.replace("<application",
     '<uses-permission android:name="android.permission.POST_PROMOTED_NOTIFICATIONS" />\n    <application');
 if(role==="driver"){
-  for(const p of ["android.permission.FOREGROUND_SERVICE","android.permission.FOREGROUND_SERVICE_LOCATION"]){
+  if(!xml.includes('android:dataExtractionRules='))
+    xml=xml.replace("<application",'<application android:dataExtractionRules="@xml/biloo_data_extraction_rules"');
+  for(const p of ["android.permission.FOREGROUND_SERVICE","android.permission.FOREGROUND_SERVICE_LOCATION","android.permission.WAKE_LOCK","android.permission.ACCESS_NETWORK_STATE"]){
     if(!xml.includes('android:name="'+p+'"'))
       xml=xml.replace("<application",'<uses-permission android:name="'+p+'" />\n    <application');
   }

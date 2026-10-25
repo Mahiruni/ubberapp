@@ -114,4 +114,6 @@ An APK signed by a new release certificate cannot update an old debug-signed ins
 
 A passing native build and signature check do not prove device behavior. Before public distribution, install both release APKs on representative Android devices and verify login/session restoration, notification permission and delivery, Driver location service, keyboard/insets, Back navigation, day/night system bars, active-trip recovery and poor connectivity. A successful Vercel deployment validates only the hosted web application. Record device evidence and signing certificate identity with the approved release.
 
+The Driver locked-screen tracking implementation and physical-device test procedure are documented in [Driver GPS with the screen locked](biloo-locked-screen-gps.md).
+
 References: [Android signing](https://developer.android.com/studio/publish/app-signing), [Android versioning](https://developer.android.com/studio/publish/versioning).

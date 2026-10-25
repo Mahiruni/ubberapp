@@ -5,9 +5,15 @@ import { nexrideApiFetch } from "./nexride-api-auth";
 
 type Role = "rider" | "driver";
 type NativeDriverLocation = {
-  start(options: { accessToken: string }): Promise<{ status: string }>;
+  start(options: { accessToken: string; userId: string }): Promise<{ status: string }>;
   stop(): Promise<void>;
-  status(): Promise<{ running: boolean }>;
+  status(): Promise<NativeDriverGpsStatus>;
+  openSettings(): Promise<void>;
+};
+export type NativeDriverGpsStatus = {
+  running: boolean; state?: string; lastFixAt?: number; lastUploadAt?: number;
+  batteryExempt?: boolean; locationEnabled?: boolean;
+  tripTracking?: boolean;
 };
 
 const storageKey = "nexride.native.installation.id";
@@ -90,20 +96,26 @@ export async function unregisterNexRidePushDevice(role: Role) {
 
 export async function nativeDriverGpsStatus() {
   const cap = await nativeCapacitor();
-  if (!cap) return null;
+  if (!cap || await getNexRideNativeAppRole() !== "driver") return null;
   const plugin = cap.registerPlugin<NativeDriverLocation>("NexRideDriverLocation");
-  return plugin.status();
+  return plugin.status().catch(() => null);
 }
 export async function startNativeDriverGps(): Promise<boolean> {
   const cap = await nativeCapacitor();
-  if (!cap) return false;
+  if (!cap || await getNexRideNativeAppRole() !== "driver") return false;
   const { data } = await supabase.auth.getSession();
   if (!data.session) return false;
   const plugin = cap.registerPlugin<NativeDriverLocation>("NexRideDriverLocation");
   try {
-    const result = await plugin.start({ accessToken: data.session.access_token });
+    const result = await plugin.start({ accessToken: data.session.access_token, userId: data.session.user.id });
     return result.status === "started";
   } catch { return false; }
+}
+
+export async function openNativeDriverSettings(): Promise<void> {
+  const cap = await nativeCapacitor();
+  if (!cap || await getNexRideNativeAppRole() !== "driver") return;
+  await cap.registerPlugin<NativeDriverLocation>("NexRideDriverLocation").openSettings();
 }
 export async function stopNativeDriverGps(): Promise<void> {
   const cap = await nativeCapacitor();

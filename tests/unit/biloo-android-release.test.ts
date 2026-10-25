@@ -63,7 +63,16 @@ describe('Generated Android integration',()=>{
     expect(source).not.toContain('\\n');
     for(const name of ['NexRideLiveTripPlugin','NexRideAppLockPlugin',...(role==='driver'?['NexRideDriverLocationPlugin']:[])]) expect(source.match(new RegExp(`registerPlugin\\(${name}\\.class\\)`,'g'))).toHaveLength(1);
     expect(source.match(/BilooSystemBars.apply\(this\)/g)).toHaveLength(1);
-    if(role==='driver')expect(readFileSync(join(folder,'NexRideDriverLocationService.java'),'utf8')).not.toContain('\\n');
+    if(role==='driver'){
+      expect(readFileSync(join(folder,'NexRideDriverLocationService.java'),'utf8')).not.toContain('\\n');
+      const manifest=readFileSync(join(dir,'android/app/src/main/AndroidManifest.xml'),'utf8');
+      expect(manifest).toContain('android.permission.WAKE_LOCK');
+      expect(manifest).toContain('android.permission.ACCESS_NETWORK_STATE');
+      expect(manifest).toContain('android:dataExtractionRules="@xml/biloo_data_extraction_rules"');
+      expect(readFileSync(join(folder,'BilooDriverSessionStore.java'),'utf8')).toContain('getNoBackupFilesDir()');
+    } else {
+      expect(readFileSync(join(dir,'android/app/src/main/AndroidManifest.xml'),'utf8')).not.toContain('NexRideDriverLocationService');
+    }
   });
   it('does not pass credentials to untrusted pull requests or upload the generated project',()=>{
     const workflow=readFileSync('.github/workflows/android-apks.yml','utf8');

@@ -18,6 +18,18 @@ name: Biloo Android release pipeline
       - 'package.json'
       - 'package-lock.json'
       - 'tests/unit/biloo-android-release.test.ts'
+      - 'tests/unit/biloo-native-auth-storage.test.ts'
+      - 'tests/unit/biloo-native-trip-location.test.ts'
+      - 'tests/unit/biloo-native-gps-route.test.ts'
+      - 'tests/unit/nexride-driver-gps.test.ts'
+      - 'lib/biloo-native-auth-storage.ts'
+      - 'lib/nexride-native-reliability.ts'
+      - 'lib/supabase.ts'
+      - 'lib/biloo-native-trip-location.ts'
+      - 'app/api/driver/availability/route.ts'
+      - 'components/nexride/driver-session-bridge.tsx'
+      - 'components/nexride/native-reliability-settings.tsx'
+      - 'app/driver/navigation/page.tsx'
       - 'tests/native/**'
   push:
     branches: [main]

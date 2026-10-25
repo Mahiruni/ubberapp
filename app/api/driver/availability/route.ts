@@ -1,6 +1,7 @@
 import { authorizedRequestSupabase } from "../../../../lib/nexride-server-supabase";
 import { serverAdminSupabase } from "../../../../lib/nexride-server-admin";
 import { driverGpsHealth, gpsFixUsable } from "../../../../lib/nexride-driver-gps";
+import { publishNativeTripLocation } from "../../../../lib/biloo-native-trip-location";
 
 const reply = (body: unknown, status = 200) =>
   Response.json(body, {
@@ -50,6 +51,11 @@ export async function PATCH(request: Request) {
 
   const hasOnline = typeof body.online === "boolean";
   const location = cleanLocation(body.location);
+  const nativeTracking = body.native_tracking === true;
+  const rawLocation = body.location && typeof body.location === "object" ? body.location as Record<string, unknown> : null;
+  if (nativeTracking && (!location || location.accuracy === null || location.accuracy > 150 ||
+      !gpsFixUsable({ latitude: location.latitude, longitude: location.longitude, accuracy: location.accuracy,
+        timestamp: Number(rawLocation?.fix_timestamp) }))) return reply({ status: "invalid_gps_fix" }, 422);
   // Reject stale, future-dated or malformed device fixes when supplied; the
   // database, not the phone's clock, owns the authoritative freshness stamp.
   if (body.location && typeof body.location === "object") {
@@ -208,6 +214,11 @@ export async function PATCH(request: Request) {
       updatedDriver = onlineData;
 
     }
+
+    // Native tracking also owns live trip updates while navigation JavaScript
+    // is paused. This marker opts into mirroring, never into authorization.
+    if (nativeTracking && location && !await publishNativeTripLocation(authorized, location, rawLocation?.heading_degrees))
+      return reply({ status: "trip_location_update_failed" }, 503);
 
     // A Driver can have is_online=true before Android produces a usable fix.
     // Re-dispatch immediately on the FIRST server-verified GPS recovery, not
