@@ -98,6 +98,10 @@ test('review shows the real journey, validates category availability and sends p
   await page.goto('/');
   await page.locator('.nr-home-search').click();
   await expect(page.locator('.nr-route-review')).toContainText('4.3');
+  const pickupInput = page.getByRole('textbox', { name: 'Pickup', exact: true });
+  await expect(pickupInput).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+  await expect(pickupInput).toHaveCSS('border-top-width', '0px');
+  await page.screenshot({ animations: 'disabled', path: `/tmp/biloo-planning-v2-${info.project.name}.png` });
   // Android's IME can shrink the visual viewport without resizing the layout.
   // A valid route must retain its action above that viewport's bottom edge.
   await page.evaluate(() => {
@@ -116,18 +120,42 @@ test('review shows the real journey, validates category availability and sends p
     window.visualViewport?.dispatchEvent(new Event('resize'));
   });
   await expect(page.getByRole('radio', { name: /Comfort/ })).toBeDisabled();
+  const cars = page.locator('.nr-vehicle-art');
+  await expect(cars).toHaveCount(3);
+  await expect.poll(() => cars.evaluateAll(images => images.every(image => (image as HTMLImageElement).naturalWidth > 0))).toBe(true);
+  await expect(cars.last()).toBeInViewport({ ratio: 0.9 });
+  await expect(page.locator('.nr-ride-route-meta')).not.toContainText('traffic');
+  await page.screenshot({ animations: 'disabled', path: `/tmp/biloo-rides-v2-${info.project.name}.png` });
+  await expect(page.getByRole('button', { name: 'Continue to review ride' })).toHaveCSS('background-color', 'rgb(249, 196, 73)');
+  await expect(page.getByRole('button', { name: 'Continue to review ride' })).toHaveCSS('color', 'rgb(8, 41, 95)');
   await page.getByRole('button', { name: 'Continue to review ride' }).click();
   const dialog = page.getByRole('dialog');
   await expect(dialog).toContainText('Bole Atlas'); await expect(dialog).toContainText('Bole Airport');
   await expect(dialog).toContainText('4.3'); await expect(dialog).toContainText('12');
   await expect(dialog).toContainText('Payment is not collected now');
   await expect(dialog).toContainText('Estimated total');
-  await page.screenshot({ path: `/tmp/biloo-booking-review-${info.project.name}.png` });
+  await expect(dialog.getByRole('button', { name: 'Request ride', exact: true })).toBeInViewport();
+  await expect(dialog.getByRole('region', { name: 'Ride review details' })).toHaveCSS('overflow-y', 'auto');
+  await page.screenshot({ animations: 'disabled', path: `/tmp/biloo-booking-review-v2-${info.project.name}.png` });
+  await page.setViewportSize({ width: 320, height: 640 });
+  await expect(dialog.getByRole('button', { name: 'Request ride', exact: true })).toBeInViewport();
+  await expect(dialog.getByRole('heading', { name: 'Review your ride' })).toBeInViewport();
   await dialog.getByRole('textbox', { name: /Pickup instructions/ }).fill('At the main entrance');
+  await page.evaluate(() => {
+    Object.defineProperty(window.visualViewport, 'height', { configurable: true, value: window.innerHeight - 220 });
+    window.visualViewport?.dispatchEvent(new Event('resize'));
+  });
+  await expect.poll(() => dialog.getByRole('button', { name: 'Request ride', exact: true }).evaluate(button => button.getBoundingClientRect().bottom <= window.visualViewport!.height + window.visualViewport!.offsetTop + 1)).toBe(true);
+  await expect(dialog.getByRole('textbox', { name: /Pickup instructions/ })).toBeInViewport({ ratio: 0.9 });
+  await expect(dialog.getByRole('textbox', { name: /Pickup instructions/ })).toBeFocused();
+  await page.screenshot({ animations: 'disabled', path: `/tmp/biloo-review-keyboard-v2-${info.project.name}.png` });
+  await page.evaluate(() => { Reflect.deleteProperty(window.visualViewport!, 'height'); window.visualViewport?.dispatchEvent(new Event('resize')); });
   await dialog.getByRole('button', { name: /Request Ride/i }).click();
   await expect(page.locator('.biloo-matching-live-meta')).toHaveAttribute('data-phase', 'waiting');
   await expect(page.locator('.nr-driver-matching')).toContainText('Waiting for driver response');
   await expect(page.locator('.nr-confirmed-driver')).toHaveCount(0);
+  await expect(page.locator('.nr-driver-matching')).not.toContainText('No Driver nearby yet?');
+  await page.screenshot({ animations: 'disabled', path: `/tmp/biloo-matching-v2-${info.project.name}.png` });
   expect(creates).toBe(1);
 });
 
@@ -275,4 +303,31 @@ test('active Rider journey keeps contact controls compact and reveals route deta
   await expect(card.locator('.nr-identity-route')).toContainText('Bole Airport');
   await expect(card.locator('.nr-identity-fare')).toContainText('180 ETB');
   await expect(card.locator('.nr-identity-last-update time')).toBeVisible();
+});
+
+
+test('matching recovery keeps the same request and leaves cancellation available', async ({ page }) => {
+  await prepare(page, 'rider', { ...baseRide(), status: 'pending', assigned_driver_id: null });
+  let creates = 0, retries = 0;
+  let snapshot = { requestId: rideId, version: 1, status: 'no_drivers', canRetry: true, canChangeCategory: false,
+    cancellation: { allowed: true, requiresConfirmation: true, fee: 0, reason: null } };
+  await page.route('**/api/rider/requests', route => { creates++; return route.fulfill({ status: 500 }); });
+  await page.route(`**/api/rider/requests/${rideId}`, route => {
+    if (route.request().method() === 'POST') {
+      expect(route.request().postDataJSON()).toEqual({ action: 'retry', expectedVersion: 1 });
+      retries++;
+      snapshot = { ...snapshot, version: 2, status: 'searching', canRetry: false };
+    }
+    return route.fulfill({ json: snapshot });
+  });
+  await page.goto('/');
+  const matching = page.locator('.nr-driver-matching');
+  await expect(matching.getByRole('button', { name: 'Keep searching', exact: true })).toBeEnabled();
+  await expect(matching.getByRole('button', { name: 'Cancel ride', exact: true })).toBeEnabled();
+  await matching.getByRole('button', { name: 'Keep searching', exact: true }).click();
+  await expect(matching).toHaveAttribute('data-matching-state', 'searching');
+  await matching.getByRole('button', { name: 'Cancel ride', exact: true }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'No, Keep Ride', exact: true }).click();
+  await expect(matching).toHaveAttribute('data-matching-state', 'searching');
+  expect(retries).toBe(1); expect(creates).toBe(0);
 });

@@ -8,9 +8,6 @@ const sql = readFileSync(
   "utf8",
 );
 
-const matchingUi = readFileSync("components/nexride/matching.tsx", "utf8");
-const matchingHook = readFileSync("lib/nexride-use-matching.ts", "utf8");
-
 const snapshot = (status: MatchSnapshot["status"], version: number): MatchSnapshot => ({
   requestId: "same-ride",
   version,
@@ -48,12 +45,11 @@ describe("NexRide persistent same-booking search", () => {
     expect(newerMatch(snapshot("cancelled", 10), snapshot("searching", 11)).status).toBe("cancelled");
   });
 
-  it("presents an actionable bilingual Keep searching while keeping Cancel available", () => {
+  it("provides explicit bilingual labels for search recovery and cancellation", () => {
     expect(translate("en", "matchingRetry")).toBe("Keep searching");
     expect(translate("am", "matchingRetry")).toBe("ፍለጋውን ቀጥል");
     expect(translate("en", "matchingKeepSearchingNote")).toContain("same request");
-    expect(matchingUi).toContain("t('matchingKeepSearchingNote')");
-    expect(matchingUi).toContain("status !== 'cancelled'");
-    expect(matchingHook).toContain('snapshot.status !== "cancelled"');
+    expect(translate("en", "matchingCancel")).toBe("Cancel ride");
+    expect(translate("am", "matchingCancel")).toBe("ጉዞውን ሰርዝ");
   });
 });

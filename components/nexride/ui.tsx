@@ -233,12 +233,15 @@ export function Dialog({
   children,
   onClose,
   className = "",
+  fitViewport = false,
 }: {
   title: string;
   children: ReactNode;
   onClose: () => void;
   /** Optional visual variant; focus, escape handling and modal semantics stay shared. */
   className?: string;
+  /** Keep long forms within Android's visible area while the keyboard is open. */
+  fitViewport?: boolean;
 }) {
   const t = useTranslation();
   const dialog = useRef<HTMLDialogElement>(null);
@@ -248,12 +251,39 @@ export function Dialog({
     node?.showModal();
     const overflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    const viewport = window.visualViewport;
+    let focusFrame = 0;
+    const syncViewport = () => {
+      node?.style.setProperty("--nr-dialog-viewport-height", `${viewport?.height || window.innerHeight}px`);
+      node?.style.setProperty("--nr-dialog-viewport-top", `${viewport?.offsetTop || 0}px`);
+      const reduced = window.innerHeight - (viewport?.height || window.innerHeight) > 120;
+      node?.toggleAttribute("data-viewport-reduced", reduced);
+      cancelAnimationFrame(focusFrame);
+      if (reduced) focusFrame = requestAnimationFrame(() => {
+        const focused = document.activeElement;
+        if (focused instanceof HTMLElement && node?.contains(focused) && focused.matches('input,textarea,[contenteditable="true"]')) {
+          focused.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "instant" });
+        }
+      });
+    };
+    if (fitViewport) {
+      syncViewport();
+      viewport?.addEventListener("resize", syncViewport);
+      viewport?.addEventListener("scroll", syncViewport);
+      window.addEventListener("resize", syncViewport);
+    }
     return () => {
+      cancelAnimationFrame(focusFrame);
+      if (fitViewport) {
+        viewport?.removeEventListener("resize", syncViewport);
+        viewport?.removeEventListener("scroll", syncViewport);
+        window.removeEventListener("resize", syncViewport);
+      }
       node?.close();
       document.body.style.overflow = overflow;
       prior?.focus();
     };
-  }, []);
+  }, [fitViewport]);
   return (
     <dialog
       ref={dialog}

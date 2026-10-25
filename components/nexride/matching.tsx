@@ -6,6 +6,7 @@ import { RiderSheetHandle } from './rider-sheet';
 import { fareTotal } from '../../lib/nexride-booking';
 import type { Matching } from '../../lib/nexride-use-matching';
 import { elapsedLabel } from '../../lib/biloo-journey';
+import styles from './booking-interface.module.css';
 export function DriverMatching({ model, changeCategory, previewAssigned, home }: {
   model: Matching; changeCategory: () => void; previewAssigned: () => void; home: () => void;
 }) {
@@ -47,11 +48,12 @@ export function DriverMatching({ model, changeCategory, previewAssigned, home }:
     // server snapshot arrives. The action handler fetches the current version.
     setConfirmVersion(snapshot?.version ?? -1);
   };
-  return <section className="nr-driver-matching" data-matching-state={cancelled ? 'cancelled' : connectionLost ? 'connection_lost' : degraded ? 'sync_problem' : status} aria-label={t('matchingScreen')}>
+  return <section className={`nr-driver-matching ${styles.screen} ${styles.matching}`} data-matching-state={cancelled ? 'cancelled' : connectionLost ? 'connection_lost' : degraded ? 'sync_problem' : status} aria-label={t('matchingScreen')}>
     <RiderSheetHandle
       label={language === "am" ? "የአሽከርካሪ ማዛመጃ ፓነሉን አስፋ ወይም አሳንስ" : "Resize driver matching panel"}
-      defaultRatio={0.48}
-      snaps={[0.30, 0.48, 0.76]}
+      defaultRatio={0.56}
+      desktopDefaultRatio={0.76}
+      snaps={[0.30, 0.56, 0.76]}
       scrollSelector=".nr-matching-body"
       storageKey="nexride.rider.sheet.matching"
     />
@@ -70,11 +72,11 @@ export function DriverMatching({ model, changeCategory, previewAssigned, home }:
         <h1 tabIndex={-1} ref={heading}>{t(title)}</h1>
         <p>{t(connectionLost ? 'matchingConnectionNote' : degraded ? 'matchingSyncProblemNote' : status === 'assigned' ? 'matchingAcceptedNote' : status === 'no_drivers' ? 'matchingEmptyNote' : status === 'cancelled' ? 'matchingCancelledNote' : status === 'delayed' ? 'matchingDelayedNote' : 'matchingNote')}</p>
       </header>
-      {!preview && searching && <p className="nr-match-online-wait-note" role="status">
+      {!preview && searching && status === 'delayed' && <p className="nr-match-online-wait-note" role="status">
         <Icon name="clock" size={16} />
         <span>{language === "am"
-          ? "ምንም አሽከርካሪ ካልነበረ አዲስ አሽከርካሪ መስመር ላይ ሲገባ ጥያቄዎ በራስ-ሰር ይቀርባል። ጉዞው የሚረጋገጠው አሽከርካሪው ሲቀበል ብቻ ነው።"
-          : "No Driver nearby yet? Your request stays active while we search. If an eligible Driver comes Online, we'll send the request automatically. Your ride is confirmed only after acceptance."}</span>
+          ? "በአቅራቢያ ያሉ አሽከርካሪዎችን በራስ-ሰር መፈለጉን እንቀጥላለን።"
+          : "We’ll keep checking nearby drivers automatically."}</span>
       </p>}
       {!preview && status === 'no_drivers' && <p className="nr-match-online-wait-note" role="status"><Icon name="clock" size={16} /><span>{t('matchingKeepSearchingNote')}</span></p>}
       <span className="nr-sr-only" role="status" aria-live="polite" aria-atomic="true">{t(title)}</span>
@@ -84,7 +86,7 @@ export function DriverMatching({ model, changeCategory, previewAssigned, home }:
       </div>}
       {!preview && searching && progress && <div className="biloo-matching-live-meta" data-phase={progress.phase}>
         {Number.isFinite(startedAt) && now >= startedAt && <span><Icon name="clock" size={15}/>{say('Searching', 'በመፈለግ ላይ')} <b>{elapsedLabel((now - startedAt) / 1000)}</b></span>}
-        {progress.deliveredAt && <span><Icon name="check" size={15}/>{say('Request sent to an eligible driver', 'ጥያቄው ለብቁ አሽከርካሪ ተልኳል')}</span>}
+        {progress.deliveredAt && <span><Icon name="check" size={15}/>{say('Driver notified', 'አሽከርካሪው እንዲያውቅ ተደርጓል')}</span>}
       </div>}
       {status === 'assigned' && snapshot?.driver && <div className="nr-confirmed-driver nr-confirmed-driver-v2">
         <span className="nr-confirmed-driver-avatar"><Icon name="user" size={28}/></span>
@@ -102,7 +104,6 @@ export function DriverMatching({ model, changeCategory, previewAssigned, home }:
         {request.journey.routeState.status === 'ready' && request.journey.routeState.route && <div className="nr-match-route-meta" data-traffic={request.journey.routeState.route.traffic?.level || 'unavailable'}>
           <span><Icon name="clock" size={15}/>{Math.max(1, Math.round(request.journey.routeState.route.durationSeconds / 60))} {t('minutes')}</span>
           <span>{(request.journey.routeState.route.distanceMeters / 1000).toFixed(1)} {t('kilometers')}</span>
-          <span className="nr-match-traffic"><i aria-hidden="true"/>{request.journey.routeState.route.traffic ? t(request.journey.routeState.route.traffic.level === 'low' ? 'trafficLow' : request.journey.routeState.route.traffic.level === 'moderate' ? 'trafficModerate' : request.journey.routeState.route.traffic.level === 'heavy' ? 'trafficHeavy' : 'trafficSevere') : t('trafficUnavailable')}</span>
         </div>}
         <div className="nr-match-fare"><div><strong>{t(request.fare.category)}</strong><small>{t('cash')}</small></div><div><strong>{total !== null ? money(total) : '—'} <span>ETB</span></strong><small>{t(request.fare.priceType === 'sample' ? 'sampleFare' : request.fare.priceType === 'estimate' ? 'estimated' : 'confirmed')}</small></div></div>
         {request.fare.charges.length > 0 && <details className="nr-match-charges"><summary>{t('matchingCharges')}</summary>{request.fare.charges.map((charge, i) => <p key={i}><span>{charge.name}</span><strong>{money(charge.amount)} ETB</strong></p>)}</details>}

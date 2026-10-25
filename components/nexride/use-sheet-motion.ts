@@ -5,6 +5,7 @@ import { registerNexRideBackHandler } from "../../lib/nexride-native-navigation"
 
 type Options = {
   kind: "rider" | "driver"; ratios: readonly [number, number, number]; defaultRatio: number;
+  desktopDefaultRatio?: number;
   ratio?: number; onRatioChange?: (ratio: number) => void; storageKey?: string;
 };
 
@@ -62,7 +63,10 @@ export function useSheetMotion(options: Options) {
     settle(nearestSheetRatio(projected, viewport(), config.current.ratios));
   };
   useEffect(() => {
-    let next = config.current.ratio ?? config.current.defaultRatio;
+    const initialRatio = window.matchMedia('(min-width:901px)').matches
+      ? config.current.desktopDefaultRatio ?? config.current.defaultRatio
+      : config.current.defaultRatio;
+    let next = config.current.ratio ?? initialRatio;
     if (config.current.ratio === undefined && config.current.storageKey) {
       try { const saved = sessionStorage.getItem(config.current.storageKey); if (saved !== null && Number.isFinite(Number(saved))) next = Number(saved); } catch { /* Optional persistence. */ }
     }

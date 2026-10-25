@@ -1,0 +1,165 @@
+/* One scoped presentation system for planning, choosing and requesting a ride. */
+.screen,.review {
+  --booking-text:#10294f;--booking-muted:#617185;--booking-surface:#fff;
+  --booking-subtle:#f5f7fa;--booking-line:#e1e7ee;--booking-gold:#f9c449;
+  --booking-gold-soft:#fff8e6;--booking-focus:#255b93;
+}
+:global(.nr-app[data-theme="dark"]) .screen,
+:global(.nr-app[data-theme="dark"]) .review {
+  --booking-text:#f2f6fc;--booking-muted:#bbc9da;--booking-surface:#0b2b43;
+  --booking-subtle:#12364f;--booking-line:#34516d;--booking-gold-soft:#293a40;
+  --booking-focus:#b6d7ff;
+}
+:global(.nr-app[data-mode="rider"]) :global(.rider-map-flow.nr-polished-wrapper) :global(.nr-rider-persistent-wrapper) .screen {
+  color:var(--booking-text)!important;background:var(--booking-surface)!important;
+
+  &.planning,&.selection {
+    >header { flex:0 0 auto;padding:4px 18px 16px!important;gap:12px!important;border-bottom:0!important; }
+    >header h1 { margin:3px 0 0!important;font-size:25px!important;line-height:1.15!important;letter-spacing:-.04em!important;color:var(--booking-text)!important; }
+    >header :global(.nr-icon-button) { width:42px!important;height:42px!important;min-height:42px!important;flex:0 0 42px;border:1px solid var(--booking-line)!important;border-radius:13px!important;background:var(--booking-surface)!important;color:var(--booking-text)!important; }
+    :global(.nr-destination-body),:global(.nr-ride-selection-body) { padding:0 18px 16px!important;min-height:0;overflow-y:auto; }
+  }
+  >footer { flex:0 0 auto;padding:12px 18px max(14px,env(safe-area-inset-bottom))!important;gap:8px!important;background:var(--booking-surface)!important;border-top:1px solid var(--booking-line)!important;box-shadow:none!important; }
+  >footer>:global(.nr-button) { min-height:50px!important;border-radius:14px!important;font-size:15px!important;font-weight:700!important;box-shadow:none!important;background-image:none!important; }
+  >footer>button.primaryAction:global(.nr-primary) { background:var(--booking-gold)!important;border-color:var(--booking-gold)!important;color:#08295f!important;background-image:none!important; }
+  >footer>small { color:var(--booking-muted)!important;font-size:10px!important;line-height:1.5!important;text-align:center;margin:0!important; }
+
+  &.planning {
+    :global(.nr-destination-title)>span { color:var(--booking-muted)!important;font-size:9px!important;font-weight:700!important;letter-spacing:.12em!important; }
+    .fields { display:grid;gap:10px;padding:0!important;margin:0!important;border:0!important;background:none!important; }
+    .endpoint { display:flex;align-items:center;gap:11px;min-height:76px;padding:11px 12px;margin:0!important;border:1px solid var(--booking-line);border-radius:16px;background:var(--booking-subtle); }
+    .endpoint.focused { border-color:var(--booking-focus); }
+    .endpoint:focus-within { border-color:var(--booking-focus);box-shadow:0 0 0 3px color-mix(in srgb,var(--booking-focus) 12%,transparent); }
+    .endpoint>svg { flex:0 0 19px;width:19px;height:19px;margin:0;color:var(--booking-text); }
+    .endpointValue { display:grid;gap:4px;min-width:0;flex:1;padding:0!important; }
+    .endpointValue>small { margin:0!important;font-size:10px!important;font-weight:600!important;line-height:1.3!important;color:var(--booking-muted)!important; }
+    input.locationInput { display:block;box-sizing:border-box;width:100%!important;min-width:0!important;min-height:25px!important;height:auto!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;color:var(--booking-text)!important;font:inherit!important;font-size:16px!important;font-weight:550!important;line-height:1.5!important;text-overflow:ellipsis; }
+    input.locationInput:focus-visible { outline:0!important;box-shadow:none!important; }
+    .clearLocation { display:grid;place-items:center;flex:0 0 36px;width:36px!important;height:40px!important;min-height:40px!important;padding:0!important;margin:0 -4px 0 0!important;border:0!important;border-radius:10px!important;background:transparent!important;color:var(--booking-muted)!important; }
+    :global(.nr-destination-actions) { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0 20px!important; }
+    :global(.nr-destination-actions)>button { display:flex;align-items:center;justify-content:center;gap:7px;min-height:44px!important;padding:8px!important;border:1px solid var(--booking-line)!important;border-radius:12px!important;background:var(--booking-surface)!important;color:var(--booking-text)!important;font-size:12px!important;line-height:1.3!important; }
+    :global(.nr-search-discovery) h2 { margin:20px 0 10px!important;font-size:13px!important;line-height:1.4!important;font-weight:700!important;color:var(--booking-text)!important; }
+    :global(.nr-search-saved) { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:0!important; }
+    :global(.nr-search-saved)>button { min-height:70px!important;padding:12px!important;gap:6px!important;border:1px solid var(--booking-line)!important;border-radius:14px!important;background:var(--booking-subtle)!important;color:var(--booking-text)!important;font-size:13px!important; }
+    :global(.nr-search-saved)>button small { font-size:11px!important;color:var(--booking-muted)!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+    :global(.nr-place-suggestion) { display:flex;align-items:center;gap:10px!important;min-height:67px!important;margin:0!important;padding:12px 0!important;border:0!important;border-bottom:1px solid var(--booking-line)!important;border-radius:0!important;background:transparent!important;box-shadow:none!important; }
+    :global(.nr-place-suggestion)>svg:first-child { width:34px!important;height:34px!important;flex:0 0 34px;padding:8px!important;border-radius:11px!important;background:var(--booking-subtle)!important;color:var(--booking-muted)!important; }
+    :global(.nr-place-suggestion)>span { flex:1;min-width:0; }
+    :global(.nr-place-suggestion) strong { font-size:14px!important;line-height:1.4!important;color:var(--booking-text)!important; }
+    :global(.nr-place-suggestion) small { font-size:11px!important;line-height:1.45!important;color:var(--booking-muted)!important; }
+    :global(.nr-route-review) { padding:12px!important;margin:14px 0 0!important;border:1px solid var(--booking-line)!important;border-radius:14px!important;background:var(--booking-subtle)!important;color:var(--booking-text)!important; }
+    :global(.nr-route-review) h2 { margin:0 0 7px!important;font-size:12px!important; }
+    :global(.nr-route-review) p,:global(.nr-route-review) small { font-size:11px!important;color:var(--booking-muted)!important; }
+    :global(.nr-route-traffic) { display:none!important; }
+  }
+
+  &.selection {
+    :global(.nr-ride-heading-copy)>span { font-size:9px!important;letter-spacing:.09em!important;color:var(--booking-muted)!important; }
+    :global(.nr-ride-route-line) { display:none; }
+    :global(.nr-ride-route-meta) { display:flex;align-items:center;gap:14px;padding:9px 11px!important;margin:0 0 13px!important;min-height:36px;border:1px solid var(--booking-line)!important;border-radius:11px!important;background:var(--booking-subtle)!important;color:var(--booking-muted)!important;font-size:11px!important; }
+    :global(.nr-fare-source) { margin:0 0 9px!important;color:var(--booking-muted)!important;font-size:9px!important;font-weight:650!important;letter-spacing:.06em!important; }
+    :global(.nr-ride-options) { display:grid;gap:9px!important; }
+    :global(.nr-ride-card) { display:grid!important;grid-template-columns:94px minmax(0,1fr) auto!important;align-items:center!important;gap:9px!important;min-height:92px!important;width:100%;padding:10px 12px!important;border:1px solid var(--booking-line)!important;border-radius:17px!important;background:var(--booking-surface)!important;color:var(--booking-text)!important;box-shadow:none!important;text-align:left;opacity:1!important; }
+    :global(.nr-ride-card[aria-checked="true"]) { border:2px solid var(--booking-gold)!important;padding:9px 11px!important;background:var(--booking-gold-soft)!important;box-shadow:none!important; }
+    :global(.nr-ride-card.unavailable) { background:var(--booking-subtle)!important;color:var(--booking-muted)!important;opacity:1!important; }
+    .vehicle { display:grid!important;place-items:center!important;position:relative!important;width:94px!important;height:70px!important;min-width:0!important;min-height:0!important;padding:0!important;margin:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;transform:none!important;filter:none!important; }
+    .vehicle>img { display:block;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 3px 3px #10294f12); }
+    :global(.nr-ride-card.unavailable) .vehicle { opacity:.7; }
+    :global(.nr-ride-copy) { display:grid;gap:5px!important;min-width:0; }
+    :global(.nr-ride-copy)>strong { display:flex;align-items:center;gap:5px;font-size:15px!important;line-height:1.25!important;letter-spacing:-.02em;color:inherit!important; }
+    :global(.nr-ride-copy)>small { display:flex;align-items:center;gap:4px;font-size:10px!important;line-height:1.35!important;color:var(--booking-muted)!important;white-space:normal!important; }
+    :global(.nr-ride-selected-indicator) { position:static!important;flex:0 0 17px;width:17px!important;height:17px!important;min-height:0!important;margin:0!important;padding:0!important;border:0!important;border-radius:50%!important;box-shadow:none!important;background:var(--booking-gold)!important;color:#08295f!important; }
+    :global(.nr-ride-price) { min-width:57px;align-self:center;text-align:right!important; }
+    :global(.nr-ride-price)>strong { display:block;white-space:nowrap;font-size:17px!important;line-height:1.3;letter-spacing:-.035em;color:inherit!important;font-variant-numeric:tabular-nums; }
+    :global(.nr-ride-price)>strong>span { display:block;font-size:9px!important;line-height:1.2;font-weight:500;color:var(--booking-muted)!important;letter-spacing:.03em; }
+    :global(.nr-ride-price)>small { display:block;margin:3px 0 0!important;font-size:9px!important;color:var(--booking-muted)!important;font-weight:500!important; }
+    :global(.nr-fare-explanation) { margin:12px 0 0!important;padding:0!important;border:1px solid var(--booking-line)!important;border-radius:13px!important;background:var(--booking-surface)!important; }
+    :global(.nr-fare-explanation)>summary { display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:46px;padding:12px;list-style:none;cursor:pointer;color:var(--booking-text);font-size:12px; }
+    :global(.nr-fare-explanation)>summary::-webkit-details-marker { display:none; }
+    :global(.nr-fare-explanation[open])>summary>svg { transform:rotate(90deg); }
+    :global(.nr-fare-explanation)>p { margin:0!important;padding:0 12px 12px!important;font-size:11px!important;line-height:1.5;color:var(--booking-muted)!important; }
+    :global(.nr-fare-explanation) :global(.nr-fare-breakdown) { margin:0 12px 12px!important;padding:0!important;font-size:12px; }
+    >footer :global(.nr-ride-payment) { display:flex!important;align-items:center;gap:9px;min-height:38px!important;padding:0 0 8px!important;border:0!important;background:transparent!important; }
+    >footer :global(.nr-ride-payment)>svg { flex:0 0 20px;width:20px!important;height:20px!important;padding:0!important;border-radius:0!important;background:none!important;color:var(--booking-text)!important; }
+    >footer :global(.nr-payment-details) { display:flex!important;flex-direction:row!important;align-items:baseline!important;gap:7px!important;flex:1!important;min-width:0; }
+    >footer :global(.nr-payment-details)>small { font-size:11px!important;color:var(--booking-muted)!important; }
+    >footer :global(.nr-payment-details)>strong { font-size:13px!important;line-height:1.3!important;color:var(--booking-text)!important; }
+    >footer :global(.nr-ride-payment) :global(.nr-text-button) { flex:0 0 44px!important;width:44px!important;min-width:44px!important;min-height:38px!important;padding:6px 0!important;margin:0!important;color:var(--booking-text)!important;font-size:12px!important;text-align:right!important; }
+    >footer :global(.nr-request-total) { margin-left:auto!important;padding-left:13px;border-left:1px solid #08295f25;font-size:14px!important;white-space:nowrap; }
+  }
+
+  &.matching {
+    :global(.nr-matching-body) { position:relative;padding:0 18px 16px!important; }
+    :global(.nr-matching-symbol) { position:absolute!important;left:auto!important;top:0!important;right:18px!important;float:none!important;display:grid;place-items:center;width:40px!important;height:40px!important;margin:0!important;border:1px solid var(--booking-line)!important;border-radius:17px!important;background:var(--booking-gold-soft)!important;color:var(--booking-text)!important;box-shadow:none!important; }
+    :global(.nr-matching-heading) { position:relative;padding:0!important;margin:0!important; }
+    :global(.nr-matching-kicker) { color:var(--booking-muted)!important;font-size:9px!important;font-weight:650!important;letter-spacing:.1em!important; }
+    :global(.nr-matching-heading) h1 { padding-right:46px;margin:5px 0 8px!important;color:var(--booking-text)!important;font-size:25px!important;line-height:1.2!important;letter-spacing:-.04em!important; }
+    :global(.nr-matching-heading) p { margin:0 0 16px!important;color:var(--booking-muted)!important;font-size:13px!important;line-height:1.55!important; }
+    :global(.nr-match-online-wait-note) { margin:12px 0!important;padding:10px 12px!important;border:1px solid var(--booking-line)!important;border-radius:12px!important;background:var(--booking-subtle)!important;color:var(--booking-muted)!important;font-size:12px!important; }
+    :global(.nr-match-progress) { display:flex!important;align-items:center;gap:10px;min-height:38px;margin:0 0 7px!important;padding:0!important;border:0!important;border-radius:0!important;background:none!important;color:var(--booking-text)!important; }
+    :global(.nr-match-progress)>span:not(:global(.nr-match-progress-line)) { min-width:0;max-width:48%;flex:1 1 0;white-space:normal!important;font-size:11px!important;line-height:1.4; }
+    :global(.nr-match-progress-line) { flex:0 0 18px;min-width:10px;background:var(--booking-line)!important; }
+    :global(.biloo-matching-live-meta) { margin:4px 0 16px!important;gap:6px 12px!important;color:var(--booking-muted)!important;font-size:11px!important; }
+    :global(.nr-match-summary) { margin:12px 0 0!important;padding:14px!important;border:1px solid var(--booking-line)!important;border-radius:17px!important;background:var(--booking-subtle)!important;color:var(--booking-text)!important; }
+    :global(.nr-match-place) { gap:10px!important;margin:0 0 16px!important; }
+    :global(.nr-match-place) small { font-size:10px!important;color:var(--booking-muted)!important; }
+    :global(.nr-match-place) strong { font-size:14px!important;line-height:1.4!important;color:var(--booking-text)!important; }
+    :global(.nr-match-route-meta) { display:flex;align-items:center;gap:14px;margin:2px 0 12px!important;padding:0!important;min-height:0!important;border:0!important;border-radius:0!important;background:none!important;color:var(--booking-muted)!important;font-size:11px!important; }
+    :global(.nr-match-fare) { padding-top:12px!important;border-top:1px solid var(--booking-line)!important; }
+    :global(.nr-match-fare) strong { font-size:15px!important;line-height:1.35;color:var(--booking-text)!important; }
+    :global(.nr-match-fare) small { font-size:10px!important;color:var(--booking-muted)!important; }
+    :global(.nr-match-charges) { font-size:11px;color:var(--booking-muted); }
+    >footer :global(.nr-rider-cancel-button) { color:#a63349!important;border:1px solid #eccdd4!important;background:#fff!important;background-image:none!important;box-shadow:none!important;font-size:14px!important; }
+  }
+}
+/* The native dialog keeps its header and final action outside the scroll body. */
+:global(.nr-app[data-mode="rider"]) :global(.rider-map-flow.nr-polished-wrapper) :global(dialog.nr-dialog).review[open] {
+  display:flex!important;flex-direction:column!important;width:min(480px,calc(100vw - 24px))!important;
+  max-height:min(740px,calc(var(--nr-dialog-viewport-height,100dvh) - 24px))!important;
+  height:auto!important;padding:0!important;margin:auto!important;overflow:hidden!important;
+  border:1px solid var(--booking-line)!important;border-radius:24px!important;
+  background:var(--booking-surface)!important;color:var(--booking-text)!important;
+  :global(.nr-dialog-head) { flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:66px;padding:16px 18px!important;border-bottom:1px solid var(--booking-line)!important;background:var(--booking-surface)!important; }
+  :global(.nr-dialog-head) h2 { margin:0!important;color:var(--booking-text)!important;font-size:23px!important;line-height:1.2!important;font-weight:750!important;letter-spacing:-.035em; }
+  :global(.nr-dialog-head) button { width:38px!important;height:38px!important;min-height:38px!important;flex:0 0 38px;display:grid;place-items:center;padding:0!important;border:1px solid var(--booking-line)!important;border-radius:11px!important;background:var(--booking-subtle)!important;color:var(--booking-text)!important; }
+  .reviewBody { flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:16px 18px 4px; }
+  :global(.biloo-booking-review) { margin:0!important;padding:0!important;color:var(--booking-text)!important;animation:none!important; }
+  :global(.biloo-journey-eyebrow) { font-size:9px;color:var(--booking-muted);letter-spacing:.1em; }
+  :global(.biloo-journey-stops) { gap:17px;padding:12px 0!important; }
+  :global(.biloo-journey-stops) small { font-size:10px;color:var(--booking-muted); }
+  :global(.biloo-journey-stops) strong { font-size:14px;line-height:1.4;color:var(--booking-text); }
+  :global(.biloo-journey-metrics) { padding:7px 0 12px;font-size:11px;color:var(--booking-muted);gap:8px 14px; }
+  :global(.nr-muted) { margin:0 0 13px!important;padding:0!important;color:var(--booking-muted)!important;font-size:12px!important;line-height:1.55!important; }
+  :global(.biloo-booking-fares) { margin:0!important;padding:13px!important;border:1px solid var(--booking-line)!important;border-radius:15px!important;background:var(--booking-subtle)!important;color:var(--booking-text)!important;font-size:13px!important; }
+  :global(.biloo-booking-fares)>div { display:flex;justify-content:space-between;align-items:center;gap:12px; }
+  :global(.biloo-booking-fares)>p { margin:9px 0 0!important;padding:0!important;font-size:11px!important;line-height:1.5!important;color:var(--booking-muted)!important; }
+  :global(.biloo-booking-fares)>:global(.total) { margin-top:12px!important;padding-top:12px!important;border-top:1px solid var(--booking-line)!important;font-size:14px!important; }
+  :global(.biloo-booking-fares)>:global(.total)>strong:last-child { font-size:19px!important;white-space:nowrap;font-variant-numeric:tabular-nums; }
+  :global(.biloo-pickup-note) { margin:15px 0!important;padding:0!important;gap:7px;color:var(--booking-text)!important;font-size:12px!important; }
+  :global(.biloo-pickup-note) small { color:var(--booking-muted)!important;font-size:10px!important; }
+  :global(.biloo-pickup-note) textarea { min-height:64px!important;height:64px;width:100%;padding:10px 12px!important;border:1px solid var(--booking-line)!important;border-radius:13px!important;background:var(--booking-surface)!important;color:var(--booking-text)!important;font-size:16px!important;line-height:1.4!important;resize:vertical; }
+  :global(.biloo-booking-assurance) { margin:0 0 10px!important;padding:0!important;gap:7px;color:var(--booking-muted)!important;font-size:11px!important;line-height:1.55; }
+  .reviewFooter { flex:0 0 auto;padding:12px 18px max(14px,env(safe-area-inset-bottom));border-top:1px solid var(--booking-line);background:var(--booking-surface); }
+  .reviewFooter>button { display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:52px!important;margin:0!important;padding:12px 14px!important;border:1px solid var(--booking-gold)!important;border-radius:14px!important;background:var(--booking-gold)!important;color:#08295f!important;background-image:none!important;box-shadow:none!important;font-size:15px!important;font-weight:700; }
+  .reviewTotal { font-size:13px;white-space:nowrap;font-variant-numeric:tabular-nums;border-left:1px solid #08295f25;padding-left:12px; }
+}
+@media(max-width:360px) {
+  :global(.nr-app[data-mode="rider"]) :global(.rider-map-flow.nr-polished-wrapper) :global(.nr-rider-persistent-wrapper) .screen.selection {
+    :global(.nr-ride-card) { grid-template-columns:76px minmax(0,1fr) auto!important;gap:7px!important;padding:10px!important; }
+    .vehicle { width:76px!important;height:62px!important; }
+    :global(.nr-ride-copy)>strong { font-size:14px!important; }
+    :global(.nr-ride-price)>strong { font-size:16px!important; }
+  }
+}
+@media(prefers-reduced-motion:reduce) {
+  .screen :global(.nr-ride-card),.review { transition:none!important;animation:none!important; }
+}
+
+.primaryAction::before,.primaryAction::after { display:none!important; }
+@media(max-width:900px) {
+  :global(.nr-app[data-mode="rider"]) :global(.rider-map-flow.nr-polished-wrapper) :global(dialog.nr-dialog).review[open] {
+    position:fixed!important;top:calc(var(--nr-dialog-viewport-top,0px) + max(12px,env(safe-area-inset-top)))!important;bottom:auto!important;left:0!important;right:0!important;margin:0 auto!important;
+  }
+}
+
+:global(.nr-app[data-mode="rider"]) :global(.rider-map-flow.nr-polished-wrapper) :global(dialog.nr-dialog).review[open][data-viewport-reduced] { position:fixed!important;top:calc(var(--nr-dialog-viewport-top,0px) + 12px)!important;bottom:auto!important;left:0!important;right:0!important;margin:0 auto!important; }

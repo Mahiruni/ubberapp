@@ -3,6 +3,7 @@ import { useContext, useEffect, useRef, useState } from "react";
 import { Button, Icon, LanguageContext, useTranslation } from "./ui";
 import { LocationMessage } from "./rider-home";
 import { RiderSheetHandle } from "./rider-sheet";
+import styles from "./booking-interface.module.css";
 import {
   placeName,
   locality,
@@ -288,7 +289,7 @@ export function DestinationPanel({
     !j.pickup;
   return (
     <section
-      className="nr-destination-panel"
+      className={`nr-destination-panel ${styles.screen} ${styles.planning}`}
       aria-label={t("destinationSearch")}
       data-search-active={searchActive || undefined}
       data-can-continue={j.canContinue}
@@ -318,7 +319,7 @@ export function DestinationPanel({
                 : "ጉዞዎን ያቅዱ"
               : picking
                 ? "Fine-tune on the map"
-                : "Plan your ride"}
+                : "YOUR JOURNEY"}
           </span>
           <h1>
             {t(
@@ -336,23 +337,24 @@ export function DestinationPanel({
       <div ref={bodyRef} className="nr-destination-body">
         {!picking && (
           <>
-            <div className="nr-endpoint-fields">
+            <div className={styles.fields}>
               {(["pickup", "destination"] as const).map((target) => {
                 const point = target === "pickup" ? j.pickup : j.destination;
                 return (
                   <label
                     key={target}
-                    className={`nr-endpoint-field ${field === target ? "focused" : ""}`}
+                    className={`${styles.endpoint} ${field === target ? styles.focused : ""}`}
                   >
                     <Icon
                       name={target === "pickup" ? "locate" : "pin"}
                       size={18}
                     />
-                    <span>
+                    <span className={styles.endpointValue}>
                       <small>
                         {t(target === "pickup" ? "pickup" : "dropoff")}
                       </small>
                       <input
+                        className={styles.locationInput}
                         aria-label={t(
                           target === "pickup" ? "editPickup" : "destination",
                         )}
@@ -396,6 +398,8 @@ export function DestinationPanel({
                     </span>
                     {point && (
                       <button
+                        type="button"
+                        className={styles.clearLocation}
                         aria-label={t(
                           target === "pickup"
                             ? "clearPickup"
@@ -594,7 +598,7 @@ export function DestinationPanel({
               {t(picking === "pickup" ? "confirmPickup" : "confirmDestination")}
             </Button>
           ) : (
-            <Button onClick={proceed} disabled={!j.canContinue}>
+            <Button className={styles.primaryAction} onClick={proceed} disabled={!j.canContinue}>
               {t(
                 j.routeState.status === "unavailable"
                   ? "previewRideOptions"

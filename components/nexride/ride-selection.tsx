@@ -4,6 +4,7 @@ import { useContext, useEffect, useState } from "react";
 import { Button, Dialog, Icon, LanguageContext, useTranslation } from "./ui";
 import { endpointName } from "./destination";
 import { RiderSheetHandle } from "./rider-sheet";
+import styles from "./booking-interface.module.css";
 import {
   fareTotal,
   rideCategories,
@@ -44,11 +45,12 @@ export function RideSelection({
       ? fareTotal(model.chosen)
       : null;
   return (
-    <section className="nr-ride-selection" aria-label={t("chooseRide")}>
+    <section className={`nr-ride-selection ${styles.screen} ${styles.selection}`} aria-label={t("chooseRide")}>
       <RiderSheetHandle
         label={language === "am" ? "የጉዞ አማራጭ ፓነሉን አስፋ ወይም አሳንስ" : "Resize ride options panel"}
-        defaultRatio={0.62}
-        snaps={[0.28, 0.62, 0.75]}
+        defaultRatio={0.72}
+        desktopDefaultRatio={0.86}
+        snaps={[0.32, 0.72, 0.86]}
         scrollSelector=".nr-ride-selection-body"
         storageKey="nexride.rider.sheet.rides"
       />
@@ -101,20 +103,6 @@ export function RideSelection({
               <span>
                 {(journey.routeState.route.distanceMeters / 1000).toFixed(1)}{" "}
                 {t("kilometers")}
-              </span>
-              <span className="nr-ride-traffic">
-                <i aria-hidden="true" />
-                {journey.routeState.route.traffic
-                  ? t(
-                      journey.routeState.route.traffic.level === "low"
-                        ? "trafficLow"
-                        : journey.routeState.route.traffic.level === "moderate"
-                          ? "trafficModerate"
-                          : journey.routeState.route.traffic.level === "heavy"
-                            ? "trafficHeavy"
-                            : "trafficSevere",
-                    )
-                  : t("trafficUnavailable")}
               </span>
             </div>
           )}
@@ -240,8 +228,8 @@ export function RideSelection({
               </div>
             )}
             {model.chosen && (
-              <div className="nr-fare-explanation">
-                <strong>
+              <details className="nr-fare-explanation">
+                <summary><strong>
                   {t(
                     model.chosen.priceType === "sample"
                       ? "sampleFare"
@@ -249,7 +237,7 @@ export function RideSelection({
                         ? "estimatedFare"
                         : "confirmedFare",
                   )}
-                </strong>
+                </strong><Icon name="chevron" size={16} /></summary>
                 <p>
                   {t(
                     model.chosen.priceType === "sample"
@@ -291,7 +279,7 @@ export function RideSelection({
                     {t("chargesUnavailable")}
                   </p>
                 )}
-              </div>
+              </details>
             )}
           </>
         )}
@@ -335,6 +323,7 @@ export function RideSelection({
           </button>
         </div>
         <Button
+          className={styles.primaryAction}
           onClick={() => {
             if (model.canRequest) setConfirmOpen(true);
           }}
@@ -397,9 +386,12 @@ export function RideSelection({
       </footer>
       {confirmOpen && model.chosen && (
         <Dialog
+          className={styles.review}
+          fitViewport
           title={t("reviewRequest")}
           onClose={() => setConfirmOpen(false)}
         >
+          <div className={styles.reviewBody} role="region" aria-label={say("Ride review details", "የጉዞ ግምገማ ዝርዝሮች")}>
           <div className="biloo-booking-review">
             <span className="biloo-journey-eyebrow">{say("YOUR JOURNEY", "የእርስዎ ጉዞ")}</span>
             <div className="biloo-journey-stops">
@@ -451,7 +443,11 @@ export function RideSelection({
               onChange={event => setPickupInstructions(event.target.value)} />
           </label>
           <p className="biloo-booking-assurance"><Icon name="shield" size={16}/>{say("Your ride is confirmed after a driver accepts. Payment is not collected now.", "ጉዞዎ የሚረጋገጠው አሽከርካሪ ሲቀበል ነው። አሁን ክፍያ አይሰበሰብም።")}</p>
+          </div>
+          <div className={styles.reviewFooter}>
           <Button
+            className={styles.primaryAction}
+            aria-label={t("requestRide")}
             disabled={!model.canRequest}
             onClick={() => {
               if (model.canRequest) {
@@ -461,7 +457,9 @@ export function RideSelection({
             }}
           >
             {t("requestRide")}
+            {total !== null && <span className={styles.reviewTotal}>ETB {money(total)}</span>}
           </Button>
+          </div>
         </Dialog>
       )}
       {paymentOpen && (
@@ -502,44 +500,9 @@ export function RideSelection({
   );
 }
 function RideVehicleIcon({ category }: { category: RideFare["category"] }) {
-  const isXL = category === "xl";
-  const isComfort = category === "comfort";
-  return (
-    <span
-      className="nr-ride-vehicle"
-      data-category={category}
-      aria-hidden="true"
-    >
-      <svg viewBox="0 0 72 44" role="presentation" focusable="false">
-        <path
-          className="nr-ride-vehicle-shadow"
-          d="M14 36.5c0 2.5 7.5 4.5 22 4.5s22-2 22-4.5H14Z"
-        />
-        <path
-          className="nr-ride-vehicle-shell"
-          d={
-            isXL
-              ? "M9 26.5 14.2 14c1.2-2.9 3.4-4.5 6.5-4.5h30.6c3.1 0 5.3 1.6 6.5 4.5L63 26.5v6.2c0 2-1.6 3.6-3.6 3.6h-4.1c-1.8 0-3.3-1.3-3.6-3H20.3c-.3 1.7-1.8 3-3.6 3h-4.1c-2 0-3.6-1.6-3.6-3.6v-6.2Z"
-              : isComfort
-                ? "M10 27 15.5 15.8c1.3-2.7 3.2-4 6.1-4h28.8c2.9 0 4.8 1.3 6.1 4L62 27v5.6c0 2-1.6 3.6-3.6 3.6h-3.7c-1.7 0-3.1-1.2-3.5-2.8H20.8c-.4 1.6-1.8 2.8-3.5 2.8h-3.7c-2 0-3.6-1.6-3.6-3.6V27Z"
-                : "M11 27.5 16.2 17c1.2-2.5 3.1-3.8 5.8-3.8h28c2.7 0 4.6 1.3 5.8 3.8L61 27.5v5c0 1.9-1.5 3.4-3.4 3.4h-3.4c-1.6 0-3-1.1-3.3-2.6H21.1c-.3 1.5-1.7 2.6-3.3 2.6h-3.4c-1.9 0-3.4-1.5-3.4-3.4v-5Z"
-          }
-        />
-        <path
-          className="nr-ride-vehicle-glass"
-          d={
-            isXL
-              ? "M20 14.1h31.8l4 10H16l4-10Z"
-              : "M21.1 16.1h29.8l3.7 8.5H17.4l3.7-8.5Z"
-          }
-        />
-        <path className="nr-ride-vehicle-light" d="M14.2 28.1h8v3.4h-8zm35.6 0h8v3.4h-8z" />
-        <path className="nr-ride-vehicle-grille" d="M27 29.2h18c1 0 1.8.8 1.8 1.8v1.1H25.2V31c0-1 .8-1.8 1.8-1.8Z" />
-        <circle className="nr-ride-vehicle-wheel" cx="19" cy="34.5" r="3.2" />
-        <circle className="nr-ride-vehicle-wheel" cx="53" cy="34.5" r="3.2" />
-      </svg>
-    </span>
-  );
+  return <span className={`nr-ride-vehicle ${styles.vehicle}`} data-category={category} aria-hidden="true">
+    <img className="nr-vehicle-art" src={`/brand/vehicles/${category}-3d.webp`} width={152} height={104} alt="" decoding="async" />
+  </span>;
 }
 
 function RideOption({
@@ -577,7 +540,7 @@ function RideOption({
     >
       <RideVehicleIcon category={fare.category} />
       <span className="nr-ride-copy">
-        <strong>{t(fare.category)}</strong>
+        <strong>{t(fare.category)}{selected && <span className="nr-ride-selected-indicator" aria-hidden="true"><Icon name="check" size={12} /></span>}</strong>
         <small>
           <Icon name="user" size={13} />
           {fare.seats} {t("seats")}
@@ -590,7 +553,6 @@ function RideOption({
               : `${fare.pickupMinutes} ${t("minutes")} · ${t("pickup")}`}
         </small>
       </span>
-      {selected && <span className="nr-ride-selected-indicator" aria-hidden="true"><Icon name="check" size={13} /></span>}
       <span className="nr-ride-price">
         <strong>
           <span>ETB </span>
@@ -598,7 +560,7 @@ function RideOption({
         </strong>
         <small>
           {unavailable
-            ? t("unavailable")
+            ? null
             : t(
                 fare.priceType === "sample"
                   ? "sample"
