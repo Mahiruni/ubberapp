@@ -1,6 +1,6 @@
 "use client";
 
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { Icon, LanguageContext } from "./ui";
@@ -688,6 +688,19 @@ export function DriverWorkspace({
             ? say("GPS stale · reconnecting", "ጂፒኤስ የቆየ ነው · እንደገና በመገናኘት ላይ")
             : say("Waiting for a fresh GPS fix", "አዲስ የጂፒኤስ ቦታ በመጠባበቅ ላይ");
 
+  const [compactMapSheet, setCompactMapSheet] = useState(false);
+  const sheetDragStart = useRef<number | null>(null);
+  const sheetDragMoved = useRef(false);
+  const sheetDragEnd = (event: React.PointerEvent<HTMLButtonElement>) => {
+    if (sheetDragStart.current === null) return;
+    const delta = event.clientY - sheetDragStart.current;
+    sheetDragStart.current = null;
+    if (Math.abs(delta) > 38) {
+      sheetDragMoved.current = true;
+      setCompactMapSheet(delta > 0);
+    }
+  };
+
   const swipeFeedback = !verified
     ? say("Verification required", "ማረጋገጫ ያስፈልጋል")
     : error
@@ -739,8 +752,12 @@ export function DriverWorkspace({
           onClick={(event) => event.stopPropagation()}
           onDoubleClick={(event) => event.stopPropagation()}
         >
-          <div className="nr-driver-home-control-panel biloo-driver-first-wrapper">
-            <div className="biloo-driver-first-handle" aria-hidden="true" />
+          <div className={`nr-driver-home-control-panel biloo-driver-first-wrapper ${compactMapSheet ? "is-map-sheet-compact" : ""}`}>
+            <button type="button" className="biloo-driver-first-handle" aria-label={compactMapSheet ? "Expand driver map panel" : "Minimize driver map panel"} aria-expanded={!compactMapSheet}
+              onPointerDown={(event) => { sheetDragStart.current = event.clientY; sheetDragMoved.current = false; event.currentTarget.setPointerCapture(event.pointerId); }}
+              onPointerUp={sheetDragEnd}
+              onPointerCancel={() => { sheetDragStart.current = null; }}
+              onClick={() => { if (sheetDragMoved.current) { sheetDragMoved.current = false; return; } setCompactMapSheet(value => !value); }} />
             <div className="nr-driver-home-control-heading">
               <div className="nr-driver-home-control-state">
                 <span className="nr-driver-home-control-brand">BILOO · DRIVER</span>
