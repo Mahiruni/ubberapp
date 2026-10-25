@@ -224,3 +224,192 @@
   }
   .nr-driver-app-shell .nr-earnings-head h1{font-size:25px}
 }
+
+/* BILOO EARNINGS / DESIGN 08 — branded navy analytics, clean white finance cards.
+   Scoped to the summary view: detailed financial report and ledger stay intact. */
+.nr-driver-app-shell .biloo-earnings-eight {
+  --biloo-eight-navy:#08295f;
+  --biloo-eight-gold:#f9c449;
+  --biloo-eight-muted:#64748b;
+  width:100%;
+  max-width:900px;
+  margin:0 auto;
+  padding:0 0 max(20px,env(safe-area-inset-bottom,0px));
+  color:var(--biloo-eight-navy);
+}
+.nr-driver-app-shell .biloo-earnings-eight .nr-earnings-head {
+  margin:0 0 16px;
+  gap:12px;
+}
+.nr-driver-app-shell .biloo-earnings-eight .nr-earnings-head h1 {
+  color:var(--biloo-eight-navy)!important;
+  font-size:clamp(25px,6vw,31px);
+  font-weight:800;
+  line-height:1.15;
+}
+.nr-driver-app-shell .biloo-earnings-eight .nr-driver-kicker {
+  color:#a77913;
+  letter-spacing:.1em;
+}
+.nr-driver-app-shell .biloo-earnings-eight .nr-earnings-periods {
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:4px;
+  padding:4px;
+  margin-bottom:14px;
+  border:1px solid #e2e9f2!important;
+  border-radius:15px;
+  background:#edf2f8!important;
+}
+.nr-driver-app-shell .biloo-earnings-eight .nr-earnings-periods button {
+  min-width:0;
+  min-height:44px;
+  font-size:12px;
+  font-weight:750;
+  border-radius:11px;
+  color:#52667f!important;
+}
+.nr-driver-app-shell .biloo-earnings-eight .nr-earnings-periods button.active {
+  background:var(--biloo-eight-navy)!important;
+  color:#fff!important;
+  box-shadow:0 3px 10px rgba(8,41,95,.16)!important;
+}
+.nr-driver-app-shell .biloo-earnings-eight .nr-earnings-total-card {
+  padding:18px!important;
+  background:linear-gradient(125deg,#08295f 0%,#164478 58%,#34628e 100%)!important;
+  border:1px solid #2b5682!important;
+  border-radius:22px!important;
+  color:#fff!important;
+  box-shadow:0 10px 28px rgba(8,41,95,.13)!important;
+}
+.nr-driver-app-shell .biloo-earnings-eight .nr-earnings-total-top span,
+.nr-driver-app-shell .biloo-earnings-eight .nr-earnings-total-top small,
+.nr-driver-app-shell .biloo-earnings-eight .nr-earnings-definition,
+.nr-driver-app-shell .biloo-earnings-eight .nr-earnings-chart-head,
+.nr-driver-app-shell .biloo-earnings-eight .nr-earnings-chart-head span,
+.nr-driver-app-shell .biloo-earnings-eight .nr-earnings-chart-head small,
+.nr-driver-app-shell .biloo-earnings-eight .nr-earnings-chart-labels,
+.nr-driver-app-shell .biloo-earnings-eight .nr-earnings-chart-summary,
+.nr-driver-app-shell .biloo-earnings-eight .nr-earnings-chart-empty {
+  color:#d9e5f2!important;
+}
+.nr-driver-app-shell .biloo-earnings-eight .nr-earnings-total {
+  color:#fff!important;
+  font-size:clamp(34px,8vw,46px);
+  letter-spacing:-.045em;
+  font-weight:850;
+  font-variant-numeric:tabular-nums;
+}
+.nr-driver-app-shell .biloo-earnings-eight .nr-earnings-total small {
+  color:#e3edf8!important;
+  font-size:14px;
+}
+.nr-driver-app-shell .biloo-earnings-eight .nr-earnings-definition {
+  max-width:65ch;
+  font-size:11px!important;
+  line-height:1.5;
+}
+.nr-driver-app-shell .biloo-earnings-eight .nr-earnings-chart {
+  margin-top:15px;
+  padding-top:12px;
+  border-top:1px solid rgba(255,255,255,.18);
+}
+.nr-driver-app-shell .biloo-earnings-eight .nr-earnings-chart svg {
+  display:block;
+  width:100%;
+  height:auto;
+  max-height:115px;
+  overflow:visible;
+}
+.nr-driver-app-shell .biloo-earnings-eight .nr-earnings-chart-area {
+  fill:rgba(249,196,73,.13);
+}
+.nr-driver-app-shell .biloo-earnings-eight .nr-earnings-chart-line {
+  fill:none;
+  stroke:#f9c449;
+  stroke-width:3;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+.nr-driver-app-shell .biloo-earnings-eight .nr-earnings-chart-dot {
+  fill:#f9c449;
+  stroke:#164478;
+  stroke-width:1.5;
+}
+.nr-driver-app-shell .biloo-earnings-eight .nr-earnings-metrics {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:9px;
+  margin-top:12px;
+}
+.nr-driver-app-shell .biloo-earnings-eight .nr-earnings-metric {
+  min-width:0;
+  min-height:116px;
+  padding:12px 10px;
+  border:1px solid #e2e9f2!important;
+  border-radius:16px!important;
+  background:#fff!important;
+  box-shadow:0 4px 15px rgba(8,41,95,.035)!important;
+}
+.nr-driver-app-shell .biloo-earnings-eight .nr-earnings-metric-icon {
+  color:#123f78!important;
+  background:#eaf1ff!important;
+}
+.nr-driver-app-shell .biloo-earnings-eight .nr-earnings-metric small {
+  color:#63748b!important;
+  font-size:11px;
+}
+.nr-driver-app-shell .biloo-earnings-eight .nr-earnings-metric strong {
+  color:var(--biloo-eight-navy)!important;
+  font-size:clamp(13px,3.3vw,19px);
+  font-variant-numeric:tabular-nums;
+  overflow-wrap:anywhere;
+}
+.nr-driver-app-shell .biloo-earnings-eight .nr-earnings-metric em {
+  color:#718096;
+  font-size:10px;
+  line-height:1.3;
+}
+.nr-driver-app-shell .biloo-earnings-eight .nr-earnings-report-action {
+  background:#fff!important;
+  color:var(--biloo-eight-navy)!important;
+  border:1px solid #dbe5ef!important;
+  border-radius:15px!important;
+  min-height:54px;
+  box-shadow:none!important;
+}
+.nr-driver-app-shell .biloo-earnings-eight .nr-earnings-report-action:hover {
+  background:#f6f9fd!important;
+  border-color:#b8cadc!important;
+}
+.nr-driver-app-shell .biloo-earnings-eight button:focus-visible {
+  outline:3px solid #e7b632;
+  outline-offset:2px;
+}
+@media(max-width:520px) {
+  .nr-driver-app-shell .biloo-earnings-eight .nr-earnings-metrics {
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:7px;
+  }
+  .nr-driver-app-shell .biloo-earnings-eight .nr-earnings-metrics .nr-earnings-metric:last-child:nth-child(odd) {
+    grid-column:auto;
+  }
+  .nr-driver-app-shell .biloo-earnings-eight .nr-earnings-metric {
+    min-height:115px;
+    padding:11px 8px;
+  }
+}
+@media(max-width:355px) {
+  .nr-driver-app-shell .biloo-earnings-eight .nr-earnings-metrics {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  .nr-driver-app-shell .biloo-earnings-eight .nr-earnings-metrics .nr-earnings-metric:last-child:nth-child(odd) {
+    grid-column:1/-1;
+  }
+  .nr-driver-app-shell .biloo-earnings-eight .nr-earnings-periods button {
+    font-size:10px;
+  }
+}
+@media(prefers-reduced-motion:reduce) {
+  .nr-driver-app-shell .biloo-earnings-eight * {scroll-behavior:auto}
+}
