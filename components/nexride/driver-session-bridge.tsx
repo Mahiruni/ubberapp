@@ -268,7 +268,7 @@ export function DriverSessionBridge() {
     };
 
     void bootstrap().catch(() => {});
-    window.addEventListener("focus", onResume);
+    window.addEventListener("focus", onResume);\n    window.addEventListener("biloo:native-resume", onResume);
     window.addEventListener("online", onResume);
     window.addEventListener(DRIVER_AVAILABILITY_CHANGED, onResume);
     document.addEventListener("visibilitychange", onVisibility);
@@ -292,7 +292,7 @@ export function DriverSessionBridge() {
       mounted = false;
       window.clearInterval(interval);
       window.clearInterval(gpsHeartbeat);
-      window.removeEventListener("focus", onResume);
+      window.removeEventListener("focus", onResume);\n      window.removeEventListener("biloo:native-resume", onResume);
       window.removeEventListener("online", onResume);
       window.removeEventListener(DRIVER_AVAILABILITY_CHANGED, onResume);
       document.removeEventListener("visibilitychange", onVisibility);
