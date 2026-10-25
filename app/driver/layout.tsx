@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { NexRideLanguageProvider } from "../../components/nexride/language-provider";
 import { DriverAppShell } from "../../components/nexride/driver-app-shell";
 import "./driver-wrapper-premium.css";
+import "./biloo-driver-hamburger-themes.css";
 
 export const metadata: Metadata = {
   title: "Drive with Biloo",
