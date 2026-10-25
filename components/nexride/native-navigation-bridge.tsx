@@ -20,9 +20,25 @@ function closeTopOverlay(): boolean {
   const modal = [...document.querySelectorAll<HTMLDialogElement>("dialog[open]")]
     .filter(node => node.getClientRects().length).at(-1);
   if (modal) {
-    // Click its existing React close control so the dialog's state is cleared.
-    modal.querySelector<HTMLButtonElement>(".nr-dialog-head button")?.click();
+    // Use the component's React close action rather than removing the DOM node.
+    const close = modal.querySelector<HTMLButtonElement>(
+      ".nr-dialog-head button, [data-dialog-close], button[aria-label='Close'], button[aria-label='Close dialog']"
+    );
+    if (close) close.click();
+    else modal.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
     return true;
+  }
+  // Native Back must dismiss an active accessible sheet before navigating away.
+  // Only target overlays with an explicit dismiss control; never silently
+  // hide a booking or payment sheet and leave React state out of sync.
+  const sheet = [...document.querySelectorAll<HTMLElement>(
+    '[role="dialog"][aria-modal="true"]:not(dialog), [data-biloo-sheet-open="true"]'
+  )].filter(node => node.getClientRects().length).at(-1);
+  if (sheet) {
+    const close = sheet.querySelector<HTMLButtonElement>(
+      '[data-sheet-close], [data-dialog-close], button[aria-label="Close"], button[aria-label="Dismiss"], button[aria-label="Back"]'
+    );
+    if (close) { close.click(); return true; }
   }
   const drawer = document.querySelector<HTMLElement>(".nr-driver-menu-layer, .nr-rider-drawer-layer");
   if (drawer) {
