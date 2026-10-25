@@ -9,7 +9,7 @@ on their operating screen; these are not second navigation entries.
 ## Canonical source of truth
 `lib/biloo-navigation-registry.ts`
 - Rider: Home, My Rides, Wallet, Saved Places, Safety Center, Help & Support
-- Driver: Home, Activity, Navigation, Earnings, Help & Support, Safety Center
+- Driver: Home, Activity, Earnings, Help & Support, Safety Center
 - Admin: Dashboard, Rides, Drivers, Verification, Users, Identity & Accounts,
   Payments, Safety, Support, Audit Log
 - Admin secondary: Email Campaigns, Messaging Security, Android Reliability
@@ -62,3 +62,6 @@ Vercel rejected a forced deploy request with HTTP 402,
 Do not mark these latest commits as production-ready until Vercel reports
 an actual READY deployment for the final commit. Browser tests and Android
 device testing still require execution.
+
+## Driver hamburger themes — October 26, 2026
+Light mode uses approved concept #4 (compact white/navy with status chip). Dark mode uses approved concept #5 (deep midnight navy with gold-accented Rider switch). Both render from the same `DRIVER_NAVIGATION` registry, without the redundant standalone Map/Navigation entry. `/driver/map` remains a legacy deep link, and active-trip route guidance remains available from trip screens. The portrait card shows Online/Offline and rating only if the authenticated Driver row returns verified values; failures reveal neither. This is a frontend-only change without database migrations.
