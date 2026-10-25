@@ -52,7 +52,7 @@ if(!source.includes("BilooSystemBars.apply(this);")){
   source=source.replace("    super.onCreate(savedInstanceState);",
     "    super.onCreate(savedInstanceState);\\n    BilooSystemBars.apply(this);");
 }
-fs.copyFileSync("native/android/BilooSystemBars.java",path.join(folder,"BilooSystemBars.java"));
+fs.writeFileSync(path.join(folder,"BilooSystemBars.java"),\n  fs.readFileSync("native/android/BilooSystemBars.java","utf8")\n    .replace("com.nexride.APP_ROLE","com.nexride."+role));
 fs.writeFileSync(main,source);
 
 const manifest=path.join(base,"AndroidManifest.xml");
