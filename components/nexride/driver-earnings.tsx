@@ -117,7 +117,7 @@ export function DriverEarningsScreen({
     (report.onlineSeconds || 0) === 0;
 
   return (
-    <>
+    <div className="biloo-earnings-eight">
       <header className="nr-earnings-head">
         <div>
           <span className="nr-driver-kicker">BILOO · DRIVER</span>
@@ -215,7 +215,7 @@ export function DriverEarningsScreen({
           </button>
         </>
       ) : null}
-    </>
+    </div>
   );
 }
 
@@ -261,6 +261,7 @@ function EarningsChart({
     y: bottom - (Math.max(0, value) / max) * (bottom - top),
   }));
   const path = points.map((point, index) => `${index === 0 ? "M" : "L"}${point.x.toFixed(1)} ${point.y.toFixed(1)}`).join(" ");
+  const areaPath = `${path} L${width} ${bottom} L0 ${bottom} Z`;
   const summary = values.map((value, index) => `${labels[index]}: ${formatEtb(value)} ETB`).join("; ");
 
   return (
@@ -275,6 +276,7 @@ function EarningsChart({
         <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-labelledby="nr-earnings-chart-title nr-earnings-chart-desc">
           <title id="nr-earnings-chart-title">Net driver earnings trend</title>
           <desc id="nr-earnings-chart-desc">{summary}</desc>
+          <path d={areaPath} className="nr-earnings-chart-area" />
           <path d={path} className="nr-earnings-chart-line" />
           {points.map((point, index) => <circle key={index} cx={point.x} cy={point.y} r="3.5" className="nr-earnings-chart-dot" />)}
         </svg>
