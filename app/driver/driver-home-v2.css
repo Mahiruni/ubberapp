@@ -661,3 +661,27 @@
 @media(prefers-reduced-motion:reduce) {
   .nr-driver-home-cockpit .biloo-driver-first-wrapper * {transition:none!important}
 }
+
+/* Compact draggable Driver map panel: preserve availability control and safe areas. */
+.nr-driver-home-cockpit .biloo-driver-first-handle{
+  appearance:none;display:block;position:relative;width:68px;height:24px;
+  padding:0;margin:-6px auto 0;border:0;background:transparent;
+  cursor:ns-resize;touch-action:none;flex:none;
+}
+.nr-driver-home-cockpit .biloo-driver-first-handle::after{
+  content:"";position:absolute;left:13px;right:13px;top:10px;height:5px;
+  border-radius:99px;background:#b9c8d9;
+}
+.nr-driver-home-cockpit .biloo-driver-first-handle:focus-visible{
+  outline:2px solid #1765b6;outline-offset:2px;border-radius:8px;
+}
+.nr-driver-home-cockpit .biloo-driver-first-wrapper.is-map-sheet-compact{
+  gap:8px;padding-top:10px;
+}
+.nr-driver-home-cockpit .biloo-driver-first-wrapper.is-map-sheet-compact .nr-driver-home-control-state small,
+.nr-driver-home-cockpit .biloo-driver-first-wrapper.is-map-sheet-compact .biloo-driver-first-links{
+  display:none;
+}
+.nr-driver-home-cockpit .nr-driver-home-swipe{
+  padding-bottom:max(10px,env(safe-area-inset-bottom,0px));
+}
