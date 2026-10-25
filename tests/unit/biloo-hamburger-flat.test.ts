@@ -13,7 +13,7 @@ describe("Biloo zero-duplication navigation ownership", () => {
     expect(navigationConflicts(RIDER_NAVIGATION)).toEqual([]);
     expect(navigationConflicts(DRIVER_NAVIGATION)).toEqual([]);
     expect(DRIVER_NAVIGATION.map(item => item.id)).toEqual(["home","requests","earnings","messages","safety"]);
-    expect(DRIVER_NAVIGATION.some(item => item.href === "/driver/map")).toBe(false);
+    expect(DRIVER_NAVIGATION.map(item => item.href)).not.toContain("/driver/map");
     for (const values of [
       ADMIN_NAVIGATION.map(item=>({id:item.id,href:`/admin?module=${item.id}`,label:{en:item.label},icon:item.icon})),
       ADMIN_AUX_NAVIGATION.map(item=>({id:item.id,href:item.href,label:{en:item.label},icon:item.icon}))
