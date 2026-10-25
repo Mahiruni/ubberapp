@@ -798,3 +798,153 @@
     font-size:10px;
   }
 }
+
+
+/* BILOO PRESTIGE / SELECTED DESIGN 1 — available Driver dashboard.
+   Only the Home sheet changes; GPS, gestures and online/offline state stay authoritative. */
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-cockpit .biloo-driver-first-wrapper {
+  border-radius:25px 25px 0 0!important;
+  padding:12px 14px max(14px,env(safe-area-inset-bottom,0px))!important;
+  gap:10px!important;
+  box-shadow:0 -10px 34px rgba(7,28,59,.11)!important;
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-cockpit .biloo-driver-first-wrapper .nr-driver-home-control-heading {
+  row-gap:5px!important;
+  padding:0 1px 1px;
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-cockpit .biloo-driver-first-wrapper .nr-driver-home-control-state>strong {
+  font-size:clamp(20px,5vw,25px)!important;
+  font-weight:850!important;
+  letter-spacing:-.04em!important;
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-cockpit .biloo-driver-first-availability {
+  position:relative;
+  min-height:0;
+  gap:11px;
+  padding:12px!important;
+  border:1px solid #e2e9f3!important;
+  background:linear-gradient(155deg,#ffffff,#f6f9fc)!important;
+  border-radius:20px!important;
+  isolation:isolate;
+  overflow:hidden;
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-cockpit .biloo-driver-first-availability-copy {
+  min-height:45px;
+  justify-content:center;
+  gap:4px;
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-cockpit .biloo-driver-first-availability:has(.biloo-prestige-vehicle) .biloo-driver-first-availability-copy {
+  padding-right:72px;
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-cockpit .biloo-driver-first-availability-copy strong {
+  font-size:13px!important;
+  color:#08295f!important;
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-cockpit .biloo-driver-first-availability-copy span {
+  font-size:11px!important;
+  line-height:1.35;
+  color:#687b91!important;
+}
+.nr-driver-app-shell[data-home="true"] .biloo-prestige-vehicle {
+  position:absolute;
+  z-index:1;
+  top:4px;
+  right:15px;
+  display:grid;
+  place-items:center;
+  width:65px;
+  height:73px;
+  border-radius:50%;
+  background:radial-gradient(circle at center,rgba(249,196,73,.25),rgba(249,196,73,0) 72%);
+  pointer-events:none;
+}
+.nr-driver-app-shell[data-home="true"] .biloo-prestige-vehicle img {
+  position:relative;
+  width:43px;
+  height:69px;
+  object-fit:contain;
+  filter:drop-shadow(0 4px 6px rgba(8,41,95,.19));
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-cockpit .biloo-driver-first-availability .nr-driver-availability-swipe {
+  z-index:2;
+  min-height:58px!important;
+  height:58px!important;
+  background:linear-gradient(110deg,#049467,#00c878)!important;
+  border:1px solid #04aa70!important;
+  border-radius:15px!important;
+  color:#fff!important;
+  box-shadow:0 0 0 3px rgba(0,200,120,.10)!important;
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-cockpit .biloo-driver-first-availability .nr-driver-availability-swipe[data-online="false"] {
+  background:linear-gradient(100deg,#0c3265,#123f78)!important;
+  border-color:#174b85!important;
+  box-shadow:0 0 0 3px rgba(8,41,95,.07)!important;
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-cockpit .biloo-driver-first-availability .nr-driver-swipe-label {
+  color:#fff!important;
+  font-size:12px!important;
+  font-weight:800!important;
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-cockpit .biloo-driver-first-availability .nr-driver-swipe-thumb {
+  background:linear-gradient(135deg,#fff7d9,#f9c449)!important;
+  color:#08295f!important;
+  border-radius:12px!important;
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-cockpit .biloo-driver-first-links {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:8px;
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-cockpit .biloo-driver-first-links button {
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  gap:5px;
+  min-width:0;
+  min-height:60px!important;
+  padding:7px 4px!important;
+  border:1px solid #e1e8f2!important;
+  border-radius:16px!important;
+  background:#fff!important;
+  color:#08295f!important;
+  box-shadow:0 3px 10px rgba(8,41,95,.045);
+  font-size:11px!important;
+  font-weight:760;
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-cockpit .biloo-driver-first-links button svg {
+  color:#08295f!important;
+}
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-cockpit .biloo-driver-first-links button:focus-visible {
+  outline:3px solid #d8ac45!important;
+  outline-offset:2px;
+}
+.nr-driver-app-shell[data-theme="dark"][data-home="true"] .nr-driver-home-cockpit .biloo-driver-first-availability {
+  background:linear-gradient(135deg,#112f4c,#183b56)!important;
+  border-color:#34536e!important;
+}
+.nr-driver-app-shell[data-theme="dark"][data-home="true"] .nr-driver-home-cockpit .biloo-driver-first-availability-copy strong {
+  color:#f5f8fc!important;
+}
+.nr-driver-app-shell[data-theme="dark"][data-home="true"] .nr-driver-home-cockpit .biloo-driver-first-availability-copy span {
+  color:#bfcede!important;
+}
+.nr-driver-app-shell[data-theme="dark"][data-home="true"] .nr-driver-home-cockpit .biloo-driver-first-links button {
+  background:#193952!important;
+  border-color:#34536e!important;
+  color:#fff!important;
+}
+.nr-driver-app-shell[data-theme="dark"][data-home="true"] .nr-driver-home-cockpit .biloo-driver-first-links button svg {
+  color:#f9c449!important;
+}
+@media(max-width:360px){
+  .nr-driver-app-shell[data-home="true"] .nr-driver-home-cockpit .biloo-driver-first-wrapper {
+    padding-inline:10px!important;
+  }
+  .nr-driver-app-shell[data-home="true"] .nr-driver-home-cockpit .biloo-driver-first-links button {font-size:10px!important;min-height:56px!important;}
+  .nr-driver-app-shell[data-home="true"] .nr-driver-home-cockpit .biloo-driver-first-availability:has(.biloo-prestige-vehicle) .biloo-driver-first-availability-copy {padding-right:62px}
+  .nr-driver-app-shell[data-home="true"] .biloo-prestige-vehicle {right:5px;width:58px;}
+}
+@media(prefers-reduced-motion:reduce){
+  .nr-driver-app-shell[data-home="true"] .biloo-prestige-vehicle,
+  .nr-driver-app-shell[data-home="true"] .biloo-prestige-vehicle img {animation:none!important;transition:none!important;}
+}
