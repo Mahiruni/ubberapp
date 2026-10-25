@@ -27,8 +27,10 @@ public final class NexRideDriverLocationService extends Service implements Locat
   @Override public void onCreate(){
     super.onCreate();
     manager=(LocationManager)getSystemService(LOCATION_SERVICE);
-    ((NotificationManager)getSystemService(NOTIFICATION_SERVICE)).createNotificationChannel(
-      new NotificationChannel(CHANNEL,"Driver location sharing",NotificationManager.IMPORTANCE_LOW));
+    if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.O){
+      ((NotificationManager)getSystemService(NOTIFICATION_SERVICE)).createNotificationChannel(
+        new NotificationChannel(CHANNEL,"Driver location sharing",NotificationManager.IMPORTANCE_LOW));
+    }
   }
   @Override public int onStartCommand(Intent intent,int flags,int startId){
     if(intent==null || STOP.equals(intent.getAction())){stopSelf();return START_NOT_STICKY;}
@@ -42,7 +44,9 @@ public final class NexRideDriverLocationService extends Service implements Locat
     }
     PendingIntent open=PendingIntent.getActivity(this,0,new Intent(this,MainActivity.class),
       PendingIntent.FLAG_UPDATE_CURRENT|PendingIntent.FLAG_IMMUTABLE);
-    Notification notice=new Notification.Builder(this,CHANNEL).setContentTitle("Biloo Driver · Online")
+    Notification.Builder notification=Build.VERSION.SDK_INT>=Build.VERSION_CODES.O
+      ? new Notification.Builder(this,CHANNEL) : new Notification.Builder(this);
+    Notification notice=notification.setContentTitle("Biloo Driver · Online")
       .setContentText("Sharing location for nearby ride requests")
       .setSmallIcon(android.R.drawable.ic_menu_mylocation).setOngoing(true)
       .setContentIntent(open).build();
