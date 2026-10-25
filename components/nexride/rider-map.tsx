@@ -585,6 +585,17 @@ export function RiderMap({
   const driverMapAvatarRef = useRef<DriverMapAvatar | null>(null);
   driverMapAvatarRef.current = driverMapAvatar;
 
+  // Animate the artwork only; never displace the actual GPS-anchored Mapbox marker.
+  useEffect(() => {
+    const root = liveMarker.current?.getElement();
+    if (!root) return;
+    const fresh = assignedTrip?.tracking && Date.now() - assignedTrip.tracking.updatedAt < 90_000;
+    const approaching = assignedTrip?.status === "approaching" && fresh;
+    const arrived = assignedTrip?.status === "arrived";
+    root.dataset.pickupMotion = markerRole === "rider" && arrived ? "wave" :
+      markerRole === "rider" && approaching ? "walk" : "idle";
+  }, [assignedTrip?.status, assignedTrip?.tracking?.updatedAt, markerRole, position]);
+
   const liveMarkerAnimation = useRef<number | null>(null);
   const liveMarkerLngLat = useRef<[number, number] | null>(null);
   useEffect(() => {
@@ -1186,6 +1197,8 @@ export function RiderMap({
           driverMapAvatarRef.current,
         );
         if (markerRole === "driver") updateDriverCarMarker(markerElement, driverMapAvatarRef.current, position.heading, currentMap.getBearing());
+        markerElement.dataset.pickupMotion = markerRole === "rider" && assignedTrip?.status === "arrived" ? "wave" :
+          markerRole === "rider" && assignedTrip?.status === "approaching" && assignedTrip.tracking && Date.now() - assignedTrip.tracking.updatedAt < 90_000 ? "walk" : "idle";
         markerElement.classList.toggle("is-stale", gpsStale);
         markerElement.classList.toggle(
           "is-paused",
