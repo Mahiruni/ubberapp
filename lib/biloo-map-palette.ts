@@ -14,7 +14,7 @@ const DAY = {
   building: '#d2dcdd', buildingEdge: '#bac9cc', airport: '#dce3e8',
   road: '#fffffd', roadMajor: '#fbfcfa', roadCase: '#a3b4ba', roadCaseMajor: '#859ca8',
   path: '#a1b2aa', rail: '#a5b3bc', boundary: '#a5b3be',
-  label: '#143654', streetLabel: '#375368', secondaryLabel: '#496273',
+  label: '#08295f', streetLabel: '#183e65', secondaryLabel: '#294d70',
   parkLabel: '#315a46', waterLabel: '#2c536b', halo: '#fffffd',
 } as const;
 
@@ -112,6 +112,14 @@ export function applyBilooCityMapPalette(map: MapboxMap, style: BilooMapStyle | 
         map.setPaintProperty(layer.id, 'text-halo-color', p.halo);
         map.setPaintProperty(layer.id, 'text-halo-width', /road/.test(id) ? 1.35 : 1.15);
         map.setPaintProperty(layer.id, 'text-halo-blur', .35);
+        // Preserve the provider's placement and zoom hierarchy while ensuring
+        // its actual place/road/POI labels are not hidden by theme overrides.
+        if (layer.layout['visibility'] === 'none' && /place|settlement|locality|neighborhood|neighbourhood|road-label|street-label|poi-label/i.test(id)) {
+          map.setLayoutProperty(layer.id, 'visibility', 'visible');
+        }
+        if (/place|settlement|locality|neighborhood|neighbourhood|poi|road|street/.test(id)) {
+          map.setPaintProperty(layer.id, 'text-opacity', 1);
+        }
       } else if (layer.type === 'fill') {
         if (layer.paint?.['fill-pattern']) continue;
         if (sourceLayer === 'water' || /water/.test(id)) {
