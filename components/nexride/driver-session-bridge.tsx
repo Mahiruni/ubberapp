@@ -187,7 +187,10 @@ export function DriverSessionBridge() {
       }
     });
 
-    const onResume = () => {\n      // Reconcile the authoritative trip/offer state after Android process\n      // recreation; never restore an offer from stale local storage.\n      if (activeOnline) void readPending();
+    const onResume = () => {
+      // Reconcile the authoritative trip/offer state after Android process
+      // recreation; never restore an offer from stale local storage.
+      if (activeOnline) void readPending();
       if (!mounted) return;
       void reconcileAvailability().then(() => {
         if (!mounted) return;
@@ -268,7 +271,8 @@ export function DriverSessionBridge() {
     };
 
     void bootstrap().catch(() => {});
-    window.addEventListener("focus", onResume);\n    window.addEventListener("biloo:native-resume", onResume);
+    window.addEventListener("focus", onResume);
+    window.addEventListener("biloo:native-resume", onResume);
     window.addEventListener("online", onResume);
     window.addEventListener(DRIVER_AVAILABILITY_CHANGED, onResume);
     document.addEventListener("visibilitychange", onVisibility);
@@ -292,7 +296,8 @@ export function DriverSessionBridge() {
       mounted = false;
       window.clearInterval(interval);
       window.clearInterval(gpsHeartbeat);
-      window.removeEventListener("focus", onResume);\n      window.removeEventListener("biloo:native-resume", onResume);
+      window.removeEventListener("focus", onResume);
+      window.removeEventListener("biloo:native-resume", onResume);
       window.removeEventListener("online", onResume);
       window.removeEventListener(DRIVER_AVAILABILITY_CHANGED, onResume);
       document.removeEventListener("visibilitychange", onVisibility);
