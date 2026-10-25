@@ -187,7 +187,7 @@ export function DriverSessionBridge() {
       }
     });
 
-    const onResume = () => {
+    const onResume = () => {\n      // Reconcile the authoritative trip/offer state after Android process\n      // recreation; never restore an offer from stale local storage.\n      if (activeOnline) void readPending();
       if (!mounted) return;
       void reconcileAvailability().then(() => {
         if (!mounted) return;
