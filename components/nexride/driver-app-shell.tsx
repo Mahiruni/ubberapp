@@ -69,7 +69,8 @@ const NAV_ITEMS = DRIVER_NAVIGATION.map(item => ({
 
 export function driverNavForPath(pathname: string): DriverNavId {
   if (pathname.startsWith("/driver/earnings")) return "earnings";
-  if (pathname === "/driver/map") return "map";
+  // The legacy Driver map route belongs to Home, not a duplicate drawer item.
+  if (pathname === "/driver/map") return "home";
   if (
     pathname.startsWith("/driver/request") ||
     pathname.startsWith("/driver/activity") ||
@@ -94,6 +95,7 @@ function DriverHamburgerMenu({
   const { resolvedTheme } = useDriverTheme();
   const language = useContext(LanguageContext);
   const [standaloneOpen, setStandaloneOpen] = useState(false);
+  const [driverPresence, setDriverPresence] = useState<{ online: boolean; rating: number | null } | null>(null);
   const open = controlledOpen ?? standaloneOpen;
   // In the Driver app shell, menu visibility also controls the map wrappers.
   // Standalone menus continue to manage their own state.
@@ -138,6 +140,28 @@ function DriverHamburgerMenu({
     if (!open) return;
     return registerNexRideBackHandler(() => { setOpen(false); return true; }, 110);
   }, [open, setOpen]);
+
+  // Read the authenticated Driver record; never label a driver Online or show a rating by assumption.
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    setDriverPresence(null);
+    const readPresence = async () => {
+      try {
+        const { data: auth } = await supabase.auth.getUser();
+        if (!auth.user || cancelled) return;
+        const { data, error } = await supabase.from("drivers")
+          .select("is_online,rating").eq("id", auth.user.id).maybeSingle();
+        if (error || !data || cancelled || typeof data.is_online !== "boolean") return;
+        const rating = typeof data.rating === "number" && Number.isFinite(data.rating) && data.rating > 0 && data.rating <= 5 ? data.rating : null;
+        setDriverPresence({ online: data.is_online, rating });
+      } catch {
+        // Menu stays fully usable when availability cannot be read.
+      }
+    };
+    void readPresence();
+    return () => { cancelled = true; };
+  }, [open]);
 
   const initials = useMemo(
     () => portrait.name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "DR",
@@ -259,7 +283,7 @@ function DriverHamburgerMenu({
             <div className="nr-driver-menu-head">
               <div className="nr-driver-menu-brand-head">
                 <img src="/brand/biloo-mark.svg" width={42} height={42} alt="" aria-hidden="true" />
-                <div><small>BILOO · DRIVER</small><strong id="nr-driver-menu-title">{language === "am" ? "የጉዞ ምናሌ" : "Navigation"}</strong><span>{language === "am" ? "የጉዞ እና እገዛ መሣሪያዎች" : "Trips, work & support"}</span></div>
+                <div><small id="nr-driver-menu-title">BILOO · DRIVER</small><strong>{language === "am" ? "ይንዱ። ያግኙ። ያድጉ።" : "Drive. Earn. Grow."}</strong></div>
               </div>
               <button ref={closeRef} type="button" className="nr-driver-menu-close" onClick={() => setOpen(false)} aria-label={language === "am" ? "ዝጋ" : "Close"}>
                 <Icon name="close" size={21} />
@@ -271,23 +295,25 @@ function DriverHamburgerMenu({
                 {portrait.url && <img src={portrait.url} alt="" width={62} height={62} decoding="async" onError={event => { event.currentTarget.style.display = 'none'; }}/>} 
               </span>
               <span className="biloo-menu-profile-copy">
-                <strong>{portrait.name || (language === "am" ? "የእኔ መገለጫ" : "My profile")}</strong>
+                <span className="nr-driver-profile-heading">
+                  <strong>{portrait.name || (language === "am" ? "የእኔ መገለጫ" : "My profile")}</strong>
+                  {driverPresence && <span className="nr-driver-menu-status" data-online={driverPresence.online ? "true" : "false"}><span aria-hidden="true" />{driverPresence.online ? (language === "am" ? "በመስመር ላይ" : "Online") : (language === "am" ? "ከመስመር ውጭ" : "Offline")}</span>}
+                </span>
                 <small>{language === "am" ? "መገለጫ እና የመለያ ቅንብሮች" : "View account & edit photo"}</small>
+                {driverPresence?.rating != null && <span className="nr-driver-menu-rating"><Icon name="star" size={13} />{driverPresence.rating.toFixed(1)}</span>}
               </span>
               <Icon name="chevron" size={18}/>
             </Link>
 
 
             <div className="nr-menu-scroll" data-testid="driver-menu-scroll">
-              <div className="nr-menu-section-label">{language === "am" ? "ዋና ምናሌ" : "MAIN NAVIGATION"}</div>
               <nav className="nr-driver-menu-nav" aria-label={language === "am" ? "የመንዳት አሰሳ" : "Drive navigation"}>
                 {menuRows(driveItems)}
               </nav>
-              <div className="nr-menu-section-label">{language === "am" ? "ድጋፍ እና ደህንነት" : "HELP & SAFETY"}</div>
+              <div className="nr-driver-menu-separator" aria-hidden="true" />
               <nav className="nr-driver-menu-nav" aria-label={language === "am" ? "ድጋፍ እና ደህንነት" : "Help and safety"}>
                 {menuRows(supportItems)}
               </nav>
-              <div className="nr-menu-section-label">{language === "am" ? "ተጨማሪ" : "MORE"}</div>
               <div className="nr-driver-menu-secondary">
                 <Link href="/rider" className="nr-driver-menu-role-switch" onClick={() => setOpen(false)} aria-label={language === "am" ? "ወደ Biloo ተሳፋሪ ቀይር" : "Switch to Biloo Rider"}>
                   <Icon name="users" size={20}/>
