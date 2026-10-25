@@ -12,6 +12,8 @@ describe("Biloo zero-duplication navigation ownership", () => {
   it("owns one unique primary destination, label and icon within each app role", () => {
     expect(navigationConflicts(RIDER_NAVIGATION)).toEqual([]);
     expect(navigationConflicts(DRIVER_NAVIGATION)).toEqual([]);
+    expect(DRIVER_NAVIGATION.map(item => item.id)).toEqual(["home","requests","earnings","messages","safety"]);
+    expect(DRIVER_NAVIGATION.some(item => item.href === "/driver/map")).toBe(false);
     for (const values of [
       ADMIN_NAVIGATION.map(item=>({id:item.id,href:`/admin?module=${item.id}`,label:{en:item.label},icon:item.icon})),
       ADMIN_AUX_NAVIGATION.map(item=>({id:item.id,href:item.href,label:{en:item.label},icon:item.icon}))
@@ -120,7 +122,9 @@ describe("Biloo zero-duplication navigation ownership", () => {
     expect(driverStyle).toContain("border-radius:50%!important;");
     expect(driverStyle).toContain(".nr-driver-menu-secondary>a");
     expect(riderMenu).toContain("MAIN NAVIGATION");
-    expect(driverMenu).toContain("MAIN NAVIGATION");
+    expect(driverMenu).toContain("nr-driver-menu-separator");
+    expect(driverMenu).toContain("Drive. Earn. Grow.");
+    expect(driverMenu).not.toContain("MAIN NAVIGATION");
     expect(driverMenu).toContain("Ride with Biloo");
     expect(driverMenu).toContain('<Link href="/rider" className="nr-driver-menu-role-switch"');
     expect(driverMenu).toContain('<Icon name="users" size={20}/>');
