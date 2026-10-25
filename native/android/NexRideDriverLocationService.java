@@ -21,7 +21,7 @@ public final class NexRideDriverLocationService extends Service implements Locat
   private final ExecutorService network=Executors.newSingleThreadExecutor();
   private LocationManager manager;
   private volatile String bearer="";
-  private long lastUpload=0;
+  private long lastUpload=0;\n  private volatile boolean unauthorized=false;
   public static boolean isRunning(){return running;}
   @Override public void onCreate(){
     super.onCreate();
@@ -33,7 +33,7 @@ public final class NexRideDriverLocationService extends Service implements Locat
     if(intent==null || STOP.equals(intent.getAction())){stopSelf();return START_NOT_STICKY;}
     String token=intent.getStringExtra(TOKEN);
     if(token==null || token.length()<20){stopSelf();return START_NOT_STICKY;}
-    bearer=token;
+    bearer=token;\n    unauthorized=false;
     if(checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)!=PackageManager.PERMISSION_GRANTED &&
        checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION)!=PackageManager.PERMISSION_GRANTED){
       stopSelf();return START_NOT_STICKY;
@@ -58,7 +58,7 @@ public final class NexRideDriverLocationService extends Service implements Locat
     return START_NOT_STICKY; // Never restart a terminated service with expired session credentials.
   }
   @Override public void onLocationChanged(Location fix){
-    if(!running || !fix.hasAccuracy() || fix.getAccuracy()<0 || fix.getAccuracy()>150 ||
+    if(!running || unauthorized || !fix.hasAccuracy() || fix.getAccuracy()<0 || fix.getAccuracy()>150 ||
       Math.abs(fix.getLatitude())>90 || Math.abs(fix.getLongitude())>180)return;
     long elapsed=SystemClock.elapsedRealtime(),age=elapsed-fix.getElapsedRealtimeNanos()/1000000;
     if(age<0 || age>30000 || elapsed-lastUpload<10000)return;
@@ -73,12 +73,12 @@ public final class NexRideDriverLocationService extends Service implements Locat
           .put("accuracy",accuracy).put("fix_timestamp",timestamp);
         byte[] body=new JSONObject().put("location",position).toString().getBytes(StandardCharsets.UTF_8);
         connection=(HttpURLConnection)new URL("https://ubberapp.vercel.app/api/driver/availability").openConnection();
-        connection.setRequestMethod("POST");
+        connection.setRequestMethod("PATCH");
         connection.setDoOutput(true);connection.setConnectTimeout(10000);connection.setReadTimeout(10000);
         connection.setRequestProperty("Authorization","Bearer "+token);
         connection.setRequestProperty("Content-Type","application/json");
         try(OutputStream out=connection.getOutputStream()){out.write(body);}
-        connection.getResponseCode(); // Never mark dispatch GPS ready on failed uploads.
+        int status=connection.getResponseCode();\n        // A revoked or expired session must not continue broadcasting GPS.\n        // The foreground UI will reconcile and restart with a refreshed JWT.\n        if(status==401 || status==403){\n          unauthorized=true;\n          bearer="";\n          stopSelf();\n        }
       }catch(Exception ignored){}finally{if(connection!=null)connection.disconnect();}
     });
   }
