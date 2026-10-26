@@ -18,6 +18,8 @@ const contrast = (a: string, b: string) => {
 
 describe("Biloo full-app AA contrast design tokens", () => {
   it.each([
+    ["Rider home muted", "#62748b", "#ffffff"],
+    ["Rider home dark muted", "#b7c8dc", "#132e4e"],
     ["light body", "#132a48", "#ffffff"],
     ["light muted", "#53657e", "#ffffff"],
     ["light on raised", "#53657e", "#eef3f9"],
@@ -39,7 +41,6 @@ describe("Biloo full-app AA contrast design tokens", () => {
     expect(layout.indexOf('import "./biloo-menu-refinement.css";'))
       .toBeLessThan(layout.indexOf('import "./biloo-contrast-system.css";'));
     expect(css).toContain('.rider-map-flow.nr-polished-wrapper');
-    expect(css).toContain('.nr-rider-home-intro h2');
     expect(css).toContain('.nr-driver-app-shell[data-theme]');
     expect(css).toContain('.nr-rider-drawer-layer,.nr-driver-menu-layer');
     expect(css).toContain('.nr-support-page,.nr-safety-page');

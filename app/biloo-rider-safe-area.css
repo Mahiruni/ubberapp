@@ -1,0 +1,33 @@
+/* Capacitor 8 exposes CSS variables on older Android WebViews; newer WebViews
+   and Safari expose env(). Use the larger inset, never add the two together. */
+:root {
+  --biloo-safe-top: max(env(safe-area-inset-top, 0px), var(--safe-area-inset-top, 0px));
+  --biloo-safe-right: max(env(safe-area-inset-right, 0px), var(--safe-area-inset-right, 0px));
+  --biloo-safe-bottom: max(env(safe-area-inset-bottom, 0px), var(--safe-area-inset-bottom, 0px));
+  --biloo-safe-left: max(env(safe-area-inset-left, 0px), var(--safe-area-inset-left, 0px));
+}
+
+@media (max-width: 800px) {
+  .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-topbar {
+    height: calc(64px + var(--biloo-safe-top))!important;
+    min-height: calc(64px + var(--biloo-safe-top))!important;
+    padding: var(--biloo-safe-top) max(12px, var(--biloo-safe-right)) 0 max(12px, var(--biloo-safe-left))!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper:not(.rider-home-view) .nr-map-control-stack {
+    top: calc(76px + var(--biloo-safe-top))!important;
+    right: max(12px, var(--biloo-safe-right))!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper.rider-search-view[data-search-open="true"]
+    .nr-main > .nr-rider-flow-panel > .nr-rider-persistent-wrapper {
+    box-sizing: border-box;
+    padding-top: var(--biloo-safe-top)!important;
+    padding-right: var(--biloo-safe-right)!important;
+    padding-left: var(--biloo-safe-left)!important;
+  }
+
+  .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper :is(.nr-destination-panel, .nr-ride-selection, .nr-driver-matching) > footer {
+    padding-bottom: calc(12px + var(--biloo-safe-bottom))!important;
+  }
+}

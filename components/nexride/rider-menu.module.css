@@ -52,7 +52,7 @@
   width: min(360px, calc(100vw - 24px));
   height: 100dvh;
   min-height: 0;
-  padding: calc(10px + env(safe-area-inset-top, 0px)) 14px calc(10px + env(safe-area-inset-bottom, 0px));
+  padding: calc(10px + var(--biloo-safe-top)) max(14px, var(--biloo-safe-right)) calc(10px + var(--biloo-safe-bottom)) max(14px, var(--biloo-safe-left));
   overflow: hidden;
   border-right: 1px solid var(--line);
   border-radius: 0 24px 24px 0;
@@ -113,7 +113,7 @@
   .drive:not(:disabled):hover, .scroll > :global(.biloo-menu-profile-card):not(:disabled):hover { background: #153c70; }
 }
 @media (max-height: 450px) {
-  .drawer { padding-block: calc(4px + env(safe-area-inset-top, 0px)) calc(4px + env(safe-area-inset-bottom, 0px)); }
+  .drawer { padding-block: calc(4px + var(--biloo-safe-top)) calc(4px + var(--biloo-safe-bottom)); }
   .header { padding-bottom: 4px; }
   .footer { padding-top: 5px; }
 }

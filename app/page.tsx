@@ -461,6 +461,12 @@ function AppWorkspace({
             <Icon name="pin" size={17} />
             <span>{t("city")}</span>
           </div>
+          {riderHome && <button
+            type="button"
+            className="biloo-rider-safety-button"
+            onClick={() => openSafety("rider")}
+            aria-label={language === "am" ? "የደህንነት ማዕከል" : "Safety center"}
+          ><Icon name="shield" size={21} /></button>}
         </header>
         {!authenticated && !liveTripShown && !profileView && <div className="nr-preview-banner">
           <span className="nr-preview-label">{t("preview")}</span>

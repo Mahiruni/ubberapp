@@ -33,7 +33,7 @@ test("mobile home has one prominent search action and working navigation", async
   const drawer = page.getByRole("dialog", { name: "Rider menu" });
   await expect(drawer).toBeVisible();
   await expect(drawer.locator(".biloo-menu-profile-card")).toHaveCount(1);
-  await expect(drawer.getByRole("button", { name: /My rides/ })).toBeVisible();
+  await expect(drawer.getByRole("button", { name: /My rides/i })).toBeVisible();
   await drawer.getByRole("button", { name: "Close menu" }).click();
   await expect(drawer).toHaveCount(0);
 });

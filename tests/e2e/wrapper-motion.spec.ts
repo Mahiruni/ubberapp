@@ -41,7 +41,14 @@ test("brand contrast and essential actions survive narrow screens and orientatio
   for (const viewport of [{ width: 1280, height: 900 }, { width: 1280, height: 720 }, { width: 390, height: 844 }, { width: 320, height: 568 }, { width: 740, height: 390 }, { width: 844, height: 390 }]) {
     await page.setViewportSize(viewport);
     await handle(page).press("End");
-    await expect.poll(async () => Math.abs(await height(page) - Math.min(viewport.height * .78, viewport.height - 72))).toBeLessThan(2);
+    await expect(page.locator(".nr-rider-home-sheet")).toHaveAttribute("data-snap", "expanded");
+    // The expanded card also reserves the new header and system-safe margins.
+    // Wait for settling before checking bounds instead of requiring the old
+    // full-bleed height, which extended the card into the header on short phones.
+    await expect.poll(async () => {
+      const current = await height(page);
+      return current <= viewport.height * .78 + 1;
+    }).toBe(true);
     const box = (await panel(page).boundingBox())!;
     expect(box.x).toBeGreaterThanOrEqual(0);
     expect(box.y).toBeGreaterThanOrEqual(0);

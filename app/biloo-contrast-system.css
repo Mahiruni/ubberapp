@@ -102,9 +102,9 @@
   color: var(--biloo-contrast-muted)!important;
 }
 /* Rider draggable flow panels are shared across Home, Search, Ride, Match, Trip. */
-.nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper
+.nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper:not(.rider-home-view)
   .nr-main > .nr-rider-flow-panel > .nr-rider-persistent-wrapper,
-.nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper
+.nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper:not(.rider-home-view)
   .nr-rider-persistent-wrapper :is(.nr-rider-home-sheet,.nr-destination-panel,.nr-ride-selection,.nr-driver-matching,.nr-trip-experience) {
   --text: var(--biloo-contrast-text);
   --muted: var(--biloo-contrast-muted);
@@ -115,56 +115,7 @@
   border-color: var(--biloo-contrast-border)!important;
   background: var(--biloo-contrast-surface)!important;
 }
-/* Home previously forced white on its header, handle, scroll, shortcut and text. */
-.nr-app[data-mode="rider"][data-theme] .rider-map-flow.rider-home-view {
-  --biloo-home-ink: var(--biloo-contrast-text);
-  --biloo-home-muted: var(--biloo-contrast-muted);
-  --biloo-home-line: var(--biloo-contrast-border);
-}
-.nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view
-  :is(.nr-home-sheet-grab-area,.nr-home-sheet-drag-zone,.nr-rider-home-intro,.nr-home-sheet-scroll) {
-  background: var(--biloo-contrast-surface)!important;
-  color: var(--biloo-contrast-text)!important;
-}
-.nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view
-  :is(.nr-rider-home-intro h2,.nr-home-history-heading h2) {
-  color: var(--biloo-contrast-text)!important;
-}
-.nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view
-  :is(.nr-wrapper-subtitle,.nr-home-location,.nr-home-location span,.nr-home-location svg) {
-  color: var(--biloo-contrast-muted)!important;
-}
-.nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view
-  :is(.nr-home-shortcuts button,.nr-home-destinations .nr-list-row) {
-  color: var(--biloo-contrast-text)!important;
-  background: var(--biloo-contrast-raised)!important;
-  border-color: var(--biloo-contrast-border)!important;
-}
-.nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view
-  .nr-home-shortcuts button svg {
-  color: var(--biloo-contrast-text)!important;
-}
-.nr-app[data-mode="rider"][data-theme="dark"] .rider-map-flow.nr-polished-wrapper.rider-home-view
-  .nr-home-shortcuts button:is(:hover,:focus-visible) {
-  background: #225286!important;
-  border-color: #89a9cf!important;
-}
-.nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view
-  .nr-home-search {
-  background: #08295f!important;
-  color: #fff!important;
-  border-color: #08295f!important;
-}
-.nr-app[data-mode="rider"][data-theme="dark"] .rider-map-flow.nr-polished-wrapper.rider-home-view
-  .nr-home-search {
-  border-color: #8aaad0!important;
-}
-/* Keep gold and ink as a pair for filled branded action buttons. */
-.nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view
-  .nr-home-search .nr-search-arrow {
-  background: #f9c449!important;
-  color: #08295f!important;
-}
+/* Home owns its light/dark token pairs in biloo-home-clean.css. */
 /* Fields: native controls must not inherit pale text from another theme. */
 :is(.nr-app,.nr-driver-app-shell,.nr-identity-entry,.nex-manage)[data-theme]
   :is(input:not([type="checkbox"]):not([type="radio"]),select,textarea) {
