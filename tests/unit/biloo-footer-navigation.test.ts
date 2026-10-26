@@ -1,18 +1,18 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { DRIVER_NAVIGATION, RIDER_NAVIGATION, navigationConflicts } from "../../lib/biloo-navigation-registry";
+import { driverNavForPath } from "../../components/nexride/driver-app-shell";
 
 const read = (file: string) => readFileSync(join(process.cwd(), file), "utf8");
 const rider = read("app/page.tsx");
 const driver = read("components/nexride/driver-app-shell.tsx");
-const driverHome = read("components/nexride/driver.tsx");
 const trips = read("app/rider/trips/page.tsx");
 const wallet = read("app/rider/wallet/page.tsx");
 const support = read("app/support/page.tsx");
 const css = read("app/biloo-footer-navigation.css");
 const premiumDriver = read("app/driver/driver-wrapper-premium.css");
 const riderMenu = read("components/nexride/rider-menu.tsx");
-const registry = read("lib/biloo-navigation-registry.ts");
 
 describe("Biloo Rider + Driver navigation without a footer tab bar", () => {
   it("does not mount footer tabs or the legacy mobile driver dock", () => {
@@ -36,18 +36,23 @@ describe("Biloo Rider + Driver navigation without a footer tab bar", () => {
     expect(driver).toContain('className="biloo-menu-profile-card"');
     expect(driver).toContain('href="/driver/profile"');
     expect(driver).toContain("DRIVER_NAVIGATION.map");
-    expect(registry).toContain('href:"/driver/earnings"');
-    expect(registry).toContain('href:"/driver/map"');
+    expect(navigationConflicts(DRIVER_NAVIGATION)).toEqual([]);
+    expect(navigationConflicts(RIDER_NAVIGATION)).toEqual([]);
+    expect(DRIVER_NAVIGATION.find(item => item.id === "home")?.href).toBe("/driver/home");
+    expect(DRIVER_NAVIGATION.find(item => item.id === "earnings")?.href).toBe("/driver/earnings");
   });
 
-  it("keeps Driver availability swipe but removes all three embedded quick-action buttons", () => {
-    expect(driverHome).toContain("<DriverAvailabilitySwipe");
-    expect(driverHome).toContain("onToggle={toggleAvailability}");
-    expect(driverHome).toContain('className="nr-driver-home-control-panel"');
-    expect(driverHome).not.toContain("nr-driver-home-quick-actions");
-    expect(driverHome).not.toContain('router.push("/driver/activity")}><Icon name="clock"');
-    expect(driverHome).not.toContain('router.push("/driver/earnings")}><Icon name="wallet"');
-    expect(driverHome).not.toContain('router.push("/driver/profile/settings")}><Icon name="settings"');
+  it.each([
+    ["/driver/map", "home"],
+    ["/driver/home", "home"],
+    ["/driver/wallet", "earnings"],
+    ["/driver/earnings", "earnings"],
+    ["/driver/activity", "requests"],
+    ["/driver/navigation/ride-id", "requests"],
+    ["/driver/profile/payouts", "account"],
+    ["/support?role=driver", "messages"],
+  ])("keeps %s in its existing navigation destination", (pathname, expected) => {
+    expect(driverNavForPath(pathname)).toBe(expected);
   });
 
   it("preserves map sheets and safe areas without leaving an empty footer gap", () => {

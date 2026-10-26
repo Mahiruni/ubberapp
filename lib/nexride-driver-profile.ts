@@ -70,9 +70,9 @@ export async function loadDriverProfileData(userId: string): Promise<DriverProfi
     email: text(session?.user.email),
     avatarUrl: text(metadata.avatar_url) || text(metadata.avatarUrl),
     role: text(profile?.role),
-    accountStatus: text(profile?.account_status) || "active",
+    accountStatus: text(profile?.account_status) || "unknown",
     rating: number(driver?.rating),
-    completedTrips: tripsResult.error ? null : tripsResult.count ?? 0,
+    completedTrips: tripsResult.error ? null : number(tripsResult.count),
     vehicle: text(driver?.vehicle) || text(metadata.vehicle),
     vehicleColor: text(driver?.vehicle_color) || text(metadata.vehicle_color),
     vehiclePlate: text(driver?.vehicle_plate) || text(metadata.vehicle_plate),
@@ -107,6 +107,13 @@ export function documentStatus(
 }
 
 export function verificationSummary(profile: DriverProfileData) {
+  if (!profile.accountStatus || profile.accountStatus === "unknown") {
+    return {
+      tone: "restricted" as const,
+      title: "Account status unavailable",
+      detail: "Driver actions stay restricted until your account status can be verified.",
+    };
+  }
   if (profile.accountStatus !== "active") {
     return {
       tone: "restricted" as const,

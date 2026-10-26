@@ -6,7 +6,7 @@ const id = '22222222-2222-4222-8222-222222222222';
 type Theme = 'light' | 'dark';
 
 async function backend(page: Page, theme: Theme = 'light', withPhoto = false) {
-  const state = { review: 'approved', expiry: '2032-10-01', rating: 4.9 as number | null, trips: 35, tripsUnavailable: false, activeTrip: false, offlineFails: false, profileFails: false, offlineCalls: 0, logoutCalls: 0 };
+  const state = { review: 'approved', expiry: '2032-10-01', rating: 4.9 as number | null, trips: 35, tripsUnavailable: false, tripsCountMissing: false, activeTrip: false, offlineFails: false, profileFails: false, offlineCalls: 0, logoutCalls: 0 };
   const user = { id, aud: 'authenticated', role: 'authenticated', email: 'mahir@example.test', app_metadata: {}, user_metadata: { role: 'driver', full_name: 'Mahir Aman' }, created_at: '2026-01-01T00:00:00Z' };
   const token = `eyJhbGciOiJIUzI1NiJ9.${Buffer.from(JSON.stringify({ sub: id, exp: 4102444800 })).toString('base64url')}.test`;
   const session = { access_token: token, refresh_token: 'test', expires_at: 4102444800, expires_in: 3600, token_type: 'bearer', user };
@@ -33,7 +33,7 @@ async function backend(page: Page, theme: Theme = 'light', withPhoto = false) {
       return respond({ id, review_status: state.review, rejection_reason: state.review === 'rejected' ? 'Please replace the registration image.' : null, is_online: false, vehicle: 'BYD Tang L', vehicle_color: 'Beige', vehicle_plate: 'TEST-123', rating: state.rating, license_expiry: state.expiry, license_number: 'PRIVATE-FIXTURE', license_document_path: `${id}/license.pdf`, vehicle_registration_path: `${id}/registration.pdf` });
     }
     if (table === 'ride_requests') {
-      if (route.request().method() === 'HEAD') return state.tripsUnavailable ? route.fulfill({ status: 400 }) : route.fulfill({ status: 200, headers: { 'content-range': `0-0/${state.trips}`, 'access-control-expose-headers': 'content-range' } });
+      if (route.request().method() === 'HEAD') return state.tripsUnavailable ? route.fulfill({ status: 400 }) : route.fulfill({ status: 200, headers: state.tripsCountMissing ? {} : { 'content-range': `0-0/${state.trips}`, 'access-control-expose-headers': 'content-range' } });
       return respond(state.activeTrip ? { id: 'active-trip', status: 'in_trip' } : null);
     }
     if (table === 'driver_profile_photos') return respond(withPhoto ? { storage_path: `${id}/approved.jpg` } : null);
@@ -130,6 +130,17 @@ test('expired verification and unavailable metrics are never presented as verifi
   await expect(account.getByRole('group', { name: 'Rating', exact: true })).toContainText('—');
   await expect(account.getByRole('group', { name: 'Completed trips', exact: true })).toContainText('—');
   await expect(account.getByRole('button', { name: 'Review status', exact: true })).toBeVisible();
+});
+
+test('a successful response without an exact trip count stays unknown until a real zero is returned', async ({ page }) => {
+  const state = await backend(page); state.tripsCountMissing = true;
+  await page.goto('/driver/profile');
+  const trips = page.locator('[data-driver-account]').getByRole('group', { name: 'Completed trips', exact: true });
+  await expect(trips).toContainText('—');
+  state.tripsCountMissing = false; state.trips = 0;
+  await page.reload();
+  await expect(trips).toContainText('0');
+  await expect(trips).not.toContainText('—');
 });
 
 test('profile retry restores real data and the photo editor displays the current portrait', async ({ page }) => {
