@@ -17,6 +17,8 @@ jobs:
     env:
       NEXT_TELEMETRY_DISABLED: "1"
       BILOO_PAY_ENABLED: "false"
+      NEXT_PUBLIC_SUPABASE_URL: "http://127.0.0.1:54321"
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "build-test-public-key"
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
