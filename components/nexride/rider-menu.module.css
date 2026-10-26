@@ -1,0 +1,119 @@
+/* Prestige lives outside the accumulated legacy drawer cascade. */
+.layer {
+  --surface: #fff;
+  --ink: #102b4e;
+  --muted: #596d87;
+  --line: #e2e9f1;
+  --tile: #f2f5f9;
+  --hover: #f0f4f9;
+  --selected: #fff4d4;
+  --accent: #08295f;
+  --gold: #f9c449;
+  position: fixed;
+  inset: 0;
+  z-index: 1800;
+  display: flex;
+  isolation: isolate;
+  color: var(--ink);
+  font-family: Inter, "Noto Sans Ethiopic", system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.4;
+  color-scheme: light;
+}
+.layer[data-theme="dark"] {
+  --surface: #0d2949;
+  --ink: #f7f9ff;
+  --muted: #b8cbe1;
+  --line: #2d4766;
+  --tile: #1c3857;
+  --hover: #193c60;
+  --selected: #494435;
+  --accent: #f9c449;
+  color-scheme: dark;
+}
+.layer *, .layer *::before, .layer *::after { box-sizing: border-box; }
+.layer button { font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.layer button:disabled { opacity: .48; cursor: not-allowed; }
+.layer button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.backdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: rgb(8 29 57 / 44%);
+  backdrop-filter: blur(3px);
+}
+.drawer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: min(360px, calc(100vw - 24px));
+  height: 100dvh;
+  min-height: 0;
+  padding: calc(10px + env(safe-area-inset-top, 0px)) 14px calc(10px + env(safe-area-inset-bottom, 0px));
+  overflow: hidden;
+  border-right: 1px solid var(--line);
+  border-radius: 0 24px 24px 0;
+  background: var(--surface);
+  box-shadow: 12px 0 48px rgb(4 25 59 / 20%);
+}
+.header { display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between; gap: 12px; padding: 0 3px 10px; }
+.brand { display: flex; align-items: baseline; gap: 7px; min-width: 0; white-space: nowrap; }
+.brand strong { font-size: 19px; font-weight: 800; letter-spacing: -.04em; }
+.brand span { color: var(--muted); font-size: 12px; font-weight: 600; letter-spacing: .1em; }
+.close { display: grid; place-items: center; flex: 0 0 44px; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%; background: var(--tile); color: var(--ink); }
+.scroll { flex: 1 1 auto; min-height: 0; padding: 3px 3px 8px; overflow: auto; overscroll-behavior: contain; touch-action: pan-y; scrollbar-width: thin; }
+.scroll > :global(.biloo-menu-profile-card) {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  width: 100%;
+  min-height: 88px;
+  padding: 14px 12px;
+  border: 1px solid var(--gold);
+  border-radius: 17px;
+  background: #08295f;
+  color: #fff;
+  text-align: start;
+}
+.layer[data-theme="dark"] :global(.biloo-menu-profile-card) { background: #102f50; }
+.avatar { position: relative; display: grid; place-items: center; flex: 0 0 54px; width: 54px; height: 54px; overflow: hidden; border: 2px solid var(--gold); border-radius: 50%; background: #1e446f; color: #fff; font-size: 17px; font-weight: 700; }
+.avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.profileCopy { display: grid; flex: 1 1 auto; min-width: 0; gap: 4px; }
+.profileCopy strong { overflow-wrap: anywhere; font-size: 16px; font-weight: 700; line-height: 1.3; letter-spacing: -.02em; }
+.profileCopy small { color: #c8d8ee; font-size: 11px; line-height: 1.5; }
+.scroll > :global(.biloo-menu-profile-card) > svg { flex: 0 0 18px; color: #dce7f8; }
+.sectionLabel { padding: 20px 7px 6px; color: var(--muted); font-size: 10px; font-weight: 700; letter-spacing: .1em; }
+.nav { display: grid; gap: 3px; }
+.row { position: relative; display: flex; align-items: center; gap: 12px; width: 100%; min-width: 0; min-height: 60px; padding: 8px 10px; border: 1px solid transparent; border-radius: 13px; background: transparent; color: var(--ink); text-align: start; }
+.icon { display: grid; place-items: center; flex: 0 0 38px; width: 38px; height: 38px; border-radius: 11px; background: var(--tile); color: var(--ink); }
+.copy { display: grid; flex: 1 1 auto; min-width: 0; gap: 3px; }
+.copy strong { overflow-wrap: anywhere; font-size: 14px; line-height: 1.3; font-weight: 700; letter-spacing: -.015em; }
+.copy small { color: var(--muted); font-size: 11px; line-height: 1.4; }
+.row > svg { flex: 0 0 17px; margin-left: auto; color: var(--muted); }
+.row[aria-current="page"] { background: var(--selected); }
+.row[aria-current="page"]::before { position: absolute; inset: 9px auto 9px 0; width: 3px; border-radius: 3px; background: var(--accent); content: ""; }
+.row[aria-current="page"] .icon { background: color-mix(in srgb, var(--gold) 16%, transparent); color: var(--accent); }
+.row[aria-current="page"] > svg { color: var(--accent); }
+.secondary { display: grid; gap: 5px; margin-top: 15px; padding-top: 12px; border-top: 1px solid var(--line); }
+.drive { min-height: 60px; border-color: #254878; background: #08295f; color: #fff; }
+.drive .icon { background: #26456e; color: var(--gold); }
+.drive .copy small { color: #c8d8ee; }
+.drive > svg { color: var(--gold); }
+.footer { display: grid; flex: 0 0 auto; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 10px 3px 0; border-top: 1px solid var(--line); }
+.credit { color: var(--muted); font-size: 10px; line-height: 1.5; }
+.appearance { display: flex; padding: 2px; border: 1px solid var(--line); border-radius: 15px; background: var(--tile); }
+.appearance button { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 1px solid transparent; border-radius: 12px; background: transparent; color: var(--muted); }
+.appearance button[aria-pressed="true"] { border-color: color-mix(in srgb, var(--gold) 50%, transparent); background: var(--selected); color: var(--accent); }
+.appearanceError { grid-column: 1 / -1; color: var(--ink); font-size: 11px; }
+@media (hover: hover) {
+  .row:not(:disabled):not([aria-current="page"]):not(.drive):hover, .close:hover { background: var(--hover); }
+  .drive:not(:disabled):hover, .scroll > :global(.biloo-menu-profile-card):not(:disabled):hover { background: #153c70; }
+}
+@media (max-height: 450px) {
+  .drawer { padding-block: calc(4px + env(safe-area-inset-top, 0px)) calc(4px + env(safe-area-inset-bottom, 0px)); }
+  .header { padding-bottom: 4px; }
+  .footer { padding-top: 5px; }
+}

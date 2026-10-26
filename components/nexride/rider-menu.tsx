@@ -2,8 +2,8 @@
 
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
-import { AppVersion } from "./app-version";
 import { registerNexRideBackHandler } from "../../lib/nexride-native-navigation";
+import styles from "./rider-menu.module.css";
 
 import {
   useContext,
@@ -43,7 +43,7 @@ export function RiderMenu({
   locked?: boolean;
 }) {
   const router = useRouter();
-  const { resolvedTheme } = useAppearance("rider");
+  const { preference, resolvedTheme, setPreference, error: appearanceError } = useAppearance("rider");
   const language = useContext(LanguageContext);
   const say = (en: string, am: string) => (language === "am" ? am : en);
   const [open, setOpen] = useState(false);
@@ -144,12 +144,12 @@ export function RiderMenu({
   const renderRows = (subset: typeof items) => subset.map(item => {
     const selected = active === item.id;
     const disabled = locked && !["safety", "messages"].includes(item.id);
-    return <button key={item.id} type="button" className={selected ? "active" : ""}
+    return <button key={item.id} type="button" className={styles.row}
       aria-current={selected ? "page" : undefined} disabled={disabled}
       onClick={() => navigate(item.id)}>
-      <span className="nr-rider-drawer-icon" data-tone={item.id}><Icon name={item.icon} size={20}/></span>
-      <span><strong>{item.label}</strong><small>{item.detail}</small></span>
-      {selected ? <span className="nr-menu-active-dot" aria-hidden="true"/> : <Icon name="chevron" size={16} />}
+      <span className={styles.icon}><Icon name={item.icon} size={20}/></span>
+      <span className={styles.copy}><strong>{item.label}</strong><small>{item.detail}</small></span>
+      <Icon name="chevron" size={17} />
     </button>;
   });
 
@@ -179,17 +179,18 @@ export function RiderMenu({
       </button>
 
       {open && createPortal(
-        <div className="nr-rider-drawer-layer" data-theme={resolvedTheme}>
+        <div className={styles.layer} data-theme={resolvedTheme}>
           <button
-            className="nr-rider-drawer-backdrop"
+            className={styles.backdrop}
             type="button"
+            tabIndex={-1}
             aria-label={say("Close menu", "ምናሌ ዝጋ")}
             onClick={() => setOpen(false)}
           />
           <aside
             ref={drawerRef}
             id="nr-rider-drawer"
-            className="nr-rider-drawer"
+            className={styles.drawer}
             onTouchStart={(event) => {
               const touch = event.touches[0];
               drawerTouchStart.current = touch ? {x:touch.clientX,y:touch.clientY} : null;
@@ -207,14 +208,13 @@ export function RiderMenu({
             aria-modal="true"
             aria-label={say("Rider menu", "የተሳፋሪ ምናሌ")}
           >
-            <header className="nr-rider-drawer-head">
-              <div className="biloo-rider-drawer-heading">
-                <span>{language === "am" ? "BILOO · ተሳፋሪ" : "BILOO · RIDER"}</span>
-                <strong>{say("Menu", "ምናሌ")}</strong>
+            <header className={styles.header}>
+              <div className={styles.brand}>
+                <strong>BILOO</strong><span aria-hidden="true">·</span><span>{say("RIDER", "ተሳፋሪ")}</span>
               </div>
               <button
                 type="button"
-                className="nr-rider-drawer-close"
+                className={styles.close}
                 aria-label={say("Close menu", "ምናሌ ዝጋ")}
                 onClick={() => setOpen(false)}
               >
@@ -222,47 +222,57 @@ export function RiderMenu({
               </button>
             </header>
 
-            <button type="button" className="biloo-menu-profile-card" disabled={locked}
-              onClick={() => navigate("profile")} aria-label={say("View my profile", "መገለጫዬን ይመልከቱ")}>
-              <span className="biloo-menu-profile-avatar">
-                <span aria-hidden="true">{initials}</span>
-                {portrait.url && <img src={portrait.url} width={62} height={62} decoding="async" alt=""
-                  onError={event => { event.currentTarget.style.display = "none"; }}/>}
-              </span>
-              <span className="biloo-menu-profile-copy">
-                <strong>{portrait.name || say("My profile", "የእኔ መገለጫ")}</strong>
-                <small>{say("Rider account · Edit photo", "የተሳፋሪ መለያ · ፎቶ አርትዕ")}</small>
-              </span>
-              <Icon name="chevron" size={18}/>
-            </button>
+            <div className={styles.scroll} data-testid="rider-menu-scroll">
+              <button type="button" className="biloo-menu-profile-card" disabled={locked}
+                onClick={() => navigate("profile")} aria-label={say("View my profile", "መገለጫዬን ይመልከቱ")}>
+                <span className={styles.avatar}>
+                  <span aria-hidden="true">{initials}</span>
+                  {portrait.url && <img key={portrait.url} src={portrait.url} width={54} height={54} decoding="async" alt=""
+                    onError={event => { event.currentTarget.style.display = "none"; }}/>}
+                </span>
+                <span className={styles.profileCopy}>
+                  <strong>{portrait.name || say("My profile", "የእኔ መገለጫ")}</strong>
+                  <small>{say("Rider account · Edit photo", "የተሳፋሪ መለያ · ፎቶ አርትዕ")}</small>
+                </span>
+                <Icon name="chevron" size={18}/>
+              </button>
 
-            <div className="nr-menu-scroll" data-testid="rider-menu-scroll">
-              <div className="nr-menu-section-label">{say("MAIN NAVIGATION", "ዋና ምናሌ")}</div>
-              <nav className="nr-rider-drawer-nav" aria-label={say("Rider navigation", "የተሳፋሪ አሰሳ")}>
+              <div className={styles.sectionLabel}>{say("MAIN NAVIGATION", "ዋና ምናሌ")}</div>
+              <nav className={styles.nav} aria-label={say("Rider navigation", "የተሳፋሪ አሰሳ")}>
                 {renderRows(items.filter(item => item.group === "journeys"))}
               </nav>
-              <div className="nr-menu-section-label">{say("HELP & SAFETY", "ድጋፍ እና ደህንነት")}</div>
-              <nav className="nr-rider-drawer-nav" aria-label={say("Help and safety", "ድጋፍ እና ደህንነት")}>
+              <div className={styles.sectionLabel}>{say("SUPPORT & MORE", "ድጋፍ እና ተጨማሪ")}</div>
+              <nav className={styles.nav} aria-label={say("Help and safety", "ድጋፍ እና ደህንነት")}>
                 {renderRows(items.filter(item => item.group === "assistance"))}
               </nav>
-              <div className="nr-menu-section-label">{say("MORE", "ተጨማሪ")}</div>
-              <div className="nr-rider-drawer-secondary">
-                <button type="button" disabled={locked} onClick={() => {setOpen(false);router.push("/driver");}}>
-                  <Icon name="navigation" size={20}/>
-                  <span><strong>{say("Drive with Biloo", "በBiloo ያሽከርክሩ")}</strong>
+              <div className={styles.secondary}>
+                <button type="button" className={`${styles.row} ${styles.drive}`} disabled={locked} onClick={() => {setOpen(false);router.push("/driver");}}>
+                  <span className={styles.icon}><Icon name="navigation" size={20}/></span>
+                  <span className={styles.copy}><strong>{say("Drive with Biloo", "በBiloo ያሽከርክሩ")}</strong>
                   <small>{say("Open Driver", "የአሽከርካሪ ገጽ ይክፈቱ")}</small></span>
                   <Icon name="chevron" size={16}/>
                 </button>
-                {isAdmin && <button type="button" onClick={() => {setOpen(false);router.push("/admin");}}>
-                  <Icon name="users" size={20}/>
-                  <span><strong>Admin Control Center</strong><small>Operations and platform management</small></span>
+                {isAdmin && <button type="button" className={styles.row} onClick={() => {setOpen(false);router.push("/admin");}}>
+                  <span className={styles.icon}><Icon name="users" size={20}/></span>
+                  <span className={styles.copy}><strong>Admin Control Center</strong><small>Operations and platform management</small></span>
                   <Icon name="chevron" size={16}/>
                 </button>}
               </div>
             </div>
 
-            <footer className="nr-rider-drawer-footer" aria-label={say("App information","የመተግበሪያ መረጃ")}>
-              <span className="biloo-drawer-company-credit">Biloo — Proudly by Hisab Technologies PLC</span>
+            <footer className={styles.footer} aria-label={say("App information","የመተግበሪያ መረጃ")}>
+              <span className={styles.credit}>Biloo — Proudly by<br/>Hisab Technologies PLC</span>
+              <div className={styles.appearance} role="group" aria-label={say("Appearance", "ገጽታ")}>
+                <button type="button" aria-label={say("Light theme", "ብርሃን ገጽታ")}
+                  title={say("Light theme", "ብርሃን ገጽታ")} aria-pressed={preference === "light"} onClick={() => setPreference("light")}><Icon name="sun" size={18}/></button>
+                <button type="button" aria-label={say("Dark theme", "ጨለማ ገጽታ")}
+                  title={say("Dark theme", "ጨለማ ገጽታ")} aria-pressed={preference === "dark"} onClick={() => setPreference("dark")}><Icon name="moon" size={18}/></button>
+                <button type="button" aria-label={say("Use device theme", "የመሣሪያ ገጽታ ተጠቀም")}
+                  title={say("Use device theme", "የመሣሪያ ገጽታ ተጠቀም")} aria-pressed={preference === "system"} onClick={() => setPreference("system")}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.85" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8m-4-4v4"/></svg>
+                </button>
+              </div>
+              {appearanceError && <small className={styles.appearanceError} role="alert">{say("Could not save appearance. Try again.", "ገጽታውን ማስቀመጥ አልተቻለም። እንደገና ይሞክሩ።")}</small>}
             </footer>
           </aside>
         </div>, document.body
