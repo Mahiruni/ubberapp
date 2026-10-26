@@ -1,4 +1,5 @@
 'use client';
+import Link from 'next/link';
 import { useContext, useEffect, useRef, useState } from 'react';
 import { Button, Icon, LanguageContext } from './ui';
 import './trip-completion-premium.css';
@@ -42,10 +43,10 @@ export function TripCompletionCard({ snapshot, role = 'rider', onDone, onHistory
     <div className="biloo-receipt-fare"><small>{say('Final confirmed fare', 'የመጨረሻ የተረጋገጠ ዋጋ')}</small>
       <strong>{fare ? <>{fare.amount.toLocaleString(language === 'am' ? 'am-ET' : 'en-ET', { maximumFractionDigits: 2 })}<span> ETB</span></> : '—'}</strong>
       <span className="biloo-payment-state" data-status={payment}><Icon name={payment === 'paid' ? 'check' : 'clock'} size={15}/>
-        {payment === 'paid' ? (cash ? say('Cash payment recorded · driver collects fare', 'የጥሬ ገንዘብ ክፍያ ተመዝግቧል') : say('Payment completed', 'ክፍያ ተጠናቋል'))
+        {payment === 'paid' ? (cash ? say('Cash payment recorded', 'የጥሬ ገንዘብ ክፍያ ተመዝግቧል') : say('Payment completed', 'ክፍያ ተጠናቋል'))
           : payment === 'pending' ? say('Payment pending', 'ክፍያ በመጠባበቅ ላይ')
           : payment === 'failed' ? say('Payment needs attention', 'ክፍያ እርምጃ ይፈልጋል') : say('Payment status unavailable', 'የክፍያ ሁኔታ አይገኝም')}</span>
-      {payment !== 'paid' && <p>{cash ? say('Cash payment is awaiting the recorded completion update. Driver earnings are tracked separately.', 'የጥሬ ገንዘብ ክፍያ ማረጋገጫ በመጠባበቅ ላይ ነው።') : say('Trip completion does not confirm digital payment.', 'ጉዞ መጠናቀቁ ዲጂታል ክፍያን አያረጋግጥም።')}</p>}
+      {payment !== 'paid' && <p>{cash ? say('Cash payment is awaiting the driver’s confirmation of receipt.', 'የጥሬ ገንዘብ ክፍያ ማረጋገጫ በመጠባበቅ ላይ ነው።') : say('Trip completion does not confirm digital payment.', 'ጉዞ መጠናቀቁ ዲጂታል ክፍያን አያረጋግጥም።')}</p>}
     </div>
     <div className="biloo-journey-stops">
       <div><span className="biloo-stop-dot"/><div><small>{say('Pickup', 'መነሻ')}</small><strong>{snapshot.pickup.name || '—'}</strong></div></div>
@@ -71,7 +72,7 @@ export function TripCompletionCard({ snapshot, role = 'rider', onDone, onHistory
       {saved > 0 && <p role="status"><Icon name="check" size={15}/>{say('Rating saved', 'ደረጃው ተቀምጧል')}</p>}
     </section>}
     <p className="biloo-trip-reference">{say('Trip reference', 'የጉዞ መለያ')} <span>{snapshot.id}</span></p>
-    <div className="biloo-completion-actions"><Button onClick={onDone}>{role === 'rider' ? say('Plan another ride', 'ሌላ ጉዞ አቅድ') : say('Ready for the next ride', 'ለቀጣይ ጉዞ ዝግጁ')}</Button>
+    <div className="biloo-completion-actions">{role === 'driver' && cash && payment !== 'paid' && <Link className="nr-button nr-button-secondary" href={"/driver/wallet?cash=" + snapshot.id}>Record cash received</Link>}<Button onClick={onDone}>{role === 'rider' ? say('Plan another ride', 'ሌላ ጉዞ አቅድ') : say('Ready for the next ride', 'ለቀጣይ ጉዞ ዝግጁ')}</Button>
       <Button variant="secondary" onClick={onHistory}>{role === 'rider' ? say('Trip history', 'የጉዞ ታሪክ') : say('View earnings and payment status', 'ገቢና የክፍያ ሁኔታ ይመልከቱ')}</Button></div>
   </article>;
 }

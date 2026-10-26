@@ -54,3 +54,9 @@ google-services.json
 __pycache__/
 /public/cordova.js
 /public/cordova_plugins.js
+
+# Supabase CLI cache
+/supabase/.temp/
+
+# Isolated payment browser-test build
+.next-pay-test/

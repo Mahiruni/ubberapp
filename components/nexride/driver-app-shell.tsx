@@ -68,6 +68,7 @@ const NAV_ITEMS = DRIVER_NAVIGATION.map(item => ({
 }));
 
 export function driverNavForPath(pathname: string): DriverNavId {
+  if (pathname.startsWith("/driver/wallet")) return "earnings";
   if (pathname.startsWith("/driver/earnings")) return "earnings";
   // The legacy Driver map route belongs to Home, not a duplicate drawer item.
   if (pathname === "/driver/map") return "home";
@@ -347,6 +348,7 @@ export function DriverStandaloneMenu({ activeOverride }: { activeOverride?: Driv
 function titleForPath(pathname: string, language: "en" | "am") {
   const say = (en: string, am: string) => language === "am" ? am : en;
   if (pathname.startsWith("/driver/earnings/report")) return say("Earnings report", "የገቢ ሪፖርት");
+  if (pathname.startsWith("/driver/wallet")) return "Biloo Pay";
   if (pathname.startsWith("/driver/earnings")) return say("Earnings", "ገቢ");
   if (pathname.startsWith("/driver/request")) return say("Ride request", "የጉዞ ጥያቄ");
   if (pathname.startsWith("/driver/activity")) return say("Activity", "እንቅስቃሴ");
@@ -362,6 +364,7 @@ function titleForPath(pathname: string, language: "en" | "am") {
 }
 
 function backTargetForPath(pathname: string) {
+  if (pathname.startsWith("/driver/wallet")) return "/driver/earnings";
   if (pathname.startsWith("/driver/earnings/report")) return "/driver/earnings";
   if (pathname.startsWith("/driver/profile/")) return "/driver/profile";
   if (
@@ -486,7 +489,7 @@ function DriverShellChrome({ children }: { children: ReactNode }) {
   const home = pathname === "/driver/home";
 
   return (
-    <div className="nr-driver-app-shell" data-theme={resolvedTheme} data-theme-preference={preference} data-trip-focus={tripFocus ? "true" : "false"} data-home={home ? "true" : "false"} data-request-map={pathname.startsWith("/driver/request") ? "true" : "false"} data-driver-menu-open={menuOpen ? "true" : "false"}>
+    <div className="nr-driver-app-shell" data-biloo-pay={pathname.startsWith("/driver/wallet") ? "true" : "false"} data-theme={resolvedTheme} data-theme-preference={preference} data-trip-focus={tripFocus ? "true" : "false"} data-home={home ? "true" : "false"} data-request-map={pathname.startsWith("/driver/request") ? "true" : "false"} data-driver-menu-open={menuOpen ? "true" : "false"}>
       <DriverHeader pathname={pathname} menuOpen={menuOpen} onMenuOpenChange={setMenuOpen} />
       <DriverSessionBridge />
       <DriverCancellationNotice pathname={pathname} />

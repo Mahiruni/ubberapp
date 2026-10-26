@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "../../../../components/nexride/ui";
 import { useOperationalTranslation } from "../../../../components/nexride/operational-i18n";
 import { nexrideApiFetch } from "../../../../lib/nexride-api-auth";
 import { supabase } from "../../../../lib/supabase";
+import { etbMinor } from "../../../../lib/biloo-pay-money";
 import { formatEtb } from "../../../../lib/nexride-driver-earnings";
 import { loadDriverProfileData, verificationSummary } from "../../../../lib/nexride-driver-profile";
 import "../../../nexride.css";
@@ -67,6 +68,8 @@ export default function DriverPayoutsPage() {
   const [accountName, setAccountName] = useState("");
   const [accountNumber, setAccountNumber] = useState("");
   const [payoutAmount, setPayoutAmount] = useState("");
+  const withdrawalLock = useRef(false);
+  const withdrawalIntent = useRef<{ minor: number; key: string } | null>(null);
 
   async function fetchSnapshot(includeBanks = true) {
     const response = await nexrideApiFetch(
@@ -196,8 +199,10 @@ export default function DriverPayoutsPage() {
   }
 
   async function requestPayout() {
-    const value = Number(payoutAmount);
-    if (!Number.isFinite(value) || value <= 0) {
+    if (withdrawalLock.current) return;
+    const minor = etbMinor(payoutAmount);
+    const value = minor === null ? NaN : minor / 100;
+    if (minor === null || minor <= 0) {
       setError("Enter a valid payout amount.");
       return;
     }
@@ -210,15 +215,15 @@ export default function DriverPayoutsPage() {
       return;
     }
 
+    withdrawalLock.current = true;
     setBusy("payout");
     setError("");
     setNotice("");
     try {
-      const idempotencyKey =
-        "payout-" +
-        (typeof crypto !== "undefined" && crypto.randomUUID
-          ? crypto.randomUUID()
-          : Date.now().toString(36) + "-" + Math.random().toString(36).slice(2));
+      if (!withdrawalIntent.current || withdrawalIntent.current.minor !== minor) {
+        withdrawalIntent.current = { minor, key: crypto.randomUUID() };
+      }
+      const idempotencyKey = withdrawalIntent.current.key;
 
       const response = await nexrideApiFetch("/api/driver/payouts", {
         method: "POST",
@@ -244,6 +249,7 @@ export default function DriverPayoutsPage() {
         );
       }
 
+      withdrawalIntent.current = null;
       setPayoutAmount("");
       setNotice(
         body?.status === "paid"
@@ -260,6 +266,7 @@ export default function DriverPayoutsPage() {
           : "We couldn’t submit this payout request.",
       );
     } finally {
+      withdrawalLock.current = false;
       setBusy("");
     }
   }

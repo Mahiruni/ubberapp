@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Icon } from "./ui";
 import { useOperationalTranslation } from "./operational-i18n";
@@ -127,6 +128,8 @@ export function DriverEarningsScreen({
           <Icon name="back" />
         </button>
       </header>
+
+      <Link href="/driver/wallet" className="nr-earnings-report-action"><span><Icon name="wallet" size={19} /><strong>Open Biloo Pay Wallet</strong></span><Icon name="chevron" size={17} /></Link>
 
       <div className="nr-earnings-periods" role="group" aria-label={op("Reporting period")}>
         {PERIODS.map((item) => (

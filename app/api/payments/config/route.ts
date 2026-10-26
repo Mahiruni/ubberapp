@@ -1,13 +1,18 @@
 import { paymentConfiguration } from "../../../../lib/nexride-payments";
-
+import { serverAdminSupabase } from "../../../../lib/nexride-server-admin";
+import { requirePayReady, payReply } from "../../../../lib/biloo-pay-server";
 export async function GET() {
-  const config = paymentConfiguration();
-  return Response.json(
-    {
-      enabled: config.enabled,
-      provider: config.provider,
-      methods: config.enabled ? ["cash", "chapa"] : ["cash"],
-    },
-    { headers: { "Cache-Control": "no-store" } },
-  );
+  let enabled = paymentConfiguration().enabled;
+  if (enabled) {
+    try {
+      await requirePayReady(serverAdminSupabase());
+    } catch {
+      enabled = false;
+    }
+  }
+  return payReply({
+    enabled,
+    provider: enabled ? "chapa" : null,
+    methods: enabled ? ["cash", "chapa"] : ["cash"],
+  });
 }
