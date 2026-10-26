@@ -1,6 +1,7 @@
 /* Selected Biloo Rider concept #2: full-screen cartography, floating booking
    card and separate navy navigation dock. Home owns this visual layer. */
 .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view {
+  --nr-flow-sheet-height: 26dvh;
   --biloo-home-bg: #edf3f6;
   --biloo-home-surface: #fffffff2;
   --biloo-home-tile: #eef2f6;
@@ -177,6 +178,7 @@
   .nr-app[data-mode="rider"] .rider-profile-view .nr-stage.content-view { padding-bottom: calc(100px + var(--biloo-safe-bottom))!important; }
 }
 @media (min-width: 801px) {
+  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view { --nr-flow-sheet-height: 42dvh; }
   .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .biloo-home-floating-header { display: none!important; }
   .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-rider-home-sheet :is(.nr-home-history-heading, .nr-home-destinations) { display: block!important; }
 }
