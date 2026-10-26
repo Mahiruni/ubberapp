@@ -8,7 +8,7 @@ import { type Place } from "../../lib/nexride-places";
 import type { HomePlaces } from "../../lib/nexride-home";
 import type { LocationStatus, RiderLocation } from "../../lib/nexride-location";
 
-const HOME_RATIOS = [0.29, 0.5, 0.78] as const;
+const HOME_RATIOS = [0.20, 0.40, 0.68] as const;
 
 export function LocationMessage({
   status,
@@ -49,6 +49,7 @@ export function LocationMessage({
 
 export function RiderHomePanel({
   navigate,
+  airport,
   choose,
   data,
   shortcut,
@@ -57,6 +58,7 @@ export function RiderHomePanel({
   locationLabel,
 }: {
   navigate: () => void;
+  airport: () => void;
   choose: (p: Place) => void;
   data: HomePlaces;
   shortcut: (kind: "home" | "work" | "saved") => void;
@@ -67,9 +69,8 @@ export function RiderHomePanel({
   const t = useTranslation();
   const language = useContext(LanguageContext);
   const rows = data.recent.slice(0, 3);
-  // Open the Rider home wrapper to 40% of the visible viewport on every fresh entry.
-  // Preserve the existing collapsed/medium/expanded drag and keyboard snap points.
-  const motion = useSheetMotion({ kind: "rider", ratios: HOME_RATIOS, defaultRatio: 0.4 });
+  // Concept #2 keeps the booking card compact above a separate navigation dock.
+  const motion = useSheetMotion({ kind: "rider", ratios: HOME_RATIOS, defaultRatio: 0.26, desktopDefaultRatio: 0.42 });
   const snap = motion.currentRatio <= HOME_RATIOS[0] ? "collapsed" : motion.currentRatio >= HOME_RATIOS[2] ? "expanded" : "medium";
 
   return (
@@ -104,7 +105,6 @@ export function RiderHomePanel({
         <div className="nr-rider-home-intro">
           <div>
             <h2>{language === "am" ? "ወዴት ይሂዱ?" : "Where to?"}</h2>
-            <p className="nr-wrapper-subtitle">{language === "am" ? "መድረሻዎን ይምረጡ" : "Choose a destination to get started"}</p>
           </div>
         </div>
       </div>
@@ -124,7 +124,7 @@ export function RiderHomePanel({
           aria-label={t("destination")}
         >
           <Icon name="search" size={22} />
-          <span>{language === "am" ? "መድረሻ ይፈልጉ" : "Search destination"}</span>
+          <span>{language === "am" ? "መድረሻ ያስገቡ" : "Enter a destination"}</span>
           <span className="nr-search-arrow">
             <Icon name="arrow" size={20} />
           </span>
@@ -132,49 +132,33 @@ export function RiderHomePanel({
 
         <div className="nr-home-expandable">
           <div className="nr-home-shortcuts">
-            {(["home", "work", "saved"] as const).map((kind) => (
+            {(["home", "work"] as const).map((kind) => (
               <button
                 key={kind}
                 onClick={() => shortcut(kind)}
-                aria-label={t(
-                  kind === "home"
-                    ? "home"
-                    : kind === "work"
-                      ? "work"
-                      : "savedPlaces",
-                )}
+                aria-label={t(kind)}
               >
-                <Icon
-                  name={
-                    kind === "home"
-                      ? "home"
-                      : kind === "work"
-                        ? "briefcase"
-                        : "star"
-                  }
-                  size={20}
-                />
-                <span>
-                  {t(
-                    kind === "home"
-                      ? "home"
-                      : kind === "work"
-                        ? "work"
-                        : "savedPlaces",
-                  )}
+                <span className="nr-home-shortcut-icon"><Icon name={kind === "home" ? "home" : "briefcase"} size={20} /></span>
+                <span className="nr-home-shortcut-copy">
+                  <strong>{t(kind)}</strong>
+                  <small>{data.saved[kind] ? placeName(data.saved[kind]!, language) : language === "am" ? "አድራሻ ያክሉ" : "Add address"}</small>
                 </span>
-                {kind !== "saved" && data.saved[kind] && (
+                {data.saved[kind] && (
                   <i aria-hidden="true" title={t("shortcutSet")} />
                 )}
               </button>
             ))}
+            <button type="button" onClick={airport} aria-label={language === "am" ? "አየር ማረፊያ" : "Airport"}>
+              <span className="nr-home-shortcut-icon"><Icon name="plane" size={20} /></span>
+              <span className="nr-home-shortcut-copy"><strong>{language === "am" ? "አየር ማረፊያ" : "Airport"}</strong><small>{language === "am" ? "ቦሌ አየር ማረፊያ" : "Bole Airport"}</small></span>
+            </button>
           </div>
 
-          <LocationMessage
+          {status !== "ready" && <LocationMessage
             status={status}
             position={position}
             label={locationLabel}
-          />
+          />}
 
           {rows.length > 0 && (
             <div className="nr-home-history-heading">

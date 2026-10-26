@@ -1,176 +1,228 @@
-/* Rider home owns the reference-inspired header, map and rounded booking card.
-   The existing trip state, search actions and sheet gestures remain authoritative. */
+/* Selected Biloo Rider concept #2: full-screen cartography, floating booking
+   card and separate navy navigation dock. Home owns this visual layer. */
 .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view {
-  --biloo-home-navy: #08295f; --biloo-home-gold: #f9c449;
-  --biloo-home-bg: #f0f4fa; --biloo-home-surface: #fff; --biloo-home-tile: #f4f6fa;
-  --biloo-home-ink: #102b4c; --biloo-home-muted: #62748b; --biloo-home-line: #e3eaf3;
-  --biloo-home-header: calc(84px + var(--biloo-safe-top)); --biloo-home-gutter: 12px;
+  --biloo-home-bg: #edf3f6;
+  --biloo-home-surface: #fffffff2;
+  --biloo-home-tile: #eef2f6;
+  --biloo-home-ink: #102e50;
+  --biloo-home-muted: #62738a;
+  --biloo-home-line: #dfe7ef;
+  --biloo-home-header: calc(72px + var(--biloo-safe-top));
+  --biloo-home-dock-height: 62px;
+  --biloo-home-clearance: calc(var(--biloo-safe-bottom) + 22px + var(--biloo-home-dock-height));
+  --biloo-home-card-height: min(max(200px, var(--nr-flow-sheet-height, 26dvh)), calc(var(--nr-viewport-height, 100dvh) - var(--biloo-home-header) - var(--biloo-home-clearance) - 100px));
 }
 .nr-app[data-mode="rider"][data-theme="dark"] .rider-map-flow.nr-polished-wrapper.rider-home-view {
-  --biloo-home-bg: #0b1c33; --biloo-home-surface: #132e4e; --biloo-home-tile: #1d3a59;
-  --biloo-home-ink: #f2f6fc; --biloo-home-muted: #b7c8dc; --biloo-home-line: #304c6b;
+  --biloo-home-bg: #10263e;
+  --biloo-home-surface: #132f4ef2;
+  --biloo-home-tile: #213d59;
+  --biloo-home-ink: #f3f7fc;
+  --biloo-home-muted: #b9ccdf;
+  --biloo-home-line: #35516b;
 }
 .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .biloo-home-floating-header {
-  position: absolute!important; z-index: 115; top: calc(13px + var(--biloo-safe-top));
-  left: max(16px, var(--biloo-safe-left)); right: auto!important;
-  display: grid; place-items: center; width: 46px; height: 46px; min-height: 46px; max-width: 46px;
-  margin: 0; padding: 0; border: 0; border-radius: 50%; background: transparent; box-shadow: none; pointer-events: auto;
+  position: absolute!important; z-index: 115;
+  top: calc(12px + var(--biloo-safe-top)); left: max(14px, var(--biloo-safe-left)); right: auto!important;
+  display: flex; align-items: center; gap: 3px; width: auto; max-width: none; height: 48px; min-height: 48px;
+  padding: 0 17px 0 2px; margin: 0; border: 1px solid var(--biloo-home-line); border-radius: 26px;
+  background: var(--biloo-home-surface); color: var(--biloo-home-ink); box-shadow: 0 4px 18px #08295f10;
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); pointer-events: auto;
 }
 .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .biloo-home-floating-header .nr-rider-hamburger {
   display: flex!important; flex-direction: column!important; align-items: center!important; justify-content: center!important;
-  position: static!important; inset: auto!important; flex: 0 0 46px!important;
-  width: 46px!important; min-width: 46px!important; height: 46px!important; min-height: 46px!important;
-  gap: 5px!important; padding: 0!important; border: 1px solid #ffffff26!important; border-radius: 50%!important;
-  background: #ffffff14!important; color: #fff!important; box-shadow: none!important; -webkit-tap-highlight-color: transparent;
+  position: static!important; inset: auto!important; flex: 0 0 44px!important;
+  width: 44px!important; min-width: 44px!important; height: 44px!important; min-height: 44px!important;
+  gap: 5px!important; padding: 0!important; border: 0!important; border-radius: 50%!important;
+  background: transparent!important; color: var(--biloo-home-ink)!important; box-shadow: none!important;
+  -webkit-tap-highlight-color: transparent;
 }
 .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-rider-hamburger-line {
-  height: 2px; flex: 0 0 2px; background: #fff!important;
+  height: 2px; flex: 0 0 2px; background: var(--biloo-home-ink)!important;
 }
-.nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-topbar > .nr-brand strong {
-  color: #fff!important; font-size: 24px!important; font-weight: 750!important; letter-spacing: -.055em!important; line-height: 1.1!important;
+.nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .biloo-home-floating-header .nr-brand {
+  margin: 0!important; padding: 0!important; gap: 0!important; pointer-events: none!important;
 }
-.nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-topbar > .nr-brand .nr-brand-symbol {
-  width: 28px!important; height: 28px!important; border-radius: 8px;
+.nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-brand-symbol { display: none!important; }
+.nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .biloo-home-floating-header .nr-brand strong {
+  font-size: 25px!important; line-height: 1!important; letter-spacing: -.065em!important; font-weight: 750!important;
+  color: var(--biloo-home-ink)!important;
 }
-.nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view :is(.nr-topbar-actions, .nr-rider-map-top) { display: none!important; }
+.nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-brand strong span {
+  color: #e5ac24!important; font: inherit; letter-spacing: inherit;
+}
+.nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view :is(.nr-topbar-actions, .nr-topbar-place, .nr-rider-map-top) { display: none!important; }
 .biloo-rider-safety-button { display: none; }
 .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-main > .nr-rider-flow-panel > .nr-rider-persistent-wrapper {
   --text: var(--biloo-home-ink); --muted: var(--biloo-home-muted); --surface: var(--biloo-home-surface); --line: var(--biloo-home-line);
   color: var(--biloo-home-ink)!important; background: var(--biloo-home-surface)!important;
-  border: 1px solid var(--biloo-home-line)!important; border-radius: 30px!important;
-  box-shadow: 0 10px 36px #08295f18!important; overflow: hidden!important;
+  border: 1px solid var(--biloo-home-line)!important; border-radius: 28px!important;
+  box-shadow: 0 8px 28px #08295f18!important; overflow: hidden!important;
+  backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
 }
+.nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-main > .nr-rider-flow-panel > .nr-rider-persistent-wrapper > .nr-rider-home-sheet,
 .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view :is(.nr-home-sheet-grab-area, .nr-rider-home-intro, .nr-home-sheet-scroll) {
-  color: var(--biloo-home-ink)!important; background: var(--biloo-home-surface)!important; border: 0!important;
+  color: var(--biloo-home-ink)!important; background: transparent!important; border: 0!important;
 }
 .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-home-sheet-grab-area { min-height: 0!important; padding: 0!important; }
 .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-home-sheet-drag-zone {
-  height: 36px!important; min-height: 36px!important; flex-basis: 36px!important; background: transparent!important;
+  position: absolute!important; top: 0; left: 0; z-index: 3; width: 100%!important;
+  height: 44px!important; min-height: 44px!important; padding-bottom: 22px!important;
+  flex-basis: 0!important; background: transparent!important;
 }
 .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-home-sheet-drag-zone > .nr-home-handle {
-  width: 34px!important; height: 4px!important; background: var(--biloo-home-line)!important;
+  width: 30px!important; height: 3px!important; background: var(--biloo-home-line)!important;
 }
-.nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-rider-home-intro { padding: 0 22px 14px!important; margin: 0!important; }
+.nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-rider-home-intro { padding: 25px 18px 10px!important; margin: 0!important; }
 .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-rider-home-intro h2 {
   margin: 0!important; padding: 0!important; color: var(--biloo-home-ink)!important;
-  font-size: clamp(24px, 6.4vw, 29px)!important; font-weight: 750!important; letter-spacing: -.045em!important;
-  line-height: 1.2!important; white-space: normal!important; overflow-wrap: break-word;
-}
-.nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-wrapper-subtitle {
-  margin: 5px 0 0!important; color: var(--biloo-home-muted)!important; font-size: 12px!important; line-height: 1.5!important;
+  font-size: clamp(23px, 6vw, 27px)!important; font-weight: 750!important; letter-spacing: -.045em!important;
+  line-height: 1.15!important; white-space: normal!important;
 }
 .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-home-sheet-scroll {
-  padding: 0 22px 20px!important; scroll-padding-block: 12px; scrollbar-gutter: auto;
+  padding: 0 18px 12px!important; scroll-padding-block: 10px; scrollbar-gutter: auto;
 }
 .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-home-search {
-  min-height: 58px!important; gap: 12px!important; padding: 10px 12px 10px 16px!important;
-  border: 1px solid var(--biloo-home-gold)!important; border-radius: 18px!important;
-  background: var(--biloo-home-gold)!important; color: #08295f!important; box-shadow: none!important;
+  min-height: 50px!important; gap: 10px!important; padding: 6px 6px 6px 14px!important;
+  border: 1px solid transparent!important; border-radius: 28px!important;
+  background: var(--biloo-home-tile)!important; color: var(--biloo-home-muted)!important; box-shadow: none!important;
 }
 .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-home-search > svg {
-  width: 21px!important; height: 21px!important; padding: 0!important; background: transparent!important; color: #08295f!important;
+  width: 20px!important; height: 20px!important; padding: 0!important; background: transparent!important; color: var(--biloo-home-muted)!important;
 }
 .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-home-search > span:first-of-type {
-  color: #08295f!important; font-size: 15px!important; font-weight: 700!important; letter-spacing: -.02em!important;
+  color: var(--biloo-home-muted)!important; font-size: 14px!important; font-weight: 550!important; letter-spacing: -.02em!important;
 }
-.nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-search-arrow {
-  width: 34px!important; height: 34px!important; border-radius: 12px!important; background: #08295f!important; color: #fff!important;
+.nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-home-search .nr-search-arrow {
+  width: 38px!important; height: 38px!important; flex: 0 0 38px; border-radius: 50%!important; background: #08295f!important; color: #fff!important;
 }
 .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-home-shortcuts {
-  display: grid!important; grid-template-columns: repeat(3, minmax(0, 1fr))!important; gap: 8px!important; margin: 12px 0 10px!important;
+  display: grid!important; grid-template-columns: repeat(3, minmax(0, 1fr))!important; gap: 5px!important;
+  margin: 12px 0 0!important; padding-top: 10px; border-top: 1px solid var(--biloo-home-line);
 }
 .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-home-shortcuts button {
-  display: flex!important; flex-direction: row!important; align-items: center!important; justify-content: center!important;
-  min-height: 50px!important; height: auto!important; gap: 7px!important; padding: 8px 5px!important;
-  border: 1px solid var(--biloo-home-line)!important; border-radius: 15px!important;
-  background: var(--biloo-home-tile)!important; color: var(--biloo-home-ink)!important; font-size: 12px!important; font-weight: 650!important; box-shadow: none!important;
+  position: relative; display: flex!important; flex-direction: row!important; align-items: center!important; justify-content: flex-start!important;
+  min-width: 0; min-height: 48px!important; height: auto!important; gap: 6px!important; padding: 0!important;
+  border: 0!important; border-radius: 12px!important; background: transparent!important; color: var(--biloo-home-ink)!important;
+  font-size: 11px!important; font-weight: 650!important; box-shadow: none!important;
 }
-.nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-home-shortcuts button svg { width: 17px!important; height: 17px!important; flex: 0 0 auto; color: inherit!important; }
-.nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-home-shortcuts button i { width: 5px; height: 5px; background: #bd860b!important; }
+.nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-home-shortcut-icon {
+  display: grid; place-items: center; flex: 0 0 32px; width: 32px; height: 32px; border-radius: 50%; background: var(--biloo-home-tile);
+}
+.nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-home-shortcuts button svg { width: 19px!important; height: 19px!important; flex: 0 0 auto; color: inherit!important; }
+.nr-home-shortcut-copy { display: grid; min-width: 0; gap: 3px; text-align: start; }
+.nr-home-shortcut-copy strong { font-size: 12px; line-height: 1.2; font-weight: 650; }
+.nr-home-shortcut-copy small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--biloo-home-muted); font-size: 10px; line-height: 1.4; font-weight: 450; }
+.nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-home-shortcuts button i { position: absolute; top: 4px; left: 22px; width: 5px; height: 5px; background: #bd860b!important; }
 .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-home-location {
-  display: flex!important; min-height: 0!important; gap: 7px!important; margin: 0!important; padding: 4px 2px!important;
+  display: flex!important; min-height: 0!important; gap: 6px!important; margin: 6px 0 0!important; padding: 2px 0!important;
   border: 0!important; border-radius: 0!important; background: transparent!important; color: var(--biloo-home-muted)!important;
-  font-size: 11px!important; line-height: 1.5!important; box-shadow: none!important;
+  font-size: 10px!important; line-height: 1.4!important; box-shadow: none!important;
 }
 .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-home-location :is(span, svg) { color: inherit!important; }
-.nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-home-history-heading { margin: 18px 0 8px!important; }
-.nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-home-history-heading h2 { margin: 0!important; color: var(--biloo-home-ink)!important; font-size: 13px!important; font-weight: 700!important; }
+.nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-home-history-heading { margin: 16px 0 6px!important; }
+.nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-home-history-heading h2 { margin: 0!important; color: var(--biloo-home-ink)!important; font-size: 12px!important; }
 .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-home-destinations .nr-list-row {
-  min-height: 50px; padding: 8px 2px!important; border-bottom: 1px solid var(--biloo-home-line); border-radius: 0!important; color: var(--biloo-home-ink)!important;
+  min-height: 48px; padding: 8px 2px!important; border-bottom: 1px solid var(--biloo-home-line); border-radius: 0!important; color: var(--biloo-home-ink)!important;
 }
 .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-rider-home-sheet:not([data-snap="expanded"]) :is(.nr-home-history-heading, .nr-home-destinations),
 .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-rider-home-sheet[data-snap="collapsed"] :is(.nr-home-shortcuts, .nr-home-location),
-.nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-rider-map-surface :is(.nr-location-permission, .nr-gps-status) { display: none!important; }
-.nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view :is(.nr-home-search, .nr-home-shortcuts button, .nr-home-sheet-drag-zone, .nr-rider-hamburger, .biloo-rider-safety-button):focus-visible {
-  outline: 3px solid #2b8bd8!important; outline-offset: -4px!important;
-}
+.nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-rider-map-surface .nr-location-permission { display: none!important; }
+.nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view :is(.nr-home-search, .nr-home-shortcuts button, .nr-home-sheet-drag-zone, .nr-rider-hamburger, .biloo-rider-safety-button):focus-visible { outline: 2px solid #2b8bd8!important; outline-offset: -3px!important; }
 @media (max-width: 800px) {
   .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-main { isolation: isolate; background: var(--biloo-home-bg)!important; }
+  /* Only the OS-owned status area has a backplate for the native white icons. */
+  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-main::before { content: ""; position: absolute; inset: 0 0 auto; height: var(--biloo-safe-top); background: #08295f; z-index: 95; pointer-events: none; }
   .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-main > .nr-topbar {
     display: flex!important; height: var(--biloo-home-header)!important; min-height: var(--biloo-home-header)!important;
-    background: #08295f!important; border-radius: 0 0 28px 28px!important; pointer-events: auto!important; text-shadow: none!important;
+    padding: 0!important; background: transparent!important; border: 0!important; border-radius: 0!important; pointer-events: none!important;
   }
-  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-topbar > .nr-brand {
-    top: calc(15px + var(--biloo-safe-top))!important; gap: 7px!important; pointer-events: none!important; text-shadow: none!important;
-  }
-  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-topbar-place {
-    display: flex!important; position: absolute!important; top: calc(48px + var(--biloo-safe-top)); left: 50%; transform: translateX(-50%);
-    gap: 4px; margin: 0!important; color: #d0ddef!important; font-size: 10px; line-height: 1.5; white-space: nowrap;
-  }
-  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-topbar-place svg { width: 12px; height: 12px; color: #f9c449!important; }
   .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .biloo-rider-safety-button {
-    display: grid; place-items: center; position: absolute; top: calc(13px + var(--biloo-safe-top)); right: max(16px, var(--biloo-safe-right));
-    width: 46px; height: 46px; min-height: 46px; padding: 0; border: 1px solid #ffffff26; border-radius: 50%; background: #ffffff14; color: #f9c449;
+    display: grid; place-items: center; position: absolute; pointer-events: auto!important;
+    top: calc(12px + var(--biloo-safe-top)); right: max(14px, var(--biloo-safe-right));
+    width: 48px; height: 48px; min-height: 48px; padding: 0;
+    border: 1px solid var(--biloo-home-line); border-radius: 50%; background: var(--biloo-home-surface); color: var(--biloo-home-ink);
+    box-shadow: 0 4px 18px #08295f10;
   }
-  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-main > .nr-stage.with-map { inset: calc(var(--biloo-home-header) + 10px) 0 0!important; height: auto!important; background: transparent!important; }
-  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-rider-map-surface {
-    inset: 0 max(var(--biloo-home-gutter), var(--biloo-safe-right)) 0 max(var(--biloo-home-gutter), var(--biloo-safe-left))!important;
-    width: auto!important; height: 100%!important; border-radius: 26px 26px 0 0!important;
-  }
-  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-map-control-stack { top: 12px!important; right: 12px!important; bottom: auto!important; gap: 7px!important; }
-  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-map-touch-control { width: 44px!important; min-width: 44px!important; height: 44px!important; min-height: 44px!important; border-radius: 15px!important; }
-  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-map-layer-menu { top: 12px!important; right: 64px!important; bottom: auto!important; z-index: 60; }
-  /* A failed map remains recoverable above the card, beside the map controls.
-     The former full-map error overlay covered its own controls and retry. */
-  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-map-unavailable {
-    inset: 12px 68px auto 12px!important; max-width: none;
-    max-height: max(48px, calc(100% - var(--nr-flow-sheet-height, 40dvh) - var(--biloo-safe-bottom) - 40px));
-    padding: 12px!important; gap: 8px; overflow: auto; overscroll-behavior: contain;
-    border: 1px solid var(--biloo-home-line); border-radius: 18px;
-    background: var(--biloo-home-surface)!important; color: var(--biloo-home-ink)!important;
-    box-shadow: 0 5px 18px #08295f12;
-  }
-  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-map-unavailable p {
-    margin: 0; color: var(--biloo-home-muted); font-size: 11px; line-height: 1.5;
-  }
-  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-map-unavailable button {
-    min-height: 44px; width: 100%; border-color: var(--biloo-home-line);
-    background: var(--biloo-home-tile); color: var(--biloo-home-ink);
-  }
+  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-main > .nr-stage.with-map { inset: 0!important; height: 100%!important; background: var(--biloo-home-bg)!important; }
+  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-rider-map-surface { inset: 0!important; width: 100%!important; height: 100%!important; border-radius: 0!important; }
   .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-main > .nr-rider-flow-panel {
-    left: max(var(--biloo-home-gutter), var(--biloo-safe-left))!important; right: max(var(--biloo-home-gutter), var(--biloo-safe-right))!important;
-    bottom: calc(var(--biloo-safe-bottom) + 12px)!important; width: auto!important; min-height: 0!important;
-    height: clamp(178px, var(--nr-flow-sheet-height, 40dvh), calc(var(--nr-viewport-height, 100dvh) - var(--biloo-home-header) - var(--biloo-safe-bottom) - 36px))!important;
-    max-height: calc(var(--nr-viewport-height, 100dvh) - var(--biloo-home-header) - var(--biloo-safe-bottom) - 36px)!important;
+    left: max(14px, var(--biloo-safe-left))!important; right: max(14px, var(--biloo-safe-right))!important;
+    bottom: var(--biloo-home-clearance)!important; width: auto!important; min-height: 0!important;
+    height: var(--biloo-home-card-height)!important; max-height: calc(var(--nr-viewport-height, 100dvh) - var(--biloo-home-header) - var(--biloo-home-clearance) - 100px)!important;
   }
-  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-rider-map-input-shield { border-radius: 30px!important; background: var(--biloo-home-surface)!important; }
+  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-rider-map-input-shield { border-radius: 28px!important; background: transparent!important; }
+  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-map-control-stack {
+    top: auto!important; right: max(14px, var(--biloo-safe-right))!important;
+    bottom: calc(var(--biloo-home-card-height) + var(--biloo-home-clearance) + 12px)!important;
+    flex-direction: row!important; gap: 8px!important;
+  }
+  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-map-touch-control {
+    width: 44px!important; min-width: 44px!important; height: 44px!important; min-height: 44px!important;
+    border-radius: 50%!important; border-color: var(--biloo-home-line)!important; background: var(--biloo-home-surface)!important; color: var(--biloo-home-ink)!important;
+  }
+  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-map-layer-menu {
+    top: auto!important; right: max(14px, var(--biloo-safe-right))!important; z-index: 60;
+    bottom: calc(var(--biloo-home-card-height) + var(--biloo-home-clearance) + 66px)!important;
+    max-height: min(220px, calc(100dvh - var(--biloo-home-header) - var(--biloo-home-clearance) - var(--biloo-home-card-height) - 80px)); overflow-y: auto;
+  }
+  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-map-unavailable {
+    inset: calc(var(--biloo-home-header) + 8px) 14px auto!important; max-width: 300px; margin: 0 auto;
+    max-height: max(80px, calc(100% - var(--biloo-home-card-height) - var(--biloo-home-clearance) - var(--biloo-home-header) - 72px));
+    padding: 10px!important; gap: 6px; overflow: auto; border: 1px solid var(--biloo-home-line); border-radius: 18px;
+    background: var(--biloo-home-surface)!important; color: var(--biloo-home-ink)!important;
+  }
+  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-map-unavailable > svg { display: none; }
+  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-map-unavailable p { margin: 0; color: var(--biloo-home-muted); font-size: 11px; line-height: 1.4; }
+  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-map-unavailable button { min-height: 44px; width: 100%; border-color: var(--biloo-home-line); background: var(--biloo-home-tile); color: var(--biloo-home-ink); }
+  .nr-app[data-mode="rider"] .rider-profile-view .nr-stage.content-view { padding-bottom: calc(100px + var(--biloo-safe-bottom))!important; }
 }
 @media (min-width: 801px) {
   .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .biloo-home-floating-header { display: none!important; }
   .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-rider-home-sheet :is(.nr-home-history-heading, .nr-home-destinations) { display: block!important; }
 }
 @media (max-width: 360px) {
-  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view :is(.nr-rider-home-intro, .nr-home-sheet-scroll) { padding-left: 16px!important; padding-right: 16px!important; }
-  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-home-shortcuts button { flex-direction: column!important; gap: 3px!important; font-size: 11px!important; }
+  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view :is(.nr-rider-home-intro, .nr-home-sheet-scroll) { padding-left: 14px!important; padding-right: 14px!important; }
+  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-home-shortcut-icon { width: 27px; height: 27px; flex-basis: 27px; }
+  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-home-shortcuts button { gap: 4px!important; }
+  .nr-home-shortcut-copy strong { font-size: 11px; } .nr-home-shortcut-copy small { font-size: 9px; }
 }
-@media (max-height: 560px) and (max-width: 800px) {
-  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view { --biloo-home-header: calc(68px + var(--biloo-safe-top)); }
-  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-wrapper-subtitle { display: none!important; }
-  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-rider-home-intro { padding-bottom: 8px!important; }
-  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-rider-home-intro h2 { font-size: 23px!important; }
-  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-map-control-stack { flex-direction: row!important; }
-  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-map-layer-menu { top: 64px!important; right: 12px!important; }
+@media (max-height: 500px) and (min-width: 480px) and (max-width: 800px) {
+  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view { --biloo-home-dock-height: 54px; --biloo-home-card-height: min(max(170px, var(--nr-flow-sheet-height, 26dvh)), calc(100dvh - var(--biloo-home-header) - var(--biloo-home-clearance) - 12px)); }
+  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-main > .nr-rider-flow-panel { width: 340px!important; right: auto!important; }
+  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-map-control-stack { bottom: calc(var(--biloo-home-clearance) + 12px)!important; }
+  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-map-layer-menu { bottom: calc(var(--biloo-home-clearance) + 66px)!important; max-height: 140px; }
+  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-rider-home-intro { padding-top: 22px!important; padding-bottom: 7px!important; }
+  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-map-unavailable { left: 360px!important; right: 14px!important; max-height: 100px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view :is(.nr-home-search, .nr-home-shortcuts button, .nr-home-handle, .biloo-home-floating-header) { animation: none!important; transition: none!important; }
+}
+/* Match the chosen home pickup pin while preserving the saved Rider avatar
+   for profile and trip screens. Mapbox still anchors this at the true GPS fix. */
+@media (max-width: 800px) {
+  .nr-app[data-mode="rider"][data-theme] .rider-home-view .nr-live-location-marker.biloo-custom-map-avatar > .biloo-rider-avatar-art { display: none!important; }
+  .nr-app[data-mode="rider"][data-theme] .rider-home-view .nr-live-location-marker.biloo-custom-map-avatar::before {
+    content: ""; position: absolute; left: 50%; top: auto; bottom: -11px;
+    width: 22px!important; height: 22px!important; box-sizing: border-box;
+    border: 5px solid #f9c449!important; border-radius: 50%; background: #08295f!important;
+    box-shadow: 0 0 0 4px #ffffff9c; opacity: 1!important; transform: translateX(-50%)!important; animation: none!important;
+  }
+  .nr-app[data-mode="rider"][data-theme] .rider-home-view .nr-live-location-marker.biloo-custom-map-avatar::after {
+    display: block!important; content: attr(aria-label); position: absolute; z-index: 2;
+    left: 50%; top: auto; bottom: 23px; width: max-content; max-width: 180px; height: auto;
+    padding: 6px 11px; border: 1px solid var(--biloo-home-line); border-radius: 18px;
+    background: var(--biloo-home-surface); color: var(--biloo-home-ink);
+    font-size: 10px; font-weight: 650; line-height: 1.3; white-space: nowrap;
+    opacity: 1!important; transform: translateX(-50%)!important; animation: none!important; box-shadow: 0 3px 12px #08295f12;
+  }
+  .nr-app[data-mode="rider"][data-theme] .rider-home-view .nr-live-location-marker.biloo-custom-map-avatar:is(.is-stale, .is-paused)::before { border-color: #acb8c6!important; background: #657890!important; opacity: .75!important; }
+  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-map-control-stack > button[aria-controls="nr-map-layer-menu"],
+  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-map-layer-menu { display: none!important; }
+  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view .nr-gps-status { top: calc(var(--biloo-home-header) + 8px); left: 14px; right: auto; font-size: 11px; }
+  .nr-app[data-mode="rider"][data-theme] .rider-home-view .mapboxgl-ctrl-bottom-left { left: 12px!important; bottom: calc(var(--biloo-home-card-height) + var(--biloo-home-clearance) + 12px)!important; }
+  .nr-app[data-mode="rider"][data-theme] .rider-home-view .mapboxgl-ctrl-bottom-right { left: 102px!important; right: auto!important; bottom: calc(var(--biloo-home-card-height) + var(--biloo-home-clearance) + 12px)!important; max-width: calc(100% - 170px); }
+}
+@media (max-height: 500px) and (min-width: 480px) and (max-width: 800px) {
+  .nr-app[data-mode="rider"][data-theme] .rider-home-view .mapboxgl-ctrl-bottom-left { left: calc(360px + var(--biloo-safe-left))!important; bottom: calc(var(--biloo-home-clearance) + 12px)!important; }
+  .nr-app[data-mode="rider"][data-theme] .rider-home-view .mapboxgl-ctrl-bottom-right { left: calc(450px + var(--biloo-safe-left))!important; bottom: calc(var(--biloo-home-clearance) + 12px)!important; }
 }

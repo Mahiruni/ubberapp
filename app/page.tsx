@@ -38,6 +38,7 @@ import { useJourney } from "../lib/nexride-journey";
 import { useRiderLocation } from "../lib/nexride-location";
 
 import { RiderMenu, type RiderMenuId } from "../components/nexride/rider-menu";
+import { RiderFloatingDock } from "../components/nexride/rider-floating-dock";
 import type { DriverScreen } from "../components/nexride/driver";
 import type { Language } from "../lib/nexride-i18n";
 import { LANGUAGE_EVENT } from "../components/nexride/language-provider";
@@ -456,7 +457,7 @@ function AppWorkspace({
               <Icon name="menu" />
             </button>
           )}
-          <Brand driver={mode === "driver"} />
+          {!riderHome && <Brand driver={mode === "driver"} />}
           <div className="nr-topbar-place">
             <Icon name="pin" size={17} />
             <span>{t("city")}</span>
@@ -492,6 +493,7 @@ function AppWorkspace({
               onProfile={() => navigate("profile")}
               showProfile={false}
               markerRole="rider"
+              preferredStyle={theme === "dark" ? "dark" : "streets"}
               assignedTrip={['trip','live'].includes(screen) ? liveSnapshot : null}
               journey={
                 ['trip','live'].includes(screen) && liveSnapshot
@@ -651,6 +653,7 @@ function AppWorkspace({
                 isAdmin={isAdmin}
                 locked={requestPending || matching.active}
               />
+              <Brand accent />
             </div>
           </>
         )}
@@ -697,6 +700,10 @@ function AppWorkspace({
           </div>
         )}
 
+        {mode === "rider" && (riderHome || profileView) && <RiderFloatingDock
+          active={profileView ? "account" : "home"}
+          onNavigate={tab => navigate(tab === "activity" ? "trips" : tab === "account" ? "profile" : "home")}
+        />}
       </section>
       {toast && (
         <div className="nr-toast" role="status">

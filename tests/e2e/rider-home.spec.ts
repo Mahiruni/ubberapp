@@ -17,13 +17,14 @@ test("mobile home has one prominent search action and working navigation", async
   await page.goto("/");
   await expect(page.locator(".nr-rider-home-panel")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Where to?", exact: true })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Search destination", exact: true })).toContainText("Search destination");
+  await expect(page.getByRole("button", { name: "Search destination", exact: true })).toContainText("Enter a destination");
   await expect(page.locator(".nr-home-empty-state")).toHaveCount(0);
   await expect(page.locator(".biloo-home-floating-header")).toBeVisible();
   await expect(page.locator(".biloo-route-home-entry")).toHaveCount(0);
   await expect(page.getByRole("link", { name: /Explore routes across Ethiopia/ })).toHaveCount(0);
-  await expect(page.locator(".biloo-home-floating-header .nr-brand")).toHaveCount(0);
-  await expect(page.locator(".nr-topbar > .nr-brand")).toBeVisible();
+  await expect(page.locator(".biloo-home-floating-header .nr-brand")).toBeVisible();
+  await expect(page.locator(".nr-topbar > .nr-brand")).toHaveCount(0);
+  await expect(page.getByRole("navigation", { name: "Rider tabs" })).toBeVisible();
   await expect(page.locator(".nr-topbar .nr-rider-profile-top")).toHaveCount(0);
   await expect(page.locator(".biloo-home-floating-profile")).toHaveCount(0);
   const menu = page.locator(".biloo-home-floating-header").getByRole("button", { name: "Open menu" });

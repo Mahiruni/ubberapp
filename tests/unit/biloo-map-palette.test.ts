@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { LayerSpecification, Map as MapboxMap, StyleSpecification } from 'mapbox-gl';
 const { expression, validate } = require('mapbox-gl/dist/style-spec/index.cjs') as typeof import('mapbox-gl/dist/style-spec/index.d.ts');
-import { applyBilooCityMapPalette, BILOO_CITY_PALETTES } from '../../lib/biloo-map-palette';
+import { applyBilooCityMapPalette, BILOO_CITY_PALETTES, BILOO_RIDER_PALETTES } from '../../lib/biloo-map-palette';
 
 const roadWidth = ['interpolate', ['exponential', 1.5], ['zoom'], 5, ['match', ['get', 'class'], 'primary', .5, 0], 16, ['match', ['get', 'class'], 'primary', 12, 6]];
 const initial = (): StyleSpecification => ({
@@ -55,6 +55,19 @@ function contrast(a: string, b: string) {
 }
 
 describe('Biloo city cartography', () => {
+  for (const theme of ['streets', 'dark'] as const) {
+    it(`validates Rider ${theme} styling, label contrast and Driver isolation`, () => {
+      const rider = fakeMap(), driver = fakeMap();
+      applyBilooCityMapPalette(rider.map, theme, 'rider');
+      applyBilooCityMapPalette(driver.map, theme);
+      expect(validate(rider.style).map(error => error.message)).toEqual([]);
+      const p = BILOO_RIDER_PALETTES[theme];
+      for (const pair of [[p.label, p.ground], [p.secondaryLabel, p.ground], [p.streetLabel, p.road], [p.waterLabel, p.water], [p.parkLabel, p.park]])
+        expect(contrast(...pair as [string, string])).toBeGreaterThanOrEqual(4.5);
+      expect((driver.layer('land').paint as Record<string, unknown>)['background-color']).toBe(BILOO_CITY_PALETTES[theme].ground);
+      expect(rider.style.sources).toEqual(initial().sources);
+    });
+  }
   for (const theme of ['streets', 'dark'] as const) {
     it(`${theme} expressions pass the installed Mapbox style validator`, () => {
       const { map, style, dataset } = fakeMap();

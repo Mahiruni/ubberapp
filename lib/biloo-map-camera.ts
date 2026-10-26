@@ -17,6 +17,7 @@ export function riderHomeLocationCameraOffset(
   riderHome: boolean,
   mobile: boolean,
   occludedBottomPx = 0,
+  occludedTopPx = 0,
 ): [number, number] {
   if (
     !riderHome ||
@@ -31,9 +32,11 @@ export function riderHomeLocationCameraOffset(
     ? Math.max(0, Math.min(mapHeight - 100, occludedBottomPx))
     : 0;
 
-  // A negative Mapbox pixel offset places the actual GPS point higher
-  // on-screen, at 50% of the unobstructed portion of the map.
-  return [0, covered > 0 ? -Math.round(covered / 2) : 0];
+  // Frame the real point halfway between the floating header and lower card.
+  // Bottom chrome moves it up; top chrome moves it down.
+  const top = Number.isFinite(occludedTopPx)
+    ? Math.max(0, Math.min(mapHeight - covered - 100, occludedTopPx)) : 0;
+  return [0, Math.round((top - covered) / 2)];
 }
 
 /** Active-trip camera clearance is measured from visible chrome, not the GPS.

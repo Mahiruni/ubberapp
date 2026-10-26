@@ -13,7 +13,7 @@ describe("Biloo Rider homepage clarity", () => {
     expect(home).not.toContain("<Brand");
     expect(home).not.toContain("YOUR WAY FORWARD");
     expect(home).toContain('className="nr-rider-home-intro"');
-    expect(home).toContain("Search destination");
+    expect(home).toContain("Enter a destination");
   });
 
   it("keeps one map-mounted navigation menu on the home screen", () => {
@@ -30,7 +30,7 @@ describe("Biloo Rider homepage clarity", () => {
     expect(home).not.toContain('href="/routes"');
     const floating = app.slice(app.indexOf('className="biloo-home-floating-header"'), app.indexOf('mode === "rider" && riderMapView'));
     expect(floating).toContain("<RiderMenu");
-    expect(floating).not.toContain("<Brand");
+    expect(floating).toContain("<Brand accent");
     expect(app).not.toContain('className="biloo-home-floating-profile"');
     expect(app).not.toContain('className="nr-avatar-button nr-rider-profile-top"');
     expect(css).toContain("border-radius: 50%!important;");
@@ -38,14 +38,14 @@ describe("Biloo Rider homepage clarity", () => {
     expect(css).toContain('pointer-events: none!important;');
   });
 
-  it("retains the existing 40 percent sheet, drag handle and operational flows", () => {
-    expect(home).toContain("defaultRatio: 0.4");
+  it("keeps a compact floating sheet, drag handle and operational flows", () => {
+    expect(home).toContain("defaultRatio: 0.26");
     expect(home).toContain("...motion.handleProps");
     expect(home).toContain("onClick={navigate}");
     expect(home).toContain("onClick={() => shortcut(kind)}");
     expect(css).toContain("rider-home-view");
     expect(css).toContain("prefers-reduced-motion: reduce");
-    expect(css).toContain(".nr-location-permission,.nr-gps-status");
+    expect(css).toContain(".nr-location-permission");
     expect(css).toContain("flex-direction: row!important;");
     expect(css).not.toContain("mapboxgl-map");
     expect(css).not.toContain("leaflet-container");

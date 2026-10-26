@@ -21,6 +21,7 @@ export const useTranslation = () => {
   return useCallback((key: MessageKey) => translate(language, key), [language]);
 };
 const paths = {
+  plane: "m22 16-8-5V4a2 2 0 0 0-4 0v7l-8 5v2l8-3v5l-3 2h10l-3-2v-5l8 3Z",
   mail: "M3 5h18v14H3ZM3 5l9 8 9-8",
   lock: "M5 11h14v10H5ZM8 11V7a4 4 0 0 1 8 0v4",
   arrow: "M4 12h16m-6-6 6 6-6 6",
@@ -87,13 +88,13 @@ export function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
     </svg>
   );
 }
-export function Brand({ driver = false }: { driver?: boolean }) {
+export function Brand({ driver = false, accent = false }: { driver?: boolean; accent?: boolean }) {
   const t = useTranslation();
   return (
     <div className="nr-brand nr-text-wordmark">
       <img src="/brand/biloo-mark.svg" width={34} height={34} alt="" aria-hidden="true" className="nr-brand-symbol" />
       <div>
-        <strong>biloo</strong>
+        <strong>{accent ? <>bil<span>oo</span></> : "biloo"}</strong>
         {driver && <small>{t("driver")}</small>}
       </div>
     </div>

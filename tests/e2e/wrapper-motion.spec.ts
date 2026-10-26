@@ -16,7 +16,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 
-test("Rider home wrapper opens at 40% of mobile viewport without obscuring the map", async ({ page }) => {
+test("Rider home wrapper opens at 26% of mobile viewport without obscuring the map", async ({ page }) => {
   for (const viewport of [
     { width: 390, height: 844 },
     { width: 360, height: 780 },
@@ -25,7 +25,7 @@ test("Rider home wrapper opens at 40% of mobile viewport without obscuring the m
     await page.reload();
     await expect(handle(page)).toBeVisible();
     await expect(page.locator(".nr-rider-home-sheet")).toHaveAttribute("data-snap", "medium");
-    await expect.poll(async () => Math.abs(await height(page) - viewport.height * 0.4)).toBeLessThan(2);
+    await expect.poll(async () => Math.abs(await height(page) - Math.max(200, viewport.height * 0.26))).toBeLessThan(2);
     const map = (await page.locator(".nr-rider-map-surface").boundingBox())!;
     const sheet = (await panel(page).boundingBox())!;
     // Mapbox's canvas intentionally extends behind the floating sheet;
@@ -47,14 +47,14 @@ test("brand contrast and essential actions survive narrow screens and orientatio
     // full-bleed height, which extended the card into the header on short phones.
     await expect.poll(async () => {
       const current = await height(page);
-      return current <= viewport.height * .78 + 1;
+      return current <= viewport.height * .68 + 1;
     }).toBe(true);
     const box = (await panel(page).boundingBox())!;
     expect(box.x).toBeGreaterThanOrEqual(0);
     expect(box.y).toBeGreaterThanOrEqual(0);
     expect(box.x + box.width).toBeLessThanOrEqual(viewport.width + 1);
     expect(box.y + box.height).toBeLessThanOrEqual(viewport.height + 1);
-    await expect(page.locator(".nr-home-sheet-grab-area")).toHaveCSS("background-color", "rgb(255, 255, 255)");
+    await expect(page.locator(".nr-home-sheet-grab-area")).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
     await expect(page.getByRole("button", { name: "Search destination", exact: true })).toBeInViewport();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   }
@@ -78,7 +78,7 @@ test("keyboard positioning and reduced motion work without a pointer", async ({ 
 test("mouse movement follows the handle without a start jump or release click", async ({ page }) => {
   await handle(page).press("Home");
   await handle(page).press("ArrowUp");
-  await expect.poll(async () => Math.abs(await height(page) - page.viewportSize()!.height * .5)).toBeLessThan(1);
+  await expect.poll(async () => Math.abs(await height(page) - page.viewportSize()!.height * .4)).toBeLessThan(1);
   const before = await height(page), box = (await handle(page).boundingBox())!;
   const x = box.x + box.width / 2, y = box.y + box.height / 2;
   await page.mouse.move(x, y);
@@ -89,7 +89,7 @@ test("mouse movement follows the handle without a start jump or release click", 
   await page.mouse.up();
   await expect(page.locator(".rider-map-flow")).not.toHaveAttribute("data-sheet-dragging", "true");
   await expect(page.locator(".nr-rider-home-sheet")).toHaveAttribute("data-snap", "expanded");
-  await expect.poll(async () => Math.abs(await height(page) - page.viewportSize()!.height * .78)).toBeLessThan(1);
+  await expect.poll(async () => Math.abs(await height(page) - page.viewportSize()!.height * .68)).toBeLessThan(1);
   const settled = await height(page);
   await page.mouse.move(x, y - 130);
   expect(Math.abs(await height(page) - settled)).toBeLessThan(1);

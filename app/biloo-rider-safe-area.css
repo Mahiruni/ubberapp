@@ -8,6 +8,10 @@
 }
 
 @media (max-width: 800px) {
+  .nr-app[data-mode="rider"] .rider-profile-view .nr-topbar {
+    padding-top: var(--biloo-safe-top)!important;
+    min-height: calc(64px + var(--biloo-safe-top))!important;
+  }
   .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-topbar {
     height: calc(64px + var(--biloo-safe-top))!important;
     min-height: calc(64px + var(--biloo-safe-top))!important;

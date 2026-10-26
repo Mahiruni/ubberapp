@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Icon } from "../../../components/nexride/ui";
 import { useOperationalTranslation } from "../../../components/nexride/operational-i18n";
 import { RiderMenu, usePersistedRiderTheme } from "../../../components/nexride/rider-menu";
+import { RiderFloatingDock } from "../../../components/nexride/rider-floating-dock";
 import { supabase } from "../../../lib/supabase";
 import {
   formatRideStatus,
@@ -55,7 +56,7 @@ export default function RiderTripsPage() {
   }, [router, op]);
 
   return (
-    <main className="nr-app nr-support-page" data-theme={theme} data-mode="rider">
+    <main className="nr-app nr-support-page biloo-dock-page" data-theme={theme} data-mode="rider">
       <div className="nr-support-wrap">
         <header className="nr-support-head">
           <button className="nr-support-back" onClick={() => router.replace("/")} aria-label="Back to Biloo">
@@ -130,6 +131,7 @@ export default function RiderTripsPage() {
         )}
       </div>
       <RiderMenu active="trips" />
+      <RiderFloatingDock active="activity" />
     </main>
   );
 }

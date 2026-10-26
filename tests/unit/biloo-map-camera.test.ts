@@ -19,6 +19,15 @@ describe("Biloo Rider default location camera framing", () => {
     expect(riderHomeLocationCameraOffset(200, true, true, 1000)).toEqual([0, -50]);
   });
 
+  it("frames a floating card, dock and safe header inside the visible map", () => {
+    const [x, y] = riderHomeLocationCameraOffset(844, true, true, 306, 116);
+    expect(x).toBe(0);
+    // The projected point is the midpoint between the header and card.
+    expect(844 / 2 + y).toBe((116 + 538) / 2);
+    expect(riderHomeLocationCameraOffset(844, true, true, 650, 116)).toEqual([0, -278]);
+    expect(riderHomeLocationCameraOffset(844, true, true, 306, Number.NaN)).toEqual([0, -153]);
+  });
+
   it("never applies Rider home offset to Driver, desktop, other Rider stages or invalid inputs", () => {
     expect(riderHomeLocationCameraOffset(920, false, true, 400)).toEqual([0, 0]);
     expect(riderHomeLocationCameraOffset(920, true, false, 400)).toEqual([0, 0]);

@@ -69,18 +69,21 @@ function deviceLocationCameraOffset(map: MapboxMap): [number, number] {
   const isMobile = typeof window !== "undefined" && window.innerWidth <= 800;
 
   let occludedBottomPx = 0;
+  let occludedTopPx = 0;
   if (home && isMobile) {
     const panel = home.querySelector<HTMLElement>(".nr-home-panel-host");
     const mapRect = container.getBoundingClientRect();
     const sheetRect = panel?.getBoundingClientRect();
+    const headerRect = home.querySelector('.nr-topbar')?.getBoundingClientRect();
+    if (headerRect && headerRect.height > 0) occludedTopPx = Math.max(0, headerRect.bottom - mapRect.top);
 
     // Most Biloo layouts put map and wrapper in separate grid rows, in which
     // case overlap is zero and the GPS sits exactly at the map midpoint.
     // If the sheet overlays the map from the bottom, subtract that overlap.
     if (
       sheetRect && sheetRect.width > 0 && sheetRect.height > 0 &&
-      sheetRect.top < mapRect.bottom &&
-      sheetRect.bottom >= mapRect.bottom - 2
+      sheetRect.width >= mapRect.width * .7 &&
+      sheetRect.top > mapRect.top && sheetRect.top < mapRect.bottom
     ) {
       occludedBottomPx = Math.max(
         0,
@@ -94,6 +97,7 @@ function deviceLocationCameraOffset(map: MapboxMap): [number, number] {
     Boolean(home),
     isMobile,
     occludedBottomPx,
+    occludedTopPx,
   );
 }
 
@@ -104,7 +108,20 @@ function deviceLocationCameraOffset(map: MapboxMap): [number, number] {
 function deviceLocationCameraPadding(map: MapboxMap) {
   if (map.getContainer().closest<HTMLElement>('.nr-rider-map-surface')?.dataset.activeTrip === 'true') return activeTripCameraPadding(map);
   const [, dy] = deviceLocationCameraOffset(map);
-  return { top: 0, right: 0, bottom: Math.max(0, -2 * dy), left: 0 };
+  const padding = { top: Math.max(0, 2 * dy), right: 0, bottom: Math.max(0, -2 * dy), left: 0 };
+  const container = map.getContainer(), home = container.closest('.rider-home-view');
+  if (home && window.innerWidth <= 800) {
+    const canvas = container.getBoundingClientRect();
+    const card = home.querySelector('.nr-home-panel-host')?.getBoundingClientRect();
+    if (card && card.width < canvas.width * .7) {
+      const header = home.querySelector('.nr-topbar')?.getBoundingClientRect();
+      const dock = home.querySelector('.biloo-rider-floating-dock')?.getBoundingClientRect();
+      padding.left = Math.min(Math.max(0, card.right - canvas.left + 16), canvas.width - 100);
+      padding.top = Math.min(Math.max(0, (header?.bottom ?? 0) - canvas.top), canvas.height - 100);
+      padding.bottom = Math.min(Math.max(0, canvas.bottom - (dock?.top ?? canvas.bottom)) + 8, canvas.height - padding.top - 100);
+    }
+  }
+  return padding;
 }
 
 function activeTripCameraPadding(map: MapboxMap) {
@@ -915,7 +932,7 @@ export function RiderMap({
 
       map.on("style.load", () => {
         if (cancelled) return;
-        applyBilooCityMapPalette(map, activeStyleRef.current);
+        applyBilooCityMapPalette(map, activeStyleRef.current, markerRole === "rider" ? "rider" : "city");
         syncStyleData();
         loadedRef.current = true;
         window.clearTimeout(startupTimeout);
@@ -1058,6 +1075,9 @@ export function RiderMap({
         .closest(".rider-home-view")
         ?.querySelector<HTMLElement>(".nr-home-panel-host");
       if (homePanel) resizeObserver.current.observe(homePanel);
+      const home = container.current.closest(".rider-home-view");
+      for (const chrome of [home?.querySelector('.nr-topbar'), home?.querySelector('.biloo-rider-floating-dock')])
+        if (chrome) resizeObserver.current.observe(chrome);
     };
 
     void boot().catch(() => {

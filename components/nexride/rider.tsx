@@ -84,6 +84,7 @@ export function RiderWorkspace({
   const [savingShortcut, setSavingShortcut] = useState<"home" | "work" | null>(
     null,
   );
+  const [airportSearch, setAirportSearch] = useState(false);
   useEffect(() => {
     try {
       setHomePlaces(restoreHomePlaces(localStorage.getItem(HOME_PLACES_KEY)));
@@ -158,6 +159,7 @@ export function RiderWorkspace({
   ]);
   useEffect(() => { onTripSource(!!selectedTripId && !!realTrips.userId && ["trip","live","summary"].includes(screen)); }, [selectedTripId, realTrips.userId, screen, onTripSource]);
   const choose = (p: Place) => {
+    setAirportSearch(false);
     if (savingShortcut) {
       savePlaces({
         ...homePlaces,
@@ -212,6 +214,13 @@ export function RiderWorkspace({
       <RiderHomePanel
         navigate={() => {
           setSavingShortcut(null);
+          setAirportSearch(false);
+          navigate("destination");
+        }}
+        airport={() => {
+          setSavingShortcut(null);
+          journey.clear("destination");
+          setAirportSearch(true);
           navigate("destination");
         }}
         choose={choose}
@@ -224,6 +233,7 @@ export function RiderWorkspace({
             : undefined
         }
         shortcut={(kind) => {
+          setAirportSearch(false);
           if (kind === "saved") {
             navigate("saved");
             return;
@@ -250,6 +260,7 @@ export function RiderWorkspace({
             title={t(kind)}
             detail={homePlaces.saved[kind]?.name || t("addShortcut")}
             onClick={() => {
+              setAirportSearch(false);
               setSavingShortcut(kind);
               navigate("destination");
             }}
@@ -263,13 +274,18 @@ export function RiderWorkspace({
   if (screen === "destination")
     return (
       <DestinationPanel
+        initialDestinationQuery={airportSearch ? "Bole International Airport" : undefined}
         journey={journey}
         back={() => {
           setSavingShortcut(null);
+          setAirportSearch(false);
           navigate("home");
         }}
         proceed={() => {
-          if (journey.canContinue) navigate("rides");
+          if (journey.canContinue) {
+            setAirportSearch(false);
+            navigate("rides");
+          }
         }}
         choose={choose}
         data={homePlaces}

@@ -1,0 +1,59 @@
+.dock {
+  position: fixed;
+  z-index: 120;
+  left: max(14px, var(--biloo-safe-left));
+  right: max(14px, var(--biloo-safe-right));
+  bottom: calc(10px + var(--biloo-safe-bottom));
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  height: 62px;
+  padding: 4px 8px;
+  border: 1px solid #ffffff24;
+  border-radius: 26px;
+  background: #08295ff5;
+  box-shadow: 0 8px 28px #08295f26;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  isolation: isolate;
+}
+.dock::after {
+  content: "";
+  position: absolute;
+  left: calc(-1 * max(14px, var(--biloo-safe-left)));
+  right: calc(-1 * max(14px, var(--biloo-safe-right)));
+  bottom: calc(-10px - var(--biloo-safe-bottom));
+  height: var(--biloo-safe-bottom);
+  background: #08295f;
+  pointer-events: none;
+}
+.dock a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-width: 0;
+  min-height: 44px;
+  padding: 3px;
+  border-radius: 18px;
+  color: #c5d4e7;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.dock a[aria-current="page"] { color: #f9c449; }
+.dock a[aria-current="page"] svg { stroke-width: 2.3; }
+.dock a:focus-visible { outline: 2px solid #f9c449; outline-offset: -2px; }
+:global(.nr-app[data-mode="rider"].biloo-dock-page) {
+  padding-top: calc(12px + var(--biloo-safe-top))!important;
+  padding-bottom: calc(100px + var(--biloo-safe-bottom))!important;
+}
+:global(.nr-app[data-mode="rider"].biloo-dock-page)::before {
+  content: ""; position: fixed; inset: 0 0 auto; height: var(--biloo-safe-top); background: #08295f; z-index: 95; pointer-events: none;
+}
+:global(.nr-app[data-mode="rider"].biloo-dock-page .nr-support-head) { padding-top: 2px!important; }
+@media (hover: hover) { .dock a:hover { background: #ffffff0d; } }
+@media (min-width: 801px) { .dock { display: none; } }
+@media (max-height: 500px) { .dock { height: 54px; } .dock a { flex-direction: row; gap: 7px; } }

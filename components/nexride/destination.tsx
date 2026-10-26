@@ -91,6 +91,7 @@ function storeRecentSearches(items: Endpoint[]) {
   } catch {}
 }
 export function DestinationPanel({
+  initialDestinationQuery,
   journey: j,
   back,
   proceed,
@@ -101,6 +102,7 @@ export function DestinationPanel({
   position,
   locate,
 }: {
+  initialDestinationQuery?: string;
   journey: Journey;
   back: () => void;
   proceed: () => void;
@@ -114,8 +116,8 @@ export function DestinationPanel({
   const t = useTranslation(),
     language = useContext(LanguageContext);
   // Begin at the Rider's starting point, not the drop-off field.
-  const [field, setField] = useState<"pickup" | "destination">("pickup");
-  const [query, setQuery] = useState({ pickup: "", destination: "" });
+  const [field, setField] = useState<"pickup" | "destination">(initialDestinationQuery ? "destination" : "pickup");
+  const [query, setQuery] = useState({ pickup: "", destination: initialDestinationQuery || "" });
   const [searchActive, setSearchActive] = useState(false);
   const [recentSearches, setRecentSearches] = useState<Endpoint[]>([]);
   const [remote, setRemote] = useState<{ status: string; results: Endpoint[] }>(
@@ -140,7 +142,7 @@ export function DestinationPanel({
   useEffect(() => {
     try {
       const raw = sessionStorage.getItem("nexride.rider.destination.draft");
-      if (raw) {
+      if (raw && !initialDestinationQuery) {
         const saved = JSON.parse(raw);
         // Restore typed values, but never give a saved destination the initial
         // keyboard focus when the Rider reopens Plan your ride.
@@ -358,7 +360,7 @@ export function DestinationPanel({
                         aria-label={t(
                           target === "pickup" ? "editPickup" : "destination",
                         )}
-                        autoFocus={target === "pickup"}
+                        autoFocus={target === (initialDestinationQuery ? "destination" : "pickup")}
                         placeholder={
                           target === "pickup"
                             ? (language === "am" ? "ጉዞዎን ያቅዱ" : "Plan your ride")

@@ -32,6 +32,16 @@ const NIGHT: Palette = {
 };
 
 export const BILOO_CITY_PALETTES = { streets: DAY, dark: NIGHT };
+// Rider concept #2: cool, quiet streets under navy/gold floating controls.
+// Keep Driver's established cartography and all provider geography intact.
+export const BILOO_RIDER_PALETTES: Record<'streets' | 'dark', Palette> = {
+  streets: { ...DAY, ground: '#edf3f6', residential: '#e8eff3', commercial: '#edf0ee',
+    building: '#dbe5ec', buildingEdge: '#c0d0da', park: '#d3e4d2', woodland: '#c2dac9',
+    water: '#bdd9e7', roadCase: '#b9cbd6', roadCaseMajor: '#96afc0' },
+  dark: { ...NIGHT, ground: '#10263e', residential: '#152e47', commercial: '#1b344b',
+    industrial: '#203446', building: '#233e56', buildingEdge: '#304c64',
+    park: '#203c36', woodland: '#1c342e', water: '#142e44', halo: '#10263e' },
+};
 const featureClass: ExpressionSpecification = ['to-string', ['coalesce', ['get', 'class'], '']];
 
 function landuseColor(p: Palette): ExpressionSpecification {
@@ -86,13 +96,13 @@ function ensureRoadCasing(map: MapboxMap, layer: LayerSpecification, p: Palette)
 
 /** Biloo's day/night cartography. Keep source data, road widths, filters,
  * label placement, route/traffic semantics and satellite imagery intact. */
-export function applyBilooCityMapPalette(map: MapboxMap, style: BilooMapStyle | boolean) {
+export function applyBilooCityMapPalette(map: MapboxMap, style: BilooMapStyle | boolean, variant: 'city' | 'rider' = 'city') {
   if (style === false || style === 'satellite') {
     if (style === 'satellite') map.getContainer().dataset.bilooMapPalette = 'satellite';
     return;
   }
   const theme = style === 'dark' ? 'dark' : 'streets';
-  const p = BILOO_CITY_PALETTES[theme];
+  const p = (variant === 'rider' ? BILOO_RIDER_PALETTES : BILOO_CITY_PALETTES)[theme];
   const layers = map.getStyle()?.layers ?? [];
   for (const layer of layers) {
     const id = layer.id.toLowerCase();
