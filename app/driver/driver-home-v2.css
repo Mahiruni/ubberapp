@@ -701,7 +701,7 @@
 .nr-driver-home-cockpit .biloo-driver-first-wrapper.is-map-sheet-compact{
   gap:8px;padding-top:10px;
 }
-.nr-driver-home-cockpit .biloo-driver-first-wrapper.is-map-sheet-compact .biloo-driver-first-links{
+.nr-driver-app-shell[data-home="true"] .nr-driver-home-cockpit .biloo-driver-first-wrapper.is-map-sheet-compact .biloo-driver-first-links{
   display:none;
 }
 .nr-driver-home-cockpit .nr-driver-home-swipe{

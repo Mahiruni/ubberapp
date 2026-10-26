@@ -478,17 +478,20 @@
 .nr-driver-app-shell .nr-driver-navigation-page
   .nr-driver-sheet-footer .nr-nav-stage-actions {
   display:grid!important;
-  grid-template-columns:minmax(0,1fr)!important;
   gap:8px!important;
   width:100%;
   min-width:0;
   margin:0!important;
   padding:0!important;
 }
+.nr-driver-app-shell .nr-driver-navigation-page
+  .nr-driver-sheet-footer :is(.nr-nav-pinned-actions,.nr-nav-stage-actions) {
+  grid-template-columns:minmax(0,1fr)!important;
+}
 .nr-driver-app-shell .nr-driver-request-page
   .nr-driver-sheet-footer .nr-request-actions-secondary {
   display:grid!important;
-  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  grid-template-columns:minmax(0,1fr)!important;
   gap:8px!important;
   margin:0!important;
 }

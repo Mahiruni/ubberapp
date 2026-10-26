@@ -344,6 +344,35 @@ export default function DriverNavigationPage() {
     };
   }, [trip?.requestId, trip?.status, driverId]);
 
+  // A completion can arrive from polling, Realtime, or another device. Keep
+  // reading the authorized full record until its receipt is available, even
+  // though active-trip polling stops at this terminal stage.
+  useEffect(() => {
+    if (!driverId || !trip || trip.status !== "completed" || completion?.id === trip.requestId) return;
+    let active = true;
+    let pending = false;
+    const refreshReceipt = async () => {
+      if (!active || pending || !navigator.onLine || document.visibilityState === "hidden") return;
+      pending = true;
+      try {
+        await loadTrip(driverId, trip.offerId);
+      } catch {
+        // Keep the loading summary truthful and retry after connectivity returns.
+      } finally { pending = false; }
+    };
+    const onVisible = () => { if (document.visibilityState === "visible") void refreshReceipt(); };
+    const timer = window.setInterval(() => void refreshReceipt(), 10000);
+    window.addEventListener("online", refreshReceipt);
+    document.addEventListener("visibilitychange", onVisible);
+    void refreshReceipt();
+    return () => {
+      active = false;
+      window.clearInterval(timer);
+      window.removeEventListener("online", refreshReceipt);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [driverId, trip?.requestId, trip?.offerId, trip?.status, completion?.id, loadTrip]);
+
   useEffect(() => {
     if (!trip || !driverId) return;
     if (trip.status === "cancelled" || trip.status === "withdrawn" || trip.status === "completed") {
@@ -629,7 +658,7 @@ export default function DriverNavigationPage() {
   const canNavigate = trip?.status === "accepted" || trip?.status === "in_trip";
   const invalidTrip = trip?.status === "withdrawn" || trip?.status === "cancelled";
   const activeRoute =
-    nativeRoute && nativeRoute.target === stage?.target ? nativeRoute : null;
+    canNavigate && nativeRoute && nativeRoute.target === stage?.target ? nativeRoute : null;
   const nextManeuver = useMemo(() =>
     activeRoute && position
       ? nextNexRideManeuver(activeRoute.geometry,activeRoute.steps,position,Math.max(60,position.accuracy ?? 0))
@@ -638,7 +667,7 @@ export default function DriverNavigationPage() {
   );
   const guidanceTitle = nextManeuver?.step.instruction ||
     (stage?.title ? op(stage.title) : op("Navigation"));
-  const guidanceDistance = nextManeuver
+  const guidanceDistance = trip?.status === "arrived_pickup" ? op("Arrived") : nextManeuver
     ? metersLabel(nextManeuver.distanceMeters)
     : activeRoute ? metersLabel(activeRoute.distanceMeters)
     : distanceLabel(stage?.distance ?? null);
@@ -751,9 +780,6 @@ export default function DriverNavigationPage() {
     }
     setBusy(false);
     mutationLock.current = false;
-    if (status === 'completed') void loadTrip(driverId, trip.offerId).catch(() => {
-      setMessage('Trip completed. Open earnings to refresh the confirmed fare and payment status.');
-    });
   }
 
   if (loading) return <main className="nr-app nr-driver-navigation-page" data-mode="driver"><div className="nr-nav-loading" aria-busy="true"><span /><span /><span /></div></main>;
