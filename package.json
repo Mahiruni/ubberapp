@@ -15,7 +15,9 @@
     "android:prepare": "node scripts/prepare-android.mjs",
     "predev": "node scripts/generate-brand-assets.mjs",
     "prebuild": "node scripts/generate-brand-assets.mjs",
-    "postinstall": "node scripts/generate-brand-assets.mjs"
+    "postinstall": "node scripts/generate-brand-assets.mjs",
+    "test:payments": "vitest run tests/unit/biloo-pay-database.test.ts tests/unit/biloo-pay-routes.test.ts tests/unit/biloo-pay-security.test.ts tests/unit/nexride-payouts.test.ts",
+    "test:payments:e2e": "node scripts/test-biloo-pay-e2e.mjs"
   },
   "engines": {
     "node": "24.x"
@@ -39,6 +41,7 @@
   },
   "devDependencies": {
     "@capacitor/cli": "8.5.3",
+    "@electric-sql/pglite": "0.5.11",
     "@playwright/test": "^1.55.0",
     "@tailwindcss/postcss": "4.3.3",
     "@types/leaflet": "^1.9.21",

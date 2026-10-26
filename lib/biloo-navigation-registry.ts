@@ -45,6 +45,7 @@ export const ADMIN_NAVIGATION = [
   { id:"audit", label:"Audit Log", icon:"clock" },
 ] as const satisfies readonly { id:string; label:string; icon:IconName }[];
 export const ADMIN_AUX_NAVIGATION = [
+  { id:"biloo-pay", href:"/admin/finance", label:"Biloo Pay Finance", icon:"wallet" },
   { id:"campaign", href:"/admin/prelaunch-campaign", label:"Email Campaigns", icon:"mail" },
   { id:"messaging", href:"/admin/campaign-settings", label:"Messaging Security", icon:"settings" },
   { id:"reliability", href:"/admin/reliability", label:"Android Reliability", icon:"locate" },

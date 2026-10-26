@@ -5,6 +5,9 @@ import {
   randomBytes,
 } from "node:crypto";
 
+import { bilooPayConfiguration } from "./biloo-pay-config";
+import { etbMinor } from "./biloo-pay-money";
+
 const CHAPA_API = "https://api.chapa.co/v1";
 
 type JsonRecord = Record<string, unknown>;
@@ -30,6 +33,9 @@ export function payoutConfiguration() {
   const providerSecret = process.env.PAYMENT_SECRET_KEY || "";
   const encryptionSecret = process.env.PAYOUT_ENCRYPTION_KEY || "";
   const enabled =
+    bilooPayConfiguration().enabled &&
+    process.env.BILOO_PAY_PAYOUTS_REVIEWED === "true" &&
+    ["live", "test"].includes(process.env.PAYMENT_MODE || "") &&
     enabledFlag() &&
     provider === "chapa" &&
     providerSecret.length > 0 &&
@@ -211,9 +217,11 @@ export async function initiateChapaPayout(input: {
 
 export async function verifyChapaPayout(
   reference: string,
+  expected: { amountMinor: number; mode: "live" | "test"; accountNumber: string; bankCode: string },
 ): Promise<{
   state: PayoutProviderState;
   providerSummary: ReturnType<typeof providerSummary>;
+  evidence?: { state: "paid" | "failed"; reference: string; amountMinor: number; currency: "ETB"; mode: "live" | "test" };
 }> {
   const response = await fetch(
     CHAPA_API + "/transfers/verify/" + encodeURIComponent(reference),
@@ -235,7 +243,14 @@ export async function verifyChapaPayout(
   if (!response.ok)
     throw new Error("PAYOUT_VERIFICATION_UNAVAILABLE");
 
+  const root = asRecord(payload);
+  const data = asRecord(root?.data);
   const raw = (summary.transferStatus || "").toLowerCase();
+  const matches = root?.status === "success" && data?.reference === reference &&
+    etbMinor(data?.amount) === expected.amountMinor && data?.currency === "ETB" &&
+    data?.mode === expected.mode && String(data?.bank_code) === expected.bankCode &&
+    normalizePayoutAccountNumber(data?.account_number) === expected.accountNumber;
+  if (!matches) return { state: "processing", providerSummary: summary };
   const state: PayoutProviderState =
     ["success", "successful", "completed", "paid"].includes(raw)
       ? "paid"
@@ -243,5 +258,9 @@ export async function verifyChapaPayout(
         ? "failed"
         : "processing";
 
-  return { state, providerSummary: summary };
+  return { state, providerSummary: summary,
+    ...((state === "paid" || state === "failed") ? { evidence: {
+      state, reference, amountMinor: expected.amountMinor, currency: "ETB" as const, mode: expected.mode,
+    } } : {}),
+  };
 }

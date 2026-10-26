@@ -16,11 +16,15 @@ preheaders, a reusable builder, safe browser previews and screenshots.
 
 ## Supabase installation
 
-Project: `eyyvvwecpyctttiueban` (Biloo, production).
+Install only in the explicitly verified Biloo backend. The legacy project
+`eyyvvwecpyctttiueban` appears in historical configuration, but the owner has
+clarified that it is not the intended Biloo backend. Do not use this reference
+as an installation target.
 
-On 10 October 2026, the dashboard showed custom SMTP disabled. Template subject
+In the historical 10 October 2026 inspection, the dashboard showed custom SMTP disabled. Template subject
 and source editing were disabled with the message “Set up custom SMTP to edit
-templates.” The free built-in sender currently uses Supabase's defaults.
+templates.” This observation has not been verified for the newly connected
+backend; inspect its current email settings before installation.
 
 Before installation, configure a verified sender and custom SMTP in
 Authentication → Emails → SMTP Settings. Enter credentials directly in the

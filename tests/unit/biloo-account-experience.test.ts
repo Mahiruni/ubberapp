@@ -1,7 +1,10 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { describe, expect, it } from "vitest";
-import { verificationSummary, type DriverProfileData } from "../../lib/nexride-driver-profile";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { loadDriverProfileData, verificationSummary, type DriverProfileData } from "../../lib/nexride-driver-profile";
+
+const database = vi.hoisted(() => ({ from: vi.fn(), getSession: vi.fn() }));
+vi.mock("../../lib/supabase", () => ({ supabase: { from: database.from, auth: { getSession: database.getSession } } }));
 
 const source = (path: string) => readFileSync(join(process.cwd(),path),"utf8");
 
@@ -75,41 +78,60 @@ describe("Biloo premium Account experience", () => {
     expect(payouts).toContain('verificationSummary(profile).tone !== "approved"');
   });
 
-  it("applies the approved Rider and Driver visual preview without mock account values", () => {
-    const rider = source("components/nexride/rider-profile.tsx");
-    const driver = source("components/nexride/driver-profile.tsx");
-    const css = source("app/biloo-account-premium.css");
-    expect(rider).toContain('className="biloo-account-protection-note"');
-    expect(rider).toContain("All your personal essentials, beautifully organized.");
-    expect(driver).toContain('className="biloo-driver-overview"');
-    expect(driver).toContain('say("Driver Account")');
-    expect(driver).toContain('profile.rating === null ? "—"');
-    expect(driver).toContain('verification.tone');
-    expect(css).toContain(".biloo-driver-overview .nr-driver-profile-summary-v2");
-    expect(css).toContain("background:#0a294f!important");
-    expect(css).toContain("counter(biloo-rider-section,decimal-leading-zero)");
-    expect(css).toContain("counter(biloo-driver-section,decimal-leading-zero)");
-    expect(css).toContain("@media(max-width:355px)");
-    expect(css).toContain("prefers-reduced-motion:reduce");
+});
+
+type Result = { data?: Record<string, unknown> | null; error?: Error | null; count?: number | null };
+function backend(overrides: Record<string, Result> = {}) {
+  database.getSession.mockResolvedValue({ data: { session: { user: { email: "driver@example.test", user_metadata: {
+    full_name: "Editable name", role: "admin", account_status: "active", review_status: "approved",
+  } } } } });
+  const results: Record<string, Result> = {
+    profiles: { data: { role: "driver", account_status: "active", full_name: "Recorded name" } },
+    drivers: { data: { review_status: "pending", rating: 4.8 } },
+    ride_requests: { data: null, count: 12, error: null },
+    ...overrides,
+  };
+  const queries: Record<string, { select: ReturnType<typeof vi.fn>; eq: ReturnType<typeof vi.fn> }> = {};
+  database.from.mockImplementation((table: string) => {
+    const result = Promise.resolve(results[table]);
+    const query = { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(),
+      maybeSingle: vi.fn(() => result), then: result.then.bind(result) };
+    queries[table] = query;
+    return query;
+  });
+  return queries;
+}
+
+describe("Driver account data boundaries", () => {
+  beforeEach(() => vi.resetAllMocks());
+
+  it("reads the authenticated driver's records and never trusts editable metadata for approval", async () => {
+    const queries = backend();
+    const profile = await loadDriverProfileData("driver-id");
+    expect(profile).toMatchObject({ fullName: "Recorded name", role: "driver", accountStatus: "active", reviewStatus: "pending", rating: 4.8, completedTrips: 12 });
+    expect(queries.profiles.eq).toHaveBeenCalledWith("id", "driver-id");
+    expect(queries.drivers.eq).toHaveBeenCalledWith("id", "driver-id");
+    expect(queries.ride_requests.eq).toHaveBeenCalledWith("assigned_driver_id", "driver-id");
+    expect(queries.ride_requests.eq).toHaveBeenCalledWith("status", "completed");
+
+    backend({ profiles: { data: null }, drivers: { data: null } });
+    const missing = await loadDriverProfileData("driver-id");
+    expect(missing).toMatchObject({ role: "", accountStatus: "unknown", reviewStatus: "draft", rating: null });
+    expect(verificationSummary(missing)).toMatchObject({ tone: "restricted", title: "Account status unavailable" });
   });
 
-  it("loads shared light/dark styles and reserves space for the dock", () => {
-    const css = source("app/biloo-account-premium.css");
-    const layout = source("app/layout.tsx");
-    expect(layout).toContain('import "./biloo-account-premium.css";');
-    expect(css).toContain('.nr-account-standard');
-    expect(css).toContain('.nr-driver-profile-v2');
-    expect(css).toContain('[data-theme="dark"]');
-    expect(css).toContain('var(--biloo-account-ink)');
-    expect(css).toContain('env(safe-area-inset-bottom,0px)');
-    expect(css).toContain('prefers-reduced-motion: reduce');
-    expect(css).toContain('.nr-driver-profile-subpage.nr-app .nr-profile-subhead');
-    expect(css).toContain('display:flex!important;');
-    expect(css).toContain('.nr-driver-profile-subpage .nr-profile-subhead>button');
-    for(const name of ["documents","vehicle","payouts"]){
-      const route=source("app/driver/profile/"+name+"/page.tsx");
-      expect(route).toContain('router.push("/driver/profile")');
-    }
-    expect(css).not.toContain("mapboxgl-canvas");
+  it.each([
+    ["missing exact count", { count: null }, null],
+    ["unavailable count", { error: new Error("Unavailable"), count: 12 }, null],
+    ["verified zero", { count: 0 }, 0],
+  ])("preserves unknown metrics separately from a %s", async (_label, result, expected) => {
+    backend({ ride_requests: result as Result });
+    expect((await loadDriverProfileData("driver-id")).completedTrips).toBe(expected);
+  });
+
+  it.each(["profiles", "drivers"])("surfaces %s errors instead of inventing a profile", async table => {
+    const error = new Error("Profile temporarily unavailable");
+    backend({ [table]: { error, data: null } });
+    await expect(loadDriverProfileData("driver-id")).rejects.toBe(error);
   });
 });

@@ -1,3 +1,4 @@
+vi.mock("../../lib/runtime-config", () => ({ publicConfig: { supabaseUrl: "https://biloo-pay-test.supabase.co", supabaseKey: "local-test-only" } }));
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   decryptPayoutAccountNumber,
@@ -13,6 +14,11 @@ afterEach(() => {
 
 describe("driver payout security helpers", () => {
   it("keeps payouts disabled until every server-side requirement is present", () => {
+    vi.stubEnv("BILOO_PAY_ENABLED", "true");
+    vi.stubEnv("BILOO_PAY_VERIFIED_PROJECT_REF", "biloo-pay-test");
+    vi.stubEnv("BILOO_PAY_PRODUCTION_PROJECT_REF", "production-fixture");
+    vi.stubEnv("BILOO_PAY_PAYOUTS_REVIEWED", "true");
+    vi.stubEnv("PAYMENT_MODE", "test");
     vi.stubEnv("NEXRIDE_PAYOUTS_ENABLED", "true");
     vi.stubEnv("PAYMENT_PROVIDER", "chapa");
     vi.stubEnv("PAYMENT_SECRET_KEY", "secret-key");

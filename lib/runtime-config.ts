@@ -1,6 +1,3 @@
-const DEFAULT_SUPABASE_URL = 'https://eyyvvwecpyctttiueban.supabase.co';
-const DEFAULT_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_kXFOrtwKkKmrqCtYTTuzdg__CjjABBf';
-
 export function requireEnv(name: string, value: string | undefined, fallback?: string): string {
   const resolved = value?.trim() || fallback?.trim();
   if (!resolved) throw new Error('Missing required environment variable: ' + name);
@@ -18,12 +15,10 @@ export const publicConfig = {
   supabaseUrl: requireEnv(
     'NEXT_PUBLIC_SUPABASE_URL',
     process.env.NEXT_PUBLIC_SUPABASE_URL,
-    DEFAULT_SUPABASE_URL,
   ),
   supabaseKey: requireEnv(
     'NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY',
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    DEFAULT_SUPABASE_PUBLISHABLE_KEY,
   ),
   mapboxToken: process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '',
 };

@@ -1,40 +1,42 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
+import { bilooPayConfiguration } from "./biloo-pay-config";
+import { etbDecimal, etbMinor } from "./biloo-pay-money";
 
 const CHAPA_API = "https://api.chapa.co/v1";
-
-const enabledFlag = () =>
-  /^(1|true|yes|on)$/i.test((process.env.NEXRIDE_PAYMENTS_ENABLED || "").trim());
-
 export function paymentConfiguration() {
-  const provider = (process.env.PAYMENT_PROVIDER || "").trim().toLowerCase();
-  const secret = process.env.PAYMENT_SECRET_KEY || "";
-  const webhookSecret = process.env.PAYMENT_WEBHOOK_SECRET || "";
+  const mode = process.env.PAYMENT_MODE;
   const enabled =
-    enabledFlag() &&
-    provider === "chapa" &&
-    secret.length > 0 &&
-    webhookSecret.length > 0;
-
-  return { enabled, provider: enabled ? "chapa" as const : null };
+    bilooPayConfiguration().enabled &&
+    process.env.NEXRIDE_PAYMENTS_ENABLED === "true" &&
+    process.env.PAYMENT_PROVIDER === "chapa" &&
+    !!process.env.PAYMENT_SECRET_KEY &&
+    !!process.env.PAYMENT_WEBHOOK_SECRET &&
+    (mode === "live" || mode === "test");
+  return {
+    enabled,
+    provider: enabled ? ("chapa" as const) : null,
+    mode: mode === "live" ? ("live" as const) : ("test" as const),
+  };
 }
-
 function providerSecret() {
-  const config = paymentConfiguration();
-  if (!config.enabled) throw new Error("PAYMENTS_NOT_CONFIGURED");
+  if (!paymentConfiguration().enabled) throw Error("PAYMENTS_NOT_CONFIGURED");
   return process.env.PAYMENT_SECRET_KEY!;
 }
-
-type ChapaVerification = {
-  status?: unknown;
-  data?: {
-    status?: unknown;
-    amount?: unknown;
-    currency?: unknown;
-    tx_ref?: unknown;
-    reference?: unknown;
-  };
-};
-
+export function chapaCheckoutUrl(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" &&
+      url.hostname === "checkout.chapa.co" &&
+      !url.port &&
+      !url.username &&
+      !url.password
+      ? url.href
+      : null;
+  } catch {
+    return null;
+  }
+}
 export async function initializeChapaPayment(input: {
   txRef: string;
   amount: number;
@@ -44,6 +46,8 @@ export async function initializeChapaPayment(input: {
   returnUrl: string;
   callbackUrl: string;
 }) {
+  const minor = etbMinor(input.amount);
+  if (minor == null || minor <= 0) throw Error("INVALID_MONEY");
   const response = await fetch(CHAPA_API + "/transaction/initialize", {
     method: "POST",
     cache: "no-store",
@@ -54,42 +58,38 @@ export async function initializeChapaPayment(input: {
       Accept: "application/json",
     },
     body: JSON.stringify({
-      amount: input.amount.toFixed(2),
+      amount: etbDecimal(minor),
       currency: "ETB",
       email: input.email,
-      first_name: input.firstName || "NexRide",
+      first_name: input.firstName || "Biloo",
       last_name: input.lastName || "Rider",
       tx_ref: input.txRef,
       callback_url: input.callbackUrl,
       return_url: input.returnUrl,
       customization: {
-        title: "NexRide trip payment",
-        description: "NexRide completed ride",
+        title: "Biloo trip payment",
+        description: "Biloo completed ride",
       },
     }),
   });
-
-  const payload = await response.json().catch(() => null) as {
-    status?: unknown;
-    message?: unknown;
-    data?: { checkout_url?: unknown };
-  } | null;
-
-  const checkoutUrl =
-    typeof payload?.data?.checkout_url === "string" &&
-    /^https:///i.test(payload.data.checkout_url)
-      ? payload.data.checkout_url
-      : "";
-
+  const payload = await response.json().catch(() => null);
+  const checkoutUrl = chapaCheckoutUrl(payload?.data?.checkout_url);
   if (!response.ok || payload?.status !== "success" || !checkoutUrl)
-    throw new Error("PAYMENT_INITIALIZATION_FAILED");
-
-  return { checkoutUrl, providerPayload: payload };
+    throw Error("PAYMENT_INITIALIZATION_UNRESOLVED");
+  return { checkoutUrl };
 }
-
+export type ChapaEvidence = {
+  status: "success";
+  txRef: string;
+  amountMinor: number;
+  currency: "ETB";
+  mode: "live" | "test";
+  reference: string;
+};
 export async function verifyChapaPayment(input: {
   txRef: string;
   amount: number;
+  mode?: "live" | "test";
 }) {
   const response = await fetch(
     CHAPA_API + "/transaction/verify/" + encodeURIComponent(input.txRef),
@@ -102,40 +102,44 @@ export async function verifyChapaPayment(input: {
       },
     },
   );
-
-  const payload = await response.json().catch(() => null) as ChapaVerification | null;
+  const payload = await response.json().catch(() => null);
   const data = payload?.data;
-  const amount = Number(data?.amount);
-  const txRef = typeof data?.tx_ref === "string" ? data.tx_ref : "";
-  const currency = typeof data?.currency === "string" ? data.currency : "";
-  const status = typeof data?.status === "string" ? data.status.toLowerCase() : "";
-
+  const expected = etbMinor(input.amount);
+  const actual = etbMinor(data?.amount);
+  const mode = input.mode || paymentConfiguration().mode;
+  const reference =
+    typeof data?.reference === "string" && data.reference.trim()
+      ? data.reference
+      : null;
   const verified =
     response.ok &&
     payload?.status === "success" &&
-    status === "success" &&
-    txRef === input.txRef &&
-    currency === "ETB" &&
-    Number.isFinite(amount) &&
-    Math.abs(amount - input.amount) < 0.005;
-
-  return {
-    verified,
-    reference: typeof data?.reference === "string" ? data.reference : null,
-    providerPayload: payload,
-  };
+    data?.status === "success" &&
+    expected !== null &&
+    actual === expected &&
+    data?.tx_ref === input.txRef &&
+    data?.currency === "ETB" &&
+    data?.mode === mode &&
+    reference !== null;
+  const evidence: ChapaEvidence | null = verified
+    ? {
+        status: "success",
+        txRef: input.txRef,
+        amountMinor: actual!,
+        currency: "ETB",
+        mode,
+        reference: reference!,
+      }
+    : null;
+  // A provider error, pending response, mismatch or timeout is NEVER treated as payment failure/completion.
+  return { verified, reference, evidence };
 }
-
-export function validChapaWebhookSignature(rawBody: string, signature: string | null) {
+export function validChapaWebhookSignature(
+  rawBody: string,
+  signature: string | null,
+) {
   const secret = process.env.PAYMENT_WEBHOOK_SECRET || "";
-  if (!secret || !signature) return false;
-
-  const expected = createHmac("sha256", secret).update(rawBody).digest("hex");
-  const supplied = signature.trim().toLowerCase();
-  if (!/^[a-f0-9]{64}$/.test(supplied)) return false;
-
-  return timingSafeEqual(
-    Buffer.from(expected, "hex"),
-    Buffer.from(supplied, "hex"),
-  );
+  if (!secret || !signature || !/^[a-f0-9]{64}$/i.test(signature)) return false;
+  const expected = createHmac("sha256", secret).update(rawBody).digest();
+  return timingSafeEqual(expected, Buffer.from(signature, "hex"));
 }
