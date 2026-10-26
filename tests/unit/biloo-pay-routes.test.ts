@@ -42,6 +42,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   vi.stubEnv("BILOO_PAY_ENABLED", "true");
   vi.stubEnv("BILOO_PAY_VERIFIED_PROJECT_REF", "biloo-pay-test");
+  vi.stubEnv("BILOO_PAY_PRODUCTION_PROJECT_REF", "production-fixture");
   vi.stubEnv("PAYMENT_MODE", "test");
   vi.stubEnv("PAYMENT_WEBHOOK_SECRET", "test-webhook");
   mock.rpc.mockImplementation(async (name: string) => ({

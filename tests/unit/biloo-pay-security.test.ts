@@ -19,6 +19,7 @@ import { verifyChapaPayout } from "../../lib/nexride-payouts";
 beforeEach(() => {
   vi.stubEnv("BILOO_PAY_ENABLED", "true");
   vi.stubEnv("BILOO_PAY_VERIFIED_PROJECT_REF", "biloo-pay-test");
+  vi.stubEnv("BILOO_PAY_PRODUCTION_PROJECT_REF", "production-fixture");
   vi.stubEnv("BILOO_PAY_PAYOUTS_REVIEWED", "true");
   vi.stubEnv("PAYMENT_MODE", "test");
   vi.stubEnv("PAYMENT_PROVIDER", "chapa");
@@ -62,6 +63,12 @@ describe("Biloo money parsing", () => {
   });
 });
 describe("Release and provider security boundaries", () => {
+  it.each([undefined, "", "   "])("keeps payments disabled without a designated production project: %s", value => {
+    vi.stubEnv("BILOO_PAY_PRODUCTION_PROJECT_REF", value);
+    expect(paymentConfiguration().enabled).toBe(false);
+    vi.stubEnv("PAYMENT_MODE", "live");
+    expect(paymentConfiguration().enabled).toBe(false);
+  });
   it("requires a verified project and refuses live operations from a preview", () => {
     expect(bilooPayConfiguration().enabled).toBe(true);
     vi.stubEnv("BILOO_PAY_VERIFIED_PROJECT_REF", "ocvydmfywynqacshmcey");

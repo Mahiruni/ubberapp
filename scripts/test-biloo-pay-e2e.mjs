@@ -15,6 +15,7 @@ const env = {
   BILOO_PAY_LOCAL_TEST: "1",
   BILOO_PAY_ENABLED: "true",
   BILOO_PAY_VERIFIED_PROJECT_REF: "127",
+  BILOO_PAY_PRODUCTION_PROJECT_REF: "production-fixture",
   NEXT_PUBLIC_SUPABASE_URL: "http://127.0.0.1:54391",
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "local-test-public-key",
   SUPABASE_SERVICE_ROLE_KEY: "local-test-service-key",

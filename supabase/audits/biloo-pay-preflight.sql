@@ -1,5 +1,5 @@
--- READ ONLY. Run with authorized catalog access on the project identified by Vercel.
--- Never infer the project from the connection label. Inspect the URL/project ref first.
+-- READ ONLY. Run with authorized catalog access on the explicitly verified Biloo target.
+-- Compare Vercel URLs for mismatches; a legacy URL or connection label is not proof of intent.
 begin transaction read only;
 select current_database(), current_user, version();
 select table_schema,table_name,column_name,data_type,is_nullable,column_default
