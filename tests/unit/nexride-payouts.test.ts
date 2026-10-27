@@ -15,7 +15,7 @@ describe("driver payout security helpers", () => {
   it("keeps payouts disabled until every server-side requirement is present", () => {
     vi.stubEnv("NEXRIDE_PAYOUTS_ENABLED", "true");
     vi.stubEnv("PAYMENT_PROVIDER", "chapa");
-    vi.stubEnv("PAYMENT_SECRET_KEY", "secret-key");
+    vi.stubEnv("PAYMENT_SECRET_KEY", "CHAPA_TEST_sample-key");
     vi.stubEnv("PAYOUT_ENCRYPTION_KEY", "");
     expect(payoutConfiguration()).toEqual({ enabled: false, provider: null });
 
