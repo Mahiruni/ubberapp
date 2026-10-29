@@ -61,7 +61,7 @@ export async function POST(request: Request) {
     if (typeof pickupInstructions !== "string" || pickupInstructions.length > 280)
       return reply({ status: "failed" }, 400);
 
-    const fares = liveFareSet({ pickup, destination });
+    const fares = await liveFareSet({ pickup, destination });
     const current = fares.offers.find((offer) => offer.category === category);
 
     // Create the request directly on the trusted server after verifying the
@@ -134,7 +134,7 @@ export async function POST(request: Request) {
     }
     const roadKm = route.distanceMeters / 1000;
     const durationMinutes = Math.max(1, Math.ceil(route.durationSeconds / 60));
-    const freshFares = liveFareSet({ pickup, destination });
+    const freshFares = await liveFareSet({ pickup, destination });
     if (freshFares.revision !== revision)
       return reply({ status: "price_changed", fares: freshFares }, 409);
     const quotedFare = fareTotal(current);
