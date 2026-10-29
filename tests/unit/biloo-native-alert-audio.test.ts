@@ -1,6 +1,6 @@
 import {afterEach,beforeEach,describe,expect,it,vi} from 'vitest';
 const native=vi.hoisted(()=>({owned:true,present:vi.fn(),stop:vi.fn()}));
-vi.mock('../../lib/biloo-native-ride-alerts',()=>({nativeRideAlertsPlugin:async()=>native.owned?{}:null,presentNativeRideAlert:native.present,stopNativeRideAlert:native.stop}));
+vi.mock('../../lib/biloo-native-ride-alerts',()=>({nativeRideAlertsAvailable:()=>native.owned,presentNativeRideAlert:native.present,stopNativeRideAlert:native.stop}));
 let played:ReturnType<typeof vi.fn>;
 beforeEach(()=>{
  vi.resetModules();vi.clearAllMocks();vi.useFakeTimers();native.owned=true;
@@ -21,7 +21,7 @@ describe('One ringtone owner across native push and the WebView',()=>{
  it('retains a single bounded browser ringtone on the web and older APKs',async()=>{
   native.owned=false;const feedback=await import('../../lib/nexride-feedback');const end=new Date(Date.now()+12000).toISOString();
   feedback.startRideRequestAlert('offer-a',end);await vi.advanceTimersByTimeAsync(0);feedback.startRideRequestAlert('offer-a',end);
-  expect(played).toHaveBeenCalledOnce();expect(native.present).toHaveBeenCalledOnce();
+  expect(played).toHaveBeenCalledOnce();expect(native.present).not.toHaveBeenCalled();
   await vi.advanceTimersByTimeAsync(12000);expect(feedback.isRideRequestAlertActive()).toBe(false);
  });
  it('forwards scoped closures even when JavaScript never saw the native request',async()=>{

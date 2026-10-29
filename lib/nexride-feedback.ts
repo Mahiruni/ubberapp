@@ -1,6 +1,6 @@
 "use client";
 
-import { nativeRideAlertsPlugin, presentNativeRideAlert, stopNativeRideAlert } from "./biloo-native-ride-alerts";
+import { nativeRideAlertsAvailable, presentNativeRideAlert, stopNativeRideAlert } from "./biloo-native-ride-alerts";
 
 export type NexRideSoundId =
   | "online"
@@ -157,7 +157,7 @@ function getRideRequestAudio() {
 }
 
 export async function primeNexRideAudio() {
-  if (activeRideAlert && await nativeRideAlertsPlugin()) return true;
+  if (activeRideAlert && nativeRideAlertsAvailable()) return true;
   const audio = getContext();
   const ringtone = getRideRequestAudio();
   let contextReady = false;
@@ -276,12 +276,7 @@ export function startRideRequestAlert(offerId: string, expiresAt?: string | null
     endsAt,
     timer: setTimeout(() => stopRideRequestAlert(offerId), endsAt - now),
   };
-  void presentNativeRideAlert(offerId, expiresAt).then(result => {
-    if (!isRideRequestAlertActive(offerId)) return;
-    if (result.owned) {
-      if (activeRideAlert) activeRideAlert.nativeOwned = true;
-      soundState(false); return;
-    }
+  const playInWebView = () => {
     hapticFor("ride_request");
     if (!readNexRideFeedbackPreferences().sounds) return;
     const ringtone = getRideRequestAudio();
@@ -300,6 +295,15 @@ export function startRideRequestAlert(offerId: string, expiresAt?: string | null
     } catch {
       if (isRideRequestAlertActive(offerId)) soundState(true);
     }
+  };
+  // Keep browser playback in the current event turn, preserving autoplay/user activation.
+  if (!nativeRideAlertsAvailable()) { playInWebView(); return; }
+  void presentNativeRideAlert(offerId, expiresAt).then(result => {
+    if (!isRideRequestAlertActive(offerId)) return;
+    if (result.owned) {
+      if (activeRideAlert) activeRideAlert.nativeOwned = true;
+      soundState(false);
+    } else playInWebView();
   });
 }
 
@@ -335,7 +339,7 @@ function isDuplicate(key?: string) {
 }
 
 async function showSystemNotification(title: string, body: string, tag?: string, url?: string) {
-  if (await nativeRideAlertsPlugin()) return;
+  if (nativeRideAlertsAvailable()) return;
   if (typeof window === "undefined" || typeof Notification === "undefined" || Notification.permission !== "granted") return;
   if (!document.hidden) return;
   try {

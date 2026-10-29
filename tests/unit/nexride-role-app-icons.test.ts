@@ -31,7 +31,9 @@ describe("Biloo independently installed Rider / Driver branding", () => {
     const b = readFileSync(join(root, "public", driverIcon.src));
     expect(a.subarray(0, 8).toString("hex")).toBe("89504e470d0a1a0a");
     expect(b.subarray(0, 8).toString("hex")).toBe("89504e470d0a1a0a");
-    expect(a.equals(b)).toBe(false);
+    // Both roles use the approved BILOO mark; their asset references stay independent.
+    const riderPaths = new Set(rider.icons.map((icon: { src: string }) => icon.src));
+    expect(driver.icons.every((icon: { src: string }) => !riderPaths.has(icon.src))).toBe(true);
   });
 
   it("produces full-resolution and safe-zone maskable assets for both", () => {

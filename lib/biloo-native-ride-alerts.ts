@@ -1,4 +1,5 @@
 'use client';
+import {Capacitor, registerPlugin} from '@capacitor/core';
 import type { NexRideFeedbackPreferences } from './nexride-feedback';
 
 export type NativeRideAlertStatus = {
@@ -26,11 +27,11 @@ function operation<T>(work: (native: Plugin | null) => Promise<T>): Promise<T> {
   const result = operations.catch(() => {}).then(async () => work(await nativeRideAlertsPlugin()));
   operations = result.catch(() => {}); return result;
 }
+export function nativeRideAlertsAvailable() {
+  return typeof window !== 'undefined' && Capacitor.getPlatform() === 'android' && Capacitor.isPluginAvailable('BilooDriverRideAlerts');
+}
 export function nativeRideAlertsPlugin(): Promise<Plugin | null> {
-  if (typeof window === 'undefined') return Promise.resolve(null);
-  return cached ??= import('@capacitor/core').then(({Capacitor, registerPlugin}) =>
-    Capacitor.getPlatform() === 'android' && Capacitor.isPluginAvailable('BilooDriverRideAlerts')
-      ? registerPlugin<Plugin>('BilooDriverRideAlerts') : null).catch(() => null);
+  return cached ??= Promise.resolve(nativeRideAlertsAvailable() ? registerPlugin<Plugin>('BilooDriverRideAlerts') : null);
 }
 export async function configureNativeRideAlerts(userId: string, enabled: boolean, preferences: NexRideFeedbackPreferences, language = 'en') {
   user = userId;
