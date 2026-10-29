@@ -76,15 +76,15 @@ test("Driver Account shows verified data status and all real destinations",async
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
 });
 
-test("Driver Account subpages keep visible Back controls below the global app bar", async ({page}) => {
+test("Driver Account subpages keep a visible Back control in the global app bar", async ({page}) => {
   await page.setViewportSize({width:390,height:844});
   await mockAuthenticatedDriver(page);
   for (const route of ["documents","vehicle","payouts"]) {
     await page.goto("/driver/profile/"+route);
-    const header=page.locator(".nr-driver-profile-subpage .nr-profile-subhead");
-    await expect(header).toBeVisible({timeout:15000});
-    const back=header.getByRole("button",{name:/Back to driver profile/i});
+    await expect(page.locator(".nr-driver-profile-subpage")).toBeVisible({timeout:15000});
+    const back=page.locator(".nr-driver-global-header .nr-driver-header-back");
     await expect(back).toBeVisible();
+    await expect(back).toHaveAttribute("aria-label",/Back|ተመለስ/);
     await expect(back).toBeInViewport();
     await back.click();
     await expect(page).toHaveURL(new RegExp("/driver/profile$"));
