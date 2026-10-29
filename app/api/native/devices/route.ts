@@ -9,7 +9,7 @@ const response = (data: unknown, status = 200) =>
 export async function POST(request: Request) {
   const auth = await authorizedRequestSupabase(request);
   if (!auth) return response({ status: "unauthorized" }, 401);
-  let payload: { installationId?: string; token?: string; role?: string };
+  let payload: { installationId?: string; token?: string; role?: string; alertProtocol?: number };
   try { payload = await request.json(); } catch { return response({ status: "invalid_json" }, 400); }
   const { installationId, token, role } = payload;
   if (!installationId || !uuid.test(installationId) || !token ||
@@ -28,9 +28,15 @@ export async function POST(request: Request) {
     const { data: exists } = await admin.from("nexride_push_devices").select("id")
       .eq("user_id", auth.user.id).eq("role", role).eq("installation_id", installationId).maybeSingle();
     if (!exists && (count ?? 0) >= 12) return response({ status: "device_limit_reached" }, 429);
+    // A token identifies this installation; an earlier signed-in account must
+    // not keep receiving private offers after the device changes accounts.
+    const { error: bindingError } = await admin.from("nexride_push_devices")
+      .delete().eq("fcm_token", token).neq("user_id", auth.user.id);
+    if (bindingError) return response({ status: "device_binding_failed" }, 503);
     const { error } = await admin.from("nexride_push_devices").upsert({
       user_id: auth.user.id, role, installation_id: installationId,
       fcm_token: token, enabled: true, updated_at: new Date().toISOString(),
+      alert_protocol: role === "driver" && payload.alertProtocol === 1 ? 1 : 0,
     }, { onConflict: "user_id,role,installation_id" });
     return error ? response({ status: "registration_failed" }, 503) : response({ status: "registered" });
   } catch { return response({ status: "registration_unavailable" }, 503); }

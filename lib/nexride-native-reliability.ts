@@ -2,6 +2,7 @@
 
 import { supabase } from "./supabase";
 import { nexrideApiFetch } from "./nexride-api-auth";
+import { nativeRideAlertsPlugin, markNativeRideAlertRegistration, disableNativeRideAlerts } from "./biloo-native-ride-alerts";
 
 type Role = "rider" | "driver";
 type NativeDriverLocation = {
@@ -78,9 +79,11 @@ export async function registerNexRidePushToken(token: string) {
   const role = await getNexRideNativeAppRole();
   if (!data.session || !role || !token) return;
   const result = await nexrideApiFetch("/api/native/devices", {
-    method: "POST", body: JSON.stringify({ role, token, installationId: installationId() }),
+    method: "POST", body: JSON.stringify({ role, token, installationId: installationId(),
+      alertProtocol: role === "driver" && await nativeRideAlertsPlugin() ? 1 : 0 }),
   });
   if (!result.ok) throw new Error("device_registration_failed");
+  if (role === "driver") await markNativeRideAlertRegistration(data.session.user.id).catch(() => {});
   window.dispatchEvent(new CustomEvent("nexride:native-push-status", {
     detail: { status: "registered", role },
   }));
@@ -88,6 +91,7 @@ export async function registerNexRidePushToken(token: string) {
 
 export async function unregisterNexRidePushDevice(role: Role) {
   if (!await nativeCapacitor()) return;
+  if (role === "driver") await disableNativeRideAlerts();
   const result = await nexrideApiFetch("/api/native/devices", {
     method: "DELETE", body: JSON.stringify({ role, installationId: installationId() }),
   });

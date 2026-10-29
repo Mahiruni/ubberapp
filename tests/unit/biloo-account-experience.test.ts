@@ -78,14 +78,15 @@ describe("Biloo premium Account experience", () => {
   it("applies the approved Rider and Driver visual preview without mock account values", () => {
     const rider = source("components/nexride/rider-profile.tsx");
     const driver = source("components/nexride/driver-profile.tsx");
+    const driverCss = source("components/nexride/driver-profile.module.css");
     const css = source("app/biloo-account-premium.css");
     expect(rider).toContain('className="biloo-account-protection-note"');
     expect(rider).toContain("All your personal essentials, beautifully organized.");
-    expect(driver).toContain('className="biloo-driver-overview"');
-    expect(driver).toContain('say("Driver Account")');
+    expect(driver).toContain('data-driver-account=""');
+    expect(driver).toContain('say("Your account")');
     expect(driver).toContain('profile.rating === null ? "—"');
     expect(driver).toContain('verification.tone');
-    expect(css).toContain(".biloo-driver-overview .nr-driver-profile-summary-v2");
+    expect(driverCss).toContain("var(--driver-text-primary");
     expect(css).toContain("background:#0a294f!important");
     expect(css).toContain("counter(biloo-rider-section,decimal-leading-zero)");
     expect(css).toContain("counter(biloo-driver-section,decimal-leading-zero)");
@@ -106,10 +107,10 @@ describe("Biloo premium Account experience", () => {
     expect(css).toContain('.nr-driver-profile-subpage.nr-app .nr-profile-subhead');
     expect(css).toContain('display:flex!important;');
     expect(css).toContain('.nr-driver-profile-subpage .nr-profile-subhead>button');
-    for(const name of ["documents","vehicle","payouts"]){
-      const route=source("app/driver/profile/"+name+"/page.tsx");
-      expect(route).toContain('router.push("/driver/profile")');
-    }
+    const shell = source("components/nexride/driver-app-shell.tsx");
+    // Account subpages share the canonical shell back button after header consolidation.
+    expect(shell).toContain('pathname.startsWith("/driver/profile/")');
+    expect(shell).toContain('return "/driver/profile"');
     expect(css).not.toContain("mapboxgl-canvas");
   });
 });

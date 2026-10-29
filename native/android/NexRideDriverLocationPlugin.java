@@ -35,6 +35,7 @@ public class NexRideDriverLocationPlugin extends Plugin {
     });
   }
   @PluginMethod public void clearSession(PluginCall call) {
+    BilooDriverRideAlerts.clear(getContext(),true);
     BilooDriverSession session=BilooDriverSessionStore.get(getContext());
     session.cancel(); NexRideDriverLocationService.cancel(getContext(),"signed_out");
     BilooDriverSessionStore.WORKER.execute(() -> {

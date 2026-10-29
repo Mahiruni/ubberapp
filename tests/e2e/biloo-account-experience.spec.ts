@@ -55,40 +55,40 @@ test("Driver Account shows verified data status and all real destinations",async
   await page.setViewportSize({width:390,height:844});
   await mockAuthenticatedDriver(page);
   await page.goto("/driver/profile");
-  const account=page.locator(".nr-driver-profile-v2");
+  const account=page.locator("[data-driver-account]");
   await expect(account).toBeVisible();
-  await expect(account.locator(".nr-driver-profile-heading h1")).toHaveText(/account|መለያ/i);
-  await expect(account.locator(".nr-driver-profile-identity h2")).toContainText(/Biloo Driver/i);
-  for(const group of ["Personal information","Vehicle & payouts","Preferences"])
+  await expect(account.locator("h1")).toHaveText(/account|መለያ/i);
+  await expect(account.getByRole("region",{name:"Driver identity"}).locator("h2")).toContainText(/Biloo Driver/i);
+  for(const group of ["Personal information","Vehicle & payouts","Safety & information"])
     await expect(account.getByRole("heading",{name:group,exact:true})).toBeVisible();
-  for(const duplicate of [/Trip activity/i,/Earnings report/i,/Safety Center/i,/Help & support/i])
+  for(const duplicate of [/Trip activity/i,/Earnings report/i,/Help & support/i])
     await expect(account.getByRole("button",{name:duplicate})).toHaveCount(0);
-  await expect(account.locator(".nr-driver-verification-card strong")).toContainText(/verification|review/i);
+  await expect(account.getByRole("button",{name:/Complete verification|Review status|View documents/i})).toContainText(/verification|review|approved/i);
   await expect(page.locator(".biloo-footer-nav, .admin-mobile-nav")).toHaveCount(0);
   await account.getByRole("button",{name:/Profile & app settings/}).click();
   await expect(page).toHaveURL(/\/driver\/profile\/settings/);
-  const returnToAccount=page.locator(".biloo-account-return");
+  const returnToAccount=page.locator(".nr-driver-global-header .nr-driver-header-back");
   await expect(page.locator(".nr-driver-profile-subpage")).toBeVisible();
   await expect(returnToAccount).toBeVisible({timeout:10000});
-  await expect(returnToAccount).toHaveAttribute("aria-label",/Account|መለያ/);
+  await expect(returnToAccount).toHaveAttribute("aria-label",/Back|ተመለስ/);
   await returnToAccount.click();
   await expect(page).toHaveURL(/\/driver\/profile$/);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
 });
 
-test("Driver Account subpages keep visible Back controls below the global app bar", async ({page}) => {
+test("Driver Account subpages keep a visible Back control in the global app bar", async ({page}) => {
   await page.setViewportSize({width:390,height:844});
   await mockAuthenticatedDriver(page);
   for (const route of ["documents","vehicle","payouts"]) {
     await page.goto("/driver/profile/"+route);
-    const header=page.locator(".nr-driver-profile-subpage .nr-profile-subhead");
-    await expect(header).toBeVisible({timeout:15000});
-    const back=header.getByRole("button",{name:/Back to driver profile/i});
+    await expect(page.locator(".nr-driver-profile-subpage")).toBeVisible({timeout:15000});
+    const back=page.locator(".nr-driver-global-header .nr-driver-header-back");
     await expect(back).toBeVisible();
+    await expect(back).toHaveAttribute("aria-label",/Back|ተመለስ/);
     await expect(back).toBeInViewport();
     await back.click();
     await expect(page).toHaveURL(new RegExp("/driver/profile$"));
-    await expect(page.locator(".nr-driver-profile-v2")).toBeVisible();
+    await expect(page.locator("[data-driver-account]")).toBeVisible();
   }
   expect(await page.evaluate(()=>document.documentElement.scrollWidth <= window.innerWidth+1)).toBe(true);
 });

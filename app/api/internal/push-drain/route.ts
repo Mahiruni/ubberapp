@@ -1,15 +1,16 @@
 import { createSign } from "node:crypto";
 import { serverAdminSupabase } from "../../../../lib/nexride-server-admin";
 import { nexrideDriverOfferTtlSeconds } from "../../../../lib/nexride-push-routing";
+import { nativeDriverAlertData } from "../../../../lib/biloo-native-driver-alert-payload";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 type ServiceAccount = { project_id: string; client_email: string; private_key: string };
 type Event = {
-  id: string; kind: "driver_offer" | "rider_trip"; role: "driver" | "rider";
+  id: string; kind: "driver_offer" | "driver_offer_closed" | "rider_trip"; role: "driver" | "rider";
   user_id: string; offer_id: string | null; request_id: string | null;
-  expected_status: string | null; attempts: number;
+  expected_status: string | null; attempts: number; created_at?: string;
 };
 
 function signedAssertion(config: ServiceAccount) {
@@ -65,7 +66,9 @@ export async function GET(request: Request) {
     let sent = 0, skipped = 0, retried = 0;
     for (const event of (events ?? []) as Event[]) {
       const finish = async (status: string, reason = "") => {
-        const retryDelay = Math.min(60, Math.pow(2, event.attempts)) * 60_000;
+        const retryDelay = event.kind === "rider_trip"
+          ? Math.min(60, Math.pow(2, event.attempts)) * 60_000
+          : Math.min(5, Math.pow(2, event.attempts)) * 1000;
         await admin.from("nexride_push_outbox").update({
           status, retry_at: new Date(Date.now() + retryDelay).toISOString(),
           delivered_at: status === "sent" ? new Date().toISOString() : null,
@@ -73,22 +76,37 @@ export async function GET(request: Request) {
         }).eq("id", event.id).eq("status", "processing");
       };
       try {
+        const driverEvent = event.kind === "driver_offer" || event.kind === "driver_offer_closed";
+        const closing = event.kind === "driver_offer_closed";
+        let driverOffer: Parameters<typeof nativeDriverAlertData>[1] = null;
+        let offeredRide: Parameters<typeof nativeDriverAlertData>[2] = null;
         let offerExpiresAt: string | null = null;
         let confirmedTripStatus: string | null = null;
         let assignedDriverId: string | null = null;
         let riderId: string | null = null;
-        if (event.kind === "driver_offer") {
+        if (driverEvent) {
           const { data: offer } = await admin.from("ride_request_offers")
-            .select("status,expires_at,driver_id").eq("id", event.offer_id).maybeSingle();
-          if (!offer || offer.status !== "pending" || offer.driver_id !== event.user_id ||
-            nexrideDriverOfferTtlSeconds(offer.expires_at) === 0) {
+            .select("id,request_id,status,expires_at,driver_id,created_at,pickup_distance_km,pickup_eta_minutes").eq("id", event.offer_id).maybeSingle();
+          if (!closing && (!offer || offer.status !== "pending" || offer.driver_id !== event.user_id ||
+            nexrideDriverOfferTtlSeconds(offer.expires_at) === 0)) {
             await finish("skipped", "offer_no_longer_pending"); skipped++; continue;
           }
-          offerExpiresAt = offer.expires_at;
-          if (event.request_id) {
-            const { data: offeredRide } = await admin.from("ride_requests")
-              .select("rider_id").eq("id", event.request_id).maybeSingle();
-            riderId = offeredRide?.rider_id || null;
+          driverOffer = offer;
+          offerExpiresAt = offer?.expires_at ?? null;
+          if (!closing) {
+            const { data: eligibility } = await admin.from("drivers").select("is_online,review_status")
+              .eq("id", event.user_id).maybeSingle();
+            const { data: profile } = await admin.from("profiles").select("account_status")
+              .eq("id", event.user_id).maybeSingle();
+            if (!eligibility?.is_online || eligibility.review_status !== "approved" || profile?.account_status !== "active") {
+              await finish("skipped", "driver_not_eligible"); skipped++; continue;
+            }
+            const { data: ride } = await admin.from("ride_requests")
+              .select("rider_id,status,assigned_driver_id,pickup_location,estimated_driver_payout_etb,estimated_trip_fare_etb").eq("id", offer!.request_id).maybeSingle();
+            if (!ride || !["pending", "requested", "searching"].includes(ride.status) || ride.assigned_driver_id) {
+              await finish("skipped", "ride_no_longer_searching"); skipped++; continue;
+            }
+            offeredRide = ride; riderId = ride.rider_id || null;
           }
         } else {
           const { data: ride } = await admin.from("ride_requests")
@@ -100,7 +118,7 @@ export async function GET(request: Request) {
           assignedDriverId = ride.assigned_driver_id || null;
         }
         const { data: devices, error: deviceError } = await admin.from("nexride_push_devices")
-          .select("id,fcm_token").eq("user_id", event.user_id).eq("role", event.role).eq("enabled", true);
+          .select("id,fcm_token,alert_protocol").eq("user_id", event.user_id).eq("role", event.role).eq("enabled", true);
         if (deviceError) throw new Error("device_lookup_failed");
         if (!devices?.length) { await finish("skipped", "no_registered_device"); skipped++; continue; }
         // Only describe the state we just confirmed in the database.
@@ -120,7 +138,7 @@ export async function GET(request: Request) {
           cancelled: { title: "Trip cancelled", body: "Your ride has been cancelled. You can check the details in Biloo." },
           canceled: { title: "Trip cancelled", body: "Your ride has been cancelled. You can check the details in Biloo." },
         };
-        const copy = event.kind === "driver_offer"
+        const copy = closing ? { title: "Ride request closed", body: "This offer is no longer available." } : event.kind === "driver_offer"
           ? { title: "New Biloo ride request", body: "A rider is waiting for a driver! Open Biloo to review the request." }
           : confirmedTripStatus ? tripCopy[confirmedTripStatus] : undefined;
         // Unknown states must not produce misleading or generic push notifications.
@@ -151,7 +169,7 @@ export async function GET(request: Request) {
         const url = event.kind === "driver_offer" ?
           "/driver/request?offer=" + event.offer_id : event.request_id ? "/rider/trips/" + event.request_id : "/rider/trips";
         // An offer can expire while we resolve devices; do not ring stale requests.
-        const remainingTtl = event.kind === "driver_offer"
+        const remainingTtl = closing ? 60 : event.kind === "driver_offer"
           ? nexrideDriverOfferTtlSeconds(offerExpiresAt) : 300;
         if (remainingTtl === 0) {
           await finish("skipped", "offer_expired_before_fcm"); skipped++; continue;
@@ -159,28 +177,35 @@ export async function GET(request: Request) {
         // Dispatch to registered devices concurrently; one slow device must not delay others.
         let successes = 0;
         for (const device of devices) {
+          const nativeAlert = driverEvent && device.alert_protocol === 1 && !!event.offer_id;
+          if (closing && !nativeAlert) continue;
+          // A versioned data-only message reaches native code while the WebView
+          // is absent. Legacy APKs retain their existing system-tray behavior.
+          const data = nativeAlert ? nativeDriverAlertData({ ...event,
+            kind: closing ? "driver_offer_closed" : "driver_offer", offer_id: event.offer_id! }, driverOffer, offeredRide) : {
+            url, kind: event.kind, eventId: event.id,
+            ...(offerExpiresAt ? { expiresAt: offerExpiresAt } : {}),
+          };
           const sentResponse = await fetch(
             "https://fcm.googleapis.com/v1/projects/" + encodeURIComponent(config.project_id) + "/messages:send",
             { method: "POST",
               headers: { Authorization: "Bearer " + access, "Content-Type": "application/json" },
               body: JSON.stringify({ message: { token: device.fcm_token,
-                notification: { title, body },
-                data: {
-                  url, kind: event.kind, eventId: event.id,
-                  ...(offerExpiresAt ? { expiresAt: offerExpiresAt } : {}),
-                },
+                ...(!nativeAlert ? { notification: { title, body } } : {}), data,
                 android: {
-                  priority: event.kind === "driver_offer" ? "HIGH" : "NORMAL",
+                  priority: driverEvent ? "HIGH" : "NORMAL",
                   // TTL cannot exceed the server-owned 30-second offer window.
                   ttl: `${remainingTtl}s`,
-                  collapse_key: event.kind === "driver_offer" ? "biloo_active_ride_offer" : "biloo_trip_" + event.request_id,
-                  notification: {
+                  // Offer-scoped keys prevent a late close from replacing a
+                  // newer offer for the same driver while the device is offline.
+                  collapse_key: nativeAlert ? "biloo_offer_" + event.offer_id : event.kind === "driver_offer" ? "biloo_active_ride_offer" : "biloo_trip_" + event.request_id,
+                  ...(!nativeAlert ? { notification: {
                     channel_id: event.kind === "driver_offer"
                       ? "nexride_driver_requests_v2" : "nexride_trip_updates",
                     // New offers replace older notification tray entries.
                     tag: event.kind === "driver_offer" ? "biloo_active_ride_offer" : "biloo_trip_" + event.request_id,
                     ...(event.kind === "driver_offer" ? { sound: "nexride_ride_request" } : {}),
-                  },
+                  } } : {}),
                 },
               } }),
               signal: AbortSignal.timeout(12000),

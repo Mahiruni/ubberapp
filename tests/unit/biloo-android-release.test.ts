@@ -61,7 +61,7 @@ describe('Generated Android integration',()=>{
     }
     const source=readFileSync(join(folder,'MainActivity.java'),'utf8');
     expect(source).not.toContain('\\n');
-    for(const name of ['NexRideLiveTripPlugin','NexRideAppLockPlugin',...(role==='driver'?['NexRideDriverLocationPlugin']:[])]) expect(source.match(new RegExp(`registerPlugin\\(${name}\\.class\\)`,'g'))).toHaveLength(1);
+    for(const name of ['NexRideLiveTripPlugin','NexRideAppLockPlugin',...(role==='driver'?['NexRideDriverLocationPlugin','BilooDriverRideAlertsPlugin']:[])]) expect(source.match(new RegExp(`registerPlugin\\(${name}\\.class\\)`,'g'))).toHaveLength(1);
     expect(source.match(/BilooSystemBars.apply\(this\)/g)).toHaveLength(1);
     if(role==='driver'){
       expect(readFileSync(join(folder,'NexRideDriverLocationService.java'),'utf8')).not.toContain('\\n');
@@ -70,6 +70,11 @@ describe('Generated Android integration',()=>{
       expect(manifest).toContain('android.permission.ACCESS_NETWORK_STATE');
       expect(manifest).toContain('android:dataExtractionRules="@xml/biloo_data_extraction_rules"');
       expect(readFileSync(join(folder,'BilooDriverSessionStore.java'),'utf8')).toContain('getNoBackupFilesDir()');
+      expect(manifest).toContain('android:name=".BilooDriverMessagingService" android:exported="false"');
+      expect(manifest.match(/tools:node="remove"/g)).toHaveLength(1);
+      expect(manifest).not.toContain('USE_FULL_SCREEN_INTENT');
+      expect(readFileSync(join(dir,'android/app/src/main/res/layout/biloo_driver_ride_alert.xml'),'utf8')).toContain('biloo_alert_deadline');
+      expect(readFileSync(join(dir,'android/app/build.gradle'),'utf8').match(/firebase-messaging:25\.0\.1/g)).toHaveLength(1);
     } else {
       expect(readFileSync(join(dir,'android/app/src/main/AndroidManifest.xml'),'utf8')).not.toContain('NexRideDriverLocationService');
     }

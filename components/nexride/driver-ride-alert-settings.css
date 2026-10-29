@@ -1,0 +1,23 @@
+.nr-driver-app-shell .biloo-ride-alert-settings{margin:16px 0;padding:16px;border:1px solid var(--driver-border,#dce4ed);border-radius:20px;background:var(--driver-surface,#fff);color:var(--driver-text-primary,#102d50)}
+.nr-driver-app-shell .biloo-ride-alert-settings-heading{display:flex;align-items:center;gap:10px}
+.nr-driver-app-shell .biloo-ride-alert-settings-heading>span{display:grid;place-items:center;flex:none;width:42px;height:42px;border-radius:13px;background:#102d50;color:#f5c75e}
+.nr-driver-app-shell .biloo-ride-alert-settings-heading>div{min-width:0;flex:1}
+.nr-driver-app-shell .biloo-ride-alert-settings-heading strong{font-size:17px;font-weight:800;line-height:1.25;color:var(--driver-text-primary,#102d50)}
+.nr-driver-app-shell .biloo-ride-alert-settings-heading p{margin:4px 0 0;font-size:12px;line-height:1.4;color:var(--driver-text-secondary,#667587)}
+.nr-driver-app-shell .biloo-ride-alert-settings-heading>small{flex:none;max-width:80px;padding:5px 7px;border-radius:8px;background:#fff0cc;color:#70500a;font-size:10px;font-weight:750;text-align:center;line-height:1.3}
+.nr-driver-app-shell .biloo-ride-alert-settings-heading>small[data-ready=true]{background:#dff7ed;color:#096347}
+.nr-driver-app-shell .biloo-ride-alert-status-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 14px;margin:14px 0 0}
+.nr-driver-app-shell .biloo-ride-alert-status-grid>div{display:grid;align-content:start;gap:5px;min-width:0;padding:11px 0;border-top:1px solid var(--driver-border,#dce4ed)}
+.nr-driver-app-shell .biloo-ride-alert-status-grid dt{font-size:11px;line-height:1.4;color:var(--driver-text-secondary,#667587)}
+.nr-driver-app-shell .biloo-ride-alert-status-grid dd{margin:0;font-size:13px;font-weight:750;line-height:1.3;color:var(--driver-text-primary,#102d50)}
+.nr-driver-app-shell .biloo-ride-alert-status-grid dd[data-enabled=true]{color:#087450}
+.nr-driver-app-shell[data-theme=dark] .biloo-ride-alert-status-grid dd[data-enabled=true]{color:#76dfb8}
+.nr-driver-app-shell .biloo-ride-alert-settings-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px}
+.nr-driver-app-shell .biloo-ride-alert-settings-actions button{display:flex;align-items:center;justify-content:center;gap:6px;min-height:46px;padding:9px;border:1px solid var(--driver-border,#dce4ed);border-radius:12px;background:var(--driver-bg,#f5f7f9);color:var(--driver-text-primary,#102d50);font-size:12px;font-weight:750;line-height:1.35;cursor:pointer}
+.nr-driver-app-shell .biloo-ride-alert-settings-actions button:first-child{background:#f5c75e;color:#102d50;border-color:#e1b44b}
+.nr-driver-app-shell .biloo-ride-alert-settings-actions button:last-child{grid-column:1/-1;background:transparent}
+.nr-driver-app-shell .biloo-ride-alert-settings-actions button:disabled{opacity:.5;cursor:default}
+.nr-driver-app-shell .biloo-ride-alert-settings-actions button:focus-visible{outline:3px solid #c49326;outline-offset:2px}
+.nr-driver-app-shell .biloo-ride-alert-settings-note{margin:12px 0 0;color:var(--driver-text-secondary,#667587);font-size:11px;line-height:1.5}
+.nr-driver-app-shell .biloo-ride-alert-update{padding:10px;border-radius:10px;background:#fff3d7;color:#70500a;font-size:12px;line-height:1.4}
+@media(max-width:360px){.nr-driver-app-shell .biloo-ride-alert-settings{padding:13px}.nr-driver-app-shell .biloo-ride-alert-settings-heading{flex-wrap:wrap}.nr-driver-app-shell .biloo-ride-alert-settings-heading>small{margin-left:52px}}
