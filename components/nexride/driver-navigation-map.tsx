@@ -38,12 +38,12 @@ function navigationMapPadding(map: MapboxMap) {
   const canvas = map.getContainer();
   const rect = canvas.getBoundingClientRect();
   const page = canvas.closest('.nr-driver-navigation-page');
-  const sheet = page?.querySelector('.nr-nav-bottom-card')?.getBoundingClientRect();
+  const sheet = page?.querySelector('.nr-nav-trip-action-bar, .nr-nav-bottom-card')?.getBoundingClientRect();
   const sidePanel = sheet && rect.width >= 760 && sheet.left > rect.left + rect.width * .45;
   const top = Math.min(64, Math.max(40, rect.height - 180));
   const left = 55;
   const right = Math.max(74, Math.min(sidePanel ? rect.right - sheet.left + 65 : 74, rect.width - left - 110));
-  const bottom = Math.min(sidePanel ? 75 : Math.max(110, sheet ? rect.bottom - sheet.top + 65 : 220), Math.max(55, rect.height - top - 110));
+  const bottom = Math.min(sidePanel ? 75 : Math.max(90, sheet ? rect.bottom - sheet.top + 32 : 100), Math.max(55, rect.height - top - 110));
   return { top, right, bottom, left };
 }
 
@@ -96,9 +96,15 @@ export function DriverNavigationMap({
     const page = container.current?.closest('.nr-driver-navigation-page');
     if (!page) return;
     let frame = 0;
-    const refresh = () => { cancelAnimationFrame(frame); frame = requestAnimationFrame(() => setCameraLayoutRevision(value => value + 1)); };
+    const refresh = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        mapRef.current?.resize();
+        setCameraLayoutRevision(value => value + 1);
+      });
+    };
     const observer = new ResizeObserver(refresh);
-    for (const element of [container.current, page.querySelector('.nr-nav-bottom-card'), page.querySelector('.nr-nav-guidance')]) if (element) observer.observe(element);
+    for (const element of [container.current, page.querySelector('.nr-nav-trip-action-bar, .nr-nav-bottom-card')]) if (element) observer.observe(element);
     refresh();
     return () => { cancelAnimationFrame(frame); observer.disconnect(); };
   }, [mountedRevision]);
@@ -238,8 +244,12 @@ export function DriverNavigationMap({
         element.classList.add("nr-driver-map-marker", kind);
         if (active) element.classList.add("active");
         if (gpsState !== "fresh" && kind === "vehicle") element.classList.add("stale");
-        if (kind !== "vehicle") element.setAttribute("aria-hidden", "true");
-        const marker = new mapboxgl.default.Marker({ element, anchor: "center" }).setLngLat(lngLat(point)).addTo(mapRef.current!);
+        if (kind === "destination") {
+          element.setAttribute("role", "img");
+          element.setAttribute("aria-label", "Trip destination");
+          element.innerHTML = '<svg viewBox="0 0 32 42" fill="none" aria-hidden="true"><path d="M16 40S2 26 2 16a14 14 0 1 1 28 0c0 10-14 24-14 24Z" fill="#102d50" stroke="#fff" stroke-width="2.5"/><circle cx="16" cy="16" r="7" fill="#f5c75e"/><circle cx="16" cy="16" r="3" fill="#102d50"/></svg>';
+        } else if (kind === "pickup") element.setAttribute("aria-hidden", "true");
+        const marker = new mapboxgl.default.Marker({ element, anchor: kind === "destination" ? "bottom" : "center" }).setLngLat(lngLat(point)).addTo(mapRef.current!);
         markers.current.push(marker);
       };
 

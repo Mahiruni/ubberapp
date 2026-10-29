@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DriverNavigationMap, type NavigationCoordinate } from "../../../components/nexride/driver-navigation-map";
-import { DriverBottomSheet } from "../../../components/nexride/driver-bottom-sheet";
 import { DriverTripGuidance } from "../../../components/nexride/driver-trip-guidance";
 import { Button, Dialog, Icon } from "../../../components/nexride/ui";
 import { useOperationalTranslation } from "../../../components/nexride/operational-i18n";
@@ -812,7 +811,7 @@ export default function DriverNavigationPage() {
   );
 
   return (
-    <main className="nr-app nr-driver-navigation-page" data-mode="driver">
+    <main className="nr-app nr-driver-navigation-page" data-mode="driver" data-layout="header-trip">
       {!safeToUpdate && <div className="nr-nav-offline-recovery" role="status" aria-live="polite">
         <Icon name="info" size={17} />
         <span>{showingSavedTrip ? "Saved trip · " : ""}Reconnecting — trip actions paused until the latest stage is confirmed.</span>
@@ -823,50 +822,14 @@ export default function DriverNavigationPage() {
       <button className="nr-nav-home" onClick={() => router.replace("/driver/home")} aria-label={op("Driver home")}><Icon name="home" size={19} /></button>
 
       <DriverTripGuidance badge={stage.badge} instruction={guidanceTitle} distance={guidanceDistance}
-        label={op("Live trip guidance")}
-        detail={canNavigate ? nativeRoute?.target === stage.target
-          ? trafficLabel ? `${op("Route guidance")} · ${trafficLabel}` : op("Route guidance")
-          : op("Checking route guidance…") : undefined} />
-
-      {(gpsState !== "fresh" || routeNotice || locationShareError || nativeRouteNotice) && (
-        <div className={`nr-nav-status ${gpsState === "lost" || locationShareError ? "danger" : gpsState === "stale" || nativeRouteNotice ? "warning" : ""}`}>
-          <Icon name={gpsState === "fresh" && !locationShareError && !nativeRouteNotice ? "check" : "info"} size={16} />
-          <span>{locationShareError || routeNotice || nativeRouteNotice || gpsMessage || op("Getting your location…")}</span>
-        </div>
-      )}
-
-      <DriverBottomSheet className="nr-nav-bottom-card" label="Trip controls" defaultSnap="medium"
-        footer={<div className="nr-nav-pinned-actions" aria-label={op("Trip stage action")}>
-          {invalidTrip ? (
-          <button className="nr-nav-stage-primary" onClick={() => router.replace("/driver/home")}>{op("Back to Driver Home")}</button>
-        ) : trip.status === "accepted" ? (
-          <button type="button" className="nr-nav-stage-primary" disabled={busy || !safeToUpdate} onClick={() => void transition("arrived_pickup")}>
-            <Icon name="check" size={19} />{busy ? op("Updating…") : op("Arrived at pickup")}
-          </button>
-        ) : trip.status === "arrived_pickup" ? (
-          <button className="nr-nav-stage-primary" disabled={busy || !safeToUpdate} onClick={() => setConfirmAction("in_trip")}><Icon name="navigation" size={19} /> {busy ? op("Starting…") : op("Start trip")}</button>
-        ) : trip.status === "in_trip" ? (
-          <button type="button" className="nr-nav-stage-primary" disabled={busy || !safeToUpdate} onClick={() => setConfirmAction("completed")}>
-            <Icon name="check" size={19} />{busy ? op("Completing…") : op("Complete trip")}
-          </button>
-        ) : (
-          <div className="nr-nav-stage-actions">
-            <button className="nr-nav-stage-primary" onClick={() => router.replace("/driver/earnings")}><Icon name="money" size={19} /> {op("View earnings")}</button>
-            <button className="nr-nav-stage-secondary" onClick={() => router.replace("/driver/home")}><Icon name="home" size={18} /> Driver Home</button>
-          </div>
-        )}
-        </div>}>
-        <div className="biloo-prestige-nav-heading">
-          <div><small>BILOO · DRIVER</small><strong>{op(stage.title)}</strong></div>
-          <span><i aria-hidden="true" />{op("Active trip")}</span>
-        </div>
+        label={op("Live trip guidance")} detailsLabel={op("Details")}
+        maneuverType={trip.status === "arrived_pickup" ? "arrive" : nextManeuver?.step.type}
+        maneuverModifier={nextManeuver?.step.modifier}
+        stop={{ label: stage.target === "pickup" ? op("PICKUP") : op("DESTINATION"), name: stage.destination,
+          arrival: routeEtaMinutes === null ? op("Arrival estimate unavailable") : routeEtaMinutes === 0 ? op("You are at this stop") : `Arriving in about ${routeEtaMinutes} min` }}
+        detail={canNavigate ? activeRoute ? trafficLabel || undefined : op("Checking route guidance…") : undefined}>
         <div className="nr-nav-trip-meta"><span>Biloo · {trip.rideCategory}</span><span>{stage.badge}</span></div>
         {riderPickup?.signal && <p className="biloo-rider-pickup-signal" role="status"><Icon name="wave" size={18}/>{op('Your rider is at pickup')}<small>{op('Sent in trip chat')}</small></p>}
-        <div className="nr-nav-current-destination">
-          <small>{stage.target === "pickup" ? op("PICKUP") : op("DESTINATION")}</small>
-          <h1>{stage.destination}</h1>
-          <p><Icon name="clock" size={15} />{routeEtaMinutes === null ? op("Arrival estimate unavailable") : routeEtaMinutes === 0 ? op("You are at this stop") : `Arriving in about ${routeEtaMinutes} min`}</p>
-        </div>
         {(trip.status === "accepted" || trip.status === "arrived_pickup") && (
           <div className="biloo-prestige-trip-route" aria-label={op("Pickup to destination")}>
             <div className="biloo-prestige-trip-stop pickup">
@@ -906,10 +869,39 @@ export default function DriverNavigationPage() {
             </span>
           ))}
         </div>
-        {message && <div className="nr-nav-action-error" role="alert"><Icon name="info" size={16} /><span>{message}</span></div>}
-
         {canNavigate && !activeRoute && <div className="nr-nav-handoff"><Icon name="info" size={15} /><span>{op("Live route guidance is unavailable. Check your location and connection; trip actions are still available.")}</span></div>}
-      </DriverBottomSheet>
+      </DriverTripGuidance>
+
+      {(gpsState !== "fresh" || routeNotice || locationShareError || nativeRouteNotice) && (
+        <div className={`nr-nav-status ${gpsState === "lost" || locationShareError ? "danger" : gpsState === "stale" || nativeRouteNotice ? "warning" : ""}`}>
+          <Icon name={gpsState === "fresh" && !locationShareError && !nativeRouteNotice ? "check" : "info"} size={16} />
+          <span>{locationShareError || routeNotice || nativeRouteNotice || gpsMessage || op("Getting your location…")}</span>
+        </div>
+      )}
+
+      <section className="nr-nav-trip-action-bar" aria-label={op("Trip controls")}>
+        {message && <div className="nr-nav-action-error" role="alert"><Icon name="info" size={16} /><span>{message}</span></div>}
+        <div className="nr-nav-pinned-actions" aria-label={op("Trip stage action")}>
+          {invalidTrip ? (
+          <button className="nr-nav-stage-primary" onClick={() => router.replace("/driver/home")}>{op("Back to Driver Home")}</button>
+        ) : trip.status === "accepted" ? (
+          <button type="button" className="nr-nav-stage-primary" disabled={busy || !safeToUpdate} onClick={() => void transition("arrived_pickup")}>
+            <Icon name="check" size={19} />{busy ? op("Updating…") : op("Arrived at pickup")}
+          </button>
+        ) : trip.status === "arrived_pickup" ? (
+          <button className="nr-nav-stage-primary" disabled={busy || !safeToUpdate} onClick={() => setConfirmAction("in_trip")}><Icon name="navigation" size={19} /> {busy ? op("Starting…") : op("Start trip")}</button>
+        ) : trip.status === "in_trip" ? (
+          <button type="button" className="nr-nav-stage-primary" disabled={busy || !safeToUpdate} onClick={() => setConfirmAction("completed")}>
+            <Icon name="check" size={19} />{busy ? op("Completing…") : op("Complete trip")}
+          </button>
+        ) : (
+          <div className="nr-nav-stage-actions">
+            <button className="nr-nav-stage-primary" onClick={() => router.replace("/driver/earnings")}><Icon name="money" size={19} /> {op("View earnings")}</button>
+            <button className="nr-nav-stage-secondary" onClick={() => router.replace("/driver/home")}><Icon name="home" size={18} /> Driver Home</button>
+          </div>
+        )}
+        </div>
+      </section>
 
       {confirmAction && (
         <Dialog

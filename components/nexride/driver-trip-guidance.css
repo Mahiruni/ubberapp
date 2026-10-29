@@ -1,60 +1,124 @@
-/* Keep operational instructions in the header, with their own contrast rules. */
+/* The route, destination and optional details share one compact app header. */
 .nr-driver-app-shell .nr-driver-global-header[data-navigation="true"] {
-  height:auto!important;
-  backdrop-filter:none!important;
-  -webkit-backdrop-filter:none!important;
+  height:auto!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
 }
+.nr-driver-app-shell .nr-driver-global-header[data-navigation="true"] ~ .nr-driver-shell-content {padding-bottom:0!important}
+.nr-driver-app-shell .nr-driver-global-header[data-navigation="true"] .nr-driver-global-header-inner {
+  height:48px!important;grid-template-columns:88px minmax(0,1fr) 88px!important;gap:4px!important;
+  padding-inline:max(12px,env(safe-area-inset-left,0px)) max(12px,env(safe-area-inset-right,0px))!important;
+}
+.nr-driver-global-header[data-navigation="true"] .nr-driver-global-header-title>strong {
+  position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip-path:inset(50%);white-space:nowrap;
+}
+.nr-driver-app-shell .nr-driver-global-header[data-navigation="true"] .biloo-driver-header-eyebrow {font-size:10px;letter-spacing:.055em;white-space:nowrap}
 #biloo-driver-trip-header-slot:empty {display:none}
 #biloo-driver-trip-header-slot:not(:empty) {
   display:block;box-sizing:border-box;width:min(1180px,100%);margin:0 auto;
-  padding:0 max(12px,env(safe-area-inset-right,0px)) 12px max(12px,env(safe-area-inset-left,0px));
+  padding:0 max(12px,env(safe-area-inset-right,0px)) 10px max(12px,env(safe-area-inset-left,0px));
 }
+.nr-driver-global-header .biloo-driver-trip-header {overflow:hidden;border:1px solid #355675;border-radius:16px;background:#102d50;color:#fff;box-shadow:0 3px 12px #08295f10}
 .nr-driver-global-header[data-navigation="true"] .biloo-driver-trip-guidance {
-  position:static!important;inset:auto!important;transform:none!important;
-  display:grid!important;grid-template-columns:44px minmax(0,1fr)!important;
-  align-items:start!important;gap:12px!important;box-sizing:border-box;
-  width:100%!important;max-width:none!important;min-height:82px!important;
-  margin:0!important;padding:13px 14px!important;border:1px solid #355675!important;
-  border-radius:18px!important;background:#102d50!important;color:#fff!important;
-  box-shadow:0 4px 14px #08295f14!important;
+  position:static!important;inset:auto!important;transform:none!important;display:grid!important;
+  grid-template-columns:32px minmax(0,1fr) auto!important;align-items:center!important;gap:10px!important;box-sizing:border-box;
+  width:100%!important;max-width:none!important;min-height:64px!important;margin:0!important;padding:10px 12px!important;
+  border:0!important;border-radius:0!important;background:#102d50!important;color:#fff!important;box-shadow:none!important;
   backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
 }
 .nr-driver-global-header[data-navigation="true"] .biloo-driver-trip-guidance .nr-nav-guidance-icon {
-  display:grid;place-items:center;width:44px!important;height:44px!important;
-  margin-top:4px;border:1px solid #49627a;border-radius:13px!important;
-  background:#204467!important;color:#f5c75e!important;
+  display:grid;place-items:center;width:32px!important;height:36px!important;margin:0;border:0;border-radius:0!important;background:transparent!important;color:#f5c75e!important;
 }
-.nr-driver-global-header[data-navigation="true"] .biloo-driver-guidance-copy {display:grid!important;gap:5px;min-width:0}
-.nr-driver-global-header[data-navigation="true"] .biloo-driver-guidance-meta {display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0}
+.nr-driver-global-header[data-navigation="true"] .biloo-driver-guidance-copy {display:grid!important;gap:4px;min-width:0}
+.nr-driver-global-header[data-navigation="true"] .biloo-driver-guidance-meta {display:flex;align-items:center;flex-wrap:wrap;gap:3px 8px;min-width:0}
 .nr-driver-global-header[data-navigation="true"] .biloo-driver-trip-guidance small {
-  min-width:0;font-size:10px!important;line-height:1.4!important;font-weight:800!important;
-  letter-spacing:.1em!important;color:#f5c75e!important;overflow-wrap:anywhere;
+  min-width:0;font-size:10px!important;line-height:1.3!important;font-weight:800!important;letter-spacing:.08em!important;color:#f5c75e!important;overflow-wrap:anywhere;
 }
 .nr-driver-global-header[data-navigation="true"] .biloo-driver-trip-guidance .nr-nav-guidance-distance {
-  display:inline-flex!important;align-items:center;justify-content:center;
-  max-width:110px;flex:none;margin:0;padding:3px 7px;border:1px solid #4b6681;
-  border-radius:7px;background:#204467;color:#fff!important;font-size:12px!important;
-  font-weight:750;line-height:1.3;text-align:center;white-space:normal;
-}
-.nr-driver-app-shell .nr-driver-global-header[data-navigation="true"] ~ .nr-driver-shell-content .nr-nav-bottom-card {
-  max-height:min(var(--nr-driver-sheet-height,55dvh),calc(100dvh - var(--driver-header-total) - 160px))!important;
+  display:inline-flex!important;align-items:center;justify-content:center;max-width:90px;flex:none;margin:0;padding:5px 7px;
+  border:1px solid #4b6681;border-radius:8px;background:#204467;color:#fff!important;font-size:13px!important;font-weight:750;line-height:1.3;text-align:center;white-space:normal;
 }
 .nr-driver-global-header[data-navigation="true"] .biloo-driver-trip-guidance strong {
-  display:block;min-width:0;margin:0;color:#fff!important;
-  font-size:clamp(16px,4.4vw,20px)!important;line-height:1.3!important;
-  font-weight:750!important;letter-spacing:-.015em!important;
-  white-space:normal!important;overflow-wrap:anywhere;text-wrap:pretty;
+  display:block;min-width:0;margin:0;color:#fff!important;font-size:clamp(16px,4.4vw,19px)!important;line-height:1.25!important;
+  font-weight:750!important;letter-spacing:-.015em!important;white-space:normal!important;overflow-wrap:anywhere;text-wrap:pretty;
 }
 .nr-driver-global-header[data-navigation="true"] .biloo-driver-trip-guidance em {
-  display:block!important;margin:0;color:#c5d7e9!important;font-size:11px!important;
-  line-height:1.4!important;font-style:normal;font-weight:450;
+  display:block!important;margin:0;color:#c5d7e9!important;font-size:10px!important;line-height:1.3!important;font-style:normal;font-weight:450;
 }
+.nr-driver-global-header .biloo-driver-trip-details {border-top:1px solid #355675;background:var(--driver-surface,#fff);color:var(--driver-text-primary,#102d50)}
+.nr-driver-global-header .biloo-driver-trip-details>summary {
+  display:grid;grid-template-columns:24px minmax(0,1fr) auto;align-items:center;gap:9px;min-height:58px;padding:8px 12px;box-sizing:border-box;list-style:none;cursor:pointer;touch-action:manipulation;
+}
+.nr-driver-global-header .biloo-driver-trip-details>summary::-webkit-details-marker {display:none}
+.nr-driver-global-header .biloo-driver-trip-details>summary:focus-visible {outline:3px solid #f5c75e;outline-offset:-3px}
+.nr-driver-global-header .biloo-driver-stop-icon {display:grid;place-items:center;color:var(--driver-text-primary,#102d50)}
+.nr-driver-global-header .nr-nav-current-destination {display:grid;gap:2px;min-width:0}
+.nr-driver-global-header .nr-nav-current-destination small {color:var(--driver-text-secondary,#667587);font-size:9px;font-weight:750;line-height:1.2;letter-spacing:.07em}
+.nr-driver-global-header .nr-nav-current-destination h1 {margin:0;color:var(--driver-text-primary,#102d50)!important;font-size:16px!important;font-weight:750;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:-.015em}
+.nr-driver-global-header .nr-nav-current-destination p {display:flex;align-items:center;gap:4px;margin:0;color:var(--driver-text-secondary,#667587)!important;font-size:11px;line-height:1.3}
+.nr-driver-global-header .biloo-driver-trip-details[open] .nr-nav-current-destination h1 {white-space:normal;overflow-wrap:anywhere}
+.nr-driver-global-header .biloo-driver-details-toggle {display:flex;align-items:center;gap:3px;color:var(--driver-text-secondary,#667587);font-size:10px;font-weight:650}
+.nr-driver-global-header .biloo-driver-details-toggle svg {transform:rotate(90deg)}
+.nr-driver-global-header .biloo-driver-trip-details[open] .biloo-driver-details-toggle svg {transform:rotate(-90deg)}
+.nr-driver-global-header .biloo-driver-trip-details-body {
+  display:grid;gap:12px;max-height:min(210px,26dvh);overflow-y:auto;overscroll-behavior:contain;padding:12px;border-top:1px solid var(--driver-border,#e0e8f0);font-size:12px;
+}
+.nr-driver-global-header .biloo-driver-trip-details-body .nr-nav-trip-meta {margin:0;color:var(--driver-text-secondary);font-size:10px;letter-spacing:.03em}
+.nr-driver-global-header .biloo-driver-trip-details-body .nr-nav-trip-meta span:last-child {color:var(--driver-text-primary)}
+.nr-driver-global-header .biloo-driver-trip-details-body .biloo-prestige-trip-route {display:grid;gap:10px}
+.nr-driver-global-header .biloo-prestige-trip-stop {display:flex;align-items:center;gap:9px}
+.nr-driver-global-header .biloo-prestige-trip-stop>div {display:grid;gap:3px;min-width:0}
+.nr-driver-global-header .biloo-prestige-trip-stop small {color:var(--driver-text-secondary);font-size:10px}
+.nr-driver-global-header .biloo-prestige-trip-stop strong {color:var(--driver-text-primary);font-size:13px;line-height:1.3;overflow-wrap:anywhere}
+.nr-driver-global-header .biloo-prestige-trip-marker {width:8px;height:8px;flex:none;border:2px solid #7c8c9f;border-radius:50%}
+.nr-driver-global-header .biloo-prestige-trip-stop.destination .biloo-prestige-trip-marker {border-color:#c49326;background:#f5c75e}
+.nr-driver-global-header .nr-nav-utility-row {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:0;margin:0}
+.nr-driver-global-header .nr-nav-utility-row :is(button,a) {
+  display:flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:6px;border:1px solid var(--driver-border);border-radius:11px;
+  background:var(--driver-bg);color:var(--driver-text-primary);font-size:12px;font-weight:750;text-decoration:none;
+}
+.nr-driver-global-header .nr-nav-utility-row button:disabled {opacity:.5}
+.nr-driver-global-header .nr-nav-utility-row :is(button,a):focus-visible {outline:3px solid #c49326;outline-offset:2px}
+.nr-driver-global-header .nr-nav-trip-progress {margin:0;padding:0}
+.nr-driver-global-header .nr-nav-trip-progress>span {color:var(--driver-text-secondary)}
+.nr-driver-global-header .nr-nav-trip-progress i {width:24px;height:24px;background:var(--driver-bg);border-color:var(--driver-border);color:var(--driver-text-primary)}
+.nr-driver-global-header .nr-nav-trip-progress small {font-size:10px;color:inherit}
+.nr-driver-global-header .nr-nav-trip-progress>span.active {color:var(--driver-text-primary)}
+.nr-driver-global-header .nr-nav-trip-progress>span.active i {background:#f5c75e;color:#102d50;border-color:#f5c75e}
+.nr-driver-global-header .nr-nav-trip-progress>span.done i {background:#d9f5e9;color:#086647;border-color:#a8d8c3}
+.nr-driver-global-header .nr-nav-trip-progress>span:not(:last-child)::after {background:var(--driver-border)}
+.nr-driver-global-header .biloo-rider-pickup-signal {display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin:0;padding:9px;border-radius:10px;background:var(--driver-bg);color:var(--driver-text-primary);font-size:12px}
+.nr-driver-global-header .biloo-rider-pickup-signal small {color:var(--driver-text-secondary)}
+.nr-driver-global-header .nr-nav-handoff {margin:0;color:var(--driver-text-secondary);font-size:11px;line-height:1.4}
+/* Only the guarded stage action and its error remain at the bottom. */
+.nr-driver-app-shell .nr-driver-navigation-page[data-layout="header-trip"] .nr-nav-trip-action-bar {
+  position:absolute;z-index:12;left:0;right:0;bottom:0;box-sizing:border-box;
+  padding:10px max(14px,env(safe-area-inset-right,0px)) max(12px,env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px));
+  border-top:1px solid var(--driver-border);background:var(--driver-surface);
+}
+.nr-driver-app-shell .nr-driver-navigation-page[data-layout="header-trip"] .nr-nav-stage-primary {
+  min-height:52px!important;margin:0!important;border:1px solid #d6ae52!important;border-radius:14px!important;
+  background:#0c2d60!important;color:#fff!important;font-size:16px!important;font-weight:800!important;box-shadow:none!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page[data-layout="header-trip"] .nr-nav-stage-primary svg {color:#f5c75e}
+.nr-driver-app-shell .nr-driver-navigation-page[data-layout="header-trip"] .nr-nav-action-error {margin:0 0 8px;font-size:12px}
+.nr-driver-app-shell .nr-driver-navigation-page[data-layout="header-trip"] .nr-nav-status {left:12px!important;right:68px!important;top:12px!important;bottom:auto!important;width:auto;max-width:470px;font-size:11px}
+.nr-driver-app-shell .nr-driver-navigation-page[data-layout="header-trip"] .nr-nav-offline-recovery {
+  position:absolute;z-index:10;left:12px;right:68px;top:12px;max-width:470px;min-height:40px;display:flex;gap:8px;align-items:center;
+  padding:9px 11px;border:1px solid #ddb764;border-radius:12px;background:#fff4d9;color:#6d4b10;font-size:11px;line-height:1.4;
+}
+.nr-driver-app-shell .nr-driver-navigation-page[data-layout="header-trip"] .nr-nav-offline-recovery~.nr-nav-status {top:88px!important}
+.nr-driver-app-shell .nr-driver-shell-content .nr-driver-navigation-page[data-layout="header-trip"] :is(.nr-driver-map-controls,.nr-driver-layer-menu) {top:12px!important}
+.nr-driver-navigation-page[data-layout="header-trip"] .nr-driver-map-marker.destination {
+  width:32px;height:42px;border:0;border-radius:0;background:transparent;box-shadow:none;filter:drop-shadow(0 3px 4px #102d5055);
+}
+.nr-driver-navigation-page[data-layout="header-trip"] .nr-driver-map-marker.destination svg {display:block;width:100%;height:100%}
 @media(min-width:760px) {
-  #biloo-driver-trip-header-slot:not(:empty) {padding-inline:22px}
-  .nr-driver-global-header[data-navigation="true"] .biloo-driver-trip-guidance {min-height:78px!important;padding:12px 16px!important}
+  .nr-driver-global-header .biloo-driver-trip-details-body {grid-template-columns:1fr 1fr;align-items:start}
+  .nr-driver-app-shell .nr-driver-navigation-page[data-layout="header-trip"] .nr-nav-trip-action-bar {left:50%;right:auto;width:420px;transform:translateX(-50%);bottom:max(14px,env(safe-area-inset-bottom,0px));padding:10px;border:1px solid var(--driver-border);border-radius:20px}
 }
 @media(max-width:360px) {
-  .nr-driver-global-header[data-navigation="true"] .biloo-driver-trip-guidance {grid-template-columns:38px minmax(0,1fr)!important;gap:10px!important;padding:11px!important}
-  .nr-driver-global-header[data-navigation="true"] .biloo-driver-trip-guidance .nr-nav-guidance-icon {width:38px!important;height:38px!important}
-  .nr-driver-global-header[data-navigation="true"] .biloo-driver-trip-guidance .nr-nav-guidance-distance {max-width:92px;font-size:11px!important}
+  .nr-driver-global-header[data-navigation="true"] .biloo-driver-trip-guidance {gap:8px!important;padding:10px!important;grid-template-columns:28px minmax(0,1fr) auto!important}
+  .nr-driver-global-header[data-navigation="true"] .biloo-driver-trip-guidance .nr-nav-guidance-icon {width:28px!important}
+  .nr-driver-global-header[data-navigation="true"] .biloo-driver-trip-guidance .nr-nav-guidance-distance {max-width:70px;font-size:12px!important}
+  .nr-driver-global-header .biloo-driver-trip-details>summary {padding:8px 10px;gap:7px}
+  .nr-driver-global-header .biloo-driver-details-toggle>span {display:none}
 }
