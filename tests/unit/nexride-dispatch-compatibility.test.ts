@@ -26,8 +26,9 @@ const riderId = "b8888888-bbbb-4888-8888-bbbbbbbbbbbb";
 const requestId = "a9999999-aaaa-4999-9999-aaaaaaaaaaaa";
 const pickup = { lat: 9.008, lng: 38.775, name: "Pickup" };
 const destination = { lat: 8.978, lng: 38.799, name: "Destination" };
+let quotedFares: Awaited<ReturnType<typeof liveFareSet>>;
 function booking() {
-  const fares = liveFareSet({ pickup, destination });
+  const fares = quotedFares;
   const economy = fares.offers.find(f => f.category === "economy")!;
   return new Request("http://localhost/api/rider/requests", {
     method: "POST",
@@ -86,11 +87,15 @@ function mockDatabase(opts: { active?: boolean; existing?: boolean; dispatchErro
   return { rpc, insert, db, update, filters };
 }
 
-beforeEach(() => {
+beforeEach(async () => {
   authorized.mockReset().mockResolvedValue({ user: { id: riderId } });
   adminClient.mockReset();
   eligible.mockReset().mockResolvedValue("eligible");
   vi.mocked(routeBetween).mockReset().mockResolvedValue({ provider: 'mapbox', distanceMeters: 5600, durationSeconds: 960 });
+  // The client obtains a road quote before submitting a booking. Keep that
+  // quote independent of the provider failure/dispatch scenario under test.
+  quotedFares = await liveFareSet({ pickup, destination });
+  vi.mocked(routeBetween).mockClear();
 });
 
 describe("NexRide server-owned one-driver dispatch", () => {

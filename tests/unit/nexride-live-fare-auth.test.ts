@@ -10,6 +10,12 @@ vi.mock("../../lib/nexride-server-supabase", () => ({
 vi.mock("../../lib/nexride-server-admin", () => ({
   serverAdminSupabase: admin,
 }));
+// These cases exercise account authorization, with a verified road route.
+// Provider outages are covered by the route-pricing tests.
+vi.mock('../../lib/location', async importOriginal => ({
+  ...await importOriginal<typeof import('../../lib/location')>(),
+  routeBetween: vi.fn(async () => ({ provider:'mapbox', distanceMeters:5600, durationSeconds:960 })),
+}));
 
 import { POST } from "../../app/api/rider/fares/route";
 import { validFareSet } from "../../lib/nexride-booking";

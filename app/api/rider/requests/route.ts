@@ -61,9 +61,6 @@ export async function POST(request: Request) {
     if (typeof pickupInstructions !== "string" || pickupInstructions.length > 280)
       return reply({ status: "failed" }, 400);
 
-    const fares = await liveFareSet({ pickup, destination });
-    const current = fares.offers.find((offer) => offer.category === category);
-
     // Create the request directly on the trusted server after verifying the
     // Rider JWT above. This keeps booking aligned with the app's current
     // 100 km Addis service area instead of the older database RPC boundary.
@@ -92,6 +89,14 @@ export async function POST(request: Request) {
     if (existing?.id) {
       return reply({ status: "accepted", requestId: existing.id }, 200);
     }
+
+    let fares;
+    try {
+      fares = await liveFareSet({ pickup, destination });
+    } catch {
+      return reply({ status: "route_unavailable" }, 503);
+    }
+    const current = fares.offers.find((offer) => offer.category === category);
 
     // An uncertain network retry must resolve its original booking even when
     // its quote expired in the meantime. Reprice only genuinely new requests.
@@ -134,7 +139,12 @@ export async function POST(request: Request) {
     }
     const roadKm = route.distanceMeters / 1000;
     const durationMinutes = Math.max(1, Math.ceil(route.durationSeconds / 60));
-    const freshFares = await liveFareSet({ pickup, destination });
+    let freshFares;
+    try {
+      freshFares = await liveFareSet({ pickup, destination });
+    } catch {
+      return reply({ status: "route_unavailable" }, 503);
+    }
     if (freshFares.revision !== revision)
       return reply({ status: "price_changed", fares: freshFares }, 409);
     const quotedFare = fareTotal(current);
