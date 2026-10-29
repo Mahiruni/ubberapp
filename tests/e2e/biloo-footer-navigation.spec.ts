@@ -96,11 +96,9 @@ test("Driver map homepage keeps swipe and separates Profile from hamburger", asy
   await expect(page.locator("#nr-driver-menu .biloo-menu-profile-card")).toHaveCount(1);
   await page.locator(".nr-driver-menu-close").click();
   await expect(page.locator(".nr-driver-home-swipe[data-map-input-boundary=true]")).toBeVisible();
-  const availabilityPanel = page.locator(".nr-driver-home-control-panel");
+  const availabilityPanel = page.locator(".biloo-driver-dock");
   await expect(availabilityPanel.locator(".nr-driver-availability-swipe")).toBeVisible();
   await expect(availabilityPanel.locator(".nr-driver-home-quick-actions")).toHaveCount(0);
-  await expect(availabilityPanel.getByRole("button", { name: "Activity", exact: true })).toHaveCount(0);
-  await expect(availabilityPanel.getByRole("button", { name: "Earnings", exact: true })).toHaveCount(0);
-  await expect(availabilityPanel.getByRole("button", { name: "Settings", exact: true })).toHaveCount(0);
+  await expect(availabilityPanel.locator('.biloo-driver-dock-shortcuts').getByRole('button')).toHaveText(['Activity', 'Earnings', 'Settings']);
   await expect(page.locator(".biloo-footer-nav, .nr-mobile-nav")).toHaveCount(0);
 });

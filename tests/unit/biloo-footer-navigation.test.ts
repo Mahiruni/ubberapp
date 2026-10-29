@@ -37,17 +37,15 @@ describe("Biloo Rider + Driver navigation without a footer tab bar", () => {
     expect(driver).toContain('href="/driver/profile"');
     expect(driver).toContain("DRIVER_NAVIGATION.map");
     expect(registry).toContain('href:"/driver/earnings"');
-    expect(registry).toContain('href:"/driver/map"');
+    expect(registry).toContain('href:"/driver/home"');
+    expect(registry).not.toContain('href:"/driver/map"');
   });
 
-  it("keeps Driver availability swipe but removes all three embedded quick-action buttons", () => {
+  it("keeps the approved Driver dock shortcuts below the availability swipe without a footer tab bar", () => {
     expect(driverHome).toContain("<DriverAvailabilitySwipe");
     expect(driverHome).toContain("onToggle={toggleAvailability}");
-    expect(driverHome).toContain('className="nr-driver-home-control-panel"');
+    expect(driverHome).toContain('className="biloo-driver-dock-shortcuts"');
     expect(driverHome).not.toContain("nr-driver-home-quick-actions");
-    expect(driverHome).not.toContain('router.push("/driver/activity")}><Icon name="clock"');
-    expect(driverHome).not.toContain('router.push("/driver/earnings")}><Icon name="wallet"');
-    expect(driverHome).not.toContain('router.push("/driver/profile/settings")}><Icon name="settings"');
   });
 
   it("preserves map sheets and safe areas without leaving an empty footer gap", () => {

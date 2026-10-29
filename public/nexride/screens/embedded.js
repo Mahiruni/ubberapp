@@ -17,9 +17,9 @@
    const body=['sedan','hatchback','suv','van'].includes(avatar?.bodyType)?avatar.bodyType:'sedan';
    const color=['White','Black','Silver','Gray','Blue','Red','Green','Brown','Beige','Gold','Yellow','Orange'].includes(avatar?.color)?avatar.color:'unknown';
    const style=['signature','goldline','executive'].includes(avatar?.style)?avatar.style:'signature';
-   return '/brand/driver-avatar?bodyType='+body+'&color='+color+'&style='+style;
+   return '/brand/driver-avatar?bodyType='+body+'&color='+color+'&style='+style+'&v=2';
   };
-  const carMark='<img class="biloo-driver-car-art" width="32" height="55" alt="" draggable="false" src="'+avatarSource(null)+'"><span class="biloo-driver-car-label" aria-hidden="true">biloo</span>';
+  const carMark='<img class="biloo-driver-car-art" width="32" height="55" alt="" draggable="false" src="'+avatarSource(null)+'">';
   const icon=kind=>L.divIcon({
     className:'nexride-map-pin '+kind+(kind==='vehicle'?' biloo-driver-car-marker':''),
     html:kind==='vehicle'?carMark:kind==='destination'?'D':'P',

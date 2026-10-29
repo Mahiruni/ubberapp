@@ -116,8 +116,8 @@ export function DriverAvailabilitySwipe({
       ? say("Going offline…", "ከመስመር ውጭ በመውጣት ላይ…")
       : say("Going online…", "ወደ መስመር በመግባት ላይ…")
     : online
-      ? say("Swipe left to go offline", "ከመስመር ውጭ ለመውጣት ወደ ግራ ያንሸራትቱ")
-      : say("Swipe right to go online", "ወደ መስመር ለመግባት ወደ ቀኝ ያንሸራትቱ");
+      ? say("Swipe to go offline", "ከመስመር ውጭ ለመውጣት ያንሸራትቱ")
+      : say("Swipe to go online", "ወደ መስመር ለመግባት ያንሸራትቱ");
   const label = labelOverride || defaultLabel;
 
   return (

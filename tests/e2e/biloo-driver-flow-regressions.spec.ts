@@ -130,13 +130,16 @@ for (const theme of ['light', 'dark'] as const) {
 
   test(`minimizing Home restores map space in ${theme}`, async ({ page }) => {
     await driverFixture(page, theme, 'none'); await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto('/driver/home'); await expect(page.locator('.biloo-driver-first-links')).toBeVisible();
-    const panel = page.locator('.biloo-driver-first-wrapper'), expanded = (await panel.boundingBox())!.height;
+    await page.goto('/driver/home'); await expect(page.locator('.biloo-driver-dock-shortcuts')).toBeVisible();
+    const shortcuts = page.locator('.biloo-driver-dock-shortcuts');
+    await expect(shortcuts.getByRole('button')).toHaveText(['Activity', 'Earnings', 'Settings']);
+    const panel = page.locator('.biloo-driver-dock'), expanded = (await panel.boundingBox())!.height;
     await page.getByRole('button', { name: 'Minimize driver map panel' }).click();
-    await expect(page.locator('.biloo-driver-first-links')).toBeHidden();
-    await expect.poll(async () => (await panel.boundingBox())!.height).toBeLessThan(expanded - 50);
+    await expect(shortcuts).toBeVisible();
+    await expect(page.getByRole('switch')).toBeInViewport();
+    await expect.poll(async () => (await panel.boundingBox())!.height).toBeLessThan(expanded - 20);
     await page.getByRole('button', { name: 'Expand driver map panel' }).click();
-    await expect(page.locator('.biloo-driver-first-links')).toBeVisible();
+    await expect(shortcuts).toBeVisible();
   });
 
   test(`arrival replaces approaching guidance and ETA in ${theme}`, async ({ page }) => {

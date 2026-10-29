@@ -32,6 +32,15 @@ const NIGHT: Palette = {
 };
 
 export const BILOO_CITY_PALETTES = { streets: DAY, dark: NIGHT };
+// Midnight Driver concept: navy land, quiet buildings and distinct neutral roads.
+export const BILOO_DRIVER_PALETTES: Record<'streets' | 'dark', Palette> = {
+  streets: { ...DAY, ground:'#edf1ef', residential:'#e8edea', building:'#dce3e5', buildingEdge:'#cad5d9', park:'#d2e2d2' },
+  dark: { ...NIGHT, ground:'#101b29', residential:'#142132', commercial:'#1c2938',
+    industrial:'#1d2c3c', building:'#223246', buildingEdge:'#2e4258',
+    park:'#142d2a', woodland:'#112723', water:'#122839', halo:'#101b29',
+    road:'#4c5158', roadMajor:'#666b72', roadCase:'#182332', roadCaseMajor:'#263342',
+    label:'#f1f5fa', streetLabel:'#eef4fb', secondaryLabel:'#b8c8d9' },
+};
 // Rider concept #2: cool, quiet streets under navy/gold floating controls.
 // Keep Driver's established cartography and all provider geography intact.
 export const BILOO_RIDER_PALETTES: Record<'streets' | 'dark', Palette> = {
@@ -96,13 +105,13 @@ function ensureRoadCasing(map: MapboxMap, layer: LayerSpecification, p: Palette)
 
 /** Biloo's day/night cartography. Keep source data, road widths, filters,
  * label placement, route/traffic semantics and satellite imagery intact. */
-export function applyBilooCityMapPalette(map: MapboxMap, style: BilooMapStyle | boolean, variant: 'city' | 'rider' = 'city') {
+export function applyBilooCityMapPalette(map: MapboxMap, style: BilooMapStyle | boolean, variant: 'city' | 'rider' | 'driver' = 'city') {
   if (style === false || style === 'satellite') {
     if (style === 'satellite') map.getContainer().dataset.bilooMapPalette = 'satellite';
     return;
   }
   const theme = style === 'dark' ? 'dark' : 'streets';
-  const p = (variant === 'rider' ? BILOO_RIDER_PALETTES : BILOO_CITY_PALETTES)[theme];
+  const p = (variant === 'rider' ? BILOO_RIDER_PALETTES : variant === 'driver' ? BILOO_DRIVER_PALETTES : BILOO_CITY_PALETTES)[theme];
   const layers = map.getStyle()?.layers ?? [];
   for (const layer of layers) {
     const id = layer.id.toLowerCase();

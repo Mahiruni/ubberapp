@@ -55,7 +55,7 @@ export function driverAvatarProfile(vehicle: { model?: unknown; color?: unknown 
 
 export function driverMapAvatarSource(value: unknown): string {
   const avatar = normalizeDriverMapAvatar(value);
-  return `/brand/driver-avatar?bodyType=${avatar.bodyType}&color=${avatar.color || 'unknown'}&style=${avatar.style}`;
+  return `/brand/driver-avatar?bodyType=${avatar.bodyType}&color=${avatar.color || 'unknown'}&style=${avatar.style}&v=2`;
 }
 
 const paints: Record<VehicleColor | '', [string, string, string]> = {
@@ -85,6 +85,7 @@ export function driverMapAvatarSvg(value: unknown): string {
     <linearGradient id="paint" x1="0" y1="0" x2="1" y2=".2"><stop stop-color="${dark}"/><stop offset=".14" stop-color="${base}"/><stop offset=".35" stop-color="${light}"/><stop offset=".65" stop-color="${base}"/><stop offset=".87" stop-color="${base}"/><stop offset="1" stop-color="${dark}"/></linearGradient>
     <linearGradient id="roof" x1="0" y1="0" x2="1" y2=".65"><stop stop-color="${light}"/><stop offset=".5" stop-color="${base}"/><stop offset="1" stop-color="${dark}"/></linearGradient>
     <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#83adc3"/><stop offset=".25" stop-color="#365b73"/><stop offset=".62" stop-color="#152a40"/><stop offset="1" stop-color="#0a1728"/></linearGradient>
+    <linearGradient id="panorama" x1="0" y1="0" x2="1" y2=".4"><stop stop-color="#314d68"/><stop offset=".35" stop-color="#102d50"/><stop offset=".7" stop-color="#0a1c32"/><stop offset="1" stop-color="#254767"/></linearGradient>
     <linearGradient id="tire"><stop stop-color="#0b1018"/><stop offset=".45" stop-color="#414b57"/><stop offset=".6" stop-color="#131d29"/><stop offset="1" stop-color="#050a11"/></linearGradient>
     <filter id="shadow" x="-40%" y="-25%" width="180%" height="160%"><feDropShadow dx="3" dy="7" stdDeviation="4" flood-color="#061a31" flood-opacity=".35"/></filter>
   </defs><g filter="url(#shadow)">
@@ -92,23 +93,29 @@ export function driverMapAvatarSvg(value: unknown): string {
     <rect x="${left - 6}" y="${rear - 53}" width="12" height="34" rx="5" fill="url(#tire)"/><rect x="${right - 6}" y="${rear - 53}" width="12" height="34" rx="5" fill="url(#tire)"/>
     <path d="${body}" transform="translate(0 4)" fill="${dark}" stroke="#122335" stroke-width="1.4"/>
     <path d="${body}" fill="url(#paint)" stroke="#ffffff" stroke-opacity=".65" stroke-width="1.1"/>
+    <path d="M${left + 7} 36Q60 24 ${right - 7} 36M${left + 8} ${rear - 20}Q60 ${rear - 10} ${right - 8} ${rear - 20}" fill="none" stroke="${dark}" stroke-opacity=".65" stroke-width="1.3"/>
+    <path d="M${left + 13} 24L${left + 17} 43M${right - 13} 24L${right - 17} 43" stroke="${light}" stroke-width="2" stroke-opacity=".75"/>
     <path d="M${left + 10} 35Q60 23 ${right - 10} 35L${right - 14} 49Q60 43 ${left + 14} 49Z" fill="url(#roof)"/>
     <path d="M${left + 10} 53Q60 44 ${right - 10} 53L${right - 14} ${roofTop}Q60 ${roofTop - 5} ${left + 14} ${roofTop}Z" fill="url(#glass)" stroke="${dark}" stroke-width="2"/>
     <path d="M${left + 12} 55Q60 48 ${right - 12} 55" fill="none" stroke="#d3eefb" stroke-opacity=".6" stroke-width="1.6"/>
     <path d="M${left + 7} ${roofTop + 2}L${left + 13} ${roofTop + 6}V${roofBottom - 2}L${left + 6} ${roofBottom + 12}Z M${right - 7} ${roofTop + 2}L${right - 13} ${roofTop + 6}V${roofBottom - 2}L${right - 6} ${roofBottom + 12}Z" fill="url(#glass)"/>
-    <path d="M${left + 16} ${roofTop - 1}Q60 ${roofTop - 6} ${right - 16} ${roofTop - 1}L${right - 13} ${roofBottom}Q60 ${roofBottom + 6} ${left + 13} ${roofBottom}Z" fill="url(#roof)" stroke="${light}" stroke-width="1"/>
+    <path d="M${left + 16} ${roofTop - 1}Q60 ${roofTop - 6} ${right - 16} ${roofTop - 1}L${right - 13} ${roofBottom}Q60 ${roofBottom + 6} ${left + 13} ${roofBottom}Z" fill="url(#panorama)" stroke="${light}" stroke-width="1.2"/>
+    <path d="M${left + 18} ${roofTop + 3}L${right - 17} ${roofTop + 12}V${roofTop + 17}L${left + 18} ${roofTop + 8}Z" fill="#cee5f4" opacity=".14"/>
+    <path d="M${left + 15} ${roofTop + 22}H${right - 15}" stroke="#6e8ba4" stroke-width="1" opacity=".4"/>
     <path d="M${left + 16} ${roofBottom + 5}Q60 ${roofBottom + 10} ${right - 16} ${roofBottom + 5}L${right - 9} ${rear - 25}Q60 ${rear - 19} ${left + 9} ${rear - 25}Z" fill="url(#glass)" stroke="${dark}" stroke-width="1.5"/>
     <path d="M${left + 18} ${roofTop + 4}V${roofBottom - 5}" stroke="white" stroke-width="1.7" stroke-opacity=".5"/>
     <path d="M${left + 3} 81H${left + 13} M${right - 13} 81H${right - 3}" stroke="${dark}" stroke-width="2"/>
     <path d="M${left + 4} ${roofTop - 4}L${left - 5} ${roofTop - 1}L${left - 6} ${roofTop + 8}L${left + 3} ${roofTop + 7} M${right - 4} ${roofTop - 4}L${right + 5} ${roofTop - 1}L${right + 6} ${roofTop + 8}L${right - 3} ${roofTop + 7}" fill="${base}" stroke="${dark}" stroke-width="1"/>
     ${stripe}
-    <rect x="43" y="${Math.round((roofTop + roofBottom) / 2) - 10}" width="34" height="21" rx="5" fill="${avatar.style === 'goldline' ? '#f9c449' : '#08295f'}" stroke="#f9c449" stroke-width="1"/>
-    <text x="60" y="${Math.round((roofTop + roofBottom) / 2) + 4}" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" font-weight="800" letter-spacing="-.6" fill="${avatar.style === 'goldline' ? '#08295f' : '#ffffff'}">biloo</text>
+    <rect x="42" y="${Math.round((roofTop + roofBottom) / 2) - 9}" width="36" height="22" rx="5" fill="${avatar.style === 'goldline' ? '#f5c75e' : '#102d50'}" stroke="#f5c75e" stroke-width=".8"/>
+    <text x="60" y="${Math.round((roofTop + roofBottom) / 2) + 6}" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" font-weight="800" letter-spacing="-.6" fill="${avatar.style === 'goldline' ? '#102d50' : '#ffffff'}">biloo</text>
     ${wide ? `<path d="M${left + 12} ${roofTop + 4}V${roofBottom - 4} M${right - 12} ${roofTop + 4}V${roofBottom - 4}" stroke="${dark}" stroke-width="2.4"/>` : ''}
-    <path d="M${left + 6} 26L${left + 18} 23 M${right - 18} 23L${right - 6} 26" stroke="#f6fbff" stroke-width="5" stroke-linecap="round"/>
+    <path d="M${left + 6} 26L${left + 18} 23 M${right - 18} 23L${right - 6} 26" stroke="${dark}" stroke-width="7" stroke-linecap="round"/>
+    <path d="M${left + 6} 26L${left + 18} 23 M${right - 18} 23L${right - 6} 26" stroke="#f6fbff" stroke-width="3.5" stroke-linecap="round"/>
     <path d="M${left + 8} ${rear - 6}L${left + 20} ${rear - 3} M${right - 20} ${rear - 3}L${right - 8} ${rear - 6}" stroke="#d63c4b" stroke-width="4" stroke-linecap="round"/>
     <path d="M46 17Q60 14 74 17" fill="none" stroke="#112638" stroke-width="3" stroke-linecap="round"/>
     <path d="M${left + 5} 34Q${left + 1} 100 ${left + 5} ${rear - 22}" fill="none" stroke="#ffffff" stroke-opacity=".45" stroke-width="1.2"/>
     <path d="M46 ${rear - 1}H74" stroke="${dark}" stroke-width="2" stroke-linecap="round"/>
+    <path d="M49 ${rear - 5}H71" stroke="#edf3f8" stroke-width="3" stroke-linecap="round"/>
   </g></svg>`;
 }

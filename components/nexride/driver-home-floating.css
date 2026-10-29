@@ -1,0 +1,109 @@
+/* Selected Driver concepts: Floating Dock (day) and Midnight (night).
+   Scope the surface to Home so trip/request sheets retain their own layout. */
+.biloo-driver-floating-home {
+  --dock-surface:#fff;
+  --dock-text:#102d50;
+  --dock-muted:#586b80;
+  --dock-border:#e3e9f0;
+  --dock-raised:#f5f7fa;
+  --dock-gold:#f5c75e;
+}
+.nr-driver-app-shell[data-theme="dark"] .biloo-driver-floating-home {
+  --dock-surface:#102d50;
+  --dock-text:#f5f8fc;
+  --dock-muted:#b7c8dd;
+  --dock-border:#34516f;
+  --dock-raised:#1a3a5d;
+  color-scheme:dark;
+}
+.biloo-driver-home-wordmark {
+  position:absolute;z-index:17;top:calc(var(--nr-safe-top,env(safe-area-inset-top,0px)) + 19px);
+  left:50%;transform:translateX(-50%);pointer-events:none;
+  color:#102d50;font-size:29px;font-weight:900;letter-spacing:-1.8px;line-height:1.2;
+  text-shadow:0 1px 8px #ffffffb0;
+}
+.nr-driver-app-shell[data-theme="dark"] .biloo-driver-home-wordmark {color:var(--dock-gold);text-shadow:none}
+.nr-driver-app-shell[data-home="true"] .biloo-driver-floating-home .biloo-driver-dock-host {
+  position:absolute!important;left:50%!important;right:auto!important;
+  bottom:calc(max(12px,env(safe-area-inset-bottom,0px)) + var(--nr-native-bottom-inset,0px))!important;
+  width:min(440px,calc(100% - 28px))!important;max-height:calc(100dvh - var(--nr-safe-top,env(safe-area-inset-top,0px)) - 100px);
+  padding:0!important;margin:0!important;border:0!important;border-radius:28px!important;
+  background:transparent!important;box-shadow:none!important;
+  backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+  transform:translateX(-50%)!important;overflow:auto;overscroll-behavior:contain;
+  touch-action:pan-y!important;scrollbar-width:none;
+}
+.biloo-driver-dock {
+  display:grid;gap:9px;box-sizing:border-box;width:100%;padding:0 18px 13px;
+  border:1px solid var(--dock-border);border-radius:28px;
+  background:var(--dock-surface);color:var(--dock-text);
+  box-shadow:0 8px 30px #08295f16;isolation:isolate;
+}
+.biloo-driver-dock-handle {
+  display:grid;place-items:center;justify-self:center;width:76px;min-height:44px;
+  margin:0 0 -3px;padding:0;border:0;border-radius:12px;background:transparent;
+  color:inherit;cursor:ns-resize;touch-action:none;
+}
+.biloo-driver-dock-handle span {width:38px;height:4px;border-radius:8px;background:#b6c5d5}
+.nr-driver-app-shell[data-theme="dark"] .biloo-driver-dock-handle span {background:#7390b0}
+.biloo-driver-dock-meta {display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0}
+.biloo-driver-dock-brand {font-size:10px;line-height:1.3;font-weight:800;letter-spacing:.15em;color:var(--dock-text)}
+.nr-driver-app-shell[data-theme="dark"] .biloo-driver-dock-brand {color:var(--dock-gold)}
+.biloo-driver-dock-status {display:inline-flex;align-items:center;gap:6px;flex:none;padding:6px 10px;border:1px solid var(--dock-border);border-radius:30px;background:var(--dock-raised);color:var(--dock-muted);font-size:11px;line-height:1.3;font-weight:700}
+.biloo-driver-dock-status>span {width:6px;height:6px;flex:none;background:#b84d52;border-radius:50%}
+.biloo-driver-dock-status[data-online="true"] {color:#087c57;background:#ebfaf3;border-color:#b7e7d2}
+.biloo-driver-dock-status[data-online="true"]>span {background:#087c57}
+.nr-driver-app-shell[data-theme="dark"] .biloo-driver-dock-status[data-online="true"] {color:#82ebbc;background:#123d39;border-color:#32735d}
+.nr-driver-app-shell[data-theme="dark"] .biloo-driver-dock-status[data-online="true"]>span {background:#82ebbc}
+.biloo-driver-floating-home .biloo-driver-dock-title {min-width:0;margin:3px 0 0;font-size:clamp(23px,6vw,28px);font-weight:800;letter-spacing:-.045em;line-height:1.18;color:var(--dock-text)}
+.nr-driver-app-shell .biloo-driver-floating-home .biloo-driver-dock-description {margin:0 0 6px;color:var(--dock-muted)!important;font-size:13px;line-height:1.5;overflow-wrap:anywhere}
+.biloo-driver-dock-notice {display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px 10px;padding:8px 10px;border:1px solid var(--dock-border);border-radius:12px;background:var(--dock-raised);font-size:12px;line-height:1.5}
+.biloo-driver-dock-notice button {min-height:44px;padding:3px 5px;border:0;background:transparent;color:inherit;font:inherit;font-weight:750;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.nr-driver-app-shell .biloo-driver-floating-home .biloo-driver-dock-error {margin:0;padding:9px 10px;border-radius:10px;background:#fff1f1;color:#a32d3b!important;font-size:12px;line-height:1.45;overflow-wrap:anywhere}
+.nr-driver-app-shell[data-theme="dark"] .biloo-driver-floating-home .biloo-driver-dock-error {background:#402637;color:#ffc1c8!important}
+.biloo-driver-dock-availability {min-width:0}
+.nr-driver-app-shell[data-home="true"] .biloo-driver-floating-home .nr-driver-availability-swipe {
+  display:block;box-sizing:border-box;width:100%;height:62px!important;min-height:62px!important;
+  padding:4px!important;border:1px solid #254e7c!important;border-radius:18px!important;
+  color:#fff!important;background:#153f70!important;box-shadow:none!important;
+}
+.nr-driver-app-shell[data-home="true"] .biloo-driver-floating-home .nr-driver-availability-swipe[data-online="true"] {background:#087c57!important;border-color:#14966c!important}
+.nr-driver-app-shell[data-home="true"] .biloo-driver-floating-home .nr-driver-swipe-label {
+  display:block;overflow:hidden;padding:0 10px 0 62px!important;white-space:normal;
+  color:#fff!important;font-size:13px!important;font-weight:750!important;line-height:1.3;
+}
+.nr-driver-app-shell[data-home="true"] .biloo-driver-floating-home .nr-driver-availability-swipe[data-online="true"] .nr-driver-swipe-label {padding:0 62px 0 10px!important}
+.nr-driver-app-shell[data-home="true"] .biloo-driver-floating-home .nr-driver-swipe-thumb {
+  top:3px;left:3px;width:54px!important;height:54px!important;border-radius:14px!important;
+  background:linear-gradient(135deg,#ffe9a0,var(--dock-gold))!important;color:#102d50!important;box-shadow:0 2px 6px #071b3026!important;
+}
+.nr-driver-app-shell[data-home="true"] .biloo-driver-floating-home .nr-driver-availability-swipe[data-online="true"] .nr-driver-swipe-thumb {left:calc(100% - 57px)}
+.biloo-driver-dock-enable-alerts {display:flex;align-items:center;justify-content:center;gap:7px;min-height:44px;padding:4px;border:0;border-radius:8px;background:transparent;color:var(--dock-text);font:inherit;font-size:12px;cursor:pointer}
+.nr-driver-app-shell .biloo-driver-floating-home .biloo-driver-dock-permission {margin:0;font-size:11px;line-height:1.5;color:var(--dock-muted)!important}
+.biloo-driver-dock-shortcuts {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;padding-top:10px;margin-top:3px;border-top:1px solid var(--dock-border)}
+.biloo-driver-dock-shortcuts button {display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-width:0;min-height:60px;margin:0;padding:5px 3px;border:0;border-radius:8px;background:transparent;color:var(--dock-text);font:inherit;font-size:11px;line-height:1.3;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.biloo-driver-dock-shortcuts button+button {border-left:1px solid var(--dock-border);border-radius:0}
+.biloo-driver-dock-shortcuts button span {overflow-wrap:anywhere}
+.nr-driver-app-shell[data-theme="dark"] .biloo-driver-dock-shortcuts svg {color:var(--dock-gold)}
+.biloo-driver-dock-shortcuts button:active {background:var(--dock-raised)}
+.biloo-driver-dock :is(button,a):focus-visible {outline:3px solid var(--dock-gold);outline-offset:2px}
+.biloo-driver-dock[data-compact="true"] .biloo-driver-dock-description {display:none}
+.biloo-driver-dock[data-compact="true"] {gap:5px;padding-bottom:10px}
+.biloo-driver-floating-home .biloo-driver-dock[data-compact="true"] .biloo-driver-dock-title {font-size:21px;margin-bottom:4px}
+.nr-driver-app-shell[data-home="true"] .biloo-driver-floating-home .nr-map-touch-control {
+  backdrop-filter:none!important;-webkit-backdrop-filter:none!important;background:var(--dock-surface)!important;
+  color:var(--dock-text)!important;border:1px solid var(--dock-border)!important;box-shadow:0 3px 12px #08295f12!important;
+}
+@media(min-width:900px) {
+  .nr-driver-app-shell[data-home="true"] .biloo-driver-floating-home .biloo-driver-dock-host {left:24px!important;bottom:24px!important;transform:none!important;width:380px!important}
+}
+@media(max-height:700px) {
+  .biloo-driver-dock {gap:6px;padding-inline:14px;padding-bottom:10px}
+  .nr-driver-app-shell .biloo-driver-floating-home .biloo-driver-dock-description {margin-bottom:3px;font-size:12px}
+  .biloo-driver-floating-home .biloo-driver-dock-title {font-size:23px}
+  .biloo-driver-dock-shortcuts button {min-height:52px}
+}
+@media(prefers-reduced-motion:reduce) {
+  .biloo-driver-floating-home .nr-driver-availability-swipe,
+  .biloo-driver-floating-home .nr-driver-swipe-thumb {transition:none!important}
+}

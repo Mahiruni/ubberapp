@@ -25,13 +25,12 @@ import { supabase } from "../../lib/supabase";
 import { resolveSessionRole } from "../../lib/nexride-account-role";
 import { nexrideApiFetch } from "../../lib/nexride-api-auth";
 import { driverGpsHealth } from "../../lib/nexride-driver-gps";
-import { useDriverMapAvatar } from "../../lib/biloo-driver-map-avatar-client";
-import { driverMapAvatarSource } from "../../lib/biloo-driver-map-avatar";
 import { emitNexRideFeedback } from "../../lib/nexride-feedback";
 import { enableNexRideNativeNotifications, getNexRideNativeAppRole } from "../../lib/nexride-native-reliability";
 import "../../app/driver/driver-dashboard.css";
 import "../../app/driver/driver-home-v2.css";
 import "../../app/rider-home.css";
+import "./driver-home-floating.css";
 
 export type DriverScreen = "home" | "earnings" | "map" | "profile";
 type ReviewStatus = "draft" | "pending" | "approved" | "rejected" | "suspended";
@@ -136,8 +135,9 @@ export function DriverWorkspace({
   const { resolvedTheme } = useDriverTheme();
   const [state, setState] = useState<DriverState>(emptyState);
   const [driverId, setDriverId] = useState("");
-  // Reuse the Driver’s own registered car avatar rather than displaying a stock vehicle.
-  const prestigeCar = useDriverMapAvatar(screen === "home" && Boolean(driverId));
+  const [compactMapSheet, setCompactMapSheet] = useState(false);
+  const sheetDragStart = useRef<number | null>(null);
+  const sheetDragMoved = useRef(false);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState("");
@@ -692,9 +692,6 @@ export function DriverWorkspace({
             ? say("GPS stale · reconnecting", "ጂፒኤስ የቆየ ነው · እንደገና በመገናኘት ላይ")
             : say("Waiting for a fresh GPS fix", "አዲስ የጂፒኤስ ቦታ በመጠባበቅ ላይ");
 
-  const [compactMapSheet, setCompactMapSheet] = useState(false);
-  const sheetDragStart = useRef<number | null>(null);
-  const sheetDragMoved = useRef(false);
   const sheetDragEnd = (event: React.PointerEvent<HTMLButtonElement>) => {
     if (sheetDragStart.current === null) return;
     const delta = event.clientY - sheetDragStart.current;
@@ -716,7 +713,7 @@ export function DriverWorkspace({
       : undefined;
 
   return (
-    <div className="nr-driver-page nr-driver-home-cockpit">
+    <div className="nr-driver-page nr-driver-home-cockpit biloo-driver-floating-home">
       <section
         className={`nr-driver-home-map-canvas ${state.online ? "is-online" : "is-offline"}`}
         aria-label="Driver operational map"
@@ -739,12 +736,9 @@ export function DriverWorkspace({
         />
 
 
-        <div className="nr-driver-presence-label" role="status" aria-live="polite" title={gpsHealthMessage} data-ready={state.online && gpsHealth === "ready" && gpsConfirmedAt > 0 && presenceClock - gpsConfirmedAt <= 60_000 ? "true" : "false"}>
-          <Icon name="locate" size={14} />
-          <span className="nr-driver-presence-copy">{gpsHealthMessage}</span>
-        </div>
+        <span className="biloo-driver-home-wordmark" aria-label="Biloo">biloo</span>
         <div
-          className="nr-driver-home-swipe"
+          className="nr-driver-home-swipe biloo-driver-dock-host"
           data-map-input-boundary="true"
           onPointerDown={(event) => event.stopPropagation()}
           onPointerMove={(event) => event.stopPropagation()}
@@ -757,50 +751,28 @@ export function DriverWorkspace({
           onClick={(event) => event.stopPropagation()}
           onDoubleClick={(event) => event.stopPropagation()}
         >
-          <div className={`nr-driver-home-control-panel biloo-driver-first-wrapper ${compactMapSheet ? "is-map-sheet-compact" : ""}`}>
-            <button type="button" className="biloo-driver-first-handle" aria-label={compactMapSheet ? "Expand driver map panel" : "Minimize driver map panel"} aria-expanded={!compactMapSheet}
+          <section className="biloo-driver-dock" data-compact={compactMapSheet} aria-label={say("Driver controls", "የአሽከርካሪ መቆጣጠሪያዎች")}>
+            <button type="button" className="biloo-driver-dock-handle" aria-label={compactMapSheet ? "Expand driver map panel" : "Minimize driver map panel"} aria-expanded={!compactMapSheet}
               onPointerDown={(event) => { sheetDragStart.current = event.clientY; sheetDragMoved.current = false; event.currentTarget.setPointerCapture(event.pointerId); }}
               onPointerUp={sheetDragEnd}
               onPointerCancel={() => { sheetDragStart.current = null; }}
-              onClick={() => { if (sheetDragMoved.current) { sheetDragMoved.current = false; return; } setCompactMapSheet(value => !value); }} />
-            <div className="nr-driver-home-control-heading">
-              <div className="nr-driver-home-control-state">
-                <span className="nr-driver-home-control-brand">BILOO · DRIVER</span>
-                <strong>{state.online ? say("Ready for rides", "ለጉዞ ዝግጁ") : say("Ready to drive?", "ለመንዳት ዝግጁ ነዎት?")}</strong>
-              </div>
-              <div className="nr-driver-home-control-tools">
-                <span className="nr-driver-home-control-online" data-online={state.online ? "true" : "false"}>
+              onClick={() => { if (sheetDragMoved.current) { sheetDragMoved.current = false; return; } setCompactMapSheet(value => !value); }}><span aria-hidden="true" /></button>
+            <div className="biloo-driver-dock-meta">
+              <span className="biloo-driver-dock-brand">BILOO DRIVER</span>
+                <span className="biloo-driver-dock-status" data-online={state.online}>
                   <span aria-hidden="true" />{state.online ? say("Online", "መስመር ላይ") : say("Offline", "ከመስመር ውጭ")}
                 </span>
-                <button
-                  type="button"
-                  className="nr-driver-home-alert-icon"
-                  data-permission={alertPermission}
-                  disabled={alertPermission === "granted" || alertPermission === "denied" || alertPermission === "unsupported"}
-                  onClick={() => void enableDriverAlerts()}
-                  aria-label={alertPermission === "granted" ? say("Ride notifications enabled", "የጉዞ ማሳወቂያዎች በርተዋል")
-                    : alertPermission === "denied" ? say("Ride notifications blocked in device settings", "የጉዞ ማሳወቂያዎች በመሣሪያ ቅንብሮች ታግደዋል")
-                    : alertPermission === "unsupported" ? say("In-app alerts only", "የውስጥ መተግበሪያ ማሳወቂያዎች ብቻ")
-                    : say("Enable ride notifications", "የጉዞ ማሳወቂያዎችን አንቃ")}
-                  title={alertPermission === "granted" ? say("Alerts enabled", "ማሳወቂያ በርቷል")
-                    : alertPermission === "denied" ? say("Alerts blocked in device settings", "ማሳወቂያ በመሣሪያ ቅንብሮች ታግዷል")
-                    : alertPermission === "unsupported" ? say("In-app alerts", "የውስጥ ማሳወቂያ")
-                    : say("Enable alerts", "ማሳወቂያን አንቃ")}
-                >
-                  <Icon name="bell" size={20} />
-                </button>
-              </div>
             </div>
-            <div className="biloo-driver-first-availability" role="group" aria-label={say("Driver availability", "የአሽከርካሪ ተገኝነት")}>
-              <div className="biloo-driver-first-availability-copy">
-                <strong>{state.online ? say("You're online", "መስመር ላይ ነዎት") : say("You're offline", "ከመስመር ውጭ ነዎት")}</strong>
-                <span>{state.online ? say("Waiting for nearby ride requests", "የአቅራቢያ ጉዞ ጥያቄዎችን በመጠባበቅ ላይ") : say("Swipe below to become available", "ለመገኘት ከታች ያንሸራትቱ")}</span>
-              </div>
-              {prestigeCar && !compactMapSheet && (
-                <div className="biloo-prestige-vehicle" aria-hidden="true">
-                  <img src={driverMapAvatarSource(prestigeCar)} alt="" width={52} height={86} draggable={false} />
-                </div>
-              )}
+            <h1 className="biloo-driver-dock-title">{state.online ? say("Ready for rides", "ለጉዞ ዝግጁ") : say("Ready to drive?", "ለመንዳት ዝግጁ ነዎት?")}</h1>
+            <p className="biloo-driver-dock-description" role="status" aria-live="polite">
+              {state.online ? gpsHealthMessage : say("Go online when you're ready.", "ዝግጁ ሲሆኑ ወደ መስመር ይግቡ።")}
+            </p>
+            {!loading && !verified && <div className="biloo-driver-dock-notice" role="status">
+              <span>{verificationCopy(state.reviewStatus, state.rejectionReason).title}</span>
+              <button type="button" disabled={updating} onClick={resolveBlock}>{verificationCopy(state.reviewStatus, state.rejectionReason).action}</button>
+            </div>}
+            {error && <p className="biloo-driver-dock-error" role="alert">{error}</p>}
+            <div className="biloo-driver-dock-availability" role="group" aria-label={say("Driver availability", "የአሽከርካሪ ተገኝነት")}>
             <DriverAvailabilitySwipe
               online={state.online}
               updating={updating}
@@ -809,12 +781,14 @@ export function DriverWorkspace({
               onToggle={toggleAvailability}
             />
             </div>
-            <div className="biloo-driver-first-links" aria-label={say("Driver shortcuts", "የአሽከርካሪ አቋራጮች")}>
-              <button type="button" onClick={() => navigate("earnings")}><Icon name="wallet" size={19}/><span>{say("Earnings", "ገቢ")}</span></button>
-              <button type="button" onClick={() => router.push("/driver/activity")}><Icon name="clock" size={19}/><span>{say("Activity", "እንቅስቃሴ")}</span></button>
-              <button type="button" onClick={onSafety}><Icon name="shield" size={19}/><span>{say("Safety", "ደህንነት")}</span></button>
+            {alertPermission === "default" && <button type="button" className="biloo-driver-dock-enable-alerts" onClick={() => void enableDriverAlerts()}><Icon name="bell" size={15} />{say("Enable ride notifications", "የጉዞ ማሳወቂያዎችን አንቃ")}</button>}
+            {alertPermission === "denied" && <p className="biloo-driver-dock-permission" role="status">{say("Ride notifications are blocked in device settings.", "የጉዞ ማሳወቂያዎች በመሣሪያ ቅንብሮች ታግደዋል።")}</p>}
+            <div className="biloo-driver-dock-shortcuts" aria-label={say("Driver shortcuts", "የአሽከርካሪ አቋራጮች")}>
+              <button type="button" onClick={() => router.push("/driver/activity")}><Icon name="clock" size={22}/><span>{say("Activity", "እንቅስቃሴ")}</span></button>
+              <button type="button" onClick={() => navigate("earnings")}><Icon name="wallet" size={22}/><span>{say("Earnings", "ገቢ")}</span></button>
+              <button type="button" onClick={() => router.push("/driver/profile/settings")}><Icon name="settings" size={22}/><span>{say("Settings", "ቅንብሮች")}</span></button>
             </div>
-          </div>
+          </section>
         </div>
       </section>
     </div>

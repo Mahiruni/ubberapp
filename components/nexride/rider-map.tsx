@@ -106,6 +106,18 @@ function deviceLocationCameraOffset(map: MapboxMap): [number, number] {
  * keep their original global map padding.
  */
 function deviceLocationCameraPadding(map: MapboxMap) {
+  const driverHome = map.getContainer().closest('.biloo-driver-floating-home');
+  if (driverHome) {
+    const canvas = map.getContainer().getBoundingClientRect();
+    const dock = driverHome.querySelector('.biloo-driver-dock-host')?.getBoundingClientRect();
+    const brand = driverHome.querySelector('.biloo-driver-home-wordmark')?.getBoundingClientRect();
+    const top = Math.min(Math.max(64, (brand?.bottom ?? canvas.top) - canvas.top + 16), canvas.height / 3);
+    const bottom = dock && dock.width > canvas.width * .7
+      ? Math.min(canvas.bottom - dock.top + 12, Math.max(0, canvas.height - top - 100)) : 0;
+    const left = dock && dock.width <= canvas.width * .7
+      ? Math.min(Math.max(0, dock.right - canvas.left + 20), canvas.width - 100) : 0;
+    return { top, right:0, bottom, left };
+  }
   if (map.getContainer().closest<HTMLElement>('.nr-rider-map-surface')?.dataset.activeTrip === 'true') return activeTripCameraPadding(map);
   const [, dy] = deviceLocationCameraOffset(map);
   const padding = { top: Math.max(0, 2 * dy), right: 0, bottom: Math.max(0, -2 * dy), left: 0 };
@@ -932,7 +944,7 @@ export function RiderMap({
 
       map.on("style.load", () => {
         if (cancelled) return;
-        applyBilooCityMapPalette(map, activeStyleRef.current, markerRole === "rider" ? "rider" : "city");
+        applyBilooCityMapPalette(map, activeStyleRef.current, markerRole === "rider" ? "rider" : markerRole === "driver" ? "driver" : "city");
         syncStyleData();
         loadedRef.current = true;
         window.clearTimeout(startupTimeout);
@@ -1058,7 +1070,7 @@ export function RiderMap({
         if (
           fix && statusRef.current === "ready" &&
           !manualView.current && !planned &&
-          container.current?.closest(".rider-home-view")
+          container.current?.closest(".rider-home-view, .biloo-driver-floating-home")
         ) {
           map.easeTo({
             center: [fix.lng, fix.lat],
@@ -1075,6 +1087,8 @@ export function RiderMap({
         .closest(".rider-home-view")
         ?.querySelector<HTMLElement>(".nr-home-panel-host");
       if (homePanel) resizeObserver.current.observe(homePanel);
+      const driverDock = container.current.closest('.biloo-driver-floating-home')?.querySelector('.biloo-driver-dock');
+      if (driverDock) resizeObserver.current.observe(driverDock);
       const home = container.current.closest(".rider-home-view");
       for (const chrome of [home?.querySelector('.nr-topbar'), home?.querySelector('.biloo-rider-floating-dock')])
         if (chrome) resizeObserver.current.observe(chrome);
