@@ -39,9 +39,8 @@ function navigationMapPadding(map: MapboxMap) {
   const rect = canvas.getBoundingClientRect();
   const page = canvas.closest('.nr-driver-navigation-page');
   const sheet = page?.querySelector('.nr-nav-bottom-card')?.getBoundingClientRect();
-  const guidance = page?.querySelector('.nr-nav-guidance')?.getBoundingClientRect();
   const sidePanel = sheet && rect.width >= 760 && sheet.left > rect.left + rect.width * .45;
-  const top = Math.min(Math.max(110, (guidance?.bottom || rect.top) - rect.top + 55), Math.max(40, rect.height - 180));
+  const top = Math.min(64, Math.max(40, rect.height - 180));
   const left = 55;
   const right = Math.max(74, Math.min(sidePanel ? rect.right - sheet.left + 65 : 74, rect.width - left - 110));
   const bottom = Math.min(sidePanel ? 75 : Math.max(110, sheet ? rect.bottom - sheet.top + 65 : 220), Math.max(55, rect.height - top - 110));

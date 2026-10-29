@@ -428,7 +428,7 @@ function DriverHeader({
   }
 
   return (
-    <header className="nr-driver-global-header" data-map={isTripFocusPath(pathname) ? "true" : "false"}>
+    <header className="nr-driver-global-header" data-map={isTripFocusPath(pathname) ? "true" : "false"} data-navigation={pathname.startsWith("/driver/navigation") ? "true" : undefined}>
       <div className="nr-driver-global-header-inner">
         <div className="nr-driver-global-header-side nr-driver-global-header-left">
           <DriverHamburgerMenu controlledOpen={menuOpen} onOpenChange={onMenuOpenChange} />
@@ -458,6 +458,7 @@ function DriverHeader({
           <span className="nr-driver-global-header-spacer" aria-hidden="true" />
         </div>
       </div>
+      {pathname.startsWith("/driver/navigation") && <div id="biloo-driver-trip-header-slot" />}
     </header>
   );
 }

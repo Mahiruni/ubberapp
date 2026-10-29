@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DriverNavigationMap, type NavigationCoordinate } from "../../../components/nexride/driver-navigation-map";
 import { DriverBottomSheet } from "../../../components/nexride/driver-bottom-sheet";
+import { DriverTripGuidance } from "../../../components/nexride/driver-trip-guidance";
 import { Button, Dialog, Icon } from "../../../components/nexride/ui";
 import { useOperationalTranslation } from "../../../components/nexride/operational-i18n";
 import { supabase } from "../../../lib/supabase";
@@ -821,23 +822,11 @@ export default function DriverNavigationPage() {
 
       <button className="nr-nav-home" onClick={() => router.replace("/driver/home")} aria-label={op("Driver home")}><Icon name="home" size={19} /></button>
 
-      <section className="nr-nav-guidance" aria-live="polite">
-        <span className="nr-nav-guidance-icon"><Icon name="navigation" size={30} /></span>
-        <div>
-          <small>{stage.badge}</small>
-          <strong>{guidanceTitle}</strong>
-          {canNavigate && (
-            <em>
-              {nativeRoute?.target === stage.target
-                ? trafficLabel
-                  ? `${op("Route guidance")} · ${trafficLabel}`
-                  : op("Route guidance")
-                : op("Checking route guidance…")}
-            </em>
-          )}
-        </div>
-        <span className="nr-nav-guidance-distance">{guidanceDistance}</span>
-      </section>
+      <DriverTripGuidance badge={stage.badge} instruction={guidanceTitle} distance={guidanceDistance}
+        label={op("Live trip guidance")}
+        detail={canNavigate ? nativeRoute?.target === stage.target
+          ? trafficLabel ? `${op("Route guidance")} · ${trafficLabel}` : op("Route guidance")
+          : op("Checking route guidance…") : undefined} />
 
       {(gpsState !== "fresh" || routeNotice || locationShareError || nativeRouteNotice) && (
         <div className={`nr-nav-status ${gpsState === "lost" || locationShareError ? "danger" : gpsState === "stale" || nativeRouteNotice ? "warning" : ""}`}>

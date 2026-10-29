@@ -145,6 +145,12 @@ for (const theme of ['light', 'dark'] as const) {
   test(`arrival replaces approaching guidance and ETA in ${theme}`, async ({ page }) => {
     const { state } = await driverFixture(page, theme, 'accepted');
     await page.goto(navigation); await expect(page.locator('.nr-nav-stage-primary')).toBeEnabled();
+    const guidance = page.locator('.nr-driver-global-header .nr-nav-guidance');
+    await expect(guidance).toBeVisible();
+    await expect(guidance.locator('strong')).toHaveCSS('color', 'rgb(255, 255, 255)');
+    await expect(page.locator('.nr-driver-navigation-page .nr-nav-guidance')).toHaveCount(0);
+    const header = (await page.locator('.nr-driver-global-header').boundingBox())!;
+    expect((await page.locator('.nr-driver-navigation-page').boundingBox())!.y).toBeGreaterThanOrEqual(header.y + header.height - 1);
     await expect(page.locator('.nr-nav-current-destination')).toContainText('Arriving in about 3 min');
     await page.locator('.nr-nav-stage-primary').click();
     await expect(page.locator('.nr-nav-stage-primary')).toContainText('Start trip');
