@@ -1,5 +1,7 @@
 "use client";
 
+import { nativeRideAlertsPlugin, presentNativeRideAlert, stopNativeRideAlert } from "./biloo-native-ride-alerts";
+
 export type NexRideSoundId =
   | "online"
   | "offline"
@@ -78,7 +80,7 @@ let requestAudioPrimed = false;
 
 export const RIDE_REQUEST_ALERT_DURATION_MS = 30_000;
 export const RIDE_REQUEST_SOUND_STATE_EVENT = "nexride:ride-request-sound-state";
-type ActiveRideAlert = { offerId: string; endsAt: number; timer: ReturnType<typeof setTimeout> };
+type ActiveRideAlert = { offerId: string; endsAt: number; timer: ReturnType<typeof setTimeout>; nativeOwned?: boolean };
 let activeRideAlert: ActiveRideAlert | null = null;
 let rideRequestSoundBlocked = false;
 const recentlyAlerted = new Map<string, number>();
@@ -155,6 +157,7 @@ function getRideRequestAudio() {
 }
 
 export async function primeNexRideAudio() {
+  if (activeRideAlert && await nativeRideAlertsPlugin()) return true;
   const audio = getContext();
   const ringtone = getRideRequestAudio();
   let contextReady = false;
@@ -232,6 +235,7 @@ function hapticFor(event: NexRideFeedbackEvent) {
 
 /** Stop immediately; optional offer ID protects a newer alert from stale events. */
 export function stopRideRequestAlert(offerId?: string) {
+  void stopNativeRideAlert(offerId);
   if (offerId && activeRideAlert?.offerId !== offerId) return;
   if (activeRideAlert) clearTimeout(activeRideAlert.timer);
   activeRideAlert = null;
@@ -261,7 +265,8 @@ export function startRideRequestAlert(offerId: string, expiresAt?: string | null
     Number.isFinite(expiry) ? expiry : Infinity,
   );
   if (endsAt <= now) return;
-  stopRideRequestAlert();
+  // A native push may already own this offer; close only the previous WebView offer.
+  if (activeRideAlert) stopRideRequestAlert(activeRideAlert.offerId);
   recentlyAlerted.set(offerId, now);
   for (const [id, time] of recentlyAlerted) {
     if (now - time > 5 * 60_000) recentlyAlerted.delete(id);
@@ -271,23 +276,31 @@ export function startRideRequestAlert(offerId: string, expiresAt?: string | null
     endsAt,
     timer: setTimeout(() => stopRideRequestAlert(offerId), endsAt - now),
   };
-  hapticFor("ride_request");
-  const ringtone = getRideRequestAudio();
-  if (!ringtone) return;
-  try {
-    ringtone.loop = true;
-    ringtone.currentTime = 0;
-    void ringtone.play().then(() => {
-      if (isRideRequestAlertActive(offerId)) {
-        requestAudioPrimed = true;
-        soundState(false);
-      }
-    }).catch(() => {
+  void presentNativeRideAlert(offerId, expiresAt).then(result => {
+    if (!isRideRequestAlertActive(offerId)) return;
+    if (result.owned) {
+      if (activeRideAlert) activeRideAlert.nativeOwned = true;
+      soundState(false); return;
+    }
+    hapticFor("ride_request");
+    if (!readNexRideFeedbackPreferences().sounds) return;
+    const ringtone = getRideRequestAudio();
+    if (!ringtone) return;
+    try {
+      ringtone.loop = true;
+      ringtone.currentTime = 0;
+      void ringtone.play().then(() => {
+        if (isRideRequestAlertActive(offerId)) {
+          requestAudioPrimed = true;
+          soundState(false);
+        }
+      }).catch(() => {
+        if (isRideRequestAlertActive(offerId)) soundState(true);
+      });
+    } catch {
       if (isRideRequestAlertActive(offerId)) soundState(true);
-    });
-  } catch {
-    if (isRideRequestAlertActive(offerId)) soundState(true);
-  }
+    }
+  });
 }
 
 function soundFor(event: NexRideFeedbackEvent): NexRideSoundId | null {
@@ -322,6 +335,7 @@ function isDuplicate(key?: string) {
 }
 
 async function showSystemNotification(title: string, body: string, tag?: string, url?: string) {
+  if (await nativeRideAlertsPlugin()) return;
   if (typeof window === "undefined" || typeof Notification === "undefined" || Notification.permission !== "granted") return;
   if (!document.hidden) return;
   try {
@@ -361,7 +375,7 @@ export function emitNexRideFeedback(input: {
 }) {
   const { event, id, title, body, url, expiresAt } = input;
   if (event === "ride_request_stop") {
-    stopRideRequestAlert();
+    stopRideRequestAlert(id);
     return;
   }
   const preferences = readNexRideFeedbackPreferences();
@@ -369,7 +383,7 @@ export function emitNexRideFeedback(input: {
 
   // Audio starts synchronously, independently from notification de-duplication.
   // A route transition from Dashboard -> Request must not cut it off.
-  if (event === "ride_request" && preferences.sounds && id) {
+  if (event === "ride_request" && id) {
     startRideRequestAlert(id, expiresAt);
   }
   const dedupeKey = id ? event + ":" + id : undefined;

@@ -1,11 +1,16 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import { LanguageContext } from "./ui";
+import { DriverRideAlertSettings } from "./driver-ride-alert-settings";
+import { nativeRideAlertStatus, nativeRideAlertsPlugin, type NativeRideAlertStatus } from "../../lib/biloo-native-ride-alerts";
 import { enableNexRideNativeNotifications, nativeDriverGpsStatus, openNativeDriverSettings, type NativeDriverGpsStatus } from "../../lib/nexride-native-reliability";
 
 export function NativeReliabilitySettings({ role }: { role: "rider" | "driver" }) {
   const [native, setNative] = useState(false);
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const [alerts, setAlerts] = useState<NativeRideAlertStatus | null>(null);
+  const language = useContext(LanguageContext);
   const [tracking, setTracking] = useState<(NativeDriverGpsStatus & { checkedAt: number }) | null>(null);
   useEffect(() => {
     if (!native || role !== "driver") return;
@@ -13,14 +18,17 @@ export function NativeReliabilitySettings({ role }: { role: "rider" | "driver" }
     const refresh = () => {
       if (document.visibilityState === "hidden") return;
       void nativeDriverGpsStatus().then(status => { if (!disposed) setTracking(status ? { ...status, checkedAt: Date.now() } : null); }).catch(() => {});
+      void nativeRideAlertStatus().then(status => { if (!disposed) setAlerts(status); });
     };
     refresh();
     const timer = window.setInterval(refresh, 15000);
     window.addEventListener("biloo:native-resume", refresh);
+    window.addEventListener("nexride:native-push-status", refresh);
     document.addEventListener("visibilitychange", refresh);
     return () => {
       disposed = true; window.clearInterval(timer);
       window.removeEventListener("biloo:native-resume", refresh);
+      window.removeEventListener("nexride:native-push-status", refresh);
       document.removeEventListener("visibilitychange", refresh);
     };
   }, [native, role]);
@@ -58,6 +66,21 @@ export function NativeReliabilitySettings({ role }: { role: "rider" | "driver" }
     } catch { setMessage("Unable to register notifications. Check network access and Android notification settings."); }
     finally { setBusy(false); }
   };
+  const openAlertSettings = async () => {
+    try {
+      const plugin = await nativeRideAlertsPlugin();
+      if (plugin) await plugin.openSettings({section: "notifications"});
+      else await openNativeDriverSettings();
+    } catch { setMessage("Open Android Settings → Apps → Biloo Driver → Notifications."); }
+  };
+  const testAlert = async () => {
+    setBusy(true);
+    try {
+      const result = await (await nativeRideAlertsPlugin())?.test();
+      setMessage(result?.displayed ? "5-second device test started. This checks this phone's alert settings." : "The test could not start. Check notification settings or finish the current incoming request.");
+    } catch { setMessage("Update Biloo Driver and check Android notification settings."); }
+    finally { setBusy(false); }
+  };
   return <section className="nr-permission-settings" aria-label="Native Android reliability">
     {role === "driver" && <div className="nr-settings-block">
       <div><strong>GPS with the screen locked</strong>
@@ -73,15 +96,15 @@ export function NativeReliabilitySettings({ role }: { role: "rider" | "driver" }
         Android settings
       </button>
     </div>}
-    <div className="nr-settings-block">
+    {role === "driver" ? <DriverRideAlertSettings alerts={alerts} batteryExempt={tracking?.batteryExempt} busy={busy} am={language === "am"}
+      onEnable={() => void enable()} onSettings={() => void openAlertSettings()} onTest={() => void testAlert()}/> : <div className="nr-settings-block">
       <div><strong>Android ride alerts</strong>
-        <small>{role === "driver" ? "Receive eligible ride requests while Biloo is in the background." :
-          "Receive important trip updates as Android notifications."}</small></div>
+        <small>Receive important trip updates as Android notifications.</small></div>
       <button type="button" disabled={busy} onClick={() => void enable()}
-        style={{ padding: "11px 14px", background: "#5145e5", color: "#fff", border: 0, borderRadius: 12, minHeight: 44 }}>
+        style={{ padding: "11px 14px", background: "#102d50", color: "#fff", border: 0, borderRadius: 12, minHeight: 44 }}>
         {busy ? "Enabling…" : "Enable alerts"}
       </button>
-    </div>
+    </div>}
     {message && <p role="status" className="nr-muted">{message}</p>}
   </section>;
 }

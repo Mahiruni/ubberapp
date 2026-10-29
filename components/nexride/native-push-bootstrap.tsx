@@ -1,5 +1,7 @@
 "use client";
 import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { nativeRideAlertsPlugin, queueNativeRideAction, disableNativeRideAlerts } from "../../lib/biloo-native-ride-alerts";
 import { supabase } from "../../lib/supabase";
 import { nexridePushDestination } from "../../lib/nexride-push-routing";
 import {
@@ -12,11 +14,35 @@ import {
  * Never request Android notification permission without user interaction.
  */
 export function NexRideNativePushBootstrap() {
+  const router = useRouter();
   useEffect(() => {
     let removed = false;
     let subscriptions: Array<{ remove: () => Promise<void> }> = [];
     let authSubscription: { unsubscribe: () => void } | null = null;
     let registrationInFlight = false;
+    let actionInFlight = false, unlockAttempts = 0;
+    let unlockRetry: ReturnType<typeof setTimeout> | null = null;
+    const consumeRideAction = async () => {
+      if (removed || actionInFlight) return;
+      actionInFlight = true;
+      try {
+        if (await getNexRideNativeAppRole() !== "driver") return;
+        const { data } = await supabase.auth.getSession();
+        if (!data.session || removed) return;
+        const native = await nativeRideAlertsPlugin();
+        if (!native || removed) return;
+        const command = await native.consumeAction({userId: data.session.user.id});
+        if (command.waitingForUnlock) {
+          if (++unlockAttempts <= 35) unlockRetry = setTimeout(() => { void consumeRideAction(); }, 1000);
+          return;
+        }
+        unlockAttempts = 0;
+        const valid = queueNativeRideAction(command, data.session.user.id);
+        if (!valid || removed) return;
+        router.push(valid.action === "expired" ? "/driver/activity" : "/driver/request?offer=" + valid.offerId);
+      } catch { /* A failed native handoff must never execute an unverified action. */ }
+      finally { actionInFlight = false; }
+    };
 
     const syncIfPermitted = async () => {
       if (removed || registrationInFlight) return;
@@ -27,6 +53,7 @@ export function NexRideNativePushBootstrap() {
         const { data } = await supabase.auth.getSession();
         if (!data.session || removed) return;
         await reconcileNexRideNativePush(role);
+        void consumeRideAction();
       } catch {
         // Settings offers a user-initiated retry; never log or expose FCM tokens.
       } finally { registrationInFlight = false; }
@@ -75,18 +102,25 @@ export function NexRideNativePushBootstrap() {
         });
       });
       subscriptions = [registration, registrationError, opened];
+      const nativeAlerts = await nativeRideAlertsPlugin();
+      if (nativeAlerts) subscriptions.push(await nativeAlerts.addListener("rideAction", () => { void consumeRideAction(); }));
       if (removed) { await Promise.all(subscriptions.map(s => s.remove())); return; }
       const { data } = supabase.auth.onAuthStateChange(event => {
         if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "INITIAL_SESSION") {
           // Supabase does not permit awaiting getSession() synchronously in its auth callback.
           window.setTimeout(() => { void syncIfPermitted(); }, 0);
+        } else if (event === "SIGNED_OUT") {
+          void disableNativeRideAlerts();
         }
       });
       authSubscription = data.subscription;
       window.addEventListener("focus", syncIfPermitted);
       window.addEventListener("biloo:native-resume", syncIfPermitted);
       document.addEventListener("visibilitychange", onVisible);
+      window.addEventListener("biloo:native-resume", consumeRideAction);
+      window.addEventListener("focus", consumeRideAction);
       await syncIfPermitted();
+      void consumeRideAction();
     })().catch(() => {});
 
     function onVisible() {
@@ -94,12 +128,15 @@ export function NexRideNativePushBootstrap() {
     }
     return () => {
       removed = true;
+      if (unlockRetry) clearTimeout(unlockRetry);
       window.removeEventListener("focus", syncIfPermitted);
       window.removeEventListener("biloo:native-resume", syncIfPermitted);
       document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("biloo:native-resume", consumeRideAction);
+      window.removeEventListener("focus", consumeRideAction);
       authSubscription?.unsubscribe();
       void Promise.all(subscriptions.map(s => s.remove()));
     };
-  }, []);
+  }, [router]);
   return null;
 }

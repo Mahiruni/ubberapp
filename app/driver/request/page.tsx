@@ -9,6 +9,7 @@ import { useOperationalTranslation } from "../../../components/nexride/operation
 import { Dialog } from "../../../components/nexride/ui";
 import { resolveDriverPassOutcome } from "../../../lib/nexride-driver-pass";
 import { confirmedDriverOfferDecision } from "../../../lib/nexride-sequential-offers";
+import { NATIVE_RIDE_ACTION_EVENT, takeNativeRideAction } from "../../../lib/biloo-native-ride-alerts";
 import { supabase } from "../../../lib/supabase";
 import { resolveSessionRole } from "../../../lib/nexride-account-role";
 import {
@@ -459,8 +460,9 @@ export default function DriverRideRequestPage() {
     router.replace(`/driver/navigation?offer=${offer.id}`);
   }
 
-  async function declineRide() {
-    if (!declineReason || !offer || submitting || decisionLock.current || offer.status !== "pending" ||
+  async function declineRide(notificationReason?: string) {
+    const reason = notificationReason || declineReason;
+    if (!reason || !offer || submitting || decisionLock.current || offer.status !== "pending" ||
       (offer.expires_at && Date.parse(offer.expires_at) <= Date.now())) return;
     decisionLock.current = true;
     setSubmitting("decline");
@@ -471,7 +473,7 @@ export default function DriverRideRequestPage() {
       // Existing Biloo databases keep using the verified decline RPC
       // until the additive decline-reasons migration has been applied.
       let { data, error } = await supabase.rpc("driver_decline_ride_offer_with_reason", {
-        p_offer_id: offer.id, p_reason: declineReason,
+        p_offer_id: offer.id, p_reason: reason,
       });
       if (error && (
         error.code === "PGRST202" || error.code === "42883" ||
@@ -545,6 +547,21 @@ export default function DriverRideRequestPage() {
       setConfirmAction(null);
     }
   }
+
+  useEffect(() => {
+    const handleNativeAction = () => {
+      if (!driverId || !offer || offer.status !== "pending" || submitting || decisionLock.current) return;
+      const command = takeNativeRideAction(offer.id, driverId);
+      if (!command) return;
+      if (command.action === "accept") void acceptRide();
+      else if (command.action === "decline") void declineRide("other");
+    };
+    handleNativeAction();
+    window.addEventListener(NATIVE_RIDE_ACTION_EVENT, handleNativeAction);
+    return () => window.removeEventListener(NATIVE_RIDE_ACTION_EVENT, handleNativeAction);
+    // The native command is consumed once; these are the server-loaded offer prerequisites.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [driverId, offer?.id, offer?.status, submitting]);
 
   return (
     <main className="nr-app nr-driver-request-page" data-mode="driver">

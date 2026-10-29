@@ -11,7 +11,7 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:all": "npm run test && npm run test:e2e",
-    "test:android": "vitest run tests/unit/biloo-android-release.test.ts tests/unit/biloo-android-foundations.test.ts tests/unit/nexride-native-splash.test.ts tests/unit/biloo-native-auth-storage.test.ts tests/unit/biloo-native-trip-location.test.ts tests/unit/biloo-native-gps-route.test.ts tests/unit/nexride-driver-gps.test.ts && python3 -m unittest discover -s tests/native -p 'test_*.py'",
+    "test:android": "vitest run tests/unit/biloo-android-release.test.ts tests/unit/biloo-android-foundations.test.ts tests/unit/nexride-native-splash.test.ts tests/unit/biloo-native-auth-storage.test.ts tests/unit/biloo-native-trip-location.test.ts tests/unit/biloo-native-gps-route.test.ts tests/unit/nexride-driver-gps.test.ts tests/unit/biloo-native-driver-alert-payload.test.ts tests/unit/biloo-native-ride-alerts.test.ts tests/unit/biloo-native-push-worker.test.ts tests/unit/biloo-native-alert-audio.test.ts && python3 -m unittest discover -s tests/native -p 'test_*.py'",
     "android:prepare": "node scripts/prepare-android.mjs",
     "predev": "node scripts/generate-brand-assets.mjs",
     "prebuild": "node scripts/generate-brand-assets.mjs",

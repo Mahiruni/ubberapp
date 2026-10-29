@@ -95,6 +95,7 @@ public final class NexRideAppLock {
     private String say(String en, String am) { return "am".equals(state.optString("language")) ? am : en; }
     private boolean enabled() { return damaged || state.optBoolean("enabled"); }
     public boolean consumesBack() { return locked || settingsOpen || cover != null; }
+    public boolean blocksRideAction() { return locked || damaged || cover != null; }
     public void back() {
         epoch++;
         if (locked) { showLock(); return; }

@@ -4,8 +4,9 @@ import { useEffect, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { supabase } from "../../lib/supabase";
 import { nexrideApiFetch } from "../../lib/nexride-api-auth";
-import { explicitSignOutRole } from "../../lib/nexride-startup";
-import { emitNexRideFeedback } from "../../lib/nexride-feedback";
+import { explicitSignOutRole, storedLanguage } from "../../lib/nexride-startup";
+import { emitNexRideFeedback, readNexRideFeedbackPreferences, NEXRIDE_FEEDBACK_CHANGED, stopRideRequestAlert } from "../../lib/nexride-feedback";
+import { configureNativeRideAlerts } from "../../lib/biloo-native-ride-alerts";
 import { eligibleDriverOffer, shouldOpenDriverOffer } from "../../lib/nexride-driver-presence";
 import { gpsFixUsable, DRIVER_GPS_HEARTBEAT_MS, DRIVER_GPS_SYNC_MIN_INTERVAL_MS } from "../../lib/nexride-driver-gps";
 import { nativeDriverGpsStatus, startNativeDriverGps, stopNativeDriverGps } from "../../lib/nexride-native-reliability";
@@ -41,8 +42,13 @@ export function DriverSessionBridge() {
     let gpsWatch: number | null = null;
     let nativeGpsActive = false;
     let lastNativeAttempt = 0;
+    const syncNativeAlerts = () => {
+      if (!driverId) return;
+      void configureNativeRideAlerts(driverId, activeOnline, readNexRideFeedbackPreferences(), storedLanguage(window.localStorage)).catch(() => {});
+    };
     const syncNativeGps = () => {
       if (!mounted || !driverId) return;
+      syncNativeAlerts();
       if (!activeOnline) {
         nativeGpsActive = false;
         lastNativeAttempt = 0;
@@ -80,19 +86,7 @@ export function DriverSessionBridge() {
           body: "A Biloo rider is waiting for your decision.",
           url: "/driver/request?offer=" + encodeURIComponent(offer.id),
         });
-        // Browser notifications are best-effort while minimized. They require
-        // explicit user permission and may be suspended by the operating system.
-        if (document.visibilityState === "hidden" && typeof Notification !== "undefined" &&
-          Notification.permission === "granted" && "serviceWorker" in navigator) {
-          void navigator.serviceWorker?.ready.then(reg =>
-            reg.showNotification("New Biloo ride request", {
-              body: "Open Biloo to accept, decline or pass this ride.",
-              tag: "nexride-offer-" + offer.id,
-              icon: "/icons/icon-192.png",
-              data: { url: "/driver/request?offer=" + encodeURIComponent(offer.id) },
-            }),
-          ).catch(() => {});
-        }
+        // Feedback owns the one native or browser notification for this offer.
       }
       if (shouldOpenDriverOffer(pathnameRef.current, document.visibilityState)) {
         router.push("/driver/request?offer=" + encodeURIComponent(offer.id));
@@ -255,8 +249,10 @@ export function DriverSessionBridge() {
           event: "UPDATE", schema: "public", table: "ride_request_offers",
           filter: "driver_id=eq." + id,
         }, payload => {
-          if ((payload.new as PendingDriverOffer).status !== "pending")
+          if ((payload.new as PendingDriverOffer).status !== "pending") {
             handledRef.current.delete(String(payload.new.id));
+            stopRideRequestAlert(String(payload.new.id));
+          }
         })
         .subscribe(status => { if (status === "SUBSCRIBED") void readPending(); });
 
@@ -279,6 +275,7 @@ export function DriverSessionBridge() {
             }
             void readPending();
           } else {
+            syncNativeAlerts(); stopRideRequestAlert();
             stopGps();
             nativeGpsActive = false;
             void stopNativeDriverGps();
@@ -291,6 +288,8 @@ export function DriverSessionBridge() {
     window.addEventListener("biloo:native-resume", onResume);
     window.addEventListener("online", onResume);
     window.addEventListener(DRIVER_AVAILABILITY_CHANGED, onResume);
+    window.addEventListener(NEXRIDE_FEEDBACK_CHANGED, syncNativeAlerts);
+    window.addEventListener("nexride:language-change", syncNativeAlerts);
     window.addEventListener("biloo:native-session-invalidated", onNativeSessionInvalidated);
     document.addEventListener("visibilitychange", onVisibility);
     // Poll when permitted. Suspended timers aren't relied on for correctness.
@@ -333,6 +332,8 @@ export function DriverSessionBridge() {
       window.removeEventListener("biloo:native-resume", onResume);
       window.removeEventListener("online", onResume);
       window.removeEventListener(DRIVER_AVAILABILITY_CHANGED, onResume);
+      window.removeEventListener(NEXRIDE_FEEDBACK_CHANGED, syncNativeAlerts);
+      window.removeEventListener("nexride:language-change", syncNativeAlerts);
       window.removeEventListener("biloo:native-session-invalidated", onNativeSessionInvalidated);
       document.removeEventListener("visibilitychange", onVisibility);
       nativeAuthListener.subscription.unsubscribe();

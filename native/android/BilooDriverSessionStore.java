@@ -82,6 +82,7 @@ public final class BilooDriverSessionStore {
       String[] parts=token.split("\\."); if(parts.length!=3) throw new IllegalArgumentException("invalid_token");
       return new JSONObject(new String(Base64.decode(parts[1],Base64.URL_SAFE|Base64.NO_WRAP|Base64.NO_PADDING),StandardCharsets.UTF_8));
     }, System::currentTimeMillis, BilooDriverSessionStore::refresh, () -> {
+      BilooDriverRideAlerts.clear(app,true);
       NexRideDriverLocationService.cancel(app,"session_required");
     });
     return singleton;
