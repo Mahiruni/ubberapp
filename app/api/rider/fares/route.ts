@@ -56,7 +56,7 @@ export async function POST(request: Request) {
     if (eligibility !== "eligible")
       return reply({ status: eligibility }, riderEligibilityHttpStatus(eligibility));
 
-    return reply(liveFareSet({ pickup, destination }));
+    return reply(await liveFareSet({ pickup, destination }));
   } catch {
     console.error("nexride_fares_service_unavailable");
     return reply({ status: "temporarily_unavailable" }, 503);
