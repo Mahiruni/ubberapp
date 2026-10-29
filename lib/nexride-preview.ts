@@ -1,3 +1,4 @@
+import { calculateBilooFare, BILOO_ECONOMY_TARIFF } from "./biloo-pricing";
 import type { MessageKey } from "./nexride-i18n";
 import type { Place } from "./nexride-places";
 export const rideOptions: {
@@ -12,9 +13,9 @@ export const rideOptions: {
     id: "economy",
     description: "everyday",
     seats: 4,
-    base: 70,
-    perKm: 25,
-    perMin: 3,
+    base: BILOO_ECONOMY_TARIFF.baseFareEtb,
+    perKm: BILOO_ECONOMY_TARIFF.perKilometerEtb,
+    perMin: BILOO_ECONOMY_TARIFF.perMinuteEtb,
   },
   {
     id: "comfort",
@@ -58,8 +59,10 @@ export function previewFare(
     distance,
     duration,
     amount: Math.max(
-      100,
-      Math.round(ride.base + ride.perKm * distance + ride.perMin * duration),
+      BILOO_ECONOMY_TARIFF.minimumFareEtb,
+      ride.id === "economy"
+        ? calculateBilooFare(distance, duration)
+        : Math.round(ride.base + ride.perKm * distance + ride.perMin * duration),
     ),
   };
 }
