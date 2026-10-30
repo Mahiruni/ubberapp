@@ -20,6 +20,17 @@ On Android 8+, the system notification timeout bounds insistent sound/vibration 
 
 Driver settings show notification/channel, sound, vibration, registration and background-battery status. A clearly labeled five-second local device test does not create a ride or send a server push. It does not certify FCM delivery. Existing Android notification and battery settings remain user controlled; BILOO does not change system volume or bypass DND.
 
+The **Send test notification** button also works in legacy Driver APKs. It verifies
+the authenticated account's own installation, then queues fixed test copy through
+the real outbox/FCM path. A five-second server delay leaves time to minimize the
+app; the ten-second worker schedule may add a short wait. Tests expire after one
+minute, target only that installation and have an atomic per-account minute limit.
+They use a separate notification tag and never create an offer or change a ride.
+Settings distinguish queued tests, provider acceptance and unsuccessful tests.
+Provider acceptance still does not prove a visible or audible alert on the phone.
+Standard channel/registration checks no longer require the alarm-style plugin;
+repeating native ringing and notification actions still need the updated APK.
+
 ## Release and validation
 
 Run `npm run test:android`, `npm run build`, and the Android pipeline's real `testReleaseUnitTest lintRelease assembleRelease` jobs. The native JUnit suite covers persisted deadlines, expiry, duplicates, cancellation ordering, account switches, offline state and bounded tombstones. TypeScript tests cover the actual worker payload/eligibility paths, the native action handoff and single audio ownership.

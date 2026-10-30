@@ -5,6 +5,34 @@ const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-
 const response = (data: unknown, status = 200) =>
   Response.json(data, { status, headers: { "Cache-Control": "no-store" } });
 
+/** Only report this account's installation; never return a device token. */
+export async function GET(request: Request) {
+  try {
+    const auth = await authorizedRequestSupabase(request);
+    if (!auth) return response({ status: "unauthorized" }, 401);
+    const search = new URL(request.url).searchParams;
+    const role = search.get("role");
+    const installationId = search.get("installationId") || "";
+    if ((role !== "rider" && role !== "driver") || !uuid.test(installationId))
+      return response({ status: "invalid_device" }, 400);
+    const admin = serverAdminSupabase();
+    const { data: device, error } = await admin.from("nexride_push_devices")
+      .select("id,enabled").eq("user_id", auth.user.id)
+      .eq("role", role).eq("installation_id", installationId).maybeSingle();
+    if (error) return response({ status: "device_store_unavailable" }, 503);
+    let testStatus = null;
+    if (device) {
+      const { data: test } = await admin.from("nexride_push_outbox")
+        .select("status,created_at").eq("user_id", auth.user.id).eq("device_id", device.id)
+        .eq("kind", "device_test").gte("created_at", new Date(Date.now() - 600_000).toISOString())
+        .order("created_at", { ascending: false }).limit(1).maybeSingle();
+      testStatus = test?.status === "sent" ? "accepted_by_fcm"
+        : test?.status === "skipped" || (test && Date.parse(test.created_at) + 60_000 <= Date.now()) ? "not_sent" : test ? "queued" : null;
+    }
+    return response({ status: "checked", registered: !!device?.enabled, testStatus });
+  } catch { return response({ status: "device_store_unavailable" }, 503); }
+}
+
 /** Tokens never flow through direct browser-table access, even with RLS. */
 export async function POST(request: Request) {
   const auth = await authorizedRequestSupabase(request);

@@ -10,6 +10,7 @@ export function nexridePushDestination(
   if (nativeRole === "rider") {
     return data.url === "/rider/trips" ? "/rider/trips" : null;
   }
+  if (data.kind === "device_test" && data.url === "/driver/profile/settings") return "/driver/profile/settings";
   if (data.url === "/driver/home") return "/driver/home";
   if (typeof data.url !== "string") return null;
   const match = /^\/driver\/request\?offer=([0-9a-f-]{36})$/i.exec(data.url);

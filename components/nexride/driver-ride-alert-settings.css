@@ -15,7 +15,7 @@
 .nr-driver-app-shell .biloo-ride-alert-settings-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px}
 .nr-driver-app-shell .biloo-ride-alert-settings-actions button{display:flex;align-items:center;justify-content:center;gap:6px;min-height:46px;padding:9px;border:1px solid var(--driver-border,#dce4ed);border-radius:12px;background:var(--driver-bg,#f5f7f9);color:var(--driver-text-primary,#102d50);font-size:12px;font-weight:750;line-height:1.35;cursor:pointer}
 .nr-driver-app-shell .biloo-ride-alert-settings-actions button:first-child{background:#f5c75e;color:#102d50;border-color:#e1b44b}
-.nr-driver-app-shell .biloo-ride-alert-settings-actions button:last-child{grid-column:1/-1;background:transparent}
+.nr-driver-app-shell .biloo-ride-alert-settings-actions .biloo-ride-alert-test{grid-column:1/-1;background:transparent}
 .nr-driver-app-shell .biloo-ride-alert-settings-actions button:disabled{opacity:.5;cursor:default}
 .nr-driver-app-shell .biloo-ride-alert-settings-actions button:focus-visible{outline:3px solid #c49326;outline-offset:2px}
 .nr-driver-app-shell .biloo-ride-alert-settings-note{margin:12px 0 0;color:var(--driver-text-secondary,#667587);font-size:11px;line-height:1.5}

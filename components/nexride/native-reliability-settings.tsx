@@ -3,13 +3,14 @@ import { useContext, useEffect, useState } from "react";
 import { LanguageContext } from "./ui";
 import { DriverRideAlertSettings } from "./driver-ride-alert-settings";
 import { nativeRideAlertStatus, nativeRideAlertsPlugin, type NativeRideAlertStatus } from "../../lib/biloo-native-ride-alerts";
-import { enableNexRideNativeNotifications, nativeDriverGpsStatus, openNativeDriverSettings, type NativeDriverGpsStatus } from "../../lib/nexride-native-reliability";
+import { enableNexRideNativeNotifications, nativeDriverGpsStatus, nativePushReadiness, openNativeDriverSettings, sendNativeDriverNotificationTest, type NativeDriverGpsStatus, type NativePushReadiness } from "../../lib/nexride-native-reliability";
 
 export function NativeReliabilitySettings({ role }: { role: "rider" | "driver" }) {
   const [native, setNative] = useState(false);
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
   const [alerts, setAlerts] = useState<NativeRideAlertStatus | null>(null);
+  const [push, setPush] = useState<NativePushReadiness | null>(null);
   const language = useContext(LanguageContext);
   const [tracking, setTracking] = useState<(NativeDriverGpsStatus & { checkedAt: number }) | null>(null);
   useEffect(() => {
@@ -19,6 +20,7 @@ export function NativeReliabilitySettings({ role }: { role: "rider" | "driver" }
       if (document.visibilityState === "hidden") return;
       void nativeDriverGpsStatus().then(status => { if (!disposed) setTracking(status ? { ...status, checkedAt: Date.now() } : null); }).catch(() => {});
       void nativeRideAlertStatus().then(status => { if (!disposed) setAlerts(status); });
+      void nativePushReadiness(role).then(status => { if (!disposed) setPush(status); }).catch(() => {});
     };
     refresh();
     const timer = window.setInterval(refresh, 15000);
@@ -81,6 +83,20 @@ export function NativeReliabilitySettings({ role }: { role: "rider" | "driver" }
     } catch { setMessage("Update Biloo Driver and check Android notification settings."); }
     finally { setBusy(false); }
   };
+  const testPush = async () => {
+    setBusy(true); setMessage("");
+    const say = (en: string, am: string) => language === "am" ? am : en;
+    try {
+      const status = await sendNativeDriverNotificationTest();
+      setMessage(status === "queued"
+        ? say("Test queued. Minimize BILOO or lock your screen now; the notification should arrive shortly.", "ሙከራው ተመዝግቧል። BILOOን ወደ በስተጀርባ ያውርዱ ወይም ስክሪኑን ይቆልፉ፤ ማሳወቂያው በቅርቡ ይደርሳል።")
+        : status === "test_rate_limited" ? say("Wait until the next minute before sending another test.", "ሌላ ሙከራ ከመላክዎ በፊት እስከ ቀጣዩ ደቂቃ ይጠብቁ።")
+        : status === "device_not_registered" ? say("Tap Enable alerts first, then retry the test.", "መጀመሪያ ማንቂያዎችን አንቃ ይጫኑ፣ ከዚያም ሙከራውን ይድገሙ።")
+        : say("The test could not be queued. Check your connection and try again.", "ሙከራው ሊመዘገብ አልቻለም። ግንኙነትዎን ያረጋግጡና እንደገና ይሞክሩ።"));
+      setPush(await nativePushReadiness(role));
+    } catch { setMessage(say("The test could not be queued. Check your connection and try again.", "ሙከራው ሊመዘገብ አልቻለም። ግንኙነትዎን ያረጋግጡና እንደገና ይሞክሩ።")); }
+    finally { setBusy(false); }
+  };
   return <section className="nr-permission-settings" aria-label="Native Android reliability">
     {role === "driver" && <div className="nr-settings-block">
       <div><strong>GPS with the screen locked</strong>
@@ -96,8 +112,8 @@ export function NativeReliabilitySettings({ role }: { role: "rider" | "driver" }
         Android settings
       </button>
     </div>}
-    {role === "driver" ? <DriverRideAlertSettings alerts={alerts} batteryExempt={tracking?.batteryExempt} busy={busy} am={language === "am"}
-      onEnable={() => void enable()} onSettings={() => void openAlertSettings()} onTest={() => void testAlert()}/> : <div className="nr-settings-block">
+    {role === "driver" ? <DriverRideAlertSettings alerts={alerts} push={push} batteryExempt={tracking?.batteryExempt} busy={busy} am={language === "am"}
+      onEnable={() => void enable()} onSettings={() => void openAlertSettings()} onTest={() => void testAlert()} onTestPush={() => void testPush()}/> : <div className="nr-settings-block">
       <div><strong>Android ride alerts</strong>
         <small>Receive important trip updates as Android notifications.</small></div>
       <button type="button" disabled={busy} onClick={() => void enable()}

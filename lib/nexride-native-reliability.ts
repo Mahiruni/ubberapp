@@ -3,8 +3,14 @@
 import { supabase } from "./supabase";
 import { nexrideApiFetch } from "./nexride-api-auth";
 import { nativeRideAlertsPlugin, markNativeRideAlertRegistration, disableNativeRideAlerts } from "./biloo-native-ride-alerts";
+import type { NotificationTestStatus } from "./biloo-notification-test";
 
 type Role = "rider" | "driver";
+export type NativePushReadiness = {
+  registered: boolean; permissionGranted: boolean; channelEnabled?: boolean;
+  headsUpEnabled?: boolean; soundEnabled?: boolean; vibrationEnabled?: boolean;
+  testStatus: NotificationTestStatus | null;
+};
 type NativeDriverLocation = {
   start(options: { accessToken: string; userId: string }): Promise<{ status: string }>;
   stop(): Promise<void>;
@@ -72,6 +78,37 @@ export async function reconcileNexRideNativePush(role: Role) {
   const permission = await PushNotifications.checkPermissions();
   if (permission.receive !== "granted") return;
   await PushNotifications.register();
+}
+
+/** Works with legacy APKs, without claiming they have the alarm-style plugin. */
+export async function nativePushReadiness(role: Role): Promise<NativePushReadiness | null> {
+  if (!await nativeCapacitor() || await getNexRideNativeAppRole() !== role) return null;
+  const { PushNotifications } = await import("@capacitor/push-notifications");
+  const [permission, channels, response] = await Promise.all([
+    PushNotifications.checkPermissions(),
+    PushNotifications.listChannels().catch(() => ({ channels: [] })),
+    nexrideApiFetch("/api/native/devices?" + new URLSearchParams({ role, installationId: installationId() })),
+  ]);
+  if (!response.ok) return null;
+  const data = await response.json() as { registered?: boolean; testStatus?: string };
+  const channel = channels.channels.find(value => value.id === (role === "driver" ? "nexride_driver_requests_v2" : "nexride_trip_updates"));
+  return {
+    registered: data.registered === true, permissionGranted: permission.receive === "granted",
+    channelEnabled: channel ? (channel.importance ?? 0) > 0 : undefined,
+    headsUpEnabled: channel ? (channel.importance ?? 0) >= 4 : undefined,
+    soundEnabled: channel ? !!channel.sound : undefined,
+    vibrationEnabled: channel?.vibration,
+    testStatus: data.testStatus === "queued" || data.testStatus === "accepted_by_fcm" || data.testStatus === "not_sent" ? data.testStatus : null,
+  };
+}
+
+export async function sendNativeDriverNotificationTest(): Promise<string> {
+  if (!await nativeCapacitor() || await getNexRideNativeAppRole() !== "driver") return "wrong_app_role";
+  const response = await nexrideApiFetch("/api/native/notifications/test", {
+    method: "POST", body: JSON.stringify({ role: "driver", installationId: installationId() }),
+  });
+  const result = await response.json() as { status?: string };
+  return result.status || "test_unavailable";
 }
 
 export async function registerNexRidePushToken(token: string) {
