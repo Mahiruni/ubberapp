@@ -192,7 +192,7 @@ export async function readRiderTrip(
             : ride.payment_status === 'failed'
               ? 'failed'
               : 'unknown',
-      method: ride.payment_method === 'cash' ? 'Cash' : undefined,
+      method: textValue(ride.payment_method),
     },
     rating:
       score != null && Number.isInteger(score) && score >= 1 && score <= 5

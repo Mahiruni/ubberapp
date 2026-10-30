@@ -494,13 +494,13 @@ function AppWorkspace({
               showProfile={false}
               markerRole="rider"
               preferredStyle={theme === "dark" ? "dark" : "streets"}
-              assignedTrip={['trip','live'].includes(screen) ? liveSnapshot : null}
+              assignedTrip={['trip','live','summary'].includes(screen) ? liveSnapshot : null}
               journey={
                 ['trip','live'].includes(screen) && liveSnapshot
                   ? { ...journey, pinMode: null,
                       pickup: typeof liveSnapshot.pickup.lat === 'number' && typeof liveSnapshot.pickup.lng === 'number' ? { lat: liveSnapshot.pickup.lat, lng: liveSnapshot.pickup.lng, name: liveSnapshot.pickup.name || '', address: '', source: 'provider', confirmed: true } : journey.pickup,
                       destination: typeof liveSnapshot.destination.lat === 'number' && typeof liveSnapshot.destination.lng === 'number' ? { lat: liveSnapshot.destination.lat, lng: liveSnapshot.destination.lng, name: liveSnapshot.destination.name || '', address: '', source: 'provider', confirmed: true } : journey.destination }
-                  : riderHome
+                  : riderHome || riderSummary
                   ? undefined
                   : ["finding", "trip", "live"].includes(screen) && matching.request
                     ? { ...journey, ...matching.request.journey, pinMode: null }
@@ -508,7 +508,7 @@ function AppWorkspace({
               }
               readOnly={["finding", "trip", "live", "summary"].includes(screen)}
               searching={screen === 'finding' && !matching.connectionLost && ['searching', 'delayed'].includes(matching.snapshot?.status || 'searching')}
-              rideLabel={["rides", "finding", "trip", "live", "summary"].includes(screen)}
+              rideLabel={["rides", "finding", "trip", "live"].includes(screen)}
               topLabel={authenticated ? t("city") : t("preview")}
               back={screen === "rides" ? () => navigate("destination") : undefined}
               locked={requestPending}

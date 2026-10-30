@@ -349,9 +349,9 @@ export function TripExperience({ screen, tripId, userId, preview, navigate, setP
       <Button variant="secondary" onClick={() => { onCancelled?.(); navigate('destination'); }}>{t('riderCancelNewRide')}</Button>
     </div>
   </section>;
-  const defaultRatio = screen === 'summary' ? 0.66 : nativeIdentity ? 0.56 : screen === 'live' ? 0.46 : 0.48;
+  const defaultRatio = screen === 'summary' ? 0.56 : nativeIdentity ? 0.56 : screen === 'live' ? 0.46 : 0.48;
   const snaps = screen === 'summary'
-    ? [0.32, 0.66, 0.75] as const
+    ? [0.32, 0.56, 0.75] as const
     : screen === 'live'
       ? [0.28, 0.46, 0.72] as const
       : [0.36, 0.56, 0.75] as const;
@@ -365,19 +365,19 @@ export function TripExperience({ screen, tripId, userId, preview, navigate, setP
     : screen === 'live' ? 'Active trip' : screen === 'summary' ? 'Trip summary' : 'Your driver';
   return <section className="nr-trip-experience" data-native-journey={live ? 'true' : undefined} data-native-identity={nativeIdentity ? 'true' : 'false'} data-embedded-ready={embeddedReady ? 'true' : 'false'} aria-label={screen === 'summary' ? 'Trip receipt and rating' : 'Your trip'}>
     <RiderSheetHandle
+      key={screen}
       label={screen === 'summary' ? 'Resize trip summary panel' : screen === 'live' ? 'Resize active trip panel' : 'Resize driver panel'}
       defaultRatio={defaultRatio}
       snaps={snaps}
-      storageKey={`nexride.rider.sheet.${screen}`}
+      storageKey={screen === 'summary' ? 'nexride.rider.sheet.summary.receipt.v2' : `nexride.rider.sheet.${screen}`}
     />
-    <div className="nr-trip-toolbar">
-      {screen === 'summary' && <button onClick={() => router.push('/rider/trips')}>Activity</button>}
+    {screen !== 'summary' && <div className="nr-trip-toolbar">
       <span role="status" aria-live="polite">{live ? tripSnapshot?.status === 'completed' ? 'Trip completed' : connection : 'Preview ride'}</span>
-      {screen !== 'summary' && !nativeIdentity && <button onClick={openSafety}>Safety</button>}
-      {live && screen !== 'summary' && confirmedStatus !== 'completed' && confirmedStatus !== 'cancelled' &&
+      {!nativeIdentity && <button onClick={openSafety}>Safety</button>}
+      {live && confirmedStatus !== 'completed' && confirmedStatus !== 'cancelled' &&
         <button type="button" className="nr-trip-cancel-trigger" disabled={cancelBusy} onClick={() => { setCancelError(''); setCancelConfirm(true); }}><span aria-hidden="true">×</span>{t('matchingCancel')}</button>}
-      {!live && screen !== 'summary' && <button onClick={() => { if (screen === 'live' && preview) setPreview({ ...preview, completed: true }); navigate(screen === 'trip' ? 'live' : 'summary'); }}>{screen === 'trip' ? 'Start trip' : 'Complete trip'}</button>}
-    </div>
+      {!live && <button onClick={() => { if (screen === 'live' && preview) setPreview({ ...preview, completed: true }); navigate(screen === 'trip' ? 'live' : 'summary'); }}>{screen === 'trip' ? 'Start trip' : 'Complete trip'}</button>}
+    </div>}
     {cancelError && <p role="alert" className="nr-trip-cancel-error">{cancelError}</p>}
     {cancelConfirm && <Dialog title={t('matchingCancelConfirm')} onClose={() => { if (!cancelBusy) setCancelConfirm(false); }}>
       <p className="nr-cancel-dialog-note">{t('matchingCancelWarning')}</p>

@@ -370,7 +370,7 @@
   }
 
   .nr-app[data-mode="rider"] .rider-map-flow.rider-summary-view {
-    --nr-flow-sheet-height:min(70dvh,calc(var(--nr-viewport-height,100dvh) - 140px));
+    --nr-flow-sheet-height:min(56dvh,calc(var(--nr-viewport-height,100dvh) - 140px));
   }
 
   .nr-app[data-mode="rider"] .rider-map-flow[data-keyboard="true"].rider-search-view {

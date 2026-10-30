@@ -59,10 +59,14 @@ async function prepare(page: Page, role: 'rider' | 'driver' | 'admin', ride = ba
         stageCalls++;
         const next = route.request().postDataJSON().status;
         await new Promise(resolve => setTimeout(resolve, 120));
+        const previous = ride.status;
         ride.status = next;
         if (next === 'arrived_pickup') ride.pickup_arrived_at = new Date().toISOString();
         if (next === 'in_trip') ride.started_at = new Date().toISOString();
-        if (next === 'completed') { ride.completed_at = new Date().toISOString(); (ride as Record<string, unknown>).final_fare_etb = 180; }
+        if (next === 'completed') {
+          ride.completed_at = new Date().toISOString(); (ride as Record<string, unknown>).final_fare_etb = 180;
+          if (previous === 'in_trip' && ride.payment_method === 'cash' && ['pending','unknown'].includes(ride.payment_status)) ride.payment_status = 'paid';
+        }
       }
       return one(ride);
     }
@@ -172,14 +176,15 @@ test('reopening an assigned Rider trip restores approved identity and a provider
   await page.screenshot({ path: `/tmp/biloo-assigned-${info.project.name}.png` });
 });
 
-test('completed Rider journey keeps payment pending and recovers a failed rating without duplicates', async ({ page }, info) => {
+test('legacy Rider cash receipt stays neutral and recovers a failed rating without duplicates', async ({ page }, info) => {
   const ride = { ...baseRide(), status: 'completed', final_fare_etb: 180 as number | null,
     started_at: new Date(Date.now() - 720_000).toISOString(), completed_at: new Date().toISOString() };
   const fixture = await prepare(page, 'rider', ride, { failFirstRating: true });
   await page.goto('/?screen=trips');
   await page.locator('.nr-real-trip-history button').first().click();
   await expect(page.getByRole('heading', { name: "You've arrived!" })).toBeVisible();
-  await expect(page.locator('.biloo-payment-state')).toHaveText('Payment pending');
+  await expect(page.locator('.biloo-payment-state')).toHaveAttribute('data-status', 'cash');
+  await expect(page.locator('.biloo-payment-state')).toHaveText('With your driver');
   await expect(page.locator('.biloo-receipt-fare')).toContainText('180');
   await page.screenshot({ path: `/tmp/biloo-completion-receipt-${info.project.name}.png` });
   await page.getByRole('button', { name: '5 stars', exact: true }).click();
@@ -192,7 +197,62 @@ test('completed Rider journey keeps payment pending and recovers a failed rating
   await page.screenshot({ path: `/tmp/biloo-completed-${info.project.name}.png` });
 });
 
-test('Driver confirms pickup and completion through backend stages before seeing the pending-payment receipt', async ({ page }, info) => {
+for (const theme of ['light', 'dark'] as const) test('compact paid cash receipt stays usable in ' + theme + ' mode', async ({ page }, info) => {
+  const ride = { ...baseRide(), status: 'completed', payment_status: 'paid', final_fare_etb: 462,
+    pickup_location: 'Kurtume Stream', destination_location: 'Bole Rwanda',
+    started_at: new Date(Date.now() - 720_000).toISOString(), completed_at: new Date().toISOString() };
+  await prepare(page, 'rider', ride);
+  await page.addInitScript(theme => {
+    localStorage.setItem('nexride.rider.theme', theme);
+    localStorage.setItem('nexride.rider.aurora-light-v1', '1');
+    sessionStorage.setItem('nexride.rider.sheet.summary', '0.75');
+  }, theme);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/?screen=trips');
+  await page.locator('.nr-real-trip-history button').first().click();
+  const receipt = page.locator('.biloo-completion-card');
+  const done = receipt.getByRole('button', { name: 'Done', exact: true });
+  await expect(receipt.getByRole('heading', { name: "You've arrived!" })).toBeVisible();
+  await expect(page.locator('.nr-app[data-mode=rider]')).toHaveAttribute('data-theme', theme);
+  await expect(receipt.locator('.biloo-payment-state')).toHaveText('Payment completed');
+  await expect(receipt.locator('.biloo-receipt-fare>strong')).toContainText('462');
+  await expect(receipt.locator('.biloo-receipt-fare>strong')).toHaveCSS('color', 'rgb(255, 255, 255)');
+  await expect(done).toHaveCSS('background-color', 'rgb(249, 196, 73)');
+  await expect(page.locator('.nr-trip-toolbar')).toHaveCount(0);
+  await expect(page.locator('.nr-faster-route-notice')).toHaveCount(0);
+  await expect(page.locator('.nr-map-ride-label')).toHaveCount(0);
+  await expect(page.getByRole('slider', { name: 'Resize trip summary panel' })).toHaveAttribute('aria-valuenow', '56');
+  await expect(done).toBeInViewport({ ratio: 1 });
+  await receipt.locator('.biloo-receipt-details>summary').click();
+  await expect(receipt.getByText('12 min', { exact: true })).toBeVisible();
+  await expect(done).toBeInViewport({ ratio: 1 });
+  await receipt.locator('.biloo-receipt-details>summary').click();
+  await receipt.locator('.biloo-completion-scroll').evaluate(element => { element.scrollTop = 0; });
+  await page.screenshot({ path: info.outputPath('receipt-' + theme + '.png') });
+  await page.setViewportSize({ width: 320, height: 640 });
+  await expect(done).toBeInViewport({ ratio: 1 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  expect(await page.locator('.nr-rider-map-surface').evaluate(element => element.getBoundingClientRect().height)).toBeGreaterThan(120);
+  await receipt.getByRole('button', { name: '5 stars', exact: true }).click();
+  await receipt.locator('.biloo-rating-note>summary').click();
+  await receipt.getByRole('textbox', { name: 'Feedback', exact: true }).fill('Smooth ride and a clean car.');
+  await receipt.getByRole('button', { name: 'Submit rating', exact: true }).click();
+  await expect(receipt).toContainText('Rating saved');
+  await expect(done).toBeInViewport({ ratio: 1 });
+  await done.click();
+  await expect(page.locator('.nr-home-search')).toBeVisible();
+});
+
+test('electronic pending receipt never claims a completed payment', async ({ page }) => {
+  await prepare(page, 'rider', { ...baseRide(), status: 'completed', payment_method: 'chapa', final_fare_etb: 462 });
+  await page.goto('/?screen=trips');
+  await page.locator('.nr-real-trip-history button').first().click();
+  await expect(page.locator('.biloo-payment-state')).toHaveText('Payment pending');
+  await expect(page.locator('.biloo-receipt-method')).toHaveText('Chapa');
+  await expect(page.getByRole('button', { name: 'Done', exact: true })).toBeInViewport();
+});
+
+test('Driver confirms pickup and completion through backend stages before seeing the paid cash receipt', async ({ page }, info) => {
   const fixture = await prepare(page, 'driver');
   await page.goto(`/driver/navigation?offer=${offerId}`);
   await page.getByRole('button', { name: 'Arrived at pickup', exact: true }).click();
@@ -204,7 +264,7 @@ test('Driver confirms pickup and completion through backend stages before seeing
   await page.getByRole('button', { name: 'Complete trip', exact: true }).click();
   await page.getByRole('dialog').getByRole('button', { name: 'Complete trip', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Trip completed', exact: true })).toBeVisible();
-  await expect(page.locator('.biloo-payment-state')).toHaveText('Payment pending');
+  await expect(page.locator('.biloo-payment-state')).toHaveText('Payment completed');
   expect(fixture.stageCalls()).toBe(3);
   await expect(page.locator('.biloo-rating-stars')).toHaveCount(0);
   await page.screenshot({ path: `/tmp/biloo-driver-completed-${info.project.name}.png` });

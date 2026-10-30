@@ -1702,8 +1702,9 @@ export function RiderMap({
       syncRoutes(map, undefined);
       const key = `${assignedTrip.id}:${assignedTrip.status}:${tripLayoutRevision}`;
       const end = assignedTrip.status === 'in_trip' ? assignedTrip.destination : assignedTrip.pickup;
-      const points = assignedTrip.route?.points ||
-        [assignedTrip.tracking, end].filter((p): p is { lat: number; lng: number } =>
+      const points = assignedTrip.status === 'completed'
+        ? [assignedTrip.pickup, assignedTrip.destination].filter(validTripPoint)
+        : assignedTrip.route?.points || [assignedTrip.tracking, end].filter((p): p is { lat: number; lng: number } =>
           !!p && typeof p.lat === 'number' && Number.isFinite(p.lat) &&
           typeof p.lng === 'number' && Number.isFinite(p.lng));
       if (points.length > 1 && liveFrame.current !== key && !manualView.current) {
@@ -1717,6 +1718,7 @@ export function RiderMap({
   }, [assignedTrip, mounted, tripLayoutRevision, rideLabel]);
 
   useEffect(() => {
+    if (readOnly) { setFasterNotice(null); lastFastestDuration.current = null; return; }
     const state = journey?.routeState;
     if (state?.status !== "ready" || !state.updatedAt) return;
     const routes = state.alternatives?.length
@@ -1737,7 +1739,7 @@ export function RiderMap({
       const timer = window.setTimeout(() => setFasterNotice(null), 8000);
       return () => window.clearTimeout(timer);
     }
-  }, [journey?.routeState.updatedAt]);
+  }, [readOnly, journey?.routeState.updatedAt]);
 
   useEffect(() => {
     searchMarker.current?.remove();
@@ -1969,7 +1971,7 @@ export function RiderMap({
         <span className="nr-map-preview-chip">{topLabel || t("preview")}</span>
       </div>
 
-      {fasterNotice !== null && (
+      {!readOnly && fasterNotice !== null && (
         <div className="nr-faster-route-notice" role="status" aria-live="polite">
           <Icon name="refresh" size={16} />
           <span>
@@ -1988,7 +1990,7 @@ export function RiderMap({
         </div>
       )}
 
-      {journey?.destination?.confirmed && (
+      {!readOnly && journey?.destination?.confirmed && (
         <aside
           className="nr-live-route-panel"
           data-state={journey.routeState.status}
