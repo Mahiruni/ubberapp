@@ -299,7 +299,7 @@ export function DestinationPanel({
       <RiderSheetHandle
         label={t("resizeSheet")}
         defaultRatio={0.46}
-        snaps={[0.28, 0.46, 0.75]}
+        snaps={[0.28, 0.46, 0.70]}
         ratio={j.sheetRatio}
         onRatioChange={j.setSheetRatio}
         scrollSelector=".nr-destination-body"
@@ -375,7 +375,7 @@ export function DestinationPanel({
                           setSearchActive(true);
                           j.setSearchOpen(true);
                           bodyRef.current?.scrollTo({ top: 0 });
-                          if (j.sheetRatio < 0.75) j.setSheetRatio(0.75);
+                          if (j.sheetRatio < 0.70) j.setSheetRatio(0.70);
                         }}
                         onChange={(e) => {
                           j.clear(target);

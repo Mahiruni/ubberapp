@@ -349,12 +349,12 @@ export function TripExperience({ screen, tripId, userId, preview, navigate, setP
       <Button variant="secondary" onClick={() => { onCancelled?.(); navigate('destination'); }}>{t('riderCancelNewRide')}</Button>
     </div>
   </section>;
-  const defaultRatio = screen === 'summary' ? 0.56 : nativeIdentity ? 0.56 : screen === 'live' ? 0.46 : 0.48;
+  const defaultRatio = screen === 'summary' ? 0.70 : nativeIdentity ? 0.56 : screen === 'live' ? 0.46 : 0.48;
   const snaps = screen === 'summary'
-    ? [0.32, 0.56, 0.75] as const
+    ? [0.32, 0.56, 0.70] as const
     : screen === 'live'
-      ? [0.28, 0.46, 0.72] as const
-      : [0.36, 0.56, 0.75] as const;
+      ? [0.28, 0.46, 0.70] as const
+      : [0.36, 0.56, 0.70] as const;
 
   const displayStatus = tripSnapshot?.status === 'approaching' ? 'Driver on the way'
     : tripSnapshot?.status === 'arrived' ? 'Your driver has arrived'

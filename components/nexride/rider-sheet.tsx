@@ -7,10 +7,10 @@ type RiderSheetHandleProps = {
   ratio?: number; onRatioChange?: (ratio: number) => void;
   scrollSelector?: string; storageKey?: string;
 };
-const DEFAULT_SNAPS = [0.28, 0.46, 0.75] as const;
+const DEFAULT_SNAPS = [0.28, 0.46, 0.70] as const;
 export function RiderSheetHandle({ label, defaultRatio, snaps = DEFAULT_SNAPS,
   desktopDefaultRatio, ratio, onRatioChange, storageKey }: RiderSheetHandleProps) {
-  const motion = useSheetMotion({ kind: "rider", ratios: snaps, defaultRatio, desktopDefaultRatio, ratio, onRatioChange, storageKey });
+  const motion = useSheetMotion({ kind: "rider", ratios: snaps, defaultRatio, desktopDefaultRatio, ratio, onRatioChange, storageKey: storageKey ? `${storageKey}.compact.v1` : undefined });
   return <button ref={motion.handleRef} type="button" className="nr-flow-sheet-handle"
     role="slider" aria-label={label} aria-orientation="vertical"
     aria-valuemin={Math.round(snaps[0] * 100)} aria-valuemax={Math.round(snaps[2] * 100)}

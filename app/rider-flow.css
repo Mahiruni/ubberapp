@@ -362,7 +362,7 @@
   }
 
   .nr-app[data-mode="rider"] .rider-map-flow.rider-matching-view {
-    --nr-flow-sheet-height:min(56dvh,calc(var(--nr-viewport-height,100dvh) - 160px));
+    --nr-flow-sheet-height:min(70dvh,calc(var(--nr-viewport-height,100dvh) - 160px));
   }
 
   .nr-app[data-mode="rider"] .rider-map-flow.rider-trip-view {

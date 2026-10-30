@@ -32,7 +32,7 @@
   }
 
   .nr-app[data-mode="rider"] .rider-map-flow.rider-summary-view {
-    --nr-flow-sheet-height: 56dvh;
+    --nr-flow-sheet-height: 70dvh;
   }
 
   .nr-app[data-mode="rider"] .rider-map-flow .nr-stage.with-map {
@@ -296,7 +296,7 @@
     --nr-flow-sheet-height: 64dvh;
   }
   .nr-app[data-mode="rider"] .rider-map-flow.rider-summary-view {
-    --nr-flow-sheet-height: 56dvh;
+    --nr-flow-sheet-height: 70dvh;
   }
 }
 

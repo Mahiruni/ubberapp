@@ -8,7 +8,7 @@ import { type Place } from "../../lib/nexride-places";
 import type { HomePlaces } from "../../lib/nexride-home";
 import type { LocationStatus, RiderLocation } from "../../lib/nexride-location";
 
-const HOME_RATIOS = [0.20, 0.40, 0.68] as const;
+const HOME_RATIOS = [0.20, 0.40, 0.70] as const;
 
 export function LocationMessage({
   status,

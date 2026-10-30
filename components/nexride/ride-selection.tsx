@@ -48,9 +48,9 @@ export function RideSelection({
     <section className={`nr-ride-selection ${styles.screen} ${styles.selection}`} aria-label={t("chooseRide")}>
       <RiderSheetHandle
         label={language === "am" ? "የጉዞ አማራጭ ፓነሉን አስፋ ወይም አሳንስ" : "Resize ride options panel"}
-        defaultRatio={0.72}
-        desktopDefaultRatio={0.86}
-        snaps={[0.32, 0.72, 0.86]}
+        defaultRatio={0.70}
+        desktopDefaultRatio={0.70}
+        snaps={[0.32, 0.55, 0.70]}
         scrollSelector=".nr-ride-selection-body"
         storageKey="nexride.rider.sheet.rides"
       />

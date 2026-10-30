@@ -4,7 +4,7 @@ import { useSheetMotion } from "./use-sheet-motion";
 import "../../app/wrapper-polish.css";
 
 type DriverSheetSnap = "collapsed" | "medium" | "expanded";
-const RATIOS = [0.34, 0.55, 0.82] as const;
+const RATIOS = [0.34, 0.55, 0.70] as const;
 const ORDER: DriverSheetSnap[] = ["collapsed", "medium", "expanded"];
 export function DriverBottomSheet({ children, className = "", label, defaultSnap = "medium", footer }: {
   children: ReactNode; className?: string; label: string; defaultSnap?: DriverSheetSnap;
@@ -28,7 +28,7 @@ export function DriverBottomSheet({ children, className = "", label, defaultSnap
     aria-label={label} onPointerDown={event => event.stopPropagation()}>
     <button ref={motion.handleRef} type="button" className="nr-driver-sheet-grab"
       role="slider" aria-label="Resize driver panel" aria-orientation="vertical"
-      aria-valuemin={34} aria-valuemax={82} aria-valuenow={Math.round(motion.currentRatio * 100)}
+      aria-valuemin={34} aria-valuemax={70} aria-valuenow={Math.round(motion.currentRatio * 100)}
       {...motion.handleProps}><span aria-hidden="true" /></button>
     <div className="nr-driver-sheet-content">{children}</div>
     {footer != null && <div className="nr-driver-sheet-footer">{footer}</div>}

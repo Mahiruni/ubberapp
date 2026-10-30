@@ -47,7 +47,7 @@ test("brand contrast and essential actions survive narrow screens and orientatio
     // full-bleed height, which extended the card into the header on short phones.
     await expect.poll(async () => {
       const current = await height(page);
-      return current <= viewport.height * .68 + 1;
+      return current <= viewport.height * .70 + 1;
     }).toBe(true);
     const box = (await panel(page).boundingBox())!;
     expect(box.x).toBeGreaterThanOrEqual(0);
@@ -89,7 +89,10 @@ test("mouse movement follows the handle without a start jump or release click", 
   await page.mouse.up();
   await expect(page.locator(".rider-map-flow")).not.toHaveAttribute("data-sheet-dragging", "true");
   await expect(page.locator(".nr-rider-home-sheet")).toHaveAttribute("data-snap", "expanded");
-  await expect.poll(async () => Math.abs(await height(page) - page.viewportSize()!.height * .68)).toBeLessThan(1);
+  // The safe header can reserve a few additional pixels on some phones.
+  const expandedHeight = Math.min(page.viewportSize()!.height * .70,
+    await panel(page).evaluate(element => parseFloat(getComputedStyle(element).maxHeight)));
+  await expect.poll(async () => Math.abs(await height(page) - expandedHeight)).toBeLessThan(1);
   const settled = await height(page);
   await page.mouse.move(x, y - 130);
   expect(Math.abs(await height(page) - settled)).toBeLessThan(1);
@@ -114,7 +117,7 @@ test("body scroll stays native and destination search retains its own keyboard h
   const searchHandle = page.locator(".nr-flow-sheet-handle");
   if (page.viewportSize()!.width > 800) {
     await searchHandle.press("End");
-    await expect(searchHandle).toHaveAttribute("aria-valuenow", "75");
+    await expect(searchHandle).toHaveAttribute("aria-valuenow", "70");
   } else {
     // Focused mobile search deliberately becomes a full, scrollable surface.
     await expect(page.locator(".rider-search-view")).toHaveAttribute("data-search-open", "true");

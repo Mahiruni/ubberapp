@@ -52,8 +52,8 @@ export function DriverMatching({ model, changeCategory, previewAssigned, home }:
     <RiderSheetHandle
       label={language === "am" ? "የአሽከርካሪ ማዛመጃ ፓነሉን አስፋ ወይም አሳንስ" : "Resize driver matching panel"}
       defaultRatio={0.56}
-      desktopDefaultRatio={0.76}
-      snaps={[0.30, 0.56, 0.76]}
+      desktopDefaultRatio={0.70}
+      snaps={[0.30, 0.56, 0.70]}
       scrollSelector=".nr-matching-body"
       storageKey="nexride.rider.sheet.matching"
     />

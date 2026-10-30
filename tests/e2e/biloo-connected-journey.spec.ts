@@ -128,6 +128,9 @@ test('review shows the real journey, validates category availability and sends p
   await expect(cars).toHaveCount(3);
   await expect.poll(() => cars.evaluateAll(images => images.every(image => (image as HTMLImageElement).naturalWidth > 0))).toBe(true);
   await expect(cars.last()).toBeInViewport({ ratio: 0.9 });
+  const optionsHandle = page.getByRole('slider', { name: 'Resize ride options panel' });
+  await expect(optionsHandle).toHaveAttribute('aria-valuenow', '70');
+  expect((await page.locator('.nr-rider-flow-panel').boundingBox())!.height).toBeLessThanOrEqual(page.viewportSize()!.height * .70 + 1);
   await expect(page.locator('.nr-ride-route-meta')).not.toContainText('traffic');
   await page.screenshot({ animations: 'disabled', path: `/tmp/biloo-rides-v2-${info.project.name}.png` });
   await expect(page.getByRole('button', { name: 'Continue to review ride' })).toHaveCSS('background-color', 'rgb(249, 196, 73)');
@@ -159,6 +162,8 @@ test('review shows the real journey, validates category availability and sends p
   await expect(page.locator('.nr-driver-matching')).toContainText('Waiting for driver response');
   await expect(page.locator('.nr-confirmed-driver')).toHaveCount(0);
   await expect(page.locator('.nr-driver-matching')).not.toContainText('No Driver nearby yet?');
+  await page.getByRole('slider', { name: 'Resize driver matching panel' }).press('End');
+  await expect(page.getByRole('slider', { name: 'Resize driver matching panel' })).toHaveAttribute('aria-valuenow', '70');
   await page.screenshot({ animations: 'disabled', path: `/tmp/biloo-matching-v2-${info.project.name}.png` });
   expect(creates).toBe(1);
 });
@@ -221,8 +226,12 @@ for (const theme of ['light', 'dark'] as const) test('compact paid cash receipt 
   await expect(page.locator('.nr-trip-toolbar')).toHaveCount(0);
   await expect(page.locator('.nr-faster-route-notice')).toHaveCount(0);
   await expect(page.locator('.nr-map-ride-label')).toHaveCount(0);
-  await expect(page.getByRole('slider', { name: 'Resize trip summary panel' })).toHaveAttribute('aria-valuenow', '56');
+  await expect(page.getByRole('slider', { name: 'Resize trip summary panel' })).toHaveAttribute('aria-valuenow', '70');
   await expect(done).toBeInViewport({ ratio: 1 });
+  await expect(receipt.getByRole('button', { name: '5 stars', exact: true })).toBeInViewport({ ratio: 1 });
+  await expect(receipt.locator('.biloo-receipt-details>summary')).toBeInViewport({ ratio: 1 });
+  await expect.poll(() => receipt.locator('.biloo-completion-scroll').evaluate(element => element.scrollHeight - element.clientHeight)).toBeLessThanOrEqual(1);
+  expect((await page.locator('.nr-rider-flow-panel').boundingBox())!.height).toBeLessThanOrEqual(844 * .70 + 1);
   await receipt.locator('.biloo-receipt-details>summary').click();
   await expect(receipt.getByText('12 min', { exact: true })).toBeVisible();
   await expect(done).toBeInViewport({ ratio: 1 });
@@ -329,6 +338,9 @@ test('incoming Driver request shows pickup notes and handles a competing accepta
   let accepts = 0;
   await page.route('**/rest/v1/rpc/driver_decide_ride_offer', route => { accepts++; return route.fulfill({ json: { status: 'unavailable' } }); });
   await page.goto(`/driver/request?offer=${offerId}`);
+  await page.getByRole('slider', { name: 'Resize driver panel' }).press('End');
+  await expect(page.getByRole('slider', { name: 'Resize driver panel' })).toHaveAttribute('aria-valuenow', '70');
+  await expect(page.getByRole('button', { name: 'Accept Ride', exact: true })).toBeInViewport({ ratio: 1 });
   await expect(page.getByRole('heading', { name: 'New ride request', exact: true })).toBeVisible();
   await expect(page.locator('.biloo-pickup-instructions')).toContainText('Meet by the main entrance');
   await page.screenshot({ path: `/tmp/biloo-driver-request-${info.project.name}.png` });
