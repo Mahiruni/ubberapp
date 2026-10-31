@@ -221,3 +221,8 @@
   .nr-driver-menu-layer[data-theme] .nr-driver-menu-panel,
   .nr-driver-menu-layer[data-theme] :is(.nr-driver-menu-row,.nr-driver-menu-close){animation:none!important;transition:none!important;}
 }
+
+/* Match Rider drawer brand hierarchy without touching map wrappers. */
+.nr-driver-menu-brand-head > div { display:flex; flex-direction:column; align-items:flex-start; justify-content:center; gap:3px; line-height:1.1; }
+.nr-driver-menu-brand-head > div > strong { font-size:19px; font-weight:800; letter-spacing:-.04em; }
+.nr-driver-menu-brand-head > div > small { font-size:11px; font-weight:650; letter-spacing:.06em; opacity:.76; }
