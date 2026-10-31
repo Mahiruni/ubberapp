@@ -149,3 +149,49 @@
     max-height:min(70dvh,600px)!important;
   }
 }
+
+
+/* Biloo compact-content pass: remove artificial vertical whitespace without
+   changing the existing draggable snap heights, map, or navigation behavior. */
+@media (max-width:800px) {
+  .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-rider-persistent-wrapper :is(
+    .nr-accepted-driver-card,.nr-identity-driver,.nr-driver-matching,.nr-ride-selection
+  ) {
+    row-gap:8px!important;
+  }
+  .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-rider-persistent-wrapper :is(
+    .nr-identity-status,.nr-identity-details,.nr-identity-actions
+  ) {
+    margin-block:0!important;
+  }
+  .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-rider-persistent-wrapper :is(
+    .nr-identity-status h2,.nr-identity-person h3
+  ) {
+    margin-block:0 4px!important;
+    line-height:1.25!important;
+  }
+  .nr-driver-app-shell .nr-driver-sheet .nr-driver-sheet-content > :first-child {
+    margin-top:0!important;
+  }
+  .nr-driver-app-shell .nr-driver-sheet .nr-driver-sheet-content > :last-child {
+    margin-bottom:0!important;
+  }
+  /* Keep minimum accessible tap targets; reduce only decorative whitespace. */
+  .nr-driver-app-shell .nr-driver-sheet :is(.nr-driver-card,.nr-driver-operational-card) {
+    margin-block:6px!important;
+  }
+  :is(.nr-rider-drawer-layer,.nr-driver-menu-layer) :is(
+    .nr-rider-drawer-nav,.nr-driver-menu-nav
+  ) {
+    gap:4px!important;
+  }
+  :is(.nr-rider-drawer-layer,.nr-driver-menu-layer) :is(
+    .nr-rider-drawer-nav > button,.nr-driver-menu-nav > .nr-driver-menu-row
+  ) {
+    min-height:48px!important;
+    padding:8px 10px!important;
+  }
+  :is(.nr-rider-drawer-layer,.nr-driver-menu-layer) .nr-menu-section-label {
+    padding:10px 10px 5px!important;
+  }
+}
