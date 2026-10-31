@@ -282,8 +282,7 @@ function DriverHamburgerMenu({
             role="dialog" aria-modal="true" aria-labelledby="nr-driver-menu-title">
             <div className="nr-driver-menu-head">
               <div className="nr-driver-menu-brand-head">
-                <img src="/brand/biloo-mark.svg" width={42} height={42} alt="" aria-hidden="true" />
-                <div><small id="nr-driver-menu-title">BILOO · DRIVER</small><strong>{language === "am" ? "ይንዱ። ያግኙ። ያድጉ።" : "Drive. Earn. Grow."}</strong></div>
+                <div><strong id="nr-driver-menu-title">BILOO</strong><small>{language === "am" ? "አሽከርካሪ" : "Driver"}</small></div>
               </div>
               <button ref={closeRef} type="button" className="nr-driver-menu-close" onClick={() => setOpen(false)} aria-label={language === "am" ? "ዝጋ" : "Close"}>
                 <Icon name="close" size={21} />
