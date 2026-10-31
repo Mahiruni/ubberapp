@@ -97,6 +97,55 @@
   max-height:min(70dvh,calc(var(--nr-dialog-viewport-height,100dvh) - 24px))!important;
 }
 
+/* Completed Driver trips are a compact receipt sheet, not a full-height empty page.
+   Scoped to the terminal receipt: active navigation and operational sheets are unchanged. */
 .nr-driver-app-shell .nr-app.biloo-driver-completion {
-  height:70dvh;max-height:100%;min-height:0;width:min(560px,100%);margin:0 auto;border-radius:20px;
+  display:flex!important;
+  align-items:flex-start!important;
+  justify-content:center!important;
+  width:100%!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  margin:0 auto!important;
+  padding:clamp(12px,3vh,28px) 14px 24px!important;
+  border-radius:0!important;
+  background:linear-gradient(155deg,#eef3f9 0%,#f7f9fc 55%,#eaf0f8 100%)!important;
+  box-sizing:border-box;
+}
+.nr-driver-app-shell .biloo-driver-completion > .biloo-completion-card {
+  flex:0 1 auto!important;
+  width:min(100%,480px)!important;
+  height:auto!important;
+  max-height:min(70dvh,650px)!important;
+  min-height:0!important;
+  margin:0!important;
+  border:1px solid #e1e7ef!important;
+  border-radius:22px!important;
+  box-shadow:0 16px 44px rgba(8,41,95,.12),0 3px 12px rgba(8,41,95,.05)!important;
+  overflow:hidden!important;
+}
+.nr-driver-app-shell .biloo-driver-completion .biloo-completion-scroll {
+  flex:0 1 auto!important;
+  min-height:0!important;
+  overflow-y:auto!important;
+  padding:16px 16px 10px!important;
+}
+.nr-driver-app-shell .biloo-driver-completion .biloo-completion-actions {
+  flex:none!important;
+  margin:0!important;
+  border-top:1px solid var(--receipt-line)!important;
+  border-radius:0 0 22px 22px;
+}
+:is(html[data-theme="dark"],.nr-driver-app-shell[data-theme="dark"]) .nr-app.biloo-driver-completion {
+  background:linear-gradient(155deg,#071827 0%,#0b2035 100%)!important;
+}
+@media(max-width:480px){
+  .nr-driver-app-shell .nr-app.biloo-driver-completion {
+    padding:12px 12px 20px!important;
+  }
+  .nr-driver-app-shell .biloo-driver-completion > .biloo-completion-card {
+    border-radius:20px!important;
+    max-height:min(70dvh,600px)!important;
+  }
 }
