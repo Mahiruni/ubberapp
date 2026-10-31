@@ -19,6 +19,11 @@ public final class BilooSystemBars {
     View decor = window.getDecorView();
     int flags = decor.getSystemUiVisibility();
     flags &= ~View.SYSTEM_UI_FLAG_FULLSCREEN;
+    flags &= ~View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
+    flags &= ~View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;
+    flags &= ~View.SYSTEM_UI_FLAG_IMMERSIVE;
+    flags &= ~View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+    flags &= ~View.SYSTEM_UI_FLAG_LOW_PROFILE;
     flags &= ~View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
     flags &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) flags &= ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
@@ -29,6 +34,8 @@ public final class BilooSystemBars {
     }
     // On Android 15+ the OS enforces edge-to-edge. CSS viewport safe areas
     // remain responsible for positioning Biloo's interactive map controls.
+    // Keep Android system chrome visible after the activity resumes and after
+    // Capacitor/WebView navigation. Android 15+ still needs viewport inset handling.
     window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
   }
 }
