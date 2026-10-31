@@ -49,6 +49,10 @@ public class NexRideDriverLocationPlugin extends Plugin {
        activity.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION)!=PackageManager.PERMISSION_GRANTED) {
       call.reject("location_permission_required"); return;
     }
+    LocationManager providers=(LocationManager)getContext().getSystemService(android.content.Context.LOCATION_SERVICE);
+    if(providers==null || (!providers.isProviderEnabled(LocationManager.GPS_PROVIDER) && !providers.isProviderEnabled(LocationManager.NETWORK_PROVIDER))) {
+      call.reject("location_services_disabled"); return;
+    }
     BilooDriverSession session=BilooDriverSessionStore.get(getContext()); long epoch=session.epoch();
     BilooDriverSessionStore.WORKER.execute(() -> {
       try {
@@ -95,6 +99,14 @@ public class NexRideDriverLocationPlugin extends Plugin {
     result.put("batteryExempt",power.isIgnoringBatteryOptimizations(getContext().getPackageName()));
     result.put("locationEnabled",location.isProviderEnabled(LocationManager.GPS_PROVIDER)||location.isProviderEnabled(LocationManager.NETWORK_PROVIDER));
     call.resolve(result);
+  }
+  @PluginMethod public void openLocationSettings(PluginCall call) {
+    Activity activity=getActivity();
+    if(activity==null) { call.reject("activity_unavailable"); return; }
+    try {
+      activity.startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+      call.resolve();
+    } catch(Exception error) { call.reject("location_settings_unavailable"); }
   }
   @PluginMethod public void openSettings(PluginCall call) {
     Intent intent=new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,Uri.parse("package:"+getContext().getPackageName()));
