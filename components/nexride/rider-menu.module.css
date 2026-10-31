@@ -117,3 +117,7 @@
   .header { padding-bottom: 4px; }
   .footer { padding-top: 5px; }
 }
+
+/* Shared BILOO drawer identity: product name with role beneath. */
+.brand { flex-direction: column; align-items: flex-start; justify-content: center; gap: 0; line-height: 1.1; }
+.brand small { margin-top: 3px; color: var(--muted); font-size: 11px; font-weight: 650; letter-spacing: .06em; }
