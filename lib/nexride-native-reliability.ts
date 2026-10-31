@@ -16,6 +16,7 @@ type NativeDriverLocation = {
   stop(): Promise<void>;
   status(): Promise<NativeDriverGpsStatus>;
   openSettings(): Promise<void>;
+  openLocationSettings(): Promise<void>;
 };
 export type NativeDriverGpsStatus = {
   running: boolean; state?: string; lastFixAt?: number; lastUploadAt?: number;
@@ -151,6 +152,15 @@ export async function startNativeDriverGps(): Promise<boolean> {
     const result = await plugin.start({ accessToken: data.session.access_token, userId: data.session.user.id });
     return result.status === "started";
   } catch { return false; }
+}
+
+export async function openNativeDriverLocationSettings(): Promise<boolean> {
+  const cap = await nativeCapacitor();
+  if (!cap || await getNexRideNativeAppRole() !== "driver") return false;
+  try {
+    await cap.registerPlugin<NativeDriverLocation>("NexRideDriverLocation").openLocationSettings();
+    return true;
+  } catch { return false; } // Older APKs do not yet contain this native method.
 }
 
 export async function openNativeDriverSettings(): Promise<void> {
