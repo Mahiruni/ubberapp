@@ -210,7 +210,7 @@ export function RiderMenu({
           >
             <header className={styles.header}>
               <div className={styles.brand}>
-                <strong>BILOO</strong><span aria-hidden="true">·</span><span>{say("RIDER", "ተሳፋሪ")}</span>
+                <strong>BILOO</strong><small>{say("Rider", "ተሳፋሪ")}</small>
               </div>
               <button
                 type="button"
