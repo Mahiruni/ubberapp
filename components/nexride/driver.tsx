@@ -26,7 +26,7 @@ import { resolveSessionRole } from "../../lib/nexride-account-role";
 import { nexrideApiFetch } from "../../lib/nexride-api-auth";
 import { driverGpsHealth } from "../../lib/nexride-driver-gps";
 import { emitNexRideFeedback } from "../../lib/nexride-feedback";
-import { enableNexRideNativeNotifications, getNexRideNativeAppRole } from "../../lib/nexride-native-reliability";
+import { enableNexRideNativeNotifications, getNexRideNativeAppRole, openNativeDriverLocationSettings, openNativeDriverSettings } from "../../lib/nexride-native-reliability";
 import "../../app/driver/driver-dashboard.css";
 import "../../app/driver/driver-home-v2.css";
 import "../../app/rider-home.css";
@@ -429,6 +429,16 @@ export function DriverWorkspace({
       );
     });
 
+  const enableLocation = async () => {
+    const native = await getNexRideNativeAppRole() === "driver";
+    if (native) {
+      const opened = await openNativeDriverLocationSettings();
+      if (!opened) await openNativeDriverSettings().catch(() => {});
+    } else {
+      requestLocation();
+    }
+  };
+
   const requestLocation = () => {
     if (!navigator.geolocation) {
       setLocationPermission("unsupported");
@@ -472,7 +482,7 @@ export function DriverWorkspace({
       return;
     }
     if (locationPermission === "prompt" || locationPermission === "denied") {
-      requestLocation();
+      void enableLocation();
     }
   };
 
@@ -772,6 +782,7 @@ export function DriverWorkspace({
               <button type="button" disabled={updating} onClick={resolveBlock}>{verificationCopy(state.reviewStatus, state.rejectionReason).action}</button>
             </div>}
             {error && <p className="biloo-driver-dock-error" role="alert">{error}</p>}
+            {(locationPermission === "denied" || mapLocation.status === "unavailable" || (error && /location|gps/i.test(error))) && <button type="button" className="biloo-driver-dock-enable-alerts" onClick={() => void enableLocation()}><Icon name="pin" size={16}/>{say("Enable Android Location", "የአንድሮይድ አካባቢን አንቃ")}</button>}
             <div className="biloo-driver-dock-availability" role="group" aria-label={say("Driver availability", "የአሽከርካሪ ተገኝነት")}>
             <DriverAvailabilitySwipe
               online={state.online}
