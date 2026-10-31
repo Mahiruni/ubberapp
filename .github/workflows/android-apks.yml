@@ -29,6 +29,8 @@ name: Biloo Android release pipeline
       - 'app/api/driver/availability/route.ts'
       - 'components/nexride/driver-session-bridge.tsx'
       - 'components/nexride/native-reliability-settings.tsx'
+      - 'components/nexride/driver.tsx'
+      - 'components/nexride/permission-settings.tsx'
       - 'app/driver/navigation/page.tsx'
       - 'tests/native/**'
   push:
