@@ -132,6 +132,26 @@ jobs:
         env:
           FIREBASE_CONFIG_B64: ${{ secrets[format('NEXRIDE_{0}_GOOGLE_SERVICES_BASE64', matrix.prefix)] }}
         run: python3 scripts/validate-android-firebase-config.py '${{ matrix.role }}'
+      - name: Report public signing certificate fingerprint when configuration is missing
+        if: ${{ vars[format('BILOO_{0}_CERT_SHA256', matrix.prefix)] == '' }}
+        env:
+          BILOO_KEYSTORE_BASE64: ${{ secrets[format('BILOO_{0}_KEYSTORE_BASE64', matrix.prefix)] || secrets.NEXRIDE_ANDROID_RELEASE_KEYSTORE_BASE64 }}
+          BILOO_ANDROID_STORE_PASSWORD: ${{ secrets[format('BILOO_{0}_STORE_PASSWORD', matrix.prefix)] || secrets.NEXRIDE_ANDROID_RELEASE_STORE_PASSWORD }}
+          BILOO_ANDROID_KEY_ALIAS: ${{ secrets[format('BILOO_{0}_KEY_ALIAS', matrix.prefix)] || secrets.NEXRIDE_ANDROID_RELEASE_KEY_ALIAS }}
+        run: |
+          python3 - <<'PY'
+          import base64, hashlib, os, pathlib, subprocess, tempfile
+          with tempfile.TemporaryDirectory(prefix='biloo-cert-', dir=os.environ['RUNNER_TEMP']) as tmp:
+              key = pathlib.Path(tmp) / 'signing.p12'
+              key.write_bytes(base64.b64decode(''.join(os.environ['BILOO_KEYSTORE_BASE64'].split()), validate=True))
+              key.chmod(0o600)
+              result = subprocess.run(
+                  ['keytool', '-exportcert', '-keystore', str(key), '-alias', os.environ['BILOO_ANDROID_KEY_ALIAS'],
+                   '-storepass:env', 'BILOO_ANDROID_STORE_PASSWORD'],
+                  capture_output=True, check=True)
+              print('Public certificate SHA-256 for ${{ matrix.role }}: ' + hashlib.sha256(result.stdout).hexdigest().upper())
+              print('Set android-production variable BILOO_${{ matrix.prefix }}_CERT_SHA256 after checking this fingerprint against the original signing identity.')
+          PY
       - name: Verify the existing release signing identity
         env:
           BILOO_KEYSTORE_BASE64: ${{ secrets[format('BILOO_{0}_KEYSTORE_BASE64', matrix.prefix)] || secrets.NEXRIDE_ANDROID_RELEASE_KEYSTORE_BASE64 }}
