@@ -523,3 +523,43 @@
     animation: none !important;
   }
 }
+
+
+/* Rider regression guard: selecting a destination must never leave a bare map.
+   Scope to non-home map stages so the compact home sheet remains unchanged. */
+@media (max-width: 800px) {
+  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper:not(.rider-home-view)
+    .nr-main > .nr-rider-flow-panel {
+    position: absolute !important;
+    top: auto !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: clamp(280px, var(--nr-flow-sheet-height, 58dvh), calc(100dvh - 96px)) !important;
+    min-height: 280px !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    z-index: 150 !important;
+    transform: none !important;
+    pointer-events: auto !important;
+    overflow: visible !important;
+  }
+  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper:not(.rider-home-view)
+    .nr-main > .nr-rider-flow-panel > .nr-rider-persistent-wrapper {
+    position: absolute !important;
+    inset: 0 !important;
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 100% !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    overflow: hidden !important;
+    background: #fff !important;
+    border-radius: 24px 24px 0 0 !important;
+    box-shadow: 0 -8px 28px rgba(4, 28, 48, .14) !important;
+  }
+}
