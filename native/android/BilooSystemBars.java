@@ -14,7 +14,7 @@ public final class BilooSystemBars {
     Window window = activity.getWindow();
     window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
     window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-    window.setStatusBarColor(android.graphics.Color.rgb(8, 41, 95));
+    window.setStatusBarColor(android.graphics.Color.rgb(242, 247, 250));
     window.setNavigationBarColor(android.graphics.Color.rgb(8, 41, 95));
     View decor = window.getDecorView();
     int flags = decor.getSystemUiVisibility();
@@ -25,7 +25,8 @@ public final class BilooSystemBars {
     flags &= ~View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
     flags &= ~View.SYSTEM_UI_FLAG_LOW_PROFILE;
     flags &= ~View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
-    flags &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+    // LIGHT_STATUS_BAR requests dark clock, network, and battery icons on light surfaces.
+    flags |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) flags &= ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
     decor.setSystemUiVisibility(flags);
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
