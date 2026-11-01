@@ -195,3 +195,24 @@
     padding:10px 10px 5px!important;
   }
 }
+
+
+/* Content-hugging journey sheets: eliminate unused space below the last card.
+   Keep snap-height as the upper bound, so drag-to-minimize still constrains content. */
+@supports (height: fit-content) {
+  .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper:not([data-keyboard="true"]):not([data-search-open="true"]) .nr-main > .nr-rider-flow-panel {
+    height:fit-content!important;
+    max-height:min(var(--nr-flow-sheet-height,70dvh),70dvh,calc(var(--nr-viewport-height,100dvh) - 72px))!important;
+    min-height:0!important;
+  }
+  .nr-app[data-mode="rider"] .rider-map-flow.nr-polished-wrapper .nr-rider-flow-panel :is(.nr-driver-matching,.nr-ride-selection,.nr-destination-panel) {
+    min-height:0!important;
+    height:fit-content!important;
+    max-height:100%!important;
+  }
+  .nr-driver-app-shell .nr-driver-sheet {
+    height:fit-content!important;
+    max-height:min(var(--nr-driver-sheet-height,70dvh),70dvh)!important;
+    min-height:0!important;
+  }
+}
