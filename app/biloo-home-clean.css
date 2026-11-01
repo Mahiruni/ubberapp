@@ -351,3 +351,27 @@
     padding: 0 16px calc(8px + var(--biloo-safe-bottom)) !important;
   }
 }
+
+
+/* Consistent motion between Rider home, search, selection and review wrappers. */
+@media (max-width: 800px) and (prefers-reduced-motion: no-preference) {
+  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper
+    .nr-main > .nr-rider-flow-panel {
+    transition: height 300ms cubic-bezier(.22, 1, .36, 1),
+                bottom 300ms cubic-bezier(.22, 1, .36, 1),
+                opacity 180ms ease !important;
+  }
+  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper
+    .nr-main > .nr-rider-flow-panel > .nr-rider-persistent-wrapper {
+    transition: border-radius 300ms cubic-bezier(.22, 1, .36, 1),
+                background-color 220ms ease !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper
+    .nr-main > .nr-rider-flow-panel,
+  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper
+    .nr-main > .nr-rider-flow-panel > .nr-rider-persistent-wrapper {
+    transition: none !important;
+  }
+}
