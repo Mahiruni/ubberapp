@@ -636,7 +636,7 @@ export default function DriverRideRequestPage() {
       <DriverBottomSheet
         className="nr-request-sheet"
         label="Ride request details"
-        defaultSnap="medium"
+        defaultSnap="expanded"
         footer={!loading && offer && request && (visibleStatus === "pending" || visibleStatus === "failed") ? (
             <div className="nr-request-actions" aria-label={op("Respond to ride request")}>
               <button type="button" className="nr-request-accept"
