@@ -237,3 +237,39 @@
     animation: none !important;
   }
 }
+
+
+/* BILOO ride-choice vehicle micro-interactions: calm idle float, arrival and selection. */
+@keyframes bilooVehicleArrival {
+  from { opacity: 0; transform: translate3d(-15px, 5px, 0) scale(.90); }
+  to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}
+@keyframes bilooVehicleIdle {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, -3px, 0); }
+}
+@keyframes bilooVehicleSelected {
+  0%, 100% { transform: translate3d(0, -2px, 0) scale(1.04); }
+  50% { transform: translate3d(4px, -4px, 0) scale(1.075); }
+}
+.selection :global(.nr-ride-card) .vehicle > img {
+  transform-origin: 50% 75%;
+  will-change: transform;
+  animation: bilooVehicleArrival .48s cubic-bezier(.2,.8,.2,1) both, bilooVehicleIdle 3.5s ease-in-out .48s infinite;
+}
+.selection :global(.nr-ride-card:nth-child(2)) .vehicle > img { animation-delay: .10s, .58s; }
+.selection :global(.nr-ride-card:nth-child(3)) .vehicle > img { animation-delay: .20s, .68s; }
+.selection :global(.nr-ride-card[aria-checked="true"]) .vehicle > img {
+  animation: bilooVehicleSelected 2.5s ease-in-out infinite !important;
+  filter: drop-shadow(0 5px 5px rgba(174,119,16,.23));
+}
+.selection :global(.nr-ride-card:not(:disabled):active) .vehicle > img {
+  transform: translate3d(5px, -2px, 0) scale(1.06);
+}
+@media (prefers-reduced-motion: reduce) {
+  .selection :global(.nr-ride-card) .vehicle > img {
+    animation: none !important;
+    transform: none !important;
+    will-change: auto;
+  }
+}
