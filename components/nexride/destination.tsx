@@ -257,12 +257,6 @@ export function DestinationPanel({
       : picking === "destination"
         ? j.destination
         : null;
-  const unconfirmed =
-    j.pickup && !j.pickup.confirmed
-      ? "pickup"
-      : j.destination && !j.destination.confirmed
-        ? "destination"
-        : null;
   const typedQuery = query[field].trim();
   const previewRecent = data.recent.map(previewEndpoint);
   const recentChoices = [...recentSearches, ...previewRecent]
@@ -464,19 +458,6 @@ export function DestinationPanel({
               </>
             )}
             <p>{t("mapKeyboardInstructions")}</p>
-          </div>
-        )}
-        {!picking && unconfirmed && (
-          <div className="nr-search-state warning" role="status">
-            <Icon name="info" size={18} />
-            <p>{t("uncertainPickup")}</p>
-            <Button onClick={() => j.confirm(unconfirmed)}>
-              {t(
-                unconfirmed === "pickup"
-                  ? "confirmPickup"
-                  : "confirmDestination",
-              )}
-            </Button>
           </div>
         )}
         {!picking && showSuggestions && (
