@@ -103,6 +103,7 @@ jobs:
     needs: verify
     if: github.event_name == 'workflow_dispatch' && inputs.signed_release == true && github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
+    environment: android-production
     timeout-minutes: 30
     strategy:
       fail-fast: false
@@ -133,18 +134,18 @@ jobs:
         run: python3 scripts/validate-android-firebase-config.py '${{ matrix.role }}'
       - name: Verify the existing release signing identity
         env:
-          BILOO_KEYSTORE_BASE64: ${{ secrets[format('BILOO_{0}_KEYSTORE_BASE64', matrix.prefix)] }}
-          BILOO_ANDROID_STORE_PASSWORD: ${{ secrets[format('BILOO_{0}_STORE_PASSWORD', matrix.prefix)] }}
-          BILOO_ANDROID_KEY_ALIAS: ${{ secrets[format('BILOO_{0}_KEY_ALIAS', matrix.prefix)] }}
-          BILOO_ANDROID_KEY_PASSWORD: ${{ secrets[format('BILOO_{0}_KEY_PASSWORD', matrix.prefix)] }}
+          BILOO_KEYSTORE_BASE64: ${{ secrets[format('BILOO_{0}_KEYSTORE_BASE64', matrix.prefix)] || secrets.NEXRIDE_ANDROID_RELEASE_KEYSTORE_BASE64 }}
+          BILOO_ANDROID_STORE_PASSWORD: ${{ secrets[format('BILOO_{0}_STORE_PASSWORD', matrix.prefix)] || secrets.NEXRIDE_ANDROID_RELEASE_STORE_PASSWORD }}
+          BILOO_ANDROID_KEY_ALIAS: ${{ secrets[format('BILOO_{0}_KEY_ALIAS', matrix.prefix)] || secrets.NEXRIDE_ANDROID_RELEASE_KEY_ALIAS }}
+          BILOO_ANDROID_KEY_PASSWORD: ${{ secrets[format('BILOO_{0}_KEY_PASSWORD', matrix.prefix)] || secrets.NEXRIDE_ANDROID_RELEASE_KEY_PASSWORD }}
           BILOO_ANDROID_CERT_SHA256: ${{ vars[format('BILOO_{0}_CERT_SHA256', matrix.prefix)] }}
         run: python3 scripts/prepare-android-signing.py
       - name: Build the signed release
         working-directory: android
         env:
-          BILOO_ANDROID_STORE_PASSWORD: ${{ secrets[format('BILOO_{0}_STORE_PASSWORD', matrix.prefix)] }}
-          BILOO_ANDROID_KEY_ALIAS: ${{ secrets[format('BILOO_{0}_KEY_ALIAS', matrix.prefix)] }}
-          BILOO_ANDROID_KEY_PASSWORD: ${{ secrets[format('BILOO_{0}_KEY_PASSWORD', matrix.prefix)] }}
+          BILOO_ANDROID_STORE_PASSWORD: ${{ secrets[format('BILOO_{0}_STORE_PASSWORD', matrix.prefix)] || secrets.NEXRIDE_ANDROID_RELEASE_STORE_PASSWORD }}
+          BILOO_ANDROID_KEY_ALIAS: ${{ secrets[format('BILOO_{0}_KEY_ALIAS', matrix.prefix)] || secrets.NEXRIDE_ANDROID_RELEASE_KEY_ALIAS }}
+          BILOO_ANDROID_KEY_PASSWORD: ${{ secrets[format('BILOO_{0}_KEY_PASSWORD', matrix.prefix)] || secrets.NEXRIDE_ANDROID_RELEASE_KEY_PASSWORD }}
         run: ./gradlew --no-daemon --max-workers=2 assembleRelease
       - name: Verify signature, Firebase resources and APK metadata
         env:
