@@ -563,3 +563,38 @@
     box-shadow: 0 -8px 28px rgba(4, 28, 48, .14) !important;
   }
 }
+
+
+/* BILOO mobile wrapper polish: content-first sheets, no blank spacer below
+   controls, and scrollable content above the Android gesture inset. */
+@media (max-width: 800px) {
+  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper:not(.rider-home-view)
+    .nr-main > .nr-rider-flow-panel {
+    height: min(var(--nr-flow-sheet-height, 58dvh), calc(100dvh - 96px)) !important;
+    min-height: min(280px, calc(100dvh - 96px)) !important;
+    max-height: calc(100dvh - 96px) !important;
+    box-sizing: border-box !important;
+  }
+  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper:not(.rider-home-view)
+    .nr-main > .nr-rider-flow-panel > .nr-rider-persistent-wrapper {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 0 !important;
+    padding-bottom: var(--biloo-safe-bottom, env(safe-area-inset-bottom, 0px)) !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper:not(.rider-home-view)
+    .nr-main > .nr-rider-flow-panel > .nr-rider-persistent-wrapper > * {
+    flex-shrink: 0;
+    max-width: 100%;
+    min-width: 0;
+  }
+  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.nr-polished-wrapper.rider-home-view
+    .nr-main > .nr-rider-flow-panel > .nr-rider-persistent-wrapper {
+    overflow: hidden !important;
+  }
+}
