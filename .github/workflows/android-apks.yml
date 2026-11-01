@@ -141,16 +141,38 @@ jobs:
         run: |
           python3 - <<'PY'
           import base64, hashlib, os, pathlib, subprocess, tempfile
+          def fail(message):
+              raise SystemExit('Signing configuration check: ' + message)
+          encoded = os.environ.get('BILOO_KEYSTORE_BASE64', '').strip()
+          alias = os.environ.get('BILOO_ANDROID_KEY_ALIAS', '').strip()
+          password = os.environ.get('BILOO_ANDROID_STORE_PASSWORD', '')
+          if not encoded:
+              fail('keystore secret is missing')
+          if not password:
+              fail('store password secret is missing')
+          if not alias:
+              fail('key alias secret is missing')
           with tempfile.TemporaryDirectory(prefix='biloo-cert-', dir=os.environ['RUNNER_TEMP']) as tmp:
               key = pathlib.Path(tmp) / 'signing.p12'
-              key.write_bytes(base64.b64decode(''.join(os.environ['BILOO_KEYSTORE_BASE64'].split()), validate=True))
+              try:
+                  key.write_bytes(base64.b64decode(''.join(encoded.split()), validate=True))
+              except (ValueError, base64.binascii.Error):
+                  fail('keystore Base64 is invalid; re-encode the original keystore')
               key.chmod(0o600)
-              result = subprocess.run(
-                  ['keytool', '-exportcert', '-keystore', str(key), '-alias', os.environ['BILOO_ANDROID_KEY_ALIAS'],
+              store = subprocess.run(
+                  ['keytool', '-list', '-keystore', str(key),
                    '-storepass:env', 'BILOO_ANDROID_STORE_PASSWORD'],
-                  capture_output=True, check=True)
+                  capture_output=True, text=True)
+              if store.returncode:
+                  fail('keystore cannot be opened with the configured store password, or keystore bytes are invalid')
+              result = subprocess.run(
+                  ['keytool', '-exportcert', '-keystore', str(key), '-alias', alias,
+                   '-storepass:env', 'BILOO_ANDROID_STORE_PASSWORD'],
+                  capture_output=True)
+              if result.returncode:
+                  fail('keystore opens, but configured key alias cannot export a certificate; verify alias against the keystore')
               print('Public certificate SHA-256 for ${{ matrix.role }}: ' + hashlib.sha256(result.stdout).hexdigest().upper())
-              print('Set android-production variable BILOO_${{ matrix.prefix }}_CERT_SHA256 after checking this fingerprint against the original signing identity.')
+              print('Set android-production variable BILOO_${{ matrix.prefix }}_CERT_SHA256 only after checking the original signing identity.')
           PY
       - name: Verify the existing release signing identity
         env:
