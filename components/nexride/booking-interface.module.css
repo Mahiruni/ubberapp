@@ -273,3 +273,32 @@
     will-change: auto;
   }
 }
+
+
+/* Matching status glyph: transparent, refined and visually anchored beside heading. */
+@keyframes bilooMatchingLocatePulse {
+  0%, 100% { transform: scale(1); opacity: .94; }
+  50% { transform: scale(1.09); opacity: 1; }
+}
+.matching :global(.nr-matching-symbol) {
+  top: 0 !important;
+  right: 18px !important;
+  width: 40px !important;
+  height: 40px !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  color: var(--booking-text) !important;
+}
+.matching :global(.nr-matching-symbol.searching) {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.matching :global(.nr-matching-symbol.searching svg) {
+  animation: bilooMatchingLocatePulse 2.6s ease-in-out infinite;
+  stroke-width: 1.9;
+}
+@media (prefers-reduced-motion: reduce) {
+  .matching :global(.nr-matching-symbol.searching svg) { animation: none !important; }
+}
