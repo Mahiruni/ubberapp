@@ -429,3 +429,26 @@
     .nr-ride-card,.nr-home-shortcuts button,.nr-home-destinations button
   ) {transition:none!important;animation:none!important}
 }
+
+
+/* Driver wrapper grip matches Rider's premium dark-gold breathing treatment. */
+@keyframes bilooDriverGripBreath {
+  0%,100% { width:32px; background:#ad7809; }
+  50% { width:53px; background:#e0ad2e; }
+}
+.nr-driver-app-shell .nr-driver-sheet .nr-driver-sheet-grab > span {
+  display:block!important;
+  width:32px!important;
+  height:4px!important;
+  border-radius:999px!important;
+  background:#ad7809!important;
+  box-shadow:0 1px 5px rgba(151,105,8,.16)!important;
+}
+@media (prefers-reduced-motion:no-preference) {
+  .nr-driver-app-shell .nr-driver-sheet:not([data-dragging="true"]) .nr-driver-sheet-grab > span {
+    animation:bilooDriverGripBreath 3.6s ease-in-out infinite!important;
+  }
+}
+@media (prefers-reduced-motion:reduce) {
+  .nr-driver-app-shell .nr-driver-sheet .nr-driver-sheet-grab > span { animation:none!important; }
+}
