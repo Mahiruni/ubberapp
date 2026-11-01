@@ -85,7 +85,13 @@ export function DriverMatching({ model, changeCategory, previewAssigned, home }:
         <span><i className="nr-match-dots" aria-hidden="true"><b/><b/><b/></i>{progress?.phase === 'waiting' ? say('Waiting for driver response', 'የአሽከርካሪ ምላሽ በመጠባበቅ ላይ') : t('matchingAcceptance')}</span>
       </div>}
       {!preview && searching && progress && <div className="biloo-matching-live-meta" data-phase={progress.phase}>
-        {Number.isFinite(startedAt) && now >= startedAt && <span><Icon name="clock" size={15}/>{say('Searching', 'በመፈለግ ላይ')} <b>{elapsedLabel((now - startedAt) / 1000)}</b></span>}
+        {Number.isFinite(startedAt) && now >= startedAt && <span className="biloo-search-timer" role="timer" aria-label={say('Searching elapsed time', 'የፍለጋ የቆይታ ጊዜ')}>
+          <span className="biloo-search-timer-ring" aria-hidden="true">
+            <svg viewBox="0 0 52 52" focusable="false"><circle className="biloo-search-ring-track" cx="26" cy="26" r="21"/><circle className="biloo-search-ring-progress" cx="26" cy="26" r="21" style={{ strokeDashoffset: 132 - (Math.min(1, ((now - startedAt) / 1000 % 60) / 60) * 132) }}/></svg>
+            <Icon name="clock" size={19}/>
+          </span>
+          <span className="biloo-search-timer-copy"><small>{say('SEARCHING FOR YOUR DRIVER', 'አሽከርካሪ በመፈለግ ላይ')}</small><strong>{elapsedLabel((now - startedAt) / 1000)}</strong><em>{say('Time elapsed · Still searching', 'ያለፈ ጊዜ · ፍለጋው ቀጥሏል')}</em></span>
+        </span>}
         {progress.deliveredAt && <span><Icon name="check" size={15}/>{say('Driver notified', 'አሽከርካሪው እንዲያውቅ ተደርጓል')}</span>}
       </div>}
       {status === 'assigned' && snapshot?.driver && <div className="nr-confirmed-driver nr-confirmed-driver-v2">
