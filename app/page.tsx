@@ -442,7 +442,7 @@ function AppWorkspace({
       <section className="nr-main">
         <header className="nr-topbar">
           {mode === "rider" ? (
-            !riderHome && (
+            !riderMapView && (
               <RiderMenu
                 className="nr-rider-hamburger-inline"
                 active={riderScreen === "wallet" ? "wallet" : (["destination", "rides", "finding", "trip", "live", "summary"].includes(riderScreen) ? "home" : riderScreen) as RiderMenuId}
@@ -456,7 +456,7 @@ function AppWorkspace({
               <Icon name="menu" />
             </button>
           )}
-          {!riderHome && <Brand driver={mode === "driver"} />}
+          {!riderMapView && <Brand driver={mode === "driver"} />}
           <div className="nr-topbar-place">
             <Icon name="pin" size={17} />
             <span>{t("city")}</span>
@@ -642,12 +642,12 @@ function AppWorkspace({
           </div>}
         </div>
 
-        {riderHome && (
+        {riderMapView && (
           <>
             <div className="biloo-home-floating-header" aria-label="Biloo home navigation">
               <RiderMenu
                 className="biloo-home-floating-menu"
-                active="home"
+                active={(["destination", "rides", "finding", "trip", "live", "summary"].includes(riderScreen) ? "home" : riderScreen) as RiderMenuId}
                 onNavigate={(id) => navigate(id)}
                 isAdmin={isAdmin}
                 locked={requestPending || matching.active}
