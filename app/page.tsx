@@ -38,7 +38,6 @@ import { useJourney } from "../lib/nexride-journey";
 import { useRiderLocation } from "../lib/nexride-location";
 
 import { RiderMenu, type RiderMenuId } from "../components/nexride/rider-menu";
-import { RiderFloatingDock } from "../components/nexride/rider-floating-dock";
 import type { DriverScreen } from "../components/nexride/driver";
 import type { Language } from "../lib/nexride-i18n";
 import { LANGUAGE_EVENT } from "../components/nexride/language-provider";
@@ -700,10 +699,6 @@ function AppWorkspace({
           </div>
         )}
 
-        {mode === "rider" && (riderHome || profileView) && <RiderFloatingDock
-          active={profileView ? "account" : "home"}
-          onNavigate={tab => navigate(tab === "activity" ? "trips" : tab === "account" ? "profile" : "home")}
-        />}
       </section>
       {toast && (
         <div className="nr-toast" role="status">
