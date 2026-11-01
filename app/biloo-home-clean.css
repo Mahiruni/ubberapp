@@ -493,3 +493,33 @@
 @media (prefers-reduced-motion: reduce) {
   .nr-app[data-mode="rider"] .biloo-search-ring-progress { transition: none; }
 }
+
+
+/* BILOO Rider sheet grip: dark-gold, gently breathing width and amber highlights. */
+@keyframes bilooGripBreathe {
+  0%, 100% { width: 32px; background-color: #ad7809; }
+  50% { width: 53px; background-color: #e0ad2e; }
+}
+@media (max-width: 900px) {
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-flow-sheet-handle > span,
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-home-sheet-drag-zone > .nr-home-handle {
+    display: block !important;
+    width: 32px !important;
+    height: 4px !important;
+    border-radius: 999px !important;
+    background: #ad7809 !important;
+    box-shadow: 0 1px 5px rgba(151, 105, 8, .16);
+  }
+}
+@media (max-width: 900px) and (prefers-reduced-motion: no-preference) {
+  .nr-app[data-mode="rider"] .rider-map-flow:not([data-sheet-dragging="true"]) .nr-flow-sheet-handle > span,
+  .nr-app[data-mode="rider"] .rider-map-flow:not([data-sheet-dragging="true"]) .nr-home-sheet-drag-zone > .nr-home-handle {
+    animation: bilooGripBreathe 3.6s ease-in-out infinite !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-flow-sheet-handle > span,
+  .nr-app[data-mode="rider"] .rider-map-flow .nr-home-sheet-drag-zone > .nr-home-handle {
+    animation: none !important;
+  }
+}
