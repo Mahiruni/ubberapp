@@ -228,3 +228,20 @@
   .nr-app[data-mode="rider"][data-theme] .rider-home-view .mapboxgl-ctrl-bottom-left { left: calc(360px + var(--biloo-safe-left))!important; bottom: calc(var(--biloo-home-clearance) + 12px)!important; }
   .nr-app[data-mode="rider"][data-theme] .rider-home-view .mapboxgl-ctrl-bottom-right { left: calc(450px + var(--biloo-safe-left))!important; bottom: calc(var(--biloo-home-clearance) + 12px)!important; }
 }
+
+
+/* Rider-only compact home: no footer navigation, 15% initial sheet.
+   Keep height tied to sheet motion so the user can expand it. */
+@media (max-width: 800px) {
+  .nr-app[data-mode="rider"] .nr-mobile-nav,
+  .nr-app[data-mode="rider"] .nr-rider-floating-dock {
+    display: none !important;
+  }
+  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.rider-home-view {
+    --biloo-home-card-height: clamp(0px, var(--nr-flow-sheet-height, 15dvh), 75dvh);
+  }
+  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.rider-home-view .nr-main > .nr-rider-flow-panel {
+    height: var(--biloo-home-card-height) !important;
+    min-height: 0 !important;
+  }
+}
