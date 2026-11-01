@@ -68,10 +68,10 @@ export function RiderHomePanel({
 }) {
   const t = useTranslation();
   const language = useContext(LanguageContext);
-  const rows = data.recent.slice(0, snap === "expanded" ? 3 : 1);
   // Open at the medium snap so the destination search and all three shortcuts are visible.
   const motion = useSheetMotion({ kind: "rider", ratios: HOME_RATIOS, defaultRatio: 0.40, desktopDefaultRatio: 0.40 });
   const snap = motion.currentRatio <= HOME_RATIOS[0] ? "collapsed" : motion.currentRatio >= HOME_RATIOS[2] ? "expanded" : "medium";
+  const rows = data.recent.slice(0, snap === "expanded" ? 3 : 1);
 
   return (
     <section
