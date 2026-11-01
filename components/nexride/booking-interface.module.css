@@ -209,3 +209,31 @@
     padding-bottom: max(12px, env(safe-area-inset-bottom)) !important;
   }
 }
+
+
+/* Smooth Rider review-sheet entrance; preserves native dialog focus/escape. */
+@keyframes bilooReviewSheetEnter {
+  from { transform: translate3d(0, 24px, 0); opacity: .72; }
+  to { transform: translate3d(0, 0, 0); opacity: 1; }
+}
+@media (max-width: 900px) and (prefers-reduced-motion: no-preference) {
+  :global(.nr-app[data-mode="rider"]) :global(.rider-map-flow.nr-polished-wrapper)
+    :global(dialog.nr-dialog).review[open] {
+    animation: bilooReviewSheetEnter 300ms cubic-bezier(.22, 1, .36, 1) both !important;
+    will-change: transform;
+  }
+  :global(.nr-app[data-mode="rider"]) :global(.rider-map-flow.nr-polished-wrapper)
+    :global(dialog.nr-dialog).review[open]::backdrop {
+    animation: bilooReviewBackdropEnter 240ms ease-out both;
+  }
+}
+@keyframes bilooReviewBackdropEnter {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  :global(.nr-app[data-mode="rider"]) :global(dialog.nr-dialog).review[open],
+  :global(.nr-app[data-mode="rider"]) :global(dialog.nr-dialog).review[open]::backdrop {
+    animation: none !important;
+  }
+}
