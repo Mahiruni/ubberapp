@@ -115,8 +115,8 @@ export function DestinationPanel({
 }) {
   const t = useTranslation(),
     language = useContext(LanguageContext);
-  // Begin at the Rider's starting point, not the drop-off field.
-  const [field, setField] = useState<"pickup" | "destination">(initialDestinationQuery ? "destination" : "pickup");
+  // Device pickup is populated by the journey geocoder; start typing at destination.
+  const [field, setField] = useState<"pickup" | "destination">("destination");
   const [query, setQuery] = useState({ pickup: "", destination: initialDestinationQuery || "" });
   const [searchActive, setSearchActive] = useState(false);
   const [recentSearches, setRecentSearches] = useState<Endpoint[]>([]);
@@ -144,11 +144,10 @@ export function DestinationPanel({
       const raw = sessionStorage.getItem("nexride.rider.destination.draft");
       if (raw && !initialDestinationQuery) {
         const saved = JSON.parse(raw);
-        // Restore typed values, but never give a saved destination the initial
-        // keyboard focus when the Rider reopens Plan your ride.
+        // Restore destination text, but never override the automatic device pickup label.
         if (saved?.query && typeof saved.query.pickup === "string" && typeof saved.query.destination === "string") {
           setQuery({
-            pickup: saved.query.pickup.slice(0, 120),
+            pickup: "",
             destination: saved.query.destination.slice(0, 120),
           });
         }
@@ -354,7 +353,7 @@ export function DestinationPanel({
                         aria-label={t(
                           target === "pickup" ? "editPickup" : "destination",
                         )}
-                        autoFocus={target === (initialDestinationQuery ? "destination" : "pickup")}
+                        autoFocus={target === "destination"}
                         placeholder={
                           target === "pickup"
                             ? (language === "am" ? "ጉዞዎን ያቅዱ" : "Plan your ride")
