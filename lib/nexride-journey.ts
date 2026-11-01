@@ -169,7 +169,7 @@ export function useJourney(position: RiderLocation | null, language: Language = 
       setPickup({
         ...position,
         source: "device",
-        confirmed: position.accuracy <= 100,
+        confirmed: true, // Device pickup is usable immediately; rider can still adjust the pin.
         name: "",
         address: `${position.lat.toFixed(5)}, ${position.lng.toFixed(5)}`,
       });
