@@ -245,3 +245,30 @@
     min-height: 0 !important;
   }
 }
+
+
+/* Rider home: full-bleed map behind Android system bars.
+   Never paint an opaque fake status bar over the real clock/icons. */
+@media (max-width: 800px) {
+  .nr-app[data-mode="rider"] .rider-map-flow.rider-home-view .nr-main {
+    position: relative !important;
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+    overflow: hidden !important;
+  }
+  .nr-app[data-mode="rider"] .rider-map-flow.rider-home-view .nr-main::before {
+    display: none !important;
+    content: none !important;
+  }
+  .nr-app[data-mode="rider"] .rider-map-flow.rider-home-view .nr-main > .nr-stage.with-map {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .nr-app[data-mode="rider"] .rider-map-flow.rider-home-view .biloo-home-floating-header {
+    top: calc(12px + var(--biloo-safe-top)) !important;
+  }
+}
