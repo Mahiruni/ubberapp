@@ -8,7 +8,7 @@ import { type Place } from "../../lib/nexride-places";
 import type { HomePlaces } from "../../lib/nexride-home";
 import type { LocationStatus, RiderLocation } from "../../lib/nexride-location";
 
-const HOME_RATIOS = [0.20, 0.40, 0.70] as const;
+const HOME_RATIOS = [0.15, 0.40, 0.70] as const;
 
 export function LocationMessage({
   status,
@@ -70,7 +70,7 @@ export function RiderHomePanel({
   const language = useContext(LanguageContext);
   const rows = data.recent.slice(0, 3);
   // Concept #2 keeps the booking card compact above a separate navigation dock.
-  const motion = useSheetMotion({ kind: "rider", ratios: HOME_RATIOS, defaultRatio: 0.26, desktopDefaultRatio: 0.42 });
+  const motion = useSheetMotion({ kind: "rider", ratios: HOME_RATIOS, defaultRatio: 0.15, desktopDefaultRatio: 0.42 });
   const snap = motion.currentRatio <= HOME_RATIOS[0] ? "collapsed" : motion.currentRatio >= HOME_RATIOS[2] ? "expanded" : "medium";
 
   return (
