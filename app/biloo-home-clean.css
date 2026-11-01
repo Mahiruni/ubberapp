@@ -272,3 +272,29 @@
     top: calc(12px + var(--biloo-safe-top)) !important;
   }
 }
+
+
+/* Rider home bottom sheet must touch the viewport footer: no old dock clearance. */
+@media (max-width: 800px) {
+  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.rider-home-view {
+    --biloo-home-dock-height: 0px !important;
+    --biloo-home-clearance: 0px !important;
+  }
+  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.rider-home-view
+    .nr-main > .nr-rider-flow-panel {
+    bottom: 0 !important;
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+  }
+  .nr-app[data-mode="rider"][data-theme] .rider-map-flow.rider-home-view
+    .nr-main > .nr-rider-flow-panel > .nr-rider-persistent-wrapper {
+    border-radius: 24px 24px 0 0 !important;
+    border-bottom: 0 !important;
+    padding-bottom: var(--biloo-safe-bottom) !important;
+    box-sizing: border-box !important;
+  }
+}
