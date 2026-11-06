@@ -139,7 +139,8 @@ test('active Driver trip keeps its stage action in a compact bottom sheet', asyn
   await expect(page.locator('.nr-nav-bottom-card')).toHaveCount(0);
   const details = page.locator('.biloo-driver-trip-details');
   await expect(details).toHaveAttribute('open', '');
-  await expect(page.locator('.biloo-driver-trip-details-body')).toContainText('Mexico Square, Addis Ababa');
+  await expect(page.locator('.nr-nav-current-destination h1')).toHaveText('Mexico Square, Addis Ababa');
+  await expect(page.locator('.nr-nav-trip-meta')).toContainText('IN TRIP');
   const sheet = page.locator('.nr-nav-trip-action-bar');
   const complete = sheet.getByRole('button', { name: /Complete trip/i });
   await expect(sheet).toBeVisible();
