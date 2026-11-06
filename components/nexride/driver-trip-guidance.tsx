@@ -62,10 +62,12 @@ export function DriverTripGuidance({ badge, instruction, distance, detail, label
     window.addEventListener("resize", measure);
     window.visualViewport?.addEventListener("resize", measure);
     measure();
+    const initialMeasure = window.requestAnimationFrame(measure);
     return () => {
       observer?.disconnect();
       window.removeEventListener("resize", measure);
       window.visualViewport?.removeEventListener("resize", measure);
+      window.cancelAnimationFrame(initialMeasure);
       if (previousHeader) shell.style.setProperty("--driver-header-total", previousHeader);
       else shell.style.removeProperty("--driver-header-total");
       if (previousSheetBottom) shell.style.setProperty("--nr-driver-trip-sheet-bottom", previousSheetBottom);
