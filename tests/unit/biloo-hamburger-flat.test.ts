@@ -124,7 +124,6 @@ describe("Biloo zero-duplication navigation ownership", () => {
     expect(riderMenu).toContain("MAIN NAVIGATION");
     expect(driverMenu).toContain("nr-driver-menu-separator");
     expect(driverMenu).toContain('className="nr-driver-header-profile"');
-    expect(driverMenu).toContain('className="nr-driver-header-profile"');
     expect(driverMenu).not.toContain("MAIN NAVIGATION");
     expect(driverMenu).toContain("Ride with Biloo");
     expect(driverMenu).toContain('<Link href="/rider" className="nr-driver-menu-role-switch"');
