@@ -268,17 +268,21 @@ test('acceptance completes the verified ride lifecycle while rider contact loads
   await expect(actionSheet.locator('.biloo-driver-trip-details')).toHaveAttribute('open', '');
   await expect(actionSheet.locator('.nr-driver-sheet-footer .nr-nav-stage-primary')).toBeVisible();
 
-  await expect(stageAction).toContainText('Start trip');
+  await expect(stageAction).toContainText('Arrived at pickup');
   await expect(stageAction).toBeEnabled({ timeout: 5000 });
   await expect(actionSheet.locator('.biloo-driver-trip-details')).toHaveAttribute('open', '');
   await stageAction.click();
+  await expect.poll(() => state.stage).toBe('arrived_pickup');
+  await expect(stageAction).toContainText('Start trip');
   const startTripConfirm = page.getByRole('dialog').getByRole('button', { name: 'Start trip', exact: true });
   await expect(startTripConfirm).toBeEnabled({ timeout: 5000 });
   await startTripConfirm.click();
+  await expect.poll(() => state.stage).toBe('in_trip');
   await expect(stageAction).toContainText('Complete trip');
   await expect(actionSheet.locator('.biloo-driver-trip-details')).toHaveAttribute('open', '');
   await stageAction.click();
   await page.getByRole('dialog').getByRole('button', { name: 'Complete trip', exact: true }).click();
+  await expect.poll(() => state.stage).toBe('completed');
   const receipt = page.locator('.nr-app.biloo-driver-completion');
   const receiptCard = page.locator('.biloo-completion-card');
   await expect(receiptCard).toContainText('336');
