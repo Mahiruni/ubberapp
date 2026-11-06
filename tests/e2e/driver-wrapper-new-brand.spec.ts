@@ -197,3 +197,38 @@ for (const theme of ['light', 'dark'] as const) {
     await expect(dialog.getByRole('button', { name: 'Not yet', exact: true })).toBeInViewport();
   });
 }
+
+test('Driver home header is transparent and the bottom wrapper drags without auto-hiding details', async ({ page }) => {
+  await connectedDriver(page, 'pending', 'light');
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/driver/home');
+
+  const header = page.locator('.nr-driver-global-header[data-home="true"]');
+  await expect(header).toBeVisible();
+  await expect(header).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+
+  const wrapper = page.locator('.biloo-driver-dock-host');
+  const details = wrapper.locator('.biloo-driver-dock-description');
+  await expect(wrapper).toBeVisible();
+  await expect(details).toBeVisible();
+  const startBox = (await wrapper.boundingBox())!;
+  const startBottom = startBox.y + startBox.height;
+  expect(Math.abs(844 - startBottom)).toBeLessThan(60);
+
+  const handle = wrapper.locator('.biloo-driver-dock-handle');
+  const handleBox = (await handle.boundingBox())!;
+  await page.mouse.move(handleBox.x + handleBox.width / 2, handleBox.y + handleBox.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(handleBox.x + handleBox.width / 2, handleBox.y + handleBox.height / 2 - 200, { steps: 12 });
+  await page.mouse.up();
+  await expect.poll(async () => (await wrapper.boundingBox())?.height ?? 0).toBeGreaterThan(startBox.height + 100);
+  await expect(details).not.toHaveCSS('display', 'none');
+
+  const expandedHandleBox = (await handle.boundingBox())!;
+  await page.mouse.move(expandedHandleBox.x + expandedHandleBox.width / 2, expandedHandleBox.y + expandedHandleBox.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(expandedHandleBox.x + expandedHandleBox.width / 2, expandedHandleBox.y + expandedHandleBox.height / 2 + 200, { steps: 12 });
+  await page.mouse.up();
+  await expect.poll(async () => (await wrapper.boundingBox())?.height ?? Number.POSITIVE_INFINITY).toBeLessThan(startBox.height + 100);
+  await expect(details).not.toHaveCSS('display', 'none');
+});

@@ -135,9 +135,8 @@ export function DriverWorkspace({
   const { resolvedTheme } = useDriverTheme();
   const [state, setState] = useState<DriverState>(emptyState);
   const [driverId, setDriverId] = useState("");
-  const [compactMapSheet, setCompactMapSheet] = useState(true);
-  const sheetDragStart = useRef<number | null>(null);
-  const sheetDragMoved = useRef(false);
+  const sheetDrag = useRef<null | { pointerId: number; startY: number; startHeight: number }>(null);
+  const sheetHeightRef = useRef<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState("");
@@ -702,14 +701,65 @@ export function DriverWorkspace({
             ? say("GPS stale · reconnecting", "ጂፒኤስ የቆየ ነው · እንደገና በመገናኘት ላይ")
             : say("Waiting for a fresh GPS fix", "አዲስ የጂፒኤስ ቦታ በመጠባበቅ ላይ");
 
-  const sheetDragEnd = (event: React.PointerEvent<HTMLButtonElement>) => {
-    if (sheetDragStart.current === null) return;
-    const delta = event.clientY - sheetDragStart.current;
-    sheetDragStart.current = null;
-    if (Math.abs(delta) > 38) {
-      sheetDragMoved.current = true;
-      setCompactMapSheet(delta > 0);
-    }
+  const driverDockViewport = () => Math.max(1, window.visualViewport?.height || window.innerHeight);
+  const boundedDriverDockHeight = (height: number, viewport: number) =>
+    Math.min(Math.max(height, viewport * 0.34), viewport * 0.84);
+  const applyDriverDockHeight = (handle: HTMLButtonElement, height: number, viewport: number) => {
+    const bounded = boundedDriverDockHeight(height, viewport);
+    const host = handle.closest<HTMLElement>(".biloo-driver-dock-host");
+    host?.style.setProperty("--biloo-driver-dock-height", `${Math.round(bounded)}px`);
+    handle.setAttribute("aria-valuenow", String(Math.round(bounded / viewport * 100)));
+    sheetHeightRef.current = bounded;
+    return bounded;
+  };
+  const sheetDragStart = (event: React.PointerEvent<HTMLButtonElement>) => {
+    if (!event.isPrimary || (event.pointerType === "mouse" && event.button !== 0) || sheetDrag.current) return;
+    event.preventDefault();
+    event.stopPropagation();
+    event.currentTarget.focus({ preventScroll: true });
+    const host = event.currentTarget.closest<HTMLElement>(".biloo-driver-dock-host");
+    if (!host) return;
+    const viewport = driverDockViewport();
+    const height = applyDriverDockHeight(event.currentTarget, host.getBoundingClientRect().height, viewport);
+    sheetDrag.current = { pointerId: event.pointerId, startY: event.clientY, startHeight: height };
+    host.setAttribute("data-dragging", "true");
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+  const sheetDragMove = (event: React.PointerEvent<HTMLButtonElement>) => {
+    const drag = sheetDrag.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const viewport = driverDockViewport();
+    applyDriverDockHeight(event.currentTarget, drag.startHeight + drag.startY - event.clientY, viewport);
+  };
+  const sheetDragEnd = (event: React.PointerEvent<HTMLButtonElement>, cancelled = false) => {
+    const drag = sheetDrag.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const viewport = driverDockViewport();
+    const current = cancelled ? drag.startHeight : sheetHeightRef.current ?? drag.startHeight;
+    const snapPoints = [0.34, 0.52, 0.74].map(ratio => boundedDriverDockHeight(viewport * ratio, viewport));
+    const settled = cancelled ? drag.startHeight : snapPoints.reduce((nearest, point) =>
+      Math.abs(point - current) < Math.abs(nearest - current) ? point : nearest, snapPoints[0]);
+    applyDriverDockHeight(event.currentTarget, settled, viewport);
+    event.currentTarget.closest<HTMLElement>(".biloo-driver-dock-host")?.removeAttribute("data-dragging");
+    sheetDrag.current = null;
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+  };
+  const resizeDriverDockFromKeyboard = (event: React.KeyboardEvent<HTMLButtonElement>) => {
+    const viewport = driverDockViewport();
+    const host = event.currentTarget.closest<HTMLElement>(".biloo-driver-dock-host");
+    if (!host) return;
+    const current = host.getBoundingClientRect().height || viewport * 0.48;
+    const next = event.key === "ArrowUp" ? current + viewport * 0.1
+      : event.key === "ArrowDown" ? current - viewport * 0.1
+        : event.key === "Home" ? viewport * 0.34
+          : event.key === "End" ? viewport * 0.84 : null;
+    if (next === null) return;
+    event.preventDefault();
+    applyDriverDockHeight(event.currentTarget, next, viewport);
   };
 
   const swipeFeedback = !verified
@@ -761,12 +811,15 @@ export function DriverWorkspace({
           onClick={(event) => event.stopPropagation()}
           onDoubleClick={(event) => event.stopPropagation()}
         >
-          <section className="biloo-driver-dock" data-compact={compactMapSheet} aria-label={say("Driver controls", "የአሽከርካሪ መቆጣጠሪያዎች")}>
-            <button type="button" className="biloo-driver-dock-handle" aria-label={compactMapSheet ? "Expand driver map panel" : "Minimize driver map panel"} aria-expanded={!compactMapSheet}
-              onPointerDown={(event) => { sheetDragStart.current = event.clientY; sheetDragMoved.current = false; event.currentTarget.setPointerCapture(event.pointerId); }}
-              onPointerUp={sheetDragEnd}
-              onPointerCancel={() => { sheetDragStart.current = null; }}
-              onClick={() => { if (sheetDragMoved.current) { sheetDragMoved.current = false; return; } setCompactMapSheet(value => !value); }}><span aria-hidden="true" /></button>
+          <section className="biloo-driver-dock" aria-label={say("Driver controls", "የአሽከርካሪ መቆጣጠሪያዎች")}>
+            <button type="button" className="biloo-driver-dock-handle" role="slider"
+              aria-label="Resize driver panel" aria-orientation="vertical"
+              aria-valuemin={34} aria-valuemax={84} aria-valuenow={48}
+              onPointerDown={sheetDragStart} onPointerMove={sheetDragMove}
+              onPointerUp={event => sheetDragEnd(event)}
+              onPointerCancel={event => sheetDragEnd(event, true)}
+              onLostPointerCapture={event => sheetDragEnd(event, true)}
+              onKeyDown={resizeDriverDockFromKeyboard}><span aria-hidden="true" /></button>
             <div className="biloo-driver-dock-meta">
               <span className="biloo-driver-dock-brand">BILOO DRIVER</span>
                 <span className="biloo-driver-dock-status" data-online={state.online}>

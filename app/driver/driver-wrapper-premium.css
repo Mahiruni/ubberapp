@@ -47,7 +47,7 @@
 }
 /* Fixed title bar: consistent visual hierarchy across activity, earnings,
    map, profile, subpages and on-trip navigation. Never overlay safe areas. */
-.nr-driver-app-shell .nr-driver-global-header {
+.nr-driver-app-shell[data-theme] .nr-driver-global-header[data-map] {
   background: var(--driver-header-bg)!important;
   border-bottom: 1px solid var(--driver-border)!important;
   box-shadow: 0 1px 0 rgba(8,41,95,.035);
@@ -1369,4 +1369,13 @@ html[lang="am"] .nr-driver-menu-layer :where(strong,small) {
 @media(max-width:360px) {
   .nr-driver-app-shell .nr-driver-header-brand-group {padding-right:12px}
   .nr-driver-app-shell .nr-driver-header-brand-group .nr-brand strong {font-size:25px!important}
+}
+
+/* The Driver identity stays over the page without a colored title bar. */
+.nr-driver-app-shell[data-theme] .nr-driver-global-header[data-map] {
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
 }
