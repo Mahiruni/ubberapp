@@ -61,11 +61,16 @@ test('incoming Rider call uses Biloo navy and gold with theme-aware surfaces', a
   await page.screenshot({ animations: 'disabled', path: `/tmp/biloo-request-light-${info.project.name}.png` });
 });
 
-test('accepted Driver trip retains a bottom-pinned stage action across theme changes', async ({ page }) => {
+test('accepted Driver trip keeps its details sheet above the bottom-pinned stage action', async ({ page }) => {
   await connectedDriver(page, 'accepted', 'dark');
+  await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(`/driver/navigation?offer=${offerId}`);
   await expect(page.locator('.nr-driver-global-header .biloo-driver-trip-guidance')).toBeVisible();
   await expect(page.locator('.nr-driver-global-header .biloo-driver-trip-details')).toContainText('Biloo');
+  const details = page.locator('.biloo-driver-trip-details');
+  await expect(details).toHaveAttribute('open', '');
+  const tripSheet = page.locator('#biloo-driver-trip-header-slot');
+  expect(await tripSheet.evaluate(element => getComputedStyle(element).position)).toBe('fixed');
   await expect(page.locator('.nr-nav-bottom-card')).toHaveCount(0);
   const wrapper = page.locator('.nr-nav-trip-action-bar');
   await expect(wrapper).toBeVisible();
@@ -76,6 +81,10 @@ test('accepted Driver trip retains a bottom-pinned stage action across theme cha
   const actionBottom = parseFloat(await wrapper.evaluate(element => getComputedStyle(element).bottom));
   expect(actionBottom).toBeGreaterThanOrEqual(0);
   expect(actionBottom).toBeLessThanOrEqual(16);
+  const tripSheetBox = (await tripSheet.boundingBox())!;
+  const actionBox = (await wrapper.boundingBox())!;
+  expect(tripSheetBox.y).toBeGreaterThan((await page.locator('.nr-driver-global-header-inner').boundingBox())!.y + 48);
+  expect(tripSheetBox.y + tripSheetBox.height).toBeLessThanOrEqual(actionBox.y + 1);
   await page.evaluate(() => { localStorage.setItem('nexride.driver.theme', 'light'); window.dispatchEvent(new Event('nexride:appearance-change')); });
   await expect(page.locator('.nr-driver-app-shell')).toHaveAttribute('data-theme','light');
   await expect(wrapper).toBeVisible();
@@ -128,6 +137,9 @@ test('active Driver trip keeps its stage action in a compact bottom sheet', asyn
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(`/driver/navigation?offer=${offerId}`);
   await expect(page.locator('.nr-nav-bottom-card')).toHaveCount(0);
+  const details = page.locator('.biloo-driver-trip-details');
+  await expect(details).toHaveAttribute('open', '');
+  await expect(page.locator('.biloo-driver-trip-details-body')).toContainText('Mexico Square, Addis Ababa');
   const sheet = page.locator('.nr-nav-trip-action-bar');
   const complete = sheet.getByRole('button', { name: /Complete trip/i });
   await expect(sheet).toBeVisible();
@@ -136,6 +148,9 @@ test('active Driver trip keeps its stage action in a compact bottom sheet', asyn
   expect(await sheet.evaluate(element => getComputedStyle(element).position)).toBe('absolute');
   expect(await sheet.evaluate(element => getComputedStyle(element).bottom)).toBe('0px');
   expect((await sheet.boundingBox())!.height).toBeLessThan(120);
+  const guidanceBox = (await page.locator('#biloo-driver-trip-header-slot').boundingBox())!;
+  const actionBox = (await sheet.boundingBox())!;
+  expect(guidanceBox.y + guidanceBox.height).toBeLessThanOrEqual(actionBox.y + 1);
 });
 
 for (const theme of ['light', 'dark'] as const) {
