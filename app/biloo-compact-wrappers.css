@@ -216,3 +216,57 @@
     min-height:0!important;
   }
 }
+
+/* Driver map flows open with a compact, content-hugging panel at the bottom.
+   Keep trip actions above the device gesture area and visually attached to the
+   same sheet system used by Home and incoming requests. */
+.nr-driver-app-shell[data-home="true"] .biloo-driver-floating-home .biloo-driver-dock-host {
+  bottom:calc(max(8px,env(safe-area-inset-bottom,0px)) + var(--nr-native-bottom-inset,0px))!important;
+}
+.nr-driver-app-shell[data-request-map="true"] .nr-driver-request-page .nr-request-sheet {
+  position:absolute!important;
+  left:50%!important;
+  bottom:0!important;
+  transform:translateX(-50%)!important;
+  width:min(720px,100%)!important;
+  max-height:min(var(--nr-driver-sheet-height,50dvh),calc(100dvh - var(--driver-header-total,56px) - 8px))!important;
+  border-radius:24px 24px 0 0!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page[data-layout="header-trip"] .nr-nav-trip-action-bar {
+  position:absolute!important;
+  z-index:12!important;
+  left:50%!important;
+  right:auto!important;
+  bottom:0!important;
+  width:min(480px,100%)!important;
+  transform:translateX(-50%)!important;
+  box-sizing:border-box!important;
+  padding:8px max(14px,env(safe-area-inset-right,0px)) max(12px,env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px))!important;
+  border:1px solid var(--driver-border)!important;
+  border-bottom:0!important;
+  border-radius:22px 22px 0 0!important;
+  background:var(--driver-surface)!important;
+  box-shadow:0 -10px 30px rgba(4,28,48,.16)!important;
+}
+.nr-driver-app-shell .nr-app.biloo-driver-completion {
+  align-items:flex-end!important;
+  justify-content:center!important;
+  min-height:calc(100dvh - var(--driver-header-total,56px))!important;
+  padding:12px 14px max(12px,env(safe-area-inset-bottom,0px))!important;
+}
+.nr-driver-app-shell .biloo-driver-completion > .biloo-completion-card {
+  margin:0 auto!important;
+  border-radius:22px 22px 0 0!important;
+}
+@media(min-width:760px) {
+  .nr-driver-app-shell .nr-driver-navigation-page[data-layout="header-trip"] .nr-nav-trip-action-bar {
+    bottom:max(12px,env(safe-area-inset-bottom,0px))!important;
+    width:min(480px,calc(100% - 32px))!important;
+    padding:10px!important;
+    border:1px solid var(--driver-border)!important;
+    border-radius:22px!important;
+  }
+  .nr-driver-app-shell .biloo-driver-completion > .biloo-completion-card {
+    border-radius:22px!important;
+  }
+}

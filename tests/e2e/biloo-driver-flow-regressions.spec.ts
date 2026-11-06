@@ -9,7 +9,8 @@ const navigation = `/driver/navigation?offer=${offerId}`;
 type Stage = 'none' | 'pending' | 'accepted' | 'arrived_pickup' | 'in_trip' | 'completed';
 
 async function driverFixture(page: Page, theme: 'light' | 'dark', initial: Stage) {
-  const state = { stage: initial, receiptFails: false, receiptReads: 0, writes: 0 };
+  const state = { stage: initial, receiptFails: false, receiptReads: 0, writes: 0, acceptCalls: 0,
+    failAcceptance: false, delayRiderProfile: false };
   const channels: { socket: WebSocketRoute; topic: string; joinRef: string; v2: boolean }[] = [];
   const user = { id: driverId, aud: 'authenticated', role: 'authenticated', email: 'driver@example.test',
     app_metadata: {}, user_metadata: { role: 'driver', full_name: 'Biloo Driver', driver_onboarding_complete: true },
@@ -72,7 +73,23 @@ async function driverFixture(page: Page, theme: 'light' | 'dark', initial: Stage
       state.stage = request.postDataJSON().status;
       return respond({ status: state.stage });
     }
-    if (table === 'profiles') return respond({ id: driverId, role: 'driver', account_status: 'active', full_name: 'Biloo Driver', phone: '+251900000000' });
+    if (url.pathname.endsWith('/rpc/driver_decide_ride_offer')) {
+      const payload = request.postDataJSON();
+      if (payload.p_action === 'accept') {
+        state.acceptCalls++;
+        if (state.failAcceptance) return route.abort('failed');
+        expect(payload).toMatchObject({ p_offer_id: offerId, p_action: 'accept' });
+        state.stage = 'accepted';
+        return route.fulfill({ json: { status: 'accepted', requestId: tripId } });
+      }
+    }
+    if (table === 'profiles') {
+      if (state.delayRiderProfile && url.searchParams.get('id') === `eq.${riderId}`) {
+        await new Promise(resolve => setTimeout(resolve, 6000));
+        return respond({ id: riderId, role: 'rider', phone: '+251911111111' });
+      }
+      return respond({ id: driverId, role: 'driver', account_status: 'active', full_name: 'Biloo Driver', phone: '+251900000000' });
+    }
     if (table === 'drivers') return respond({ id: driverId, review_status: 'approved', is_online: false, rating: 4.9 });
     if (table === 'ride_requests') {
       if (state.stage === 'none') return respond(null);
@@ -121,6 +138,7 @@ for (const theme of ['light', 'dark'] as const) {
     await driverFixture(page, theme, 'pending'); await page.setViewportSize({ width: 320, height: 640 });
     await page.goto(`/driver/request?offer=${offerId}`);
     const accept = page.locator('.nr-request-accept'), decline = page.locator('.nr-request-decline'), pass = page.locator('.nr-request-pass');
+    await expect(page.locator('.nr-request-sheet')).toHaveAttribute('data-snap', 'medium');
     await expect(accept).toBeVisible(); await expect(decline).toBeInViewport(); await expect(pass).toBeInViewport();
     for (const control of [decline, pass]) expect((await control.boundingBox())!.width).toBeGreaterThan(100);
     expect((await page.locator('.nr-request-actions').boundingBox())!.height).toBeLessThan(140);
@@ -128,18 +146,20 @@ for (const theme of ['light', 'dark'] as const) {
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   });
 
-  test(`minimizing Home restores map space in ${theme}`, async ({ page }) => {
+  test(`Home opens as a compact sheet and expands on demand in ${theme}`, async ({ page }) => {
     await driverFixture(page, theme, 'none'); await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/driver/home'); await expect(page.locator('.biloo-driver-dock-shortcuts')).toBeVisible();
     const shortcuts = page.locator('.biloo-driver-dock-shortcuts');
     await expect(shortcuts.getByRole('button')).toHaveText(['Activity', 'Earnings', 'Settings']);
-    const panel = page.locator('.biloo-driver-dock'), expanded = (await panel.boundingBox())!.height;
-    await page.getByRole('button', { name: 'Minimize driver map panel' }).click();
-    await expect(shortcuts).toBeVisible();
-    await expect(page.getByRole('switch')).toBeInViewport();
-    await expect.poll(async () => (await panel.boundingBox())!.height).toBeLessThan(expanded - 20);
+    const panel = page.locator('.biloo-driver-dock'), compact = (await panel.boundingBox())!.height;
+    await expect(panel).toHaveAttribute('data-compact', 'true');
     await page.getByRole('button', { name: 'Expand driver map panel' }).click();
     await expect(shortcuts).toBeVisible();
+    await expect(page.getByRole('switch')).toBeInViewport();
+    await expect.poll(async () => (await panel.boundingBox())!.height).toBeGreaterThan(compact + 20);
+    await page.getByRole('button', { name: 'Minimize driver map panel' }).click();
+    await expect(shortcuts).toBeVisible();
+    await expect.poll(async () => (await panel.boundingBox())!.height).toBeLessThan(compact + 20);
   });
 
   test(`arrival replaces approaching guidance and ETA in ${theme}`, async ({ page }) => {
@@ -208,3 +228,51 @@ for (const theme of ['light', 'dark'] as const) {
     expect(state.stage).toBe('completed'); expect(state.writes).toBe(1);
   });
 }
+
+test('network failure releases the acceptance action for retry', async ({ page }) => {
+  const { state } = await driverFixture(page, 'light', 'pending');
+  state.failAcceptance = true;
+  await page.goto(`/driver/request?offer=${offerId}`);
+  const accept = page.locator('.nr-request-accept');
+  await accept.click();
+  await expect(page.locator('.nr-request-error')).toBeVisible();
+  await expect(accept).toBeEnabled();
+  await expect(accept).toHaveText('Accept Ride');
+  expect(state.acceptCalls).toBe(1);
+});
+
+test('acceptance completes the verified ride lifecycle while rider contact loads in background', async ({ page }) => {
+  const { state } = await driverFixture(page, 'light', 'pending');
+  state.delayRiderProfile = true;
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(`/driver/request?offer=${offerId}`);
+  const requestSheet = page.locator('.nr-request-sheet');
+  await expect(requestSheet).toBeVisible();
+  expect(await requestSheet.evaluate(element => getComputedStyle(element).position)).toBe('absolute');
+  expect(await requestSheet.evaluate(element => getComputedStyle(element).bottom)).toBe('0px');
+  await page.locator('.nr-request-accept').click();
+  await expect.poll(() => state.stage).toBe('accepted');
+  await expect(page).toHaveURL(/\/driver\/navigation\?offer=/);
+  await expect(page.locator('.nr-nav-loading')).toHaveCount(0, { timeout: 5000 });
+  const stageAction = page.locator('.nr-nav-stage-primary');
+  await expect(stageAction).toBeEnabled({ timeout: 5000 });
+  const actionSheet = page.locator('.nr-nav-trip-action-bar');
+  expect(await actionSheet.evaluate(element => getComputedStyle(element).bottom)).toBe('0px');
+
+  await stageAction.click();
+  await expect(stageAction).toContainText('Start trip');
+  await page.getByRole('dialog').getByRole('button', { name: 'Start trip', exact: true }).click();
+  await expect(stageAction).toContainText('Complete trip');
+  await stageAction.click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Complete trip', exact: true }).click();
+  const receipt = page.locator('.nr-app.biloo-driver-completion');
+  const receiptCard = page.locator('.biloo-completion-card');
+  await expect(receiptCard).toContainText('336');
+  await expect(page.locator('.biloo-payment-state')).toHaveAttribute('data-status', 'paid');
+  expect(await receipt.evaluate(element => getComputedStyle(element).alignItems)).toBe('flex-end');
+  expect((await receiptCard.boundingBox())!.y + (await receiptCard.boundingBox())!.height)
+    .toBeGreaterThan((await receipt.boundingBox())!.y + (await receipt.boundingBox())!.height - 80);
+  expect(state.acceptCalls).toBe(1);
+  expect(state.stage).toBe('completed');
+  expect(state.writes).toBe(3);
+});

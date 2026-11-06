@@ -133,6 +133,7 @@ export default function DriverNavigationPage() {
   const [confirmAction, setConfirmAction] = useState<"in_trip" | "completed" | null>(null);
   const [completion, setCompletion] = useState<TripSnapshot | null>(null);
   const mutationLock = useRef(false);
+  const riderPhoneLookupRef = useRef(0);
 
   const loadTrip = useCallback(async (userId: string, offerId: string) => {
     const { data: offer, error: offerError } = await supabase
@@ -187,18 +188,27 @@ export default function DriverNavigationPage() {
         clearDriverTrip(window.localStorage, userId, next.offerId);
       }
     } catch {}
-    // Resolve only the assigned rider's verified contact via the same
-    // profiles source used by trip chat. Never invent a dialable number.
+    // Resolve the assigned rider's verified contact in the background. It is
+    // optional navigation detail and must not delay the accepted-trip screen.
     setRiderPhone("");
-    if (typeof ride.rider_id === "string" && ride.rider_id) {
-      const { data: contact } = await supabase
-        .from("profiles")
-        .select("phone")
-        .eq("id", ride.rider_id)
-        .maybeSingle();
-      const rawPhone = typeof contact?.phone === "string" ? contact.phone : "";
-      const dialable = rawPhone.replace(/[^+\d]/g, "");
-      setRiderPhone(/^\+?\d{7,15}$/.test(dialable) ? dialable : "");
+    const phoneLookupId = ++riderPhoneLookupRef.current;
+    const riderId = typeof ride.rider_id === "string" ? ride.rider_id : "";
+    if (riderId) {
+      void (async () => {
+        try {
+          const { data: contact } = await supabase
+            .from("profiles")
+            .select("phone")
+            .eq("id", riderId)
+            .maybeSingle();
+          if (riderPhoneLookupRef.current !== phoneLookupId) return;
+          const rawPhone = typeof contact?.phone === "string" ? contact.phone : "";
+          const dialable = rawPhone.replace(/[^+\d]/g, "");
+          setRiderPhone(/^\+?\d{7,15}$/.test(dialable) ? dialable : "");
+        } catch {
+          // Contact lookup is optional; active-trip controls remain available.
+        }
+      })();
     }
     return next;
   }, []);
@@ -277,6 +287,7 @@ export default function DriverNavigationPage() {
 
     return () => {
       active = false;
+      riderPhoneLookupRef.current += 1;
       if (channel) supabase.removeChannel(channel);
     };
   }, [loadTrip, router]);
