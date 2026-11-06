@@ -211,7 +211,7 @@ for (const theme of ['light', 'dark'] as const) {
     await page.evaluate(() => window.dispatchEvent(new Event('online')));
     await expect(page.locator('.biloo-completion-card')).toContainText('336', { timeout: 15000 });
     await expect(page.locator('.biloo-payment-state')).toHaveAttribute('data-status', 'paid');
-    await expect(page.getByRole('button', { name: 'Ready for the next ride' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Driver home', exact: true })).toBeVisible();
     expect(state.writes).toBe(0);
   });
 
@@ -268,10 +268,13 @@ test('acceptance completes the verified ride lifecycle while rider contact loads
   await expect(actionSheet.locator('.biloo-driver-trip-details')).toHaveAttribute('open', '');
   await expect(actionSheet.locator('.nr-driver-sheet-footer .nr-nav-stage-primary')).toBeVisible();
 
-  await stageAction.click();
   await expect(stageAction).toContainText('Start trip');
+  await expect(stageAction).toBeEnabled({ timeout: 5000 });
   await expect(actionSheet.locator('.biloo-driver-trip-details')).toHaveAttribute('open', '');
-  await page.getByRole('dialog').getByRole('button', { name: 'Start trip', exact: true }).click();
+  await stageAction.click();
+  const startTripConfirm = page.getByRole('dialog').getByRole('button', { name: 'Start trip', exact: true });
+  await expect(startTripConfirm).toBeEnabled({ timeout: 5000 });
+  await startTripConfirm.click();
   await expect(stageAction).toContainText('Complete trip');
   await expect(actionSheet.locator('.biloo-driver-trip-details')).toHaveAttribute('open', '');
   await stageAction.click();
