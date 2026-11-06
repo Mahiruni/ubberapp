@@ -19,7 +19,7 @@ import {
 import { usePathname, useRouter } from "next/navigation";
 import { useAppearance } from "../../lib/nexride-appearance";
 import { AppearanceSelector } from "./appearance-selector";
-import { Icon, LanguageContext } from "./ui";
+import { Brand, Icon, LanguageContext } from "./ui";
 import { DRIVER_NAVIGATION, type DriverNavigationId } from "../../lib/biloo-navigation-registry";
 import { announceLanguage } from "./language-provider";
 import { useSharedAccountPortrait } from '../../lib/nexride-shared-portrait';
@@ -379,23 +379,15 @@ function DriverHeader({
     [portrait.name],
   );
 
-  if (home) {
-    return (
-      <div className="nr-driver-home-menu-host">
-        <DriverHamburgerMenu controlledOpen={menuOpen} onOpenChange={onMenuOpenChange} />
-      </div>
-    );
-  }
-
   return (
-    <header className="nr-driver-global-header" data-map={isTripFocusPath(pathname) ? "true" : "false"} data-navigation={pathname.startsWith("/driver/navigation") ? "true" : undefined}>
+    <header className="nr-driver-global-header" data-home={home ? "true" : undefined} data-map={isTripFocusPath(pathname) ? "true" : "false"} data-navigation={pathname.startsWith("/driver/navigation") ? "true" : undefined}>
       <div className="nr-driver-global-header-inner">
         <div className="nr-driver-global-header-side nr-driver-global-header-left">
-          <DriverHamburgerMenu controlledOpen={menuOpen} onOpenChange={onMenuOpenChange} />
+          <div className="nr-driver-header-brand-group">
+            <DriverHamburgerMenu controlledOpen={menuOpen} onOpenChange={onMenuOpenChange} />
+            <Brand accent />
+          </div>
         </div>
-
-        <span className="nr-driver-global-header-spacer" aria-hidden="true" />
-
         <div className="nr-driver-global-header-side nr-driver-global-header-right">
           <Link href="/driver/profile" className="nr-driver-header-profile"
             aria-label={language === "am" ? "መገለጫ" : "Profile"}
@@ -406,7 +398,6 @@ function DriverHeader({
           </Link>
         </div>
       </div>
-      {pathname.startsWith("/driver/navigation") && <div id="biloo-driver-trip-header-slot" />}
     </header>
   );
 }

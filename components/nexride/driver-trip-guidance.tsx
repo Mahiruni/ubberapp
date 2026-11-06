@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
-import { createPortal } from "react-dom";
+import { useState, type ReactNode } from "react";
 import { Icon } from "./ui";
 import "./driver-trip-guidance.css";
 
@@ -18,8 +17,8 @@ function ManeuverIcon({ type, modifier }: { type?: string; modifier?: string }) 
   </svg>;
 }
 
-/** One compact trip header leaves the map free of the former detail sheet. */
-export function DriverTripGuidance({ badge, instruction, distance, detail, label = "Live trip guidance", stop, detailsLabel, maneuverType, maneuverModifier, children }: {
+/** The guidance, trip details, and next-stage action live in one bottom sheet. */
+export function DriverTripGuidance({ badge, instruction, distance, detail, label = "Live trip guidance", stop, detailsLabel, maneuverType, maneuverModifier, children, footer, footerLabel }: {
   badge: string;
   instruction: string;
   distance: string;
@@ -30,79 +29,45 @@ export function DriverTripGuidance({ badge, instruction, distance, detail, label
   maneuverType?: string;
   maneuverModifier?: string;
   children: ReactNode;
+  footer?: ReactNode;
+  footerLabel?: string;
 }) {
-  const [host, setHost] = useState<HTMLElement | null>(null);
+  // Details start open and only change when the Driver taps the summary.
+  // Trip-stage updates never collapse the route and contact information.
   const [detailsOpen, setDetailsOpen] = useState(true);
 
-  useEffect(() => {
-    const slot = document.getElementById("biloo-driver-trip-header-slot");
-    const header = slot?.closest<HTMLElement>(".nr-driver-global-header");
-    const shell = header?.closest<HTMLElement>(".nr-driver-app-shell");
-    const actionBar = shell?.querySelector<HTMLElement>(".nr-nav-trip-action-bar");
-    if (!slot || !header || !shell || !actionBar) return;
-    setHost(slot);
-
-    // Keep the map below the real header, then anchor the guidance sheet just
-    // above the stage-action footer, including its safe-area padding.
-    const previousHeader = shell.style.getPropertyValue("--driver-header-total");
-    const previousSheetBottom = shell.style.getPropertyValue("--nr-driver-trip-sheet-bottom");
-    const measure = () => {
-      const height = `${Math.ceil(header.getBoundingClientRect().height)}px`;
-      if (shell.style.getPropertyValue("--driver-header-total") !== height)
-        shell.style.setProperty("--driver-header-total", height);
-      const footerTop = actionBar.getBoundingClientRect().top;
-      const viewportHeight = window.visualViewport?.height || document.documentElement.clientHeight || window.innerHeight;
-      const bottom = `${Math.max(0, Math.ceil(viewportHeight - footerTop + 8))}px`;
-      if (shell.style.getPropertyValue("--nr-driver-trip-sheet-bottom") !== bottom)
-        shell.style.setProperty("--nr-driver-trip-sheet-bottom", bottom);
-    };
-    const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(measure);
-    observer?.observe(header);
-    observer?.observe(actionBar);
-    window.addEventListener("resize", measure);
-    window.visualViewport?.addEventListener("resize", measure);
-    measure();
-    const initialMeasure = window.requestAnimationFrame(measure);
-    return () => {
-      observer?.disconnect();
-      window.removeEventListener("resize", measure);
-      window.visualViewport?.removeEventListener("resize", measure);
-      window.cancelAnimationFrame(initialMeasure);
-      if (previousHeader) shell.style.setProperty("--driver-header-total", previousHeader);
-      else shell.style.removeProperty("--driver-header-total");
-      if (previousSheetBottom) shell.style.setProperty("--nr-driver-trip-sheet-bottom", previousSheetBottom);
-      else shell.style.removeProperty("--nr-driver-trip-sheet-bottom");
-    };
-  }, []);
-
-  if (!host) return null;
-  return createPortal(
-    <div className="biloo-driver-trip-header">
-      <section className="nr-nav-guidance biloo-driver-trip-guidance" aria-label={label} aria-live="polite">
-        <span className="nr-nav-guidance-icon" aria-hidden="true"><ManeuverIcon type={maneuverType} modifier={maneuverModifier} /></span>
-        <div className="biloo-driver-guidance-copy">
-          <div className="biloo-driver-guidance-meta">
-            <small>{badge}</small>
-            {detail && <em>{detail}</em>}
-          </div>
-          <strong>{instruction}</strong>
+  return (
+    <section className="nr-nav-bottom-card nr-driver-sheet biloo-driver-trip-sheet" aria-label={label}>
+      <div className="nr-driver-sheet-grab" aria-hidden="true"><span /></div>
+      <div className="nr-driver-sheet-content">
+        <div className="biloo-driver-trip-header">
+          <section className="nr-nav-guidance biloo-driver-trip-guidance" aria-label={label} aria-live="polite">
+            <span className="nr-nav-guidance-icon" aria-hidden="true"><ManeuverIcon type={maneuverType} modifier={maneuverModifier} /></span>
+            <div className="biloo-driver-guidance-copy">
+              <div className="biloo-driver-guidance-meta">
+                <small>{badge}</small>
+                {detail && <em>{detail}</em>}
+              </div>
+              <strong>{instruction}</strong>
+            </div>
+            <span className="nr-nav-guidance-distance">{distance}</span>
+          </section>
+          <details className="biloo-driver-trip-details" open={detailsOpen}
+            onToggle={(event) => setDetailsOpen(event.currentTarget.open)}>
+            <summary>
+              <span className="biloo-driver-stop-icon" aria-hidden="true"><Icon name="pin" size={22} /></span>
+              <div className="nr-nav-current-destination">
+                <small>{stop.label}</small>
+                <h1>{stop.name}</h1>
+                <p><Icon name="clock" size={12} />{stop.arrival}</p>
+              </div>
+              <span className="biloo-driver-details-toggle"><span>{detailsLabel}</span><Icon name="chevron" size={16} /></span>
+            </summary>
+            <div className="biloo-driver-trip-details-body">{children}</div>
+          </details>
         </div>
-        <span className="nr-nav-guidance-distance">{distance}</span>
-      </section>
-      <details className="biloo-driver-trip-details" open={detailsOpen}
-        onToggle={(event) => setDetailsOpen(event.currentTarget.open)}>
-        <summary>
-          <span className="biloo-driver-stop-icon" aria-hidden="true"><Icon name="pin" size={22} /></span>
-          <div className="nr-nav-current-destination">
-            <small>{stop.label}</small>
-            <h1>{stop.name}</h1>
-            <p><Icon name="clock" size={12} />{stop.arrival}</p>
-          </div>
-          <span className="biloo-driver-details-toggle"><span>{detailsLabel}</span><Icon name="chevron" size={16} /></span>
-        </summary>
-        <div className="biloo-driver-trip-details-body">{children}</div>
-      </details>
-    </div>,
-    host,
+      </div>
+      {footer && <div className="nr-driver-sheet-footer" role="group" aria-label={footerLabel || "Trip controls"}>{footer}</div>}
+    </section>
   );
 }

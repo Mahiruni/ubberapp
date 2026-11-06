@@ -41,6 +41,8 @@ test("Rider has no footer tabs; hamburger and Profile remain independent", async
   const menuTrigger = page.locator(".biloo-home-floating-header .nr-rider-hamburger");
   await expect(menuTrigger).toBeVisible();
   await expect(menuTrigger).toHaveCSS("border-radius", "50%");
+  await expect(page.locator(".biloo-home-floating-header .nr-brand")).toContainText("biloo");
+  await expect(page.locator(".biloo-home-floating-header .nr-brand-symbol")).toHaveAttribute("src", "/brand/biloo-mark.svg");
   await expect(page.locator(".biloo-home-floating-profile, .nr-rider-profile-top")).toHaveCount(0);
   await expect(page.locator(".nr-rider-home-sheet")).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
@@ -57,46 +59,54 @@ test("Rider has no footer tabs; hamburger and Profile remain independent", async
   await expect(menu).toHaveCount(0);
 });
 
-test("Driver pages have no tab footer and show only the hamburger and profile in the header", async ({ page }) => {
+test("Driver pages share Rider branding, hamburger geometry, and Profile access without tab footers", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await mockDriver(page);
   await page.goto("/driver/earnings");
   await expect(page.locator(".biloo-footer-nav, .nr-mobile-nav")).toHaveCount(0);
   const header = page.locator(".nr-driver-global-header");
   await expect(header.locator(".nr-driver-global-header-title, .nr-driver-header-back")).toHaveCount(0);
-  const menuTrigger = page.locator(".nr-driver-global-header-left .nr-driver-menu-trigger");
+  const menuTrigger = page.locator(".nr-driver-header-brand-group .nr-driver-menu-trigger");
   await expect(menuTrigger).toBeVisible();
   const profile = header.locator(".nr-driver-header-profile");
   await expect(profile).toBeVisible();
   await expect(profile).toHaveAttribute("href", "/driver/profile");
   await expect(profile).toHaveAccessibleName("Profile");
   await expect(menuTrigger).toHaveCSS("border-radius", "50%");
+  const brand = header.locator(".nr-brand");
+  await expect(brand).toContainText("biloo");
+  await expect(brand.locator(".nr-brand-symbol")).toHaveAttribute("src", "/brand/biloo-mark.svg");
+  const lineWidths = await menuTrigger.locator("span").evaluateAll(lines => lines.map(line => getComputedStyle(line).width));
+  expect(lineWidths[0]).toBe(lineWidths[1]);
+  expect(parseFloat(lineWidths[2])).toBeLessThan(parseFloat(lineWidths[0]));
   await menuTrigger.click();
   const menu = page.locator("#nr-driver-menu");
   await expect(menu).toBeVisible();
   await expect(menu.locator('a[href="/driver/earnings"]')).toBeVisible();
-  await expect(menu.locator('a[href="/driver/activity"]')).toBeVisible();
+  await expect(menu.locator('a[href="/driver/home"]')).toBeVisible();
   await expect(menu.locator('.biloo-menu-profile-card[href="/driver/profile"]')).toHaveCount(1);
   await expect(menu.locator('.nr-driver-menu-role-switch[href="/rider"]')).toHaveCount(1);
   await expect(menu.locator(".nr-driver-menu-row").first()).toHaveCSS("min-height", "60px");
   const bounds=await menu.boundingBox();
   expect(bounds).not.toBeNull();
   expect(bounds!.x).toBeLessThan(3); // Left-docked, not the legacy right drawer.
-  await menu.locator('a[href="/driver/activity"]').click();
-  await expect(page).toHaveURL(/\/driver\/activity$/);
-  await expect(page.locator(".biloo-footer-nav, .nr-mobile-nav")).toHaveCount(0);
-  await expect(page.locator(".nr-driver-app-shell")).toBeVisible();
+  await menu.locator('a[href="/driver/home"]').click();
+  await expect(page).toHaveURL(/\/driver\/home$/);
+  await expect(page.locator(".biloo-footer-nav")).toHaveCount(0);
+  await expect(page.locator('.nr-driver-app-shell[data-home="true"]')).toBeVisible();
 });
 
-test("Driver map homepage keeps swipe and separates Profile from hamburger", async ({ page }) => {
+test("Driver map homepage uses the shared branded header and keeps its map controls", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await mockDriver(page);
   await page.goto("/driver/home");
   await expect(page.locator(".nr-driver-app-shell[data-home=true]")).toBeVisible();
-  const menuTrigger = page.locator(".nr-driver-home-menu-host .nr-driver-menu-trigger");
+  const header = page.locator(".nr-driver-global-header[data-home=true]");
+  const menuTrigger = header.locator(".nr-driver-header-brand-group .nr-driver-menu-trigger");
   await expect(menuTrigger).toBeVisible();
   await expect(menuTrigger).toHaveCSS("border-radius", "50%");
-  await expect(page.locator(".nr-driver-home-profile")).toHaveCount(0);
+  await expect(header.locator(".nr-brand")).toContainText("biloo");
+  await expect(header.locator(".nr-driver-header-profile")).toBeVisible();
   await menuTrigger.click();
   await expect(page.locator("#nr-driver-menu .biloo-menu-profile-card")).toHaveCount(1);
   await page.locator(".nr-driver-menu-close").click();
