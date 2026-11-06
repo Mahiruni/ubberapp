@@ -32,7 +32,9 @@ describe("Biloo Rider + Driver navigation without a footer tab bar", () => {
     expect(riderMenu).toContain('className="biloo-menu-profile-card"');
     expect(riderMenu).toContain('aria-label={open ? say("Close menu"');
     expect(driver).toContain("<DriverHamburgerMenu");
-    expect(driver).not.toContain('className="nr-driver-header-profile"');
+    expect(driver).toContain('className="nr-driver-header-profile"');
+    expect(driver).not.toContain('className="nr-driver-global-header-title"');
+    expect(driver).not.toContain("nr-driver-header-back");
     expect(driver).toContain('className="biloo-menu-profile-card"');
     expect(driver).toContain('href="/driver/profile"');
     expect(driver).toContain("DRIVER_NAVIGATION.map");
