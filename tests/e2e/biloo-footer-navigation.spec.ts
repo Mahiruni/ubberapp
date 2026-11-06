@@ -57,14 +57,19 @@ test("Rider has no footer tabs; hamburger and Profile remain independent", async
   await expect(menu).toHaveCount(0);
 });
 
-test("Driver pages have no tab footer and retain routes in left hamburger", async ({ page }) => {
+test("Driver pages have no tab footer and show only the hamburger and profile in the header", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await mockDriver(page);
   await page.goto("/driver/earnings");
   await expect(page.locator(".biloo-footer-nav, .nr-mobile-nav")).toHaveCount(0);
+  const header = page.locator(".nr-driver-global-header");
+  await expect(header.locator(".nr-driver-global-header-title, .nr-driver-header-back")).toHaveCount(0);
   const menuTrigger = page.locator(".nr-driver-global-header-left .nr-driver-menu-trigger");
   await expect(menuTrigger).toBeVisible();
-  await expect(page.locator(".nr-driver-header-profile")).toHaveCount(0);
+  const profile = header.locator(".nr-driver-header-profile");
+  await expect(profile).toBeVisible();
+  await expect(profile).toHaveAttribute("href", "/driver/profile");
+  await expect(profile).toHaveAccessibleName("Profile");
   await expect(menuTrigger).toHaveCSS("border-radius", "50%");
   await menuTrigger.click();
   const menu = page.locator("#nr-driver-menu");
