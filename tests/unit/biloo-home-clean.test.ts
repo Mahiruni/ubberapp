@@ -18,8 +18,8 @@ describe("Biloo Rider homepage clarity", () => {
 
   it("keeps one map-mounted navigation menu on the home screen", () => {
     expect(app).toContain("biloo-home-floating-header");
-    expect(app).toContain('!riderHome && (');
-    expect(app).toContain('active="home"');
+    expect(app).toContain('{riderMapView && (');
+    expect(app).toContain('active={(');
     expect(app).toContain('import "./biloo-home-clean.css";');
     expect(css).toContain(".biloo-home-floating-header");
   });
@@ -39,7 +39,7 @@ describe("Biloo Rider homepage clarity", () => {
   });
 
   it("keeps a compact floating sheet, drag handle and operational flows", () => {
-    expect(home).toContain("defaultRatio: 0.26");
+    expect(home).toContain("defaultRatio: 0.40");
     expect(home).toContain("...motion.handleProps");
     expect(home).toContain("onClick={navigate}");
     expect(home).toContain("onClick={() => shortcut(kind)}");
