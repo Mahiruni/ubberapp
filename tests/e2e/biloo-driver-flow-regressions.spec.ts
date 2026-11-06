@@ -146,22 +146,47 @@ for (const theme of ['light', 'dark'] as const) {
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   });
 
-  test(`Home opens as a compact sheet and expands on demand in ${theme}`, async ({ page }) => {
-    await driverFixture(page, theme, 'none'); await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto('/driver/home'); await expect(page.locator('.biloo-driver-dock-shortcuts')).toBeVisible();
-    const shortcuts = page.locator('.biloo-driver-dock-shortcuts');
-    await expect(shortcuts.getByRole('button')).toHaveText(['Activity', 'Earnings', 'Settings']);
-    const panel = page.locator('.biloo-driver-dock'), compact = (await panel.boundingBox())!.height;
-    await expect(panel).toHaveAttribute('data-compact', 'true');
-    await page.getByRole('button', { name: 'Expand driver map panel' }).click();
-    await expect(shortcuts).toBeVisible();
-    await expect(page.getByRole('switch')).toBeInViewport();
-    await expect.poll(async () => (await panel.boundingBox())!.height).toBeGreaterThan(compact + 20);
-    await page.getByRole('button', { name: 'Minimize driver map panel' }).click();
-    await expect(shortcuts).toBeVisible();
-    await expect.poll(async () => (await panel.boundingBox())!.height).toBeLessThan(compact + 20);
-  });
+  test(`Home wrapper stays at the footer and resizes without hiding details in ${theme}`, async ({ page }) => {
+    await driverFixture(page, theme, 'none');
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/driver/home');
 
+    const header = page.locator('.nr-driver-global-header[data-home="true"]');
+    await expect(header).toBeVisible();
+    await expect(header).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+
+    const panel = page.locator('.biloo-driver-dock-host');
+    const details = panel.locator('.biloo-driver-dock-description');
+    const shortcuts = panel.locator('.biloo-driver-dock-shortcuts');
+    await expect(panel).toBeVisible();
+    await expect(details).toBeVisible();
+    await expect(shortcuts.getByRole('button')).toHaveText(['Activity', 'Earnings', 'Settings']);
+
+    const initial = (await panel.boundingBox())!;
+    expect(Math.abs(844 - (initial.y + initial.height))).toBeLessThan(60);
+    const handle = panel.locator('.biloo-driver-dock-handle');
+    const drag = async (deltaY: number) => {
+      const box = (await handle.boundingBox())!;
+      const x = box.x + box.width / 2, y = box.y + box.height / 2;
+      await page.mouse.move(x, y);
+      await page.mouse.down();
+      await page.mouse.move(x, y + deltaY, { steps: 12 });
+      await page.mouse.up();
+    };
+
+    await drag(-200);
+    await expect.poll(async () => (await panel.boundingBox())!.height).toBeGreaterThan(initial.height + 100);
+    await expect(page.getByRole('switch')).toBeInViewport();
+    await expect(details).not.toHaveCSS('display', 'none');
+    await expect(shortcuts).not.toHaveCSS('display', 'none');
+
+    await drag(200);
+    await expect.poll(async () => (await panel.boundingBox())!.height).toBeLessThan(initial.height + 100);
+    await expect(details).not.toHaveCSS('display', 'none');
+    await expect(shortcuts).not.toHaveCSS('display', 'none');
+    const resized = (await panel.boundingBox())!;
+    expect(Math.abs(844 - (resized.y + resized.height))).toBeLessThan(60);
+  });
   test(`arrival replaces approaching guidance and ETA in ${theme}`, async ({ page }) => {
     const { state } = await driverFixture(page, theme, 'accepted');
     await page.goto(navigation); await expect(page.locator('.nr-nav-stage-primary')).toBeEnabled();
