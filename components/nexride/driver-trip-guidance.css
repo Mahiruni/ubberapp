@@ -4,7 +4,7 @@
 }
 .nr-driver-app-shell .nr-driver-global-header[data-navigation="true"] ~ .nr-driver-shell-content {padding-bottom:0!important}
 .nr-driver-app-shell .nr-driver-global-header[data-navigation="true"] .nr-driver-global-header-inner {
-  height:48px!important;grid-template-columns:88px minmax(0,1fr) 88px!important;gap:4px!important;
+  height:48px!important;grid-template-columns:56px minmax(0,1fr) 56px!important;gap:4px!important;
   padding-inline:max(12px,env(safe-area-inset-left,0px)) max(12px,env(safe-area-inset-right,0px))!important;
 }
 .nr-driver-global-header[data-navigation="true"] .nr-driver-global-header-title>strong {
