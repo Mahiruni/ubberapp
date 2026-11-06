@@ -93,7 +93,7 @@ test("Driver pages share Rider branding, hamburger geometry, and Profile access 
   await menu.locator('a[href="/driver/home"]').click();
   await expect(page).toHaveURL(/\/driver\/home$/);
   await expect(page.locator(".biloo-footer-nav")).toHaveCount(0);
-  await expect(page.locator(".nr-driver-map-page")).toBeVisible();
+  await expect(page.locator('.nr-driver-app-shell[data-home="true"]')).toBeVisible();
 });
 
 test("Driver map homepage uses the shared branded header and keeps its map controls", async ({ page }) => {
