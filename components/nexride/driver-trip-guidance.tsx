@@ -32,31 +32,46 @@ export function DriverTripGuidance({ badge, instruction, distance, detail, label
   children: ReactNode;
 }) {
   const [host, setHost] = useState<HTMLElement | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(true);
 
   useEffect(() => {
     const slot = document.getElementById("biloo-driver-trip-header-slot");
     const header = slot?.closest<HTMLElement>(".nr-driver-global-header");
     const shell = header?.closest<HTMLElement>(".nr-driver-app-shell");
-    if (!slot || !header || !shell) return;
+    const actionBar = shell?.querySelector<HTMLElement>(".nr-nav-trip-action-bar");
+    if (!slot || !header || !shell || !actionBar) return;
     setHost(slot);
 
-    // Include wrapped instructions and Android safe areas in the available
-    // map height. The map's existing ResizeObserver then updates its camera.
-    const previous = shell.style.getPropertyValue("--driver-header-total");
+    // Keep the map below the real header, then anchor the guidance sheet just
+    // above the stage-action footer, including its safe-area padding.
+    const previousHeader = shell.style.getPropertyValue("--driver-header-total");
+    const previousSheetBottom = shell.style.getPropertyValue("--nr-driver-trip-sheet-bottom");
     const measure = () => {
       const height = `${Math.ceil(header.getBoundingClientRect().height)}px`;
       if (shell.style.getPropertyValue("--driver-header-total") !== height)
         shell.style.setProperty("--driver-header-total", height);
+      const footerTop = actionBar.getBoundingClientRect().top;
+      const viewportHeight = window.visualViewport?.height || document.documentElement.clientHeight || window.innerHeight;
+      const bottom = `${Math.max(0, Math.ceil(viewportHeight - footerTop + 8))}px`;
+      if (shell.style.getPropertyValue("--nr-driver-trip-sheet-bottom") !== bottom)
+        shell.style.setProperty("--nr-driver-trip-sheet-bottom", bottom);
     };
     const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(measure);
     observer?.observe(header);
+    observer?.observe(actionBar);
     window.addEventListener("resize", measure);
+    window.visualViewport?.addEventListener("resize", measure);
     measure();
+    const initialMeasure = window.requestAnimationFrame(measure);
     return () => {
       observer?.disconnect();
       window.removeEventListener("resize", measure);
-      if (previous) shell.style.setProperty("--driver-header-total", previous);
+      window.visualViewport?.removeEventListener("resize", measure);
+      window.cancelAnimationFrame(initialMeasure);
+      if (previousHeader) shell.style.setProperty("--driver-header-total", previousHeader);
       else shell.style.removeProperty("--driver-header-total");
+      if (previousSheetBottom) shell.style.setProperty("--nr-driver-trip-sheet-bottom", previousSheetBottom);
+      else shell.style.removeProperty("--nr-driver-trip-sheet-bottom");
     };
   }, []);
 
@@ -74,7 +89,8 @@ export function DriverTripGuidance({ badge, instruction, distance, detail, label
         </div>
         <span className="nr-nav-guidance-distance">{distance}</span>
       </section>
-      <details className="biloo-driver-trip-details">
+      <details className="biloo-driver-trip-details" open={detailsOpen}
+        onToggle={(event) => setDetailsOpen(event.currentTarget.open)}>
         <summary>
           <span className="biloo-driver-stop-icon" aria-hidden="true"><Icon name="pin" size={22} /></span>
           <div className="nr-nav-current-destination">
