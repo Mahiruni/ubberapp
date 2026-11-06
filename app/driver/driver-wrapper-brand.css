@@ -358,19 +358,24 @@
 .nr-driver-app-shell .nr-driver-navigation-page .nr-nav-utility-row :is(button:disabled,a[aria-disabled="true"]){
   opacity:.48!important;
 }
-.nr-driver-app-shell .nr-driver-navigation-page :is(.nr-nav-guidance,.nr-nav-status,.nr-live-map-status,.nr-nav-unavailable){
+.nr-driver-app-shell .nr-driver-navigation-page :is(.nr-nav-status,.nr-live-map-status,.nr-nav-unavailable){
   background:var(--trip-surface)!important;
   color:var(--trip-text)!important;
   border-color:var(--trip-border)!important;
 }
-.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-guidance strong,
-.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-guidance-distance{
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-guidance:not(.biloo-driver-trip-guidance){
+  background:var(--trip-surface)!important;
+  color:var(--trip-text)!important;
+  border-color:var(--trip-border)!important;
+}
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-guidance:not(.biloo-driver-trip-guidance) strong,
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-guidance:not(.biloo-driver-trip-guidance) .nr-nav-guidance-distance{
   color:var(--trip-text)!important;
 }
-.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-guidance :is(em,small){
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-guidance:not(.biloo-driver-trip-guidance) :is(em,small){
   color:var(--trip-muted)!important;
 }
-.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-guidance-icon{
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-guidance:not(.biloo-driver-trip-guidance) .nr-nav-guidance-icon{
   color:var(--trip-primary)!important;
   background:var(--trip-brand-strong)!important;
 }
@@ -672,12 +677,12 @@
 
 /* Navigation keeps the next stop readable above its supporting controls. */
 .nr-driver-app-shell .nr-driver-navigation-page .nr-nav-bottom-card .nr-driver-sheet-content {
-  display:flex;flex-direction:column;gap:0;padding:0 18px 12px!important;
+  display:flex;flex-direction:column;gap:0;padding:0!important;
 }
 .nr-driver-app-shell .nr-driver-navigation-page .nr-nav-trip-meta { margin:0 0 10px;font-size:10px;letter-spacing:.06em; }
 .nr-driver-app-shell .nr-driver-navigation-page .nr-nav-trip-meta>span:last-child { border-radius:7px;padding:4px 7px;background:var(--trip-active-bg);color:var(--trip-active-text)!important;font-size:9px; }
-.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-current-destination h1 { font-size:24px!important;line-height:1.2;overflow-wrap:anywhere; }
-.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-current-destination p { display:flex;align-items:center;gap:6px;font-size:12px;margin:7px 0 14px; }
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-current-destination h1 { font-size:21px!important;line-height:1.2;overflow-wrap:anywhere; }
+.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-current-destination p { display:flex;align-items:center;gap:6px;font-size:12px;margin:4px 0 0; }
 .nr-driver-app-shell .nr-driver-navigation-page .nr-nav-trip-progress { order:3;margin:0;padding:12px 0 0;border-top:1px solid var(--trip-border);border-bottom:0; }
 .nr-driver-app-shell .nr-driver-navigation-page .nr-nav-trip-progress small { font-size:10px; }
 .nr-driver-app-shell .nr-driver-navigation-page .nr-nav-utility-row { margin:0 0 12px;gap:8px; }

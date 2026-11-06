@@ -822,7 +822,7 @@ export default function DriverNavigationPage() {
   );
 
   return (
-    <main className="nr-app nr-driver-navigation-page" data-mode="driver" data-layout="header-trip">
+    <main className="nr-app nr-driver-navigation-page" data-mode="driver" data-layout="bottom-sheet">
       {!safeToUpdate && <div className="nr-nav-offline-recovery" role="status" aria-live="polite">
         <Icon name="info" size={17} />
         <span>{showingSavedTrip ? "Saved trip · " : ""}Reconnecting — trip actions paused until the latest stage is confirmed.</span>
@@ -838,7 +838,33 @@ export default function DriverNavigationPage() {
         maneuverModifier={nextManeuver?.step.modifier}
         stop={{ label: stage.target === "pickup" ? op("PICKUP") : op("DESTINATION"), name: stage.destination,
           arrival: routeEtaMinutes === null ? op("Arrival estimate unavailable") : routeEtaMinutes === 0 ? op("You are at this stop") : `Arriving in about ${routeEtaMinutes} min` }}
-        detail={canNavigate ? activeRoute ? trafficLabel || undefined : op("Checking route guidance…") : undefined}>
+        detail={canNavigate ? activeRoute ? trafficLabel || undefined : op("Checking route guidance…") : undefined}
+        footerLabel={op("Trip controls")}
+        footer={
+          <>
+            {message && <div className="nr-nav-action-error" role="alert"><Icon name="info" size={16} /><span>{message}</span></div>}
+            <div className="nr-nav-pinned-actions" aria-label={op("Trip stage action")}>
+              {invalidTrip ? (
+                <button className="nr-nav-stage-primary" onClick={() => router.replace("/driver/home")}>{op("Back to Driver Home")}</button>
+              ) : trip.status === "accepted" ? (
+                <button type="button" className="nr-nav-stage-primary" disabled={busy || !safeToUpdate} onClick={() => void transition("arrived_pickup")}>
+                  <Icon name="check" size={19} />{busy ? op("Updating…") : op("Arrived at pickup")}
+                </button>
+              ) : trip.status === "arrived_pickup" ? (
+                <button className="nr-nav-stage-primary" disabled={busy || !safeToUpdate} onClick={() => setConfirmAction("in_trip")}><Icon name="navigation" size={19} /> {busy ? op("Starting…") : op("Start trip")}</button>
+              ) : trip.status === "in_trip" ? (
+                <button type="button" className="nr-nav-stage-primary" disabled={busy || !safeToUpdate} onClick={() => setConfirmAction("completed")}>
+                  <Icon name="check" size={19} />{busy ? op("Completing…") : op("Complete trip")}
+                </button>
+              ) : (
+                <div className="nr-nav-stage-actions">
+                  <button className="nr-nav-stage-primary" onClick={() => router.replace("/driver/earnings")}><Icon name="money" size={19} /> {op("View earnings")}</button>
+                  <button className="nr-nav-stage-secondary" onClick={() => router.replace("/driver/home")}><Icon name="home" size={18} /> Driver Home</button>
+                </div>
+              )}
+            </div>
+          </>
+        }>
         <div className="nr-nav-trip-meta"><span>Biloo · {trip.rideCategory}</span><span>{stage.badge}</span></div>
         {riderPickup?.signal && <p className="biloo-rider-pickup-signal" role="status"><Icon name="wave" size={18}/>{op('Your rider is at pickup')}<small>{op('Sent in trip chat')}</small></p>}
         {(trip.status === "accepted" || trip.status === "arrived_pickup") && (
@@ -889,30 +915,6 @@ export default function DriverNavigationPage() {
           <span>{locationShareError || routeNotice || nativeRouteNotice || gpsMessage || op("Getting your location…")}</span>
         </div>
       )}
-
-      <section className="nr-nav-trip-action-bar" aria-label={op("Trip controls")}>
-        {message && <div className="nr-nav-action-error" role="alert"><Icon name="info" size={16} /><span>{message}</span></div>}
-        <div className="nr-nav-pinned-actions" aria-label={op("Trip stage action")}>
-          {invalidTrip ? (
-          <button className="nr-nav-stage-primary" onClick={() => router.replace("/driver/home")}>{op("Back to Driver Home")}</button>
-        ) : trip.status === "accepted" ? (
-          <button type="button" className="nr-nav-stage-primary" disabled={busy || !safeToUpdate} onClick={() => void transition("arrived_pickup")}>
-            <Icon name="check" size={19} />{busy ? op("Updating…") : op("Arrived at pickup")}
-          </button>
-        ) : trip.status === "arrived_pickup" ? (
-          <button className="nr-nav-stage-primary" disabled={busy || !safeToUpdate} onClick={() => setConfirmAction("in_trip")}><Icon name="navigation" size={19} /> {busy ? op("Starting…") : op("Start trip")}</button>
-        ) : trip.status === "in_trip" ? (
-          <button type="button" className="nr-nav-stage-primary" disabled={busy || !safeToUpdate} onClick={() => setConfirmAction("completed")}>
-            <Icon name="check" size={19} />{busy ? op("Completing…") : op("Complete trip")}
-          </button>
-        ) : (
-          <div className="nr-nav-stage-actions">
-            <button className="nr-nav-stage-primary" onClick={() => router.replace("/driver/earnings")}><Icon name="money" size={19} /> {op("View earnings")}</button>
-            <button className="nr-nav-stage-secondary" onClick={() => router.replace("/driver/home")}><Icon name="home" size={18} /> Driver Home</button>
-          </div>
-        )}
-        </div>
-      </section>
 
       {confirmAction && (
         <Dialog

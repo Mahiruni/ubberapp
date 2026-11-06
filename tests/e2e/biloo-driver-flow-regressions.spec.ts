@@ -165,14 +165,16 @@ for (const theme of ['light', 'dark'] as const) {
   test(`arrival replaces approaching guidance and ETA in ${theme}`, async ({ page }) => {
     const { state } = await driverFixture(page, theme, 'accepted');
     await page.goto(navigation); await expect(page.locator('.nr-nav-stage-primary')).toBeEnabled();
-    const guidance = page.locator('.nr-driver-global-header .nr-nav-guidance');
+    const guidance = page.locator('.biloo-driver-trip-sheet .nr-nav-guidance');
     await expect(guidance).toBeVisible();
     await expect(guidance.locator('strong')).toHaveCSS('color', 'rgb(255, 255, 255)');
-    await expect(page.locator('.nr-driver-navigation-page .nr-nav-guidance')).toHaveCount(0);
-    await expect(page.locator('.nr-nav-bottom-card')).toHaveCount(0);
-    await expect(page.locator('.nr-driver-global-header .nr-nav-current-destination')).toBeVisible();
+    const tripSheet = page.locator('.nr-nav-bottom-card.biloo-driver-trip-sheet');
+    await expect(tripSheet).toBeVisible();
+    await expect(tripSheet.locator('.nr-nav-guidance')).toHaveCount(1);
+    await expect(tripSheet.locator('.nr-nav-current-destination')).toBeVisible();
     const details = page.locator('.biloo-driver-trip-details');
     await expect(details).toHaveAttribute('open', '');
+    await expect(tripSheet.locator('.nr-driver-sheet-footer .nr-nav-stage-primary')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Chat', exact: true })).toBeVisible();
     await expect(page.locator('.nr-nav-stage-primary')).toBeInViewport();
     await details.locator('summary').click();
@@ -181,11 +183,9 @@ for (const theme of ['light', 'dark'] as const) {
     await expect(details).toHaveAttribute('open', '');
     const header = (await page.locator('.nr-driver-global-header').boundingBox())!;
     expect((await page.locator('.nr-driver-navigation-page').boundingBox())!.y).toBeGreaterThanOrEqual(header.y + header.height - 1);
-    const action = (await page.locator('.nr-nav-trip-action-bar').boundingBox())!;
-    expect(action.y - header.y - header.height).toBeGreaterThan(300);
-    const tripSheet = (await page.locator('.biloo-driver-trip-header').boundingBox())!;
-    expect(tripSheet.y).toBeGreaterThanOrEqual(header.y + header.height);
-    expect(tripSheet.y + tripSheet.height).toBeLessThanOrEqual(action.y + 1);
+    const sheetBox = (await tripSheet.boundingBox())!;
+    expect(await tripSheet.evaluate(element => getComputedStyle(element).position)).toBe('fixed');
+    expect((await page.evaluate(() => innerHeight)) - (sheetBox.y + sheetBox.height)).toBeLessThanOrEqual(2);
     await expect(page.locator('.nr-nav-current-destination')).toContainText('Arriving in about 3 min');
     await page.locator('.nr-nav-stage-primary').click();
     await expect(page.locator('.nr-nav-stage-primary')).toContainText('Start trip');
@@ -211,6 +211,7 @@ for (const theme of ['light', 'dark'] as const) {
     await page.evaluate(() => window.dispatchEvent(new Event('online')));
     await expect(page.locator('.biloo-completion-card')).toContainText('336', { timeout: 15000 });
     await expect(page.locator('.biloo-payment-state')).toHaveAttribute('data-status', 'paid');
+    await expect(page.getByRole('button', { name: 'Ready for the next ride' })).toBeVisible();
     expect(state.writes).toBe(0);
   });
 
@@ -261,17 +262,19 @@ test('acceptance completes the verified ride lifecycle while rider contact loads
   await expect(page.locator('.nr-nav-loading')).toHaveCount(0, { timeout: 5000 });
   const stageAction = page.locator('.nr-nav-stage-primary');
   await expect(stageAction).toBeEnabled({ timeout: 5000 });
-  const actionSheet = page.locator('.nr-nav-trip-action-bar');
+  const actionSheet = page.locator('.nr-nav-bottom-card.biloo-driver-trip-sheet');
+  await expect(actionSheet).toBeVisible();
   expect(await actionSheet.evaluate(element => getComputedStyle(element).bottom)).toBe('0px');
+  await expect(actionSheet.locator('.biloo-driver-trip-details')).toHaveAttribute('open', '');
+  await expect(actionSheet.locator('.nr-driver-sheet-footer .nr-nav-stage-primary')).toBeVisible();
 
   await stageAction.click();
   await expect(stageAction).toContainText('Start trip');
-  await stageAction.click();
-  await expect(page.getByRole('dialog')).toBeVisible();
+  await expect(actionSheet.locator('.biloo-driver-trip-details')).toHaveAttribute('open', '');
   await page.getByRole('dialog').getByRole('button', { name: 'Start trip', exact: true }).click();
   await expect(stageAction).toContainText('Complete trip');
+  await expect(actionSheet.locator('.biloo-driver-trip-details')).toHaveAttribute('open', '');
   await stageAction.click();
-  await expect(page.getByRole('dialog')).toBeVisible();
   await page.getByRole('dialog').getByRole('button', { name: 'Complete trip', exact: true }).click();
   const receipt = page.locator('.nr-app.biloo-driver-completion');
   const receiptCard = page.locator('.biloo-completion-card');

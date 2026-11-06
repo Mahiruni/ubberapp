@@ -905,7 +905,8 @@ html[lang="am"] .nr-driver-menu-layer :where(strong,small) {
   display:flex;align-items:center;justify-content:flex-end;
 }
 .nr-driver-app-shell .nr-driver-header-profile {
-  position:relative;overflow:hidden;box-sizing:border-box;
+  position:relative;overflow:hidden;
+  box-sizing:border-box;
   display:grid;place-items:center;
   width:44px;height:44px;min-width:44px;min-height:44px;padding:0;
   text-decoration:none;border-radius:50%;
@@ -964,7 +965,7 @@ html[lang="am"] .nr-driver-menu-layer :where(strong,small) {
 }
 @media(max-width:390px){
   .nr-driver-app-shell .nr-driver-global-header-inner {
-    grid-template-columns:91px minmax(0,1fr) 44px;gap:4px;
+    grid-template-columns:48px minmax(0,1fr) 48px;gap:4px;
     padding-inline:max(9px,env(safe-area-inset-left,0px)) max(9px,env(safe-area-inset-right,0px));
   }
 }
@@ -1249,4 +1250,123 @@ html[lang="am"] .nr-driver-menu-layer :where(strong,small) {
 }
 @media(prefers-reduced-motion:reduce) {
   .nr-driver-app-shell :is(input,textarea,select) {transition:none!important}
+}
+
+/* Shared Rider and Driver top identity: the hamburger and Biloo mark travel
+   together on the left, with the account portrait at the right. */
+.nr-driver-app-shell .nr-driver-global-header-inner {
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:12px!important;
+  height:var(--driver-header-height,62px)!important;
+  padding-inline:max(14px,env(safe-area-inset-left,0px)) max(14px,env(safe-area-inset-right,0px))!important;
+}
+.nr-driver-app-shell .nr-driver-global-header-left,
+.nr-driver-app-shell .nr-driver-global-header-right {
+  display:flex!important;
+  align-items:center!important;
+  min-width:0!important;
+}
+.nr-driver-app-shell .nr-driver-header-brand-group {
+  display:flex;
+  align-items:center;
+  gap:3px;
+  width:max-content;
+  height:48px;
+  padding:0 16px 0 2px;
+  border:1px solid var(--driver-border);
+  border-radius:26px;
+  background:var(--driver-surface);
+  color:var(--driver-text-primary);
+  box-shadow:0 4px 18px rgba(8,41,95,.10);
+  pointer-events:auto;
+}
+.nr-driver-app-shell .nr-driver-header-brand-group .nr-driver-menu-trigger {
+  display:flex!important;
+  flex:0 0 44px!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:5px!important;
+  width:44px!important;
+  min-width:44px!important;
+  height:44px!important;
+  min-height:44px!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:50%!important;
+  background:transparent!important;
+  color:var(--driver-text-primary)!important;
+  box-shadow:none!important;
+}
+.nr-driver-app-shell .nr-driver-header-brand-group .nr-driver-menu-trigger>span {
+  display:block!important;
+  flex:none!important;
+  width:20px!important;
+  height:2px!important;
+  border-radius:999px!important;
+  background:currentColor!important;
+}
+.nr-driver-app-shell .nr-driver-header-brand-group .nr-driver-menu-trigger>span:nth-child(2) {width:20px!important}
+.nr-driver-app-shell .nr-driver-header-brand-group .nr-driver-menu-trigger>span:nth-child(3) {width:15px!important}
+.nr-driver-app-shell .nr-driver-header-brand-group .nr-brand {
+  display:flex!important;
+  align-items:center!important;
+  gap:6px!important;
+  margin:0!important;
+  padding:0!important;
+  pointer-events:none!important;
+}
+.nr-driver-app-shell .nr-driver-header-brand-group .nr-brand-symbol {display:none!important}
+.nr-driver-app-shell .nr-driver-header-brand-group .nr-brand strong {
+  color:var(--driver-text-primary)!important;
+  font-size:25px!important;
+  font-weight:750!important;
+  line-height:1!important;
+  letter-spacing:-.065em!important;
+}
+.nr-driver-app-shell .nr-driver-header-brand-group .nr-brand strong span {color:#e5ac24!important}
+.nr-driver-app-shell .nr-driver-global-header-right {justify-content:flex-end!important}
+.nr-driver-app-shell .nr-driver-global-header[data-home="true"] {
+  height:var(--driver-header-total)!important;
+  padding-top:0!important;
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  pointer-events:none;
+}
+.nr-driver-app-shell .nr-driver-global-header[data-home="true"] .nr-driver-global-header-inner {
+  position:absolute;
+  top:calc(10px + env(safe-area-inset-top,0px));
+  left:0;
+  right:0;
+  width:auto;
+  height:48px!important;
+  padding-inline:max(14px,env(safe-area-inset-left,0px)) max(14px,env(safe-area-inset-right,0px))!important;
+  pointer-events:none;
+}
+.nr-driver-app-shell .nr-driver-global-header[data-home="true"] .nr-driver-global-header-right,
+.nr-driver-app-shell .nr-driver-global-header[data-home="true"] .nr-driver-global-header-left {pointer-events:auto}
+.nr-driver-app-shell .nr-driver-global-header[data-home="true"] .nr-driver-header-profile {
+  width:44px!important;
+  height:44px!important;
+  min-width:44px!important;
+  min-height:44px!important;
+  border-radius:50%!important;
+  background:var(--driver-surface)!important;
+  box-shadow:0 4px 18px rgba(8,41,95,.10)!important;
+}
+.nr-driver-app-shell[data-request-map="true"] .nr-driver-global-header-inner {
+  display:flex!important;
+  justify-content:space-between!important;
+  height:56px!important;
+}
+.nr-driver-app-shell[data-request-map="true"] .nr-driver-header-brand-group,
+.nr-driver-app-shell[data-request-map="true"] .nr-driver-header-profile {pointer-events:auto}
+@media(max-width:360px) {
+  .nr-driver-app-shell .nr-driver-header-brand-group {padding-right:12px}
+  .nr-driver-app-shell .nr-driver-header-brand-group .nr-brand strong {font-size:25px!important}
 }
