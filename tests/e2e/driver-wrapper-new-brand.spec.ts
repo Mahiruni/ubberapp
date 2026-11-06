@@ -115,9 +115,12 @@ test('incoming Driver offer shows the fare with compact secondary decisions and 
   const a = (await accept.boundingBox())!;
   const p = (await pass.boundingBox())!;
   const d = (await decline.boundingBox())!;
-  expect(a.y + a.height + 2).toBeLessThan(p.y);
-  expect(Math.abs(p.y - d.y)).toBeLessThan(2);
-  expect(p.x + p.width).toBeLessThan(d.x);
+  // Keep the primary Accept action prominent beside the two compact alternatives.
+  expect(Math.abs(a.y - d.y)).toBeLessThan(2);
+  expect(a.x).toBeGreaterThan(d.x + d.width);
+  expect(a.y + a.height).toBeGreaterThanOrEqual(p.y + p.height - 2);
+  expect(Math.abs(p.x - d.x)).toBeLessThan(2);
+  expect(p.y).toBeGreaterThan(d.y);
   expect(Math.abs(p.width - d.width)).toBeLessThan(2);
   await expect(sheet.locator('.nr-request-offer-value')).toBeInViewport();
   await expect(sheet.locator('.nr-request-offer-value')).toContainText('Estimated driver payout');
