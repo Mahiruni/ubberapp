@@ -62,7 +62,7 @@ async function driverFixture(page: Page, theme: 'light' | 'dark', initial: Stage
       v2 ? [reply.join_ref, reply.ref, reply.topic, reply.event, reply.payload] : reply,
     ));
   }));
-  await page.route('**/rest/v1/**', route => {
+  await page.route('**/rest/v1/**', async route => {
     const request = route.request(), url = new URL(request.url()), table = url.pathname.split('/').pop();
     const single = request.headers().accept?.includes('object+json');
     const respond = (row: unknown) => route.fulfill({ json: single ? row : row ? [row] : [] });
