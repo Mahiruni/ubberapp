@@ -13,8 +13,9 @@
 .nr-driver-app-shell .nr-driver-global-header[data-navigation="true"] .biloo-driver-header-eyebrow {font-size:10px;letter-spacing:.055em;white-space:nowrap}
 #biloo-driver-trip-header-slot:empty {display:none}
 #biloo-driver-trip-header-slot:not(:empty) {
-  display:block;box-sizing:border-box;width:min(1180px,100%);margin:0 auto;
-  padding:0 max(12px,env(safe-area-inset-right,0px)) 10px max(12px,env(safe-area-inset-left,0px));
+  position:fixed;z-index:var(--driver-z-sheet,50);left:50%;right:auto;top:auto;bottom:var(--nr-driver-trip-sheet-bottom,104px);
+  display:block;box-sizing:border-box;width:min(560px,calc(100vw - 24px));max-height:min(62dvh,calc(100dvh - var(--driver-header-total,56px) - var(--nr-driver-trip-sheet-bottom,104px) - 16px));
+  margin:0;padding:0;transform:translateX(-50%);overflow-y:auto;overscroll-behavior:contain;
 }
 .nr-driver-global-header .biloo-driver-trip-header {overflow:hidden;border:1px solid #355675;border-radius:16px;background:#102d50;color:#fff;box-shadow:0 3px 12px #08295f10}
 .nr-driver-global-header[data-navigation="true"] .biloo-driver-trip-guidance {
