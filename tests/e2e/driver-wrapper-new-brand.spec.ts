@@ -65,7 +65,12 @@ test('accepted Driver trip keeps its details sheet above the bottom-pinned stage
   await connectedDriver(page, 'accepted', 'dark');
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(`/driver/navigation?offer=${offerId}`);
-  await expect(page.locator('.nr-driver-global-header .biloo-driver-trip-guidance')).toBeVisible();
+  const header = page.locator('.nr-driver-global-header');
+  await expect(header.locator('.nr-driver-global-header-title, .nr-driver-header-back')).toHaveCount(0);
+  const profile = header.locator('.nr-driver-header-profile');
+  await expect(profile).toHaveAttribute('href', '/driver/profile');
+  await expect(profile).toBeVisible();
+  await expect(header.locator('.biloo-driver-trip-guidance')).toBeVisible();
   await expect(page.locator('.nr-driver-global-header .biloo-driver-trip-details')).toContainText('Biloo');
   const details = page.locator('.biloo-driver-trip-details');
   await expect(details).toHaveAttribute('open', '');

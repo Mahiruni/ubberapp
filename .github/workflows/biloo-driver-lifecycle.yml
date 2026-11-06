@@ -9,6 +9,7 @@ on:
       - "components/nexride/driver*.tsx"
       - "tests/e2e/biloo-driver-flow-regressions.spec.ts"
       - "tests/e2e/driver-wrapper-new-brand.spec.ts"
+      - "tests/e2e/biloo-footer-navigation.spec.ts"
       - ".github/workflows/biloo-driver-lifecycle.yml"
   push:
     branches: [main]
@@ -18,6 +19,7 @@ on:
       - "components/nexride/driver*.tsx"
       - "tests/e2e/biloo-driver-flow-regressions.spec.ts"
       - "tests/e2e/driver-wrapper-new-brand.spec.ts"
+      - "tests/e2e/biloo-footer-navigation.spec.ts"
       - ".github/workflows/biloo-driver-lifecycle.yml"
 
 permissions:
@@ -48,4 +50,4 @@ jobs:
       - run: npm install --no-audit --no-fund
       - run: npm run build
       - run: npx playwright install --with-deps chromium
-      - run: npx playwright test tests/e2e/biloo-driver-flow-regressions.spec.ts tests/e2e/driver-wrapper-new-brand.spec.ts --project=chromium --project=mobile --workers=2 --timeout=45000
+      - run: npx playwright test tests/e2e/biloo-driver-flow-regressions.spec.ts tests/e2e/driver-wrapper-new-brand.spec.ts tests/e2e/biloo-footer-navigation.spec.ts --project=chromium --project=mobile --workers=2 --timeout=45000

@@ -57,30 +57,35 @@ test("Rider has no footer tabs; hamburger and Profile remain independent", async
   await expect(menu).toHaveCount(0);
 });
 
-test("Driver pages have no tab footer and retain routes in left hamburger", async ({ page }) => {
+test("Driver pages have no tab footer and show only the hamburger and profile in the header", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await mockDriver(page);
   await page.goto("/driver/earnings");
   await expect(page.locator(".biloo-footer-nav, .nr-mobile-nav")).toHaveCount(0);
+  const header = page.locator(".nr-driver-global-header");
+  await expect(header.locator(".nr-driver-global-header-title, .nr-driver-header-back")).toHaveCount(0);
   const menuTrigger = page.locator(".nr-driver-global-header-left .nr-driver-menu-trigger");
   await expect(menuTrigger).toBeVisible();
-  await expect(page.locator(".nr-driver-header-profile")).toHaveCount(0);
+  const profile = header.locator(".nr-driver-header-profile");
+  await expect(profile).toBeVisible();
+  await expect(profile).toHaveAttribute("href", "/driver/profile");
+  await expect(profile).toHaveAccessibleName("Profile");
   await expect(menuTrigger).toHaveCSS("border-radius", "50%");
   await menuTrigger.click();
   const menu = page.locator("#nr-driver-menu");
   await expect(menu).toBeVisible();
   await expect(menu.locator('a[href="/driver/earnings"]')).toBeVisible();
-  await expect(menu.locator('a[href="/driver/map"]')).toBeVisible();
+  await expect(menu.locator('a[href="/driver/activity"]')).toBeVisible();
   await expect(menu.locator('.biloo-menu-profile-card[href="/driver/profile"]')).toHaveCount(1);
   await expect(menu.locator('.nr-driver-menu-role-switch[href="/rider"]')).toHaveCount(1);
   await expect(menu.locator(".nr-driver-menu-row").first()).toHaveCSS("min-height", "60px");
   const bounds=await menu.boundingBox();
   expect(bounds).not.toBeNull();
   expect(bounds!.x).toBeLessThan(3); // Left-docked, not the legacy right drawer.
-  await menu.locator('a[href="/driver/map"]').click();
-  await expect(page).toHaveURL(/\/driver\/map$/);
-  await expect(page.locator(".biloo-footer-nav")).toHaveCount(0);
-  await expect(page.locator(".nr-driver-map-page")).toBeVisible();
+  await menu.locator('a[href="/driver/activity"]').click();
+  await expect(page).toHaveURL(/\/driver\/activity$/);
+  await expect(page.locator(".biloo-footer-nav, .nr-mobile-nav")).toHaveCount(0);
+  await expect(page.locator(".nr-driver-app-shell")).toBeVisible();
 });
 
 test("Driver map homepage keeps swipe and separates Profile from hamburger", async ({ page }) => {

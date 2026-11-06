@@ -108,9 +108,10 @@ describe("Biloo premium Account experience", () => {
     expect(css).toContain('display:flex!important;');
     expect(css).toContain('.nr-driver-profile-subpage .nr-profile-subhead>button');
     const shell = source("components/nexride/driver-app-shell.tsx");
-    // Account subpages share the canonical shell back button after header consolidation.
-    expect(shell).toContain('pathname.startsWith("/driver/profile/")');
-    expect(shell).toContain('return "/driver/profile"');
+    // Driver pages expose Profile from the right side of the consolidated header.
+    expect(shell).toContain('href="/driver/profile"');
+    expect(shell).toContain('aria-label={language === "am" ? "መገለጫ" : "Profile"}');
+    expect(shell).not.toContain("nr-driver-header-back");
     expect(css).not.toContain("mapboxgl-canvas");
   });
 });

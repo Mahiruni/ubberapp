@@ -895,7 +895,7 @@ html[lang="am"] .nr-driver-menu-layer :where(strong,small) {
   width:100%;height:100%;object-fit:cover;object-position:center;
 }
 .nr-driver-app-shell .nr-driver-global-header-inner {
-  grid-template-columns:minmax(93px,auto) minmax(0,1fr) 48px;
+  grid-template-columns:48px minmax(0,1fr) 48px;
   gap:8px;
 }
 .nr-driver-app-shell .nr-driver-global-header-left {
@@ -904,18 +904,19 @@ html[lang="am"] .nr-driver-menu-layer :where(strong,small) {
 .nr-driver-app-shell .nr-driver-global-header-right {
   display:flex;align-items:center;justify-content:flex-end;
 }
-.nr-driver-app-shell .nr-driver-header-back {width:42px;min-width:42px;}
 .nr-driver-app-shell .nr-driver-header-profile {
-  box-sizing:border-box;
+  position:relative;overflow:hidden;box-sizing:border-box;
   display:grid;place-items:center;
-  width:44px;height:44px;min-width:44px;
-  text-decoration:none;border-radius:15px;
+  width:44px;height:44px;min-width:44px;min-height:44px;padding:0;
+  text-decoration:none;border-radius:50%;
   border:1px solid var(--driver-border);
   background:var(--driver-surface);
   color:var(--driver-text-primary);
   box-shadow:0 3px 12px rgba(8,41,95,.07);
   transition:background-color 160ms ease,transform 160ms ease;
 }
+.nr-driver-app-shell .nr-driver-header-profile>span {font-size:12px;font-weight:800;letter-spacing:.01em}
+.nr-driver-app-shell .nr-driver-header-profile img {position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:inherit}
 .nr-driver-app-shell .nr-driver-header-profile[aria-current="page"] {
   border-color:var(--driver-accent);
   box-shadow:inset 0 0 0 1px var(--driver-accent);
@@ -966,8 +967,6 @@ html[lang="am"] .nr-driver-menu-layer :where(strong,small) {
     grid-template-columns:91px minmax(0,1fr) 44px;gap:4px;
     padding-inline:max(9px,env(safe-area-inset-left,0px)) max(9px,env(safe-area-inset-right,0px));
   }
-  .nr-driver-app-shell .nr-driver-global-header-title strong {font-size:15px!important;}
-  .nr-driver-app-shell .nr-driver-header-back {width:40px;min-width:40px;}
 }
 @media(prefers-reduced-motion:reduce) {
   .nr-driver-menu-layer .nr-driver-menu-panel {animation:none!important;}
@@ -975,9 +974,9 @@ html[lang="am"] .nr-driver-menu-layer :where(strong,small) {
 }
 
 
-/* Biloo zero-duplication navigation v2 — comfortable, left-origin Driver drawer.
- * The shared account avatar has one home: the drawer profile card. Menu trigger
- * is circular on Home and operational pages; active trips/maps remain untouched.
+/* Biloo navigation v2 — a clear hamburger/profile header with a left-origin drawer.
+ * The shared portrait is visible in the header and remains available in the drawer.
+ * Menu trigger is circular on Home and operational pages; map gestures stay clear.
  */
 .nr-driver-app-shell .nr-driver-menu-trigger,
 .nr-driver-standalone-menu .nr-driver-menu-trigger {

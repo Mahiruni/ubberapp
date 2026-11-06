@@ -25,7 +25,7 @@ describe("Biloo navigation and image-performance safeguards", () => {
     expect(driver).toContain('height={1230}');
   });
 
-  it("keeps the same account portrait in exactly one drawer location per role", () => {
+  it("keeps one portrait in each drawer and a separate Driver header Profile link", () => {
     const riderMenu = read("../../components/nexride/rider-menu.tsx");
     const driverMenu = read("../../components/nexride/driver-app-shell.tsx");
     const riderHome = read("../../app/page.tsx");
@@ -38,7 +38,7 @@ describe("Biloo navigation and image-performance safeguards", () => {
     expect(riderHome).not.toContain('className="biloo-home-floating-profile"');
     expect(riderHome).not.toContain('className="nr-rider-profile-top"');
     expect(driverHome).not.toContain('className="nr-driver-home-profile"');
-    expect(driverMenu).not.toContain('className="nr-driver-header-profile"');
+    expect(driverMenu.match(/className="nr-driver-header-profile"/g)).toHaveLength(1);
     expect(shared).toContain("SIGNED_OUT");
     expect(shared).toContain("warmImage(next.url)");
   });

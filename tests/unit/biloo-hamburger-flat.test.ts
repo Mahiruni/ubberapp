@@ -117,13 +117,13 @@ describe("Biloo zero-duplication navigation ownership", () => {
     expect(shared).toContain("min-height:60px!important;");
     expect(shared).toContain("min-height:94px!important;");
     expect(shared).toContain(".nr-driver-standalone-menu .nr-driver-menu-trigger");
-    expect(driverStyle).toContain("Biloo zero-duplication navigation v2");
+    expect(driverStyle).toContain(".nr-driver-header-profile");
     expect(driverStyle).toContain('data-home="true"] .nr-driver-home-menu-host .nr-driver-menu-trigger');
     expect(driverStyle).toContain("border-radius:50%!important;");
     expect(driverStyle).toContain(".nr-driver-menu-secondary>a");
     expect(riderMenu).toContain("MAIN NAVIGATION");
     expect(driverMenu).toContain("nr-driver-menu-separator");
-    expect(driverMenu).toContain("Drive. Earn. Grow.");
+    expect(driverMenu).toContain('className="nr-driver-header-profile"');
     expect(driverMenu).not.toContain("MAIN NAVIGATION");
     expect(driverMenu).toContain("Ride with Biloo");
     expect(driverMenu).toContain('<Link href="/rider" className="nr-driver-menu-role-switch"');
