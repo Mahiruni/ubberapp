@@ -501,11 +501,11 @@
   border-radius:10px!important;
 }
 .nr-driver-app-shell[data-home="true"] .nr-driver-home-menu-host .nr-driver-menu-trigger{
-  width:44px!important;
-  height:44px!important;
-  min-width:44px!important;
-  min-height:44px!important;
-  border-radius:13px!important;
+  width:48px!important;
+  height:48px!important;
+  min-width:48px!important;
+  min-height:48px!important;
+  border-radius:50%!important;
   border:1px solid #e2e8ec!important;
   background:#ffffff!important;
   color:#102334!important;
