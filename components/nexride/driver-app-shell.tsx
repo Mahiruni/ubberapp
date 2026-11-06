@@ -343,34 +343,6 @@ export function DriverStandaloneMenu({ activeOverride }: { activeOverride?: Driv
   );
 }
 
-function titleForPath(pathname: string, language: "en" | "am") {
-  const say = (en: string, am: string) => language === "am" ? am : en;
-  if (pathname.startsWith("/driver/earnings/report")) return say("Earnings report", "የገቢ ሪፖርት");
-  if (pathname.startsWith("/driver/earnings")) return say("Earnings", "ገቢ");
-  if (pathname.startsWith("/driver/request")) return say("Ride request", "የጉዞ ጥያቄ");
-  if (pathname.startsWith("/driver/activity")) return say("Activity", "እንቅስቃሴ");
-  if (pathname === "/driver/map") return say("Live map", "ቀጥታ ካርታ");
-  if (pathname.startsWith("/driver/navigation")) return say("Trip navigation", "የጉዞ አቅጣጫ");
-  if (pathname.startsWith("/driver/pickup")) return say("Pickup", "መነሻ");
-  if (pathname.startsWith("/driver/profile/documents")) return say("Documents", "ሰነዶች");
-  if (pathname.startsWith("/driver/profile/vehicle")) return say("Vehicle", "ተሽከርካሪ");
-  if (pathname.startsWith("/driver/profile/payouts")) return say("Payouts", "ክፍያዎች");
-  if (pathname.startsWith("/driver/profile/settings")) return say("Settings", "ቅንብሮች");
-  if (pathname.startsWith("/driver/profile")) return say("Account", "መለያ");
-  return language === "am" ? "Biloo አሽከርካሪ" : "Biloo Driver";
-}
-
-function backTargetForPath(pathname: string) {
-  if (pathname.startsWith("/driver/earnings/report")) return "/driver/earnings";
-  if (pathname.startsWith("/driver/profile/")) return "/driver/profile";
-  if (
-    pathname.startsWith("/driver/request") ||
-    pathname.startsWith("/driver/navigation") ||
-    pathname.startsWith("/driver/pickup")
-  ) return "/driver/home";
-  return "";
-}
-
 function isPublicDriverPath(pathname: string) {
   return (
     pathname === "/driver" ||
@@ -399,24 +371,13 @@ function DriverHeader({
   menuOpen: boolean;
   onMenuOpenChange: (nextOpen: boolean) => void;
 }) {
-  const router = useRouter();
   const language = useContext(LanguageContext);
-  const [online, setOnline] = useState(true);
+  const portrait = useSharedAccountPortrait();
   const home = pathname === "/driver/home";
-  const backTarget = backTargetForPath(pathname);
-  const title = titleForPath(pathname, language);
-
-  useEffect(() => {
-    setOnline(navigator.onLine);
-    const onOnline = () => setOnline(true);
-    const onOffline = () => setOnline(false);
-    window.addEventListener("online", onOnline);
-    window.addEventListener("offline", onOffline);
-    return () => {
-      window.removeEventListener("online", onOnline);
-      window.removeEventListener("offline", onOffline);
-    };
-  }, []);
+  const profileInitials = useMemo(
+    () => portrait.name.split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]).join("").toUpperCase() || "DR",
+    [portrait.name],
+  );
 
   if (home) {
     return (
@@ -431,30 +392,18 @@ function DriverHeader({
       <div className="nr-driver-global-header-inner">
         <div className="nr-driver-global-header-side nr-driver-global-header-left">
           <DriverHamburgerMenu controlledOpen={menuOpen} onOpenChange={onMenuOpenChange} />
-          {backTarget && (
-            <button type="button" className="nr-driver-global-icon-button nr-driver-header-back" onClick={() => router.push(backTarget)} aria-label={language === "am" ? "ተመለስ" : "Back"}>
-              <Icon name="back" size={19} />
-            </button>
-          )}
         </div>
 
-        <div className="nr-driver-global-header-title">
-          {home ? (
-            <>
-              <strong>Biloo</strong>
-              <span>{language === "am" ? "አሽከርካሪ" : "Driver"}</span>
-            </>
-          ) : (
-            <>
-              <span className="biloo-driver-header-eyebrow"><img src="/brand/biloo-mark.svg" width={19} height={19} alt="" aria-hidden="true" />{language === "am" ? "BILOO · አሽከርካሪ" : "BILOO · DRIVER"}</span>
-              <strong>{title}</strong>
-            </>
-          )}
-          {!online && <em>{language === "am" ? "ከመስመር ውጭ" : "Offline"}</em>}
-        </div>
+        <span className="nr-driver-global-header-spacer" aria-hidden="true" />
 
         <div className="nr-driver-global-header-side nr-driver-global-header-right">
-          <span className="nr-driver-global-header-spacer" aria-hidden="true" />
+          <Link href="/driver/profile" className="nr-driver-header-profile"
+            aria-label={language === "am" ? "መገለጫ" : "Profile"}
+            aria-current={pathname.startsWith("/driver/profile") ? "page" : undefined}>
+            <span aria-hidden="true">{profileInitials}</span>
+            {portrait.url && <img src={portrait.url} alt="" width={44} height={44} decoding="async"
+              onError={event => { event.currentTarget.style.display = "none"; }} />}
+          </Link>
         </div>
       </div>
       {pathname.startsWith("/driver/navigation") && <div id="biloo-driver-trip-header-slot" />}
