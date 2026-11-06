@@ -274,6 +274,7 @@ test('acceptance completes the verified ride lifecycle while rider contact loads
   await stageAction.click();
   await expect.poll(() => state.stage).toBe('arrived_pickup');
   await expect(stageAction).toContainText('Start trip');
+  await stageAction.click();
   const startTripConfirm = page.getByRole('dialog').getByRole('button', { name: 'Start trip', exact: true });
   await expect(startTripConfirm).toBeEnabled({ timeout: 5000 });
   await startTripConfirm.click();
