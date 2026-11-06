@@ -198,3 +198,7 @@
 .nr-driver-app-shell .nr-driver-profile-v2 .nr-driver-verification-card.approved > button svg {
   color:inherit;
 }
+
+
+.nr-driver-profile-subpage .nr-profile-subhead>button.nr-driver-icon-btn{flex:0 0 44px;width:44px;height:44px;display:grid;place-items:center;padding:0;border:1px solid rgba(113,158,184,.2);border-radius:13px;background:#0b3049;color:#e7f0f5;cursor:pointer}
+.nr-driver-profile-subpage .nr-profile-subhead>button.nr-driver-icon-btn:focus-visible{outline:3px solid #1765b6;outline-offset:3px}
