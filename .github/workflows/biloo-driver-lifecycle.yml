@@ -1,0 +1,51 @@
+name: Biloo Driver Lifecycle Regression
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "app/driver/**"
+      - "app/biloo-compact-wrappers.css"
+      - "components/nexride/driver*.tsx"
+      - "tests/e2e/biloo-driver-flow-regressions.spec.ts"
+      - "tests/e2e/driver-wrapper-new-brand.spec.ts"
+      - ".github/workflows/biloo-driver-lifecycle.yml"
+  push:
+    branches: [main]
+    paths:
+      - "app/driver/**"
+      - "app/biloo-compact-wrappers.css"
+      - "components/nexride/driver*.tsx"
+      - "tests/e2e/biloo-driver-flow-regressions.spec.ts"
+      - "tests/e2e/driver-wrapper-new-brand.spec.ts"
+      - ".github/workflows/biloo-driver-lifecycle.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: biloo-driver-lifecycle-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  driver-lifecycle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NEXT_PUBLIC_APP_NAME: Biloo
+      NEXT_PUBLIC_APP_ENV: test
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      NEXT_PUBLIC_SUPABASE_URL: https://eyyvvwecpyctttiueban.supabase.co
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_kXFOrtwKkKmrqCtYTTuzdg__CjjABBf
+      NEXT_PUBLIC_MAPBOX_TOKEN: replace_me
+      NEXT_TELEMETRY_DISABLED: "1"
+      PLAYWRIGHT_SERVER_COMMAND: npm run start -- --hostname 127.0.0.1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm install --no-audit --no-fund
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test tests/e2e/biloo-driver-flow-regressions.spec.ts tests/e2e/driver-wrapper-new-brand.spec.ts --project=chromium --project=mobile --workers=2 --timeout=45000
