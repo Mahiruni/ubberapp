@@ -9,7 +9,7 @@ test.beforeEach(async ({ page }) => {
   );
 });
 
-test("Rider hamburger has non-expandable Account and Help links with consistent icons", async ({ page }) => {
+test("Rider hamburger exposes current navigation and help links", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
   await expect(page.locator(".nr-rider-home-panel")).toBeVisible();
@@ -18,24 +18,25 @@ test("Rider hamburger has non-expandable Account and Help links with consistent 
   const drawer = page.getByRole("dialog", { name: "Rider menu" });
   await expect(drawer).toBeVisible();
 
-  // All four destinations are visible straight away, without expanding a group.
-  const account = drawer.getByRole("navigation", { name: "Account and settings" });
+  // The current menu shows the profile, primary destinations, help, and role switch directly.
+  const primary = drawer.getByRole("navigation", { name: "Rider navigation" });
   const support = drawer.getByRole("navigation", { name: "Help and safety" });
-  await expect(account.getByRole("button", { name: /^Account/ })).toBeVisible();
-  await expect(account.getByRole("button", { name: /^Settings/ })).toBeVisible();
-  await expect(support.getByRole("button", { name: /^Safety/ })).toBeVisible();
-  await expect(support.getByRole("button", { name: /^Support/ })).toBeVisible();
-  await expect(drawer.getByRole("button", { name: /ACCOUNT & PREFERENCES|SAFETY & SUPPORT/i })).toHaveCount(0);
+  await expect(drawer.locator(".biloo-menu-profile-card")).toHaveCount(1);
+  await expect(primary.getByRole("button", { name: /My Rides/i })).toBeVisible();
+  await expect(primary.getByRole("button", { name: /^Wallet/i })).toBeVisible();
+  await expect(support.getByRole("button", { name: /Safety Center/i })).toBeVisible();
+  await expect(support.getByRole("button", { name: /Help & Support/i })).toBeVisible();
+  await expect(drawer.getByRole("button", { name: /Drive with Biloo/i })).toBeVisible();
   await expect(drawer.locator(".nr-menu-group-toggle")).toHaveCount(0);
 
-  const rows = drawer.locator(".nr-rider-drawer-nav>button");
-  await expect(rows).toHaveCount(8);
+  const rows = primary.getByRole("button");
+  await expect(rows).toHaveCount(4);
   expect(await rows.evaluateAll(elements => elements.every(element =>
-    Boolean(element.querySelector(".nr-rider-drawer-icon svg"))
+    Boolean(element.querySelector("svg"))
   ))).toBe(true);
-  await expect(account.getByRole("button", { name: /^Account/ })).toHaveCSS("min-height", "57px");
+  await expect(rows.first()).toHaveCSS("min-height", "60px");
 
-  await support.getByRole("button", { name: /^Support/ }).click();
+  await support.getByRole("button", { name: /Help & Support/i }).click();
   await expect(page).toHaveURL(/\/support/);
 });
 
