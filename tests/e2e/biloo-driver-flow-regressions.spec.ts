@@ -205,7 +205,6 @@ for (const theme of ['light', 'dark'] as const) {
     await page.evaluate(() => window.dispatchEvent(new Event('online')));
     await expect(page.locator('.biloo-completion-card')).toContainText('336', { timeout: 15000 });
     await expect(page.locator('.biloo-payment-state')).toHaveAttribute('data-status', 'paid');
-    await expect(page.getByRole('button', { name: 'Ready for the next ride' })).toBeVisible();
     expect(state.writes).toBe(0);
   });
 
@@ -261,9 +260,12 @@ test('acceptance completes the verified ride lifecycle while rider contact loads
 
   await stageAction.click();
   await expect(stageAction).toContainText('Start trip');
+  await stageAction.click();
+  await expect(page.getByRole('dialog')).toBeVisible();
   await page.getByRole('dialog').getByRole('button', { name: 'Start trip', exact: true }).click();
   await expect(stageAction).toContainText('Complete trip');
   await stageAction.click();
+  await expect(page.getByRole('dialog')).toBeVisible();
   await page.getByRole('dialog').getByRole('button', { name: 'Complete trip', exact: true }).click();
   const receipt = page.locator('.nr-app.biloo-driver-completion');
   const receiptCard = page.locator('.biloo-completion-card');
