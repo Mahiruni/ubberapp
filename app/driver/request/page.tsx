@@ -426,29 +426,37 @@ export default function DriverRideRequestPage() {
     setSubmitting("accept");
     setAcceptFailure("");
 
-    const { data, error } = await supabase.rpc("driver_decide_ride_offer", {
-      p_offer_id: offer.id, p_action: "accept",
-    });
-    const outcome = data as { status?: string; requestId?: string } | null;
-    if (error || !confirmedDriverOfferDecision("accept",outcome,offer.request_id)) {
-      const message = error?.message || "";
-      if (outcome?.status === "expired" || message.includes("RIDE_OFFER_EXPIRED")) {
-        setOffer((current) => current ? { ...current, status: "expired" } : current);
-      } else if (outcome?.status === "unavailable" || outcome?.status === "already_resolved" ||
-        message.includes("RIDE_REQUEST_UNAVAILABLE") || error?.code === "23505") {
-        setOffer((current) => current ? { ...current, status: "withdrawn" } : current);
-      } else if (message.includes("DRIVER_NOT_ELIGIBLE")) {
-        setAcceptFailure(op("Your driver account is not currently eligible to accept rides. Check verification and availability."));
-      } else {
-        setAcceptFailure(op("Acceptance failed. The request may have changed or your connection may be unavailable."));
+    let accepted = false;
+    try {
+      const { data, error } = await supabase.rpc("driver_decide_ride_offer", {
+        p_offer_id: offer.id, p_action: "accept",
+      });
+      const outcome = data as { status?: string; requestId?: string } | null;
+      if (error || !confirmedDriverOfferDecision("accept", outcome, offer.request_id)) {
+        const message = error?.message || "";
+        if (outcome?.status === "expired" || message.includes("RIDE_OFFER_EXPIRED")) {
+          setOffer((current) => current ? { ...current, status: "expired" } : current);
+        } else if (outcome?.status === "unavailable" || outcome?.status === "already_resolved" ||
+          message.includes("RIDE_REQUEST_UNAVAILABLE") || error?.code === "23505") {
+          setOffer((current) => current ? { ...current, status: "withdrawn" } : current);
+        } else if (message.includes("DRIVER_NOT_ELIGIBLE")) {
+          setAcceptFailure(op("Your driver account is not currently eligible to accept rides. Check verification and availability."));
+        } else {
+          setAcceptFailure(op("Acceptance failed. The request may have changed or your connection may be unavailable."));
+        }
+        return;
       }
+      accepted = true;
+    } catch {
+      setAcceptFailure(op("Acceptance failed. The request may have changed or your connection may be unavailable."));
+    } finally {
+      // A rejected fetch must never leave the action locked in “Accepting…”.
       setSubmitting(null);
       decisionLock.current = false;
-      return;
     }
 
+    if (!accepted) return;
     stopRideRequestAlert(offer.id);
-    decisionLock.current = false;
     emitNexRideFeedback({
       event: "ride_accepted",
       id: offer.id,
@@ -636,7 +644,7 @@ export default function DriverRideRequestPage() {
       <DriverBottomSheet
         className="nr-request-sheet"
         label="Ride request details"
-        defaultSnap="expanded"
+        defaultSnap="medium"
         footer={!loading && offer && request && (visibleStatus === "pending" || visibleStatus === "failed") ? (
             <div className="nr-request-actions" aria-label={op("Respond to ride request")}>
               <button type="button" className="nr-request-accept"

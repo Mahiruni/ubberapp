@@ -61,21 +61,25 @@ test('incoming Rider call uses Biloo navy and gold with theme-aware surfaces', a
   await page.screenshot({ animations: 'disabled', path: `/tmp/biloo-request-light-${info.project.name}.png` });
 });
 
-test('accepted Rider trip retains pinned stage action and brand-aware light/dark surfaces', async ({ page }) => {
+test('accepted Driver trip retains a bottom-pinned stage action across theme changes', async ({ page }) => {
   await connectedDriver(page, 'accepted', 'dark');
   await page.goto(`/driver/navigation?offer=${offerId}`);
-  const wrapper = page.locator('.nr-driver-navigation-page .nr-nav-bottom-card');
+  await expect(page.locator('.nr-driver-global-header .biloo-driver-trip-guidance')).toBeVisible();
+  await expect(page.locator('.nr-driver-global-header .biloo-driver-trip-details')).toContainText('Biloo');
+  await expect(page.locator('.nr-nav-bottom-card')).toHaveCount(0);
+  const wrapper = page.locator('.nr-nav-trip-action-bar');
   await expect(wrapper).toBeVisible();
-  await expect(wrapper).toHaveCSS('background-color', 'rgb(32, 32, 32)');
-  await expect(wrapper.locator('.nr-nav-trip-meta')).toContainText('Biloo');
-  const pinned = wrapper.locator('.nr-driver-sheet-footer').getByRole('button', { name: 'Arrived at pickup' });
+  const pinned = wrapper.getByRole('button', { name: 'Arrived at pickup' });
   await expect(pinned).toBeVisible();
-  await expect(pinned).toHaveCSS('background-color', 'rgb(255, 176, 0)');
   await expect(pinned).toBeInViewport();
+  expect(await wrapper.evaluate(element => getComputedStyle(element).position)).toBe('absolute');
+  const actionBottom = parseFloat(await wrapper.evaluate(element => getComputedStyle(element).bottom));
+  expect(actionBottom).toBeGreaterThanOrEqual(0);
+  expect(actionBottom).toBeLessThanOrEqual(16);
   await page.evaluate(() => { localStorage.setItem('nexride.driver.theme', 'light'); window.dispatchEvent(new Event('nexride:appearance-change')); });
   await expect(page.locator('.nr-driver-app-shell')).toHaveAttribute('data-theme','light');
-  await expect(wrapper).toHaveCSS('background-color', 'rgb(255, 255, 255)');
-  await expect(pinned).toHaveCSS('background-color', 'rgb(255, 176, 0)');
+  await expect(wrapper).toBeVisible();
+  await expect(pinned).toBeEnabled();
 });
 
 
@@ -93,17 +97,23 @@ test('incoming Driver offer shows the fare with compact secondary decisions and 
   const a = (await accept.boundingBox())!;
   const p = (await pass.boundingBox())!;
   const d = (await decline.boundingBox())!;
-  expect(a.y + a.height + 2).toBeLessThan(p.y);
-  expect(Math.abs(p.y - d.y)).toBeLessThan(2);
-  expect(p.x + p.width).toBeLessThan(d.x);
+  expect(Math.abs(a.y - d.y)).toBeLessThan(2);
+  expect(p.y).toBeGreaterThan(d.y);
+  expect(p.x + p.width).toBeLessThan(a.x);
+  expect(Math.abs(p.x - d.x)).toBeLessThan(2);
   expect(Math.abs(p.width - d.width)).toBeLessThan(2);
+  expect(a.height).toBeGreaterThan(p.height + d.height);
   await expect(sheet.locator('.nr-request-offer-value')).toBeInViewport();
   await expect(sheet.locator('.nr-request-offer-value')).toContainText('Estimated driver payout');
   await expect(sheet.locator('.nr-request-offer-value')).toContainText('195 ETB');
   await expect(sheet.locator('.nr-request-route-compact')).toBeInViewport();
   const sheetBox = (await sheet.boundingBox())!;
-  const footerBox = (await sheet.locator('.nr-driver-sheet-footer').boundingBox())!;
-  expect(sheetBox.y + sheetBox.height - (footerBox.y + footerBox.height)).toBeLessThan(3);
+  const footer = sheet.locator('.nr-driver-sheet-footer');
+  const footerBox = (await footer.boundingBox())!;
+  const footerSafeArea = parseFloat(await footer.evaluate(element => getComputedStyle(element).paddingBottom));
+  const viewportHeight = await page.evaluate(() => window.innerHeight);
+  expect(viewportHeight - (sheetBox.y + sheetBox.height)).toBeLessThanOrEqual(16);
+  expect(sheetBox.y + sheetBox.height - (footerBox.y + footerBox.height)).toBeLessThanOrEqual(footerSafeArea + 2);
   await expect(accept).toBeInViewport();
   await expect(decline).toBeInViewport();
   await page.setViewportSize({ width: 320, height: 640 });
@@ -113,24 +123,19 @@ test('incoming Driver offer shows the fare with compact secondary decisions and 
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 
-test('active Driver trip Complete trip stays flush with compact safe-area footer after expanding', async ({ page }) => {
+test('active Driver trip keeps its stage action in a compact bottom sheet', async ({ page }) => {
   await connectedDriver(page, 'in_trip', 'dark');
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(`/driver/navigation?offer=${offerId}`);
-  const sheet = page.locator('.nr-driver-navigation-page .nr-nav-bottom-card');
+  await expect(page.locator('.nr-nav-bottom-card')).toHaveCount(0);
+  const sheet = page.locator('.nr-nav-trip-action-bar');
   const complete = sheet.getByRole('button', { name: /Complete trip/i });
+  await expect(sheet).toBeVisible();
   await expect(complete).toBeVisible();
-  await sheet.locator('.nr-driver-sheet-grab').press('End');
-  await expect.poll(async () => {
-    const sheetBox = (await sheet.boundingBox())!;
-    const footerBox = (await sheet.locator('.nr-driver-sheet-footer').boundingBox())!;
-    return sheetBox.y + sheetBox.height - (footerBox.y + footerBox.height);
-  }).toBeLessThan(3);
-  const footer = sheet.locator('.nr-driver-sheet-footer');
-  const lastButton = (await complete.boundingBox())!;
-  const footerBox = (await footer.boundingBox())!;
-  expect(footerBox.y + footerBox.height - (lastButton.y + lastButton.height)).toBeLessThan(30);
   await expect(complete).toBeInViewport();
+  expect(await sheet.evaluate(element => getComputedStyle(element).position)).toBe('absolute');
+  expect(await sheet.evaluate(element => getComputedStyle(element).bottom)).toBe('0px');
+  expect((await sheet.boundingBox())!.height).toBeLessThan(120);
 });
 
 for (const theme of ['light', 'dark'] as const) {

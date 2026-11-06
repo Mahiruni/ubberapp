@@ -135,7 +135,7 @@ export function DriverWorkspace({
   const { resolvedTheme } = useDriverTheme();
   const [state, setState] = useState<DriverState>(emptyState);
   const [driverId, setDriverId] = useState("");
-  const [compactMapSheet, setCompactMapSheet] = useState(false);
+  const [compactMapSheet, setCompactMapSheet] = useState(true);
   const sheetDragStart = useRef<number | null>(null);
   const sheetDragMoved = useRef(false);
   const [loading, setLoading] = useState(true);
