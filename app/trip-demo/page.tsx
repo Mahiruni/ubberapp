@@ -1,7 +1,7 @@
 'use client';
 
-import { FlatMapBackdrop, useFlatMap } from '@/components/nexride/trip/flat-map';
-import { TripFlow } from '@/components/nexride/trip/trip-flow';
+import { FlatMapBackdrop, useFlatMap } from '../../components/nexride/trip/flat-map';
+import { TripFlow } from '../../components/nexride/trip/trip-flow';
 
 const PICKUP = { lngLat: [38.7578, 9.0108] as [number, number], label: 'Bole Medhanialem' };
 const DEST = { lngLat: [38.7469, 9.0302] as [number, number], label: 'Meskel Square' };
