@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Bybit Shell</string>
+    <string name="title_activity_main">Bybit Shell</string>
+    <string name="package_name">com.example.bybitshell</string>
+    <string name="custom_url_scheme">com.example.bybitshell</string>
+</resources>
