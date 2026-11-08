@@ -31,6 +31,7 @@ import "../../app/driver/driver-dashboard.css";
 import "../../app/driver/driver-home-v2.css";
 import "../../app/rider-home.css";
 import "./driver-home-floating.css";
+import "./driver-home-dock-pro.css";
 
 export type DriverScreen = "home" | "earnings" | "map" | "profile";
 type ReviewStatus = "draft" | "pending" | "approved" | "rejected" | "suspended";
@@ -708,45 +709,51 @@ export function DriverWorkspace({
     const bounded = boundedDriverDockHeight(height, viewport);
     const host = handle.closest<HTMLElement>(".biloo-driver-dock-host");
     host?.style.setProperty("--biloo-driver-dock-height", `${Math.round(bounded)}px`);
+    host?.style.setProperty("height", `${Math.round(bounded)}px`, "important");
     handle.setAttribute("aria-valuenow", String(Math.round(bounded / viewport * 100)));
     sheetHeightRef.current = bounded;
     return bounded;
   };
   const sheetDragStart = (event: React.PointerEvent<HTMLButtonElement>) => {
     if (!event.isPrimary || (event.pointerType === "mouse" && event.button !== 0) || sheetDrag.current) return;
-    event.preventDefault();
-    event.stopPropagation();
-    event.currentTarget.focus({ preventScroll: true });
-    const host = event.currentTarget.closest<HTMLElement>(".biloo-driver-dock-host");
+    const handle = event.currentTarget;
+    const host = handle.closest<HTMLElement>(".biloo-driver-dock-host");
     if (!host) return;
-    const viewport = driverDockViewport();
-    const height = applyDriverDockHeight(event.currentTarget, host.getBoundingClientRect().height, viewport);
-    sheetDrag.current = { pointerId: event.pointerId, startY: event.clientY, startHeight: height };
+    event.preventDefault();
+    event.stopPropagation();
+    const pointerId = event.pointerId;
+    const height = applyDriverDockHeight(handle, host.getBoundingClientRect().height, driverDockViewport());
+    sheetDrag.current = { pointerId, startY: event.clientY, startHeight: height };
     host.setAttribute("data-dragging", "true");
-    event.currentTarget.setPointerCapture(event.pointerId);
-  };
-  const sheetDragMove = (event: React.PointerEvent<HTMLButtonElement>) => {
-    const drag = sheetDrag.current;
-    if (!drag || drag.pointerId !== event.pointerId) return;
-    event.preventDefault();
-    event.stopPropagation();
-    const viewport = driverDockViewport();
-    applyDriverDockHeight(event.currentTarget, drag.startHeight + drag.startY - event.clientY, viewport);
-  };
-  const sheetDragEnd = (event: React.PointerEvent<HTMLButtonElement>, cancelled = false) => {
-    const drag = sheetDrag.current;
-    if (!drag || drag.pointerId !== event.pointerId) return;
-    event.preventDefault();
-    event.stopPropagation();
-    const viewport = driverDockViewport();
-    const current = cancelled ? drag.startHeight : sheetHeightRef.current ?? drag.startHeight;
-    const snapPoints = [0.34, 0.52, 0.74].map(ratio => boundedDriverDockHeight(viewport * ratio, viewport));
-    const settled = cancelled ? drag.startHeight : snapPoints.reduce((nearest, point) =>
-      Math.abs(point - current) < Math.abs(nearest - current) ? point : nearest, snapPoints[0]);
-    applyDriverDockHeight(event.currentTarget, settled, viewport);
-    event.currentTarget.closest<HTMLElement>(".biloo-driver-dock-host")?.removeAttribute("data-dragging");
-    sheetDrag.current = null;
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+    try { handle.setPointerCapture(pointerId); } catch { /* window listeners below keep the drag alive */ }
+    const detach = () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", finish);
+      window.removeEventListener("pointercancel", finish);
+    };
+    const move = (moveEvent: PointerEvent) => {
+      const drag = sheetDrag.current;
+      if (!drag || moveEvent.pointerId !== drag.pointerId) return;
+      moveEvent.preventDefault();
+      applyDriverDockHeight(handle, drag.startHeight + drag.startY - moveEvent.clientY, driverDockViewport());
+    };
+    const finish = (endEvent: PointerEvent) => {
+      const drag = sheetDrag.current;
+      if (!drag || endEvent.pointerId !== drag.pointerId) return;
+      detach();
+      const viewport = driverDockViewport();
+      const current = sheetHeightRef.current ?? drag.startHeight;
+      const snapPoints = [0.38, 0.58, 0.8].map(ratio => boundedDriverDockHeight(viewport * ratio, viewport));
+      const settled = snapPoints.reduce((nearest, point) =>
+        Math.abs(point - current) < Math.abs(nearest - current) ? point : nearest, snapPoints[0]);
+      applyDriverDockHeight(handle, settled, viewport);
+      host.removeAttribute("data-dragging");
+      sheetDrag.current = null;
+      try { if (handle.hasPointerCapture(pointerId)) handle.releasePointerCapture(pointerId); } catch { /* already released */ }
+    };
+    window.addEventListener("pointermove", move, { passive: false });
+    window.addEventListener("pointerup", finish);
+    window.addEventListener("pointercancel", finish);
   };
   const resizeDriverDockFromKeyboard = (event: React.KeyboardEvent<HTMLButtonElement>) => {
     const viewport = driverDockViewport();
@@ -815,10 +822,7 @@ export function DriverWorkspace({
             <button type="button" className="biloo-driver-dock-handle" role="slider"
               aria-label="Resize driver panel" aria-orientation="vertical"
               aria-valuemin={34} aria-valuemax={84} aria-valuenow={48}
-              onPointerDown={sheetDragStart} onPointerMove={sheetDragMove}
-              onPointerUp={event => sheetDragEnd(event)}
-              onPointerCancel={event => sheetDragEnd(event, true)}
-              onLostPointerCapture={event => sheetDragEnd(event, true)}
+              onPointerDown={sheetDragStart}
               onKeyDown={resizeDriverDockFromKeyboard}><span aria-hidden="true" /></button>
             <div className="biloo-driver-dock-meta">
               <span className="biloo-driver-dock-brand">BILOO DRIVER</span>

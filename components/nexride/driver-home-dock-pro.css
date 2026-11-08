@@ -1,0 +1,186 @@
+/*
+  BILOO DRIVER | Home dock, professional bottom sheet.
+  Presentation only. Same markup, same class names, same drag/swipe behaviour.
+  Loaded after driver-home-floating.css; every rule doubles .biloo-driver-floating-home
+  so it wins over earlier wrapper files regardless of load order.
+*/
+
+.biloo-driver-floating-home.biloo-driver-floating-home {
+  --dock-radius: 26px;
+  --dock-tile-radius: 16px;
+  --dock-ease: cubic-bezier(.2, .8, .2, 1);
+  --dock-handle: #cfd8e3;
+  --dock-shadow: 0 -1px 0 rgba(16, 45, 80, .05), 0 -14px 44px rgba(16, 45, 80, .16);
+  --dock-go: #087c57;
+  --dock-go-2: #0b9a6e;
+  --dock-stop: #c73542;
+  --dock-stop-2: #dd4a58;
+}
+.nr-driver-app-shell[data-theme="dark"] .biloo-driver-floating-home.biloo-driver-floating-home {
+  --dock-handle: #4a6685;
+  --dock-shadow: 0 -1px 0 rgba(255, 255, 255, .05), 0 -14px 44px rgba(0, 0, 0, .45);
+}
+
+/* ---- Sheet: anchored to the bottom edge, rounded top only ------------- */
+.nr-driver-app-shell[data-home="true"] .biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-host {
+  width: min(480px, 100%) !important;
+  bottom: var(--nr-native-bottom-inset, 0px) !important;
+  height: var(--biloo-driver-dock-height, 38dvh) !important;
+  border-radius: var(--dock-radius) var(--dock-radius) 0 0 !important;
+  box-shadow: var(--dock-shadow) !important;
+}
+.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock {
+  gap: 12px;
+  padding: 0 20px calc(16px + max(0px, env(safe-area-inset-bottom, 0px)));
+  border: 0;
+  border-top: 1px solid var(--dock-border);
+  border-radius: var(--dock-radius) var(--dock-radius) 0 0;
+  box-shadow: none;
+}
+
+/* ---- Grab zone: full-width, finger-sized, no clipped focus box -------- */
+.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-handle {
+  width: 100%;
+  min-height: 40px;
+  margin: 0 0 -6px;
+  border-radius: 0;
+  background: var(--dock-surface);
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-handle span {
+  width: 40px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--dock-handle);
+  transition: background-color .18s var(--dock-ease), width .18s var(--dock-ease);
+}
+.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-handle:active span {
+  width: 52px;
+  background: var(--dock-gold);
+}
+.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-handle:focus:not(:focus-visible) {
+  outline: none;
+}
+.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-handle:focus-visible {
+  outline: 2px solid var(--dock-gold);
+  outline-offset: -4px;
+}
+
+/* ---- Header row: brand + status pill ---------------------------------- */
+.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-brand {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .16em;
+  color: var(--dock-muted);
+}
+.nr-driver-app-shell[data-theme="dark"] .biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-brand {
+  color: var(--dock-gold);
+}
+.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-status {
+  gap: 7px;
+  padding: 6px 12px 6px 10px;
+  font-size: 12px;
+  font-weight: 750;
+}
+.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-status > span {
+  width: 8px;
+  height: 8px;
+  box-shadow: 0 0 0 3px rgba(184, 77, 82, .16);
+}
+.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-status[data-online="true"] > span {
+  box-shadow: 0 0 0 3px rgba(8, 124, 87, .18);
+}
+
+/* ---- Copy -------------------------------------------------------------- */
+.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-title {
+  margin: 2px 0 0;
+  font-size: clamp(24px, 6.4vw, 30px);
+  font-weight: 800;
+  letter-spacing: -.035em;
+  line-height: 1.12;
+}
+.nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-description {
+  margin: 0 0 4px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+/* ---- Availability swipe: clear primary action -------------------------- */
+.nr-driver-app-shell[data-home="true"] .biloo-driver-floating-home.biloo-driver-floating-home .nr-driver-availability-swipe {
+  height: 60px !important;
+  min-height: 60px !important;
+  border: 0 !important;
+  border-radius: 18px !important;
+  background: linear-gradient(135deg, var(--dock-go), var(--dock-go-2)) !important;
+  box-shadow: 0 8px 20px rgba(8, 124, 87, .28), inset 0 1px 0 rgba(255, 255, 255, .18) !important;
+}
+.nr-driver-app-shell[data-home="true"] .biloo-driver-floating-home.biloo-driver-floating-home .nr-driver-availability-swipe[data-online="false"] {
+  background: linear-gradient(135deg, var(--dock-stop), var(--dock-stop-2)) !important;
+  box-shadow: 0 8px 20px rgba(199, 53, 66, .28), inset 0 1px 0 rgba(255, 255, 255, .18) !important;
+}
+.nr-driver-app-shell[data-home="true"] .biloo-driver-floating-home.biloo-driver-floating-home .nr-driver-swipe-thumb {
+  width: 52px !important;
+  height: 52px !important;
+  border-radius: 14px !important;
+  touch-action: none;
+  box-shadow: 0 4px 12px rgba(7, 27, 48, .22) !important;
+}
+.nr-driver-app-shell[data-home="true"] .biloo-driver-floating-home.biloo-driver-floating-home .nr-driver-swipe-label {
+  font-size: clamp(16px, 4.4vw, 18px) !important;
+  letter-spacing: -.01em;
+}
+
+/* ---- Shortcuts: three tidy tiles instead of divider columns ------------ */
+.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-shortcuts {
+  gap: 10px;
+  margin-top: 2px;
+  padding-top: 0;
+  border-top: 0;
+}
+.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-shortcuts button,
+.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-shortcuts button + button {
+  min-height: 74px;
+  gap: 7px;
+  border: 1px solid var(--dock-border);
+  border-radius: var(--dock-tile-radius);
+  background: var(--dock-raised);
+  font-size: 12px;
+  font-weight: 750;
+  transition: transform .14s var(--dock-ease), background-color .18s var(--dock-ease), border-color .18s var(--dock-ease);
+}
+.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-shortcuts button svg {
+  color: var(--dock-text);
+}
+.nr-driver-app-shell[data-theme="dark"] .biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-shortcuts button svg {
+  color: var(--dock-gold);
+}
+.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-shortcuts button:active {
+  transform: scale(.97);
+  border-color: var(--dock-gold);
+}
+
+/* ---- Desktop: floating card, not a full-bleed sheet ------------------- */
+@media (min-width: 900px) {
+  .nr-driver-app-shell[data-home="true"] .biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-host {
+    width: 400px !important;
+    bottom: 24px !important;
+    border-radius: var(--dock-radius) !important;
+  }
+  .biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock {
+    border: 1px solid var(--dock-border);
+    border-radius: var(--dock-radius);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-handle span,
+  .biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-shortcuts button {
+    transition: none;
+  }
+  .biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-shortcuts button:active {
+    transform: none;
+  }
+}
