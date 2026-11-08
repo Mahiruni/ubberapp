@@ -1,0 +1,190 @@
+/*
+  BILOO DRIVER | Dark-first polish layer, November 2026
+  Visual direction: deep ink surfaces, quiet borders, large tabular numerals and
+  pill controls, with Biloo gold as the single primary accent and Biloo green for
+  positive values. Presentation only: no component, route, GPS, dispatch or
+  bottom-sheet behaviour is changed here.
+
+  Every rule doubles the shell class so it outranks the earlier wrapper files
+  regardless of stylesheet load order.
+*/
+
+/* ---- Tokens ---------------------------------------------------------- */
+.nr-driver-app-shell.nr-driver-app-shell {
+  --driver-radius-card: 18px;
+  --driver-radius-pill: 999px;
+  --driver-ease: cubic-bezier(.2, .8, .2, 1);
+  --driver-gold: #f9c449;
+  --driver-gold-ink: #231a02;
+  --driver-up: #00c878;
+  --driver-down: #f6465d;
+}
+
+.nr-driver-app-shell.nr-driver-app-shell[data-theme="dark"] {
+  --driver-bg: #0a0f1a;
+  --driver-surface: #111a2b;
+  --driver-surface-elevated: #172338;
+  --driver-overlay: #111a2b;
+  --driver-border: #223048;
+  --driver-text-primary: #eef2f8;
+  --driver-text-secondary: #8d9db6;
+  --driver-accent: var(--driver-gold);
+  --driver-success: var(--driver-up);
+  --driver-danger: var(--driver-down);
+  --driver-warning: #f0b90b;
+  --driver-header-bg: rgba(10, 15, 26, .88);
+  --driver-nav-bg: #111a2b;
+  --driver-shadow: 0 1px 0 rgba(255, 255, 255, .03) inset, 0 12px 28px rgba(0, 0, 0, .28);
+  color-scheme: dark;
+}
+
+/* Light theme keeps its palette; only the shadow is softened to match. */
+.nr-driver-app-shell.nr-driver-app-shell[data-theme="light"] {
+  --driver-shadow: 0 1px 2px rgba(16, 41, 79, .05), 0 8px 22px rgba(16, 41, 79, .06);
+}
+
+/* ---- Surfaces -------------------------------------------------------- */
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-shell-content {
+  background: var(--driver-bg) !important;
+}
+
+.nr-driver-app-shell.nr-driver-app-shell :where(
+  .nr-driver-card, .nr-driver-operational-card, .nr-driver-profile-hero-v2,
+  .nr-driver-profile-section, .nr-profile-panel, .nr-earnings-total-card,
+  .nr-earnings-metric, .nr-earnings-report-action, .nr-report-section,
+  .nr-report-summary-card, .nr-driver-activity-summary
+) {
+  border-radius: var(--driver-radius-card) !important;
+  border-color: var(--driver-border) !important;
+  box-shadow: var(--driver-shadow) !important;
+}
+
+.nr-driver-app-shell.nr-driver-app-shell[data-theme="dark"] :where(
+  .nr-driver-card, .nr-driver-operational-card, .nr-driver-profile-hero-v2,
+  .nr-driver-profile-section, .nr-profile-panel, .nr-earnings-total-card,
+  .nr-earnings-metric, .nr-report-section, .nr-report-summary-card,
+  .nr-driver-activity-summary
+) {
+  background: linear-gradient(180deg, var(--driver-surface-elevated), var(--driver-surface)) !important;
+}
+
+/* ---- Header: quiet glass bar ---------------------------------------- */
+.nr-driver-app-shell.nr-driver-app-shell[data-theme] .nr-driver-global-header[data-map] {
+  backdrop-filter: blur(18px) saturate(1.25);
+  -webkit-backdrop-filter: blur(18px) saturate(1.25);
+  box-shadow: none;
+}
+
+/* ---- Earnings -------------------------------------------------------- */
+.nr-driver-app-shell.nr-driver-app-shell .nr-earnings-total-card {
+  border-top: 1px solid var(--driver-border) !important;
+  position: relative;
+  overflow: hidden;
+}
+.nr-driver-app-shell.nr-driver-app-shell .nr-earnings-total-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--driver-gold), rgba(249, 196, 73, 0));
+  pointer-events: none;
+}
+
+.nr-driver-app-shell.nr-driver-app-shell .nr-earnings-total {
+  font-size: clamp(34px, 11vw, 44px);
+  font-weight: 800;
+  letter-spacing: -.035em;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+}
+
+.nr-driver-app-shell.nr-driver-app-shell .nr-earnings-metric strong,
+.nr-driver-app-shell.nr-driver-app-shell .nr-report-summary-card strong {
+  font-weight: 750;
+  letter-spacing: -.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Period switcher becomes a segmented pill control. */
+.nr-driver-app-shell.nr-driver-app-shell .nr-earnings-periods {
+  padding: 4px;
+  gap: 2px;
+  border-radius: var(--driver-radius-pill) !important;
+}
+.nr-driver-app-shell.nr-driver-app-shell .nr-earnings-periods button {
+  min-height: 38px;
+  border-radius: var(--driver-radius-pill);
+  font-weight: 650;
+  transition: background-color .2s var(--driver-ease), color .2s var(--driver-ease), transform .12s var(--driver-ease);
+}
+.nr-driver-app-shell.nr-driver-app-shell .nr-earnings-periods button.active {
+  background: var(--driver-gold) !important;
+  color: var(--driver-gold-ink) !important;
+  font-weight: 800;
+}
+
+.nr-driver-app-shell.nr-driver-app-shell .nr-earnings-chart-line {
+  stroke: var(--driver-gold) !important;
+  stroke-width: 2.25px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.nr-driver-app-shell.nr-driver-app-shell .nr-earnings-chart-dot {
+  stroke: var(--driver-gold) !important;
+}
+
+.nr-driver-app-shell.nr-driver-app-shell[data-theme="dark"] .nr-earnings-metric-icon {
+  background: rgba(249, 196, 73, .12) !important;
+  color: var(--driver-gold) !important;
+}
+
+/* ---- Controls: tactile press, clear focus --------------------------- */
+.nr-driver-app-shell.nr-driver-app-shell :where(button, a[role="button"], .nr-driver-menu-row) {
+  -webkit-tap-highlight-color: transparent;
+}
+.nr-driver-app-shell.nr-driver-app-shell :where(
+  .nr-earnings-periods button, .nr-driver-icon-btn, .nr-earnings-report-action,
+  .nr-driver-menu-row
+):active {
+  transform: scale(.975);
+}
+.nr-driver-app-shell.nr-driver-app-shell :where(button, a, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--driver-gold);
+  outline-offset: 2px;
+}
+
+.nr-driver-app-shell.nr-driver-app-shell[data-theme="dark"] .nr-driver-menu-panel {
+  background: var(--driver-surface) !important;
+  border-color: var(--driver-border) !important;
+}
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-menu-row {
+  border-radius: 14px;
+  transition: background-color .18s var(--driver-ease), transform .12s var(--driver-ease);
+}
+.nr-driver-app-shell.nr-driver-app-shell[data-theme="dark"] .nr-driver-menu-row:hover {
+  background: var(--driver-surface-elevated);
+}
+
+/* ---- Entrance motion ------------------------------------------------- */
+@keyframes biloo-driver-rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+.nr-driver-app-shell.nr-driver-app-shell :where(
+  .nr-earnings-total-card, .nr-earnings-metric, .nr-profile-panel,
+  .nr-driver-profile-section, .nr-report-section
+) {
+  animation: biloo-driver-rise .32s var(--driver-ease) both;
+}
+.nr-driver-app-shell.nr-driver-app-shell .nr-earnings-metric:nth-child(2) { animation-delay: .04s; }
+.nr-driver-app-shell.nr-driver-app-shell .nr-earnings-metric:nth-child(3) { animation-delay: .08s; }
+.nr-driver-app-shell.nr-driver-app-shell .nr-earnings-metric:nth-child(4) { animation-delay: .12s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .nr-driver-app-shell.nr-driver-app-shell * {
+    animation-duration: .001ms !important;
+    animation-delay: 0s !important;
+    transition-duration: .001ms !important;
+  }
+  .nr-driver-app-shell.nr-driver-app-shell :active { transform: none !important; }
+}

@@ -1,0 +1,130 @@
+/*
+  BILOO RIDER | Wallet polish layer, November 2026
+  Scoped to the Payments (wallet) screen only through .nr-wallet-page, so the
+  other pages that share .nr-support-page keep their current appearance.
+  Presentation only: payment logic and copy are untouched.
+*/
+
+.nr-support-page.nr-wallet-page {
+  --wallet-gold: #f9c449;
+  --wallet-green: #00c878;
+  --wallet-ease: cubic-bezier(.2, .8, .2, 1);
+}
+
+/* ---- Dark: ink surfaces, quiet borders -------------------------------- */
+/* Earlier theme files colour this route with !important, so the dark rules
+   below raise specificity (.nr-app prefix) and set the contrast variables too. */
+.nr-app.nr-support-page.nr-wallet-page[data-theme="dark"] {
+  --biloo-contrast-bg: #0a0f1a;
+  --biloo-contrast-surface: #111a2b;
+  --biloo-contrast-border: #223048;
+  --biloo-contrast-text: #eef2f8;
+  --biloo-contrast-muted: #8d9db6;
+  background: #0a0f1a !important;
+  color: #eef2f8 !important;
+}
+.nr-app.nr-support-page.nr-wallet-page[data-theme="dark"] :is(
+  .nr-support-card, .nr-support-state, .nr-support-loading, .nr-payment-method
+) {
+  background: transparent !important;
+  border-color: #223048 !important;
+  color: #eef2f8 !important;
+  box-shadow: none !important;
+}
+.nr-app.nr-support-page.nr-wallet-page[data-theme="dark"] :is(.nr-support-card, .nr-support-state, .nr-support-loading) {
+  background: linear-gradient(180deg, #172338, #111a2b) !important;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, .03) inset, 0 12px 28px rgba(0, 0, 0, .28) !important;
+}
+.nr-app.nr-support-page.nr-wallet-page[data-theme="dark"] :is(.nr-support-back, .nr-support-icon-btn) {
+  background: #111a2b !important;
+  border-color: #223048 !important;
+  color: #eef2f8 !important;
+}
+.nr-app.nr-support-page.nr-wallet-page[data-theme="dark"] :is(
+  .nr-support-head p, .nr-support-head .kicker, .nr-payment-method small,
+  .nr-payment-notice, .nr-wallet-balance small, .nr-wallet-balance p,
+  .nr-payment-issue-row span
+) {
+  color: #8d9db6 !important;
+}
+.nr-app.nr-support-page.nr-wallet-page[data-theme="dark"] .nr-payment-issue-row {
+  border-top-color: #223048;
+}
+.nr-app.nr-support-page.nr-wallet-page[data-theme="dark"] .nr-payment-method-icon {
+  background: rgba(0, 200, 120, .12) !important;
+  border-color: transparent !important;
+  color: var(--wallet-green) !important;
+}
+.nr-app.nr-support-page.nr-wallet-page[data-theme="dark"] .nr-payment-selected {
+  background: rgba(0, 200, 120, .14) !important;
+  border-color: transparent !important;
+  color: #3ddc97 !important;
+}
+.nr-app.nr-support-page.nr-wallet-page[data-theme="dark"] .nr-support-loading span {
+  background: #1b2a42;
+}
+
+/* ---- Shared (light and dark) ------------------------------------------ */
+.nr-support-page.nr-wallet-page .nr-support-head h1 {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -.035em;
+}
+.nr-support-page.nr-wallet-page .nr-support-card {
+  border-radius: 18px;
+  overflow: hidden;
+}
+.nr-support-page.nr-wallet-page .nr-wallet-balance strong {
+  font-size: clamp(34px, 11vw, 44px);
+  font-weight: 800;
+  letter-spacing: -.035em;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+}
+.nr-support-page.nr-wallet-page .nr-payment-method {
+  min-height: 64px;
+  transition: background-color .18s var(--wallet-ease);
+}
+.nr-support-page.nr-wallet-page .nr-payment-method + .nr-payment-method {
+  border-top: 1px solid rgba(141, 157, 182, .18);
+}
+.nr-support-page.nr-wallet-page .nr-payment-method-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+}
+.nr-support-page.nr-wallet-page .nr-payment-selected {
+  padding: 6px 10px;
+  letter-spacing: .06em;
+}
+.nr-support-page.nr-wallet-page .nr-payment-pay-button {
+  background: var(--wallet-gold);
+  color: #231a02;
+  border-radius: 999px;
+  padding: 9px 14px;
+  transition: transform .12s var(--wallet-ease), filter .18s var(--wallet-ease);
+}
+.nr-support-page.nr-wallet-page .nr-payment-pay-button:active:not(:disabled) {
+  transform: scale(.97);
+}
+.nr-support-page.nr-wallet-page :where(button, a):focus-visible {
+  outline: 2px solid var(--wallet-gold);
+  outline-offset: 2px;
+}
+
+@keyframes biloo-wallet-rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+.nr-support-page.nr-wallet-page .nr-support-card {
+  animation: biloo-wallet-rise .32s var(--wallet-ease) both;
+}
+.nr-support-page.nr-wallet-page .nr-support-card:nth-of-type(2) { animation-delay: .05s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .nr-support-page.nr-wallet-page * {
+    animation-duration: .001ms !important;
+    animation-delay: 0s !important;
+    transition-duration: .001ms !important;
+  }
+}

@@ -10,6 +10,7 @@ import { nexrideApiHeaders } from "../../../lib/nexride-api-auth";
 import "../../nexride.css";
 import "../supporting.css";
 import "../../detail-system.css";
+import "../wallet-bybit-polish.css";
 
 type PaymentIssue = {
   id: string;
@@ -135,7 +136,7 @@ export default function RiderWalletPage() {
   }
 
   return (
-    <main className="nr-app nr-support-page" data-theme={theme} data-mode="rider">
+    <main className="nr-app nr-support-page nr-wallet-page" data-theme={theme} data-mode="rider">
       <div className="nr-support-wrap">
         <header className="nr-support-head">
           <button className="nr-support-back" onClick={() => router.replace("/")} aria-label="Back to Biloo">

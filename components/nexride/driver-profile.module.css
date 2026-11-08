@@ -13,11 +13,11 @@
   font-family:var(--nr-font-latin,Inter,Arial,sans-serif); line-height:1.5;
 }
 :global(.nr-driver-app-shell[data-theme="dark"]) .account {
-  --acct-bg:#0c1c32; --acct-surface:#142942; --acct-raised:#1d3653;
-  --acct-ink:#f2f6fc; --acct-muted:#b2c1d3; --acct-line:#344960;
-  --acct-gold-soft:#3a321e; --acct-success:#91e0b9; --acct-success-bg:#193f35;
-  --acct-warning:#f5d37d; --acct-warning-bg:#43371e;
-  --acct-danger:#ffb0bc; --acct-danger-bg:#442936;
+  --acct-bg:#0a0f1a; --acct-surface:#111a2b; --acct-raised:#172338;
+  --acct-ink:#eef2f8; --acct-muted:#8d9db6; --acct-line:#223048;
+  --acct-gold-soft:#2b2410; --acct-success:#3ddc97; --acct-success-bg:#0f2a24;
+  --acct-warning:#f0b90b; --acct-warning-bg:#2b2410;
+  --acct-danger:#ff8a98; --acct-danger-bg:#2e1820;
 }
 /* These route-only rules remove inherited dashboard framing. Other Driver screens keep their own layout. */
 :global(.nr-driver-app-shell[data-theme]):has(.account) :global(.nr-driver-shell-content),
@@ -25,15 +25,15 @@
 :global(.nr-driver-app-shell[data-theme]):has(.account) :global(.nr-driver-page) { background:#f4f6fa!important; }
 :global(.nr-driver-app-shell[data-theme="dark"]):has(.account) :global(.nr-driver-shell-content),
 :global(.nr-driver-app-shell[data-theme="dark"]):has(.account) :global(.nr-app[data-mode="driver"]),
-:global(.nr-driver-app-shell[data-theme="dark"]):has(.account) :global(.nr-driver-page) { background:#0c1c32!important; }
+:global(.nr-driver-app-shell[data-theme="dark"]):has(.account) :global(.nr-driver-page) { background:#0a0f1a!important; }
 :global(.nr-driver-app-shell[data-theme]):has(.account) :global(.nr-app[data-mode="driver"]) { display:block!important; width:100%!important; max-width:none!important; padding:0!important; margin:0!important; }
 :global(.nr-driver-app-shell[data-theme]):has(.account) :global(.nr-driver-page) { width:100%!important; max-width:none!important; box-sizing:border-box; margin:0!important; padding:24px 20px 30px!important; min-height:calc(100dvh - var(--driver-header-total,62px))!important; }
 :global(.nr-driver-app-shell[data-theme]):has(.account) :global(.nr-driver-global-header) { background:#ffffff!important; border-color:#dfe6ee!important; --driver-text-primary:#102c4d; --driver-text-secondary:#5d6f85; }
-:global(.nr-driver-app-shell[data-theme="dark"]):has(.account) :global(.nr-driver-global-header) { background:#0c1c32!important; border-color:#344960!important; --driver-text-primary:#f2f6fc; --driver-text-secondary:#b2c1d3; }
+:global(.nr-driver-app-shell[data-theme="dark"]):has(.account) :global(.nr-driver-global-header) { background:#0a0f1a!important; border-color:#223048!important; --driver-text-primary:#eef2f8; --driver-text-secondary:#8d9db6; }
 :global(.nr-driver-app-shell[data-theme]):has(.account) :global(.nr-driver-global-header-title strong),
 :global(.nr-driver-app-shell[data-theme]):has(.account) :global(.nr-driver-global-icon-button) { color:var(--driver-text-primary)!important; }
 :global(.nr-driver-app-shell[data-theme]):has(.account) :global(.nr-driver-global-header .nr-driver-menu-trigger>span) { background:#102c4d!important; }
-:global(.nr-driver-app-shell[data-theme="dark"]):has(.account) :global(.nr-driver-global-header .nr-driver-menu-trigger>span) { background:#f2f6fc!important; }
+:global(.nr-driver-app-shell[data-theme="dark"]):has(.account) :global(.nr-driver-global-header .nr-driver-menu-trigger>span) { background:#eef2f8!important; }
 
 :global(.nr-driver-app-shell[data-theme]) .account :is(h1,h2,h3,strong) { color:var(--acct-ink)!important; }
 :global(.nr-driver-app-shell[data-theme]) .account p { color:var(--acct-muted)!important; }
