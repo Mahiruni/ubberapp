@@ -838,7 +838,6 @@ export function DriverWorkspace({
         />
 
 
-        <span className="biloo-driver-home-wordmark" aria-label="Biloo">biloo</span>
         <div
           className="nr-driver-home-swipe biloo-driver-dock-host"
           data-map-input-boundary="true"
