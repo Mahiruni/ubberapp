@@ -21,11 +21,23 @@
   --dock-shadow: 0 -1px 0 rgba(255, 255, 255, .05), 0 -14px 44px rgba(0, 0, 0, .45);
 }
 
+/* ---- Standard brand font (Inter, system fallbacks; Amharic keeps its own face) */
+.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-host,
+.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-host :where(button, h1, p, span) {
+  font-family: var(--nr-font-latin, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif);
+}
+html[lang="am"] .biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-host,
+html[lang="am"] .biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-host :where(button, h1, p, span) {
+  font-family: var(--nr-font-amharic, var(--nr-font-latin, Inter, sans-serif));
+}
+
 /* ---- Sheet: anchored to the bottom edge, rounded top only ------------- */
 .nr-driver-app-shell[data-home="true"] .biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-host {
   width: min(480px, 100%) !important;
   bottom: var(--nr-native-bottom-inset, 0px) !important;
-  height: var(--biloo-driver-dock-height, 38dvh) !important;
+  height: var(--biloo-driver-dock-height, 40dvh) !important;
+  min-height: 25dvh !important;
+  max-height: 75dvh !important;
   border-radius: var(--dock-radius) var(--dock-radius) 0 0 !important;
   box-shadow: var(--dock-shadow) !important;
 }

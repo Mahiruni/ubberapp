@@ -1,0 +1,212 @@
+/*
+  BILOO DRIVER | Operational sheets, professional redesign.
+  Covers the ride-request sheet and the live-trip sheet. Presentation only:
+  no trip, dispatch, GPS or action logic changes here.
+
+  One shared sheet language with the Driver home dock:
+  - Standard brand type: Inter with system fallbacks (Amharic keeps its own face).
+  - Biloo navy ink, gold accent, emerald for go, red for stop.
+  - Snaps: 25%, 50% and 75% of the screen; never taller than 75%.
+  - Height follows the content up to the chosen snap.
+
+  Imported after driver-wrapper-brand.css. Selectors double their page and shell
+  classes so they outrank earlier wrapper files regardless of load order.
+*/
+
+/* ---- Tokens ------------------------------------------------------------ */
+.nr-driver-app-shell.nr-driver-app-shell :is(.nr-driver-request-page, .nr-driver-navigation-page) {
+  --sheet-font: var(--nr-font-latin, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif);
+  --sheet-radius: 28px;
+  --sheet-tile-radius: 16px;
+  --sheet-ease: cubic-bezier(.2, .8, .2, 1);
+  --sheet-ink: var(--trip-text, #102334);
+  --sheet-muted: var(--trip-muted, #667587);
+  --sheet-line: var(--trip-border, #e4eaf0);
+  --sheet-tile: var(--trip-subtle, #f5f7f9);
+  --sheet-gold: #f9c449;
+  --sheet-handle: #cfd8e3;
+  --sheet-shadow: 0 -1px 0 rgba(16, 45, 80, .05), 0 -16px 48px rgba(16, 45, 80, .18);
+}
+.nr-driver-app-shell[data-theme="dark"].nr-driver-app-shell :is(.nr-driver-request-page, .nr-driver-navigation-page) {
+  --sheet-handle: #4a6685;
+  --sheet-shadow: 0 -1px 0 rgba(255, 255, 255, .05), 0 -16px 48px rgba(0, 0, 0, .5);
+}
+
+/* ---- Sheet surface ------------------------------------------------------ */
+.nr-driver-app-shell.nr-driver-app-shell :is(.nr-driver-request-page, .nr-driver-navigation-page)
+  :is(.nr-request-sheet, .nr-nav-bottom-card).nr-driver-sheet {
+  font-family: var(--sheet-font);
+  border: 0 !important;
+  border-top: 1px solid var(--sheet-line) !important;
+  border-radius: var(--sheet-radius) var(--sheet-radius) 0 0 !important;
+  box-shadow: var(--sheet-shadow) !important;
+  /* Content decides the height; the snap (25/50/75%) is the ceiling, 75% is the hard cap. */
+  max-height: min(
+    75dvh,
+    calc(100dvh - var(--driver-header-total, 56px) - 8px),
+    max(var(--nr-driver-sheet-height, 50dvh), var(--nr-driver-footer-floor, 132px))
+  ) !important;
+  transition: max-height 280ms var(--sheet-ease) !important;
+}
+.nr-driver-app-shell.nr-driver-app-shell :is(.nr-driver-request-page, .nr-driver-navigation-page)
+  :is(.nr-request-sheet, .nr-nav-bottom-card).nr-driver-sheet[data-dragging="true"] {
+  transition: none !important;
+}
+.nr-driver-app-shell.nr-driver-app-shell :is(.nr-driver-request-page, .nr-driver-navigation-page)
+  .nr-driver-sheet :where(button, input, select, textarea) {
+  font-family: inherit;
+}
+html[lang="am"] .nr-driver-app-shell.nr-driver-app-shell :is(.nr-driver-request-page, .nr-driver-navigation-page)
+  :is(.nr-request-sheet, .nr-nav-bottom-card).nr-driver-sheet {
+  font-family: var(--nr-font-amharic, var(--sheet-font));
+}
+
+/* ---- Grab handle: finger-sized, quiet until pressed ---------------------- */
+.nr-driver-app-shell.nr-driver-app-shell :is(.nr-driver-request-page, .nr-driver-navigation-page)
+  .nr-driver-sheet > .nr-driver-sheet-grab {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 36px !important;
+  width: 100% !important;
+  height: 36px !important;
+  min-height: 36px !important;
+  background: transparent !important;
+  touch-action: none !important;
+  cursor: ns-resize;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.nr-driver-app-shell.nr-driver-app-shell :is(.nr-driver-request-page, .nr-driver-navigation-page)
+  .nr-driver-sheet > .nr-driver-sheet-grab > span {
+  display: block !important;
+  width: 40px !important;
+  height: 5px !important;
+  border-radius: 999px !important;
+  background: var(--sheet-handle) !important;
+  opacity: 1 !important;
+  transition: width .18s var(--sheet-ease), background-color .18s var(--sheet-ease) !important;
+}
+.nr-driver-app-shell.nr-driver-app-shell :is(.nr-driver-request-page, .nr-driver-navigation-page)
+  .nr-driver-sheet > .nr-driver-sheet-grab:active > span {
+  width: 52px !important;
+  background: var(--sheet-gold) !important;
+}
+.nr-driver-app-shell.nr-driver-app-shell :is(.nr-driver-request-page, .nr-driver-navigation-page)
+  .nr-driver-sheet > .nr-driver-sheet-grab:focus:not(:focus-visible) {
+  outline: none !important;
+}
+.nr-driver-app-shell.nr-driver-app-shell :is(.nr-driver-request-page, .nr-driver-navigation-page)
+  .nr-driver-sheet > .nr-driver-sheet-grab:focus-visible {
+  outline: 2px solid var(--sheet-gold) !important;
+  outline-offset: -4px !important;
+}
+
+/* ---- Content ----------------------------------------------------------- */
+.nr-driver-app-shell.nr-driver-app-shell :is(.nr-driver-request-page, .nr-driver-navigation-page)
+  .nr-driver-sheet > .nr-driver-sheet-content {
+  padding: 2px 20px 14px !important;
+  color: var(--sheet-ink);
+}
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-request-page .nr-request-eyebrow {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--sheet-muted);
+}
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-request-page .nr-request-heading {
+  font-size: clamp(22px, 6vw, 26px);
+  font-weight: 800;
+  letter-spacing: -.03em;
+  line-height: 1.15;
+  color: var(--sheet-ink);
+}
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-request-page .nr-request-offer-value {
+  font-size: clamp(30px, 9vw, 38px);
+  font-weight: 850;
+  letter-spacing: -.04em;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+  color: var(--sheet-ink);
+}
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-request-page :is(.nr-request-trip-facts, .nr-request-traffic, .nr-request-approach) {
+  border-radius: var(--sheet-tile-radius);
+  font-variant-numeric: tabular-nums;
+}
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-current-destination small {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--sheet-muted);
+}
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-navigation-page .nr-nav-current-destination h1 {
+  font-size: clamp(19px, 5.4vw, 22px);
+  font-weight: 800;
+  letter-spacing: -.025em;
+  line-height: 1.2;
+  color: var(--sheet-ink);
+}
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-navigation-page .biloo-driver-trip-details > summary {
+  border-radius: 18px;
+}
+
+/* ---- Pinned footer: always visible, clearly the decision area ---------- */
+.nr-driver-app-shell.nr-driver-app-shell :is(.nr-driver-request-page, .nr-driver-navigation-page)
+  .nr-driver-sheet > .nr-driver-sheet-footer {
+  padding: 12px 16px calc(12px + max(0px, env(safe-area-inset-bottom, 0px))) !important;
+  border-top: 1px solid var(--sheet-line) !important;
+  box-shadow: 0 -10px 22px rgba(16, 45, 80, .06) !important;
+}
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-request-page
+  .nr-driver-sheet-footer .nr-request-actions :is(.nr-request-accept, .nr-request-pass, .nr-request-decline),
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-navigation-page
+  .nr-driver-sheet-footer .nr-nav-pinned-actions :is(.nr-nav-stage-primary, .nr-nav-stage-secondary) {
+  border-radius: var(--sheet-tile-radius) !important;
+  font-family: inherit;
+  font-weight: 800;
+  letter-spacing: -.01em;
+  transition: transform .14s var(--sheet-ease), box-shadow .18s var(--sheet-ease), background-color .18s var(--sheet-ease) !important;
+}
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-request-page
+  .nr-driver-sheet-footer .nr-request-actions > .nr-request-accept {
+  min-height: 56px !important;
+  font-size: 17px;
+  box-shadow: 0 8px 20px rgba(249, 196, 73, .36) !important;
+}
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-navigation-page
+  .nr-driver-sheet-footer .nr-nav-pinned-actions .nr-nav-stage-primary {
+  min-height: 56px !important;
+  font-size: 17px;
+  box-shadow: 0 8px 20px rgba(16, 45, 80, .2) !important;
+}
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-request-page
+  .nr-driver-sheet-footer .nr-request-actions :is(.nr-request-accept, .nr-request-pass, .nr-request-decline):active:not(:disabled),
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-navigation-page
+  .nr-driver-sheet-footer .nr-nav-pinned-actions :is(.nr-nav-stage-primary, .nr-nav-stage-secondary):active:not(:disabled) {
+  transform: scale(.98);
+}
+
+/* ---- Desktop: floating card on the side, not a full-bleed sheet --------- */
+@media (min-width: 760px) {
+  .nr-driver-app-shell.nr-driver-app-shell :is(.nr-driver-request-page, .nr-driver-navigation-page)
+    :is(.nr-request-sheet, .nr-nav-bottom-card).nr-driver-sheet {
+    border-radius: var(--sheet-radius) !important;
+    border: 1px solid var(--sheet-line) !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nr-driver-app-shell.nr-driver-app-shell :is(.nr-driver-request-page, .nr-driver-navigation-page)
+    :is(.nr-request-sheet, .nr-nav-bottom-card).nr-driver-sheet,
+  .nr-driver-app-shell.nr-driver-app-shell :is(.nr-driver-request-page, .nr-driver-navigation-page)
+    .nr-driver-sheet > .nr-driver-sheet-grab > span,
+  .nr-driver-app-shell.nr-driver-app-shell .nr-driver-sheet-footer :is(button) {
+    transition: none !important;
+  }
+  .nr-driver-app-shell.nr-driver-app-shell .nr-driver-sheet-footer button:active:not(:disabled) {
+    transform: none !important;
+  }
+}

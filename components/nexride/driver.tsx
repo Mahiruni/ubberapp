@@ -138,6 +138,7 @@ export function DriverWorkspace({
   const [driverId, setDriverId] = useState("");
   const sheetDrag = useRef<null | { pointerId: number; startY: number; startHeight: number }>(null);
   const sheetHeightRef = useRef<number | null>(null);
+  const dockAutoFit = useRef(true);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState("");
@@ -378,6 +379,38 @@ export function DriverWorkspace({
   const verified = state.reviewStatus === "approved";
   const locationReady = locationPermission === "granted";
   const canGoOnline = verified && locationReady;
+
+  // The home dock opens just tall enough for its content (25% to 75% of the screen)
+  // until the Driver chooses a snap with the handle.
+  useEffect(() => {
+    let frame = 0;
+    const fit = () => {
+      if (!dockAutoFit.current) return;
+      const host = document.querySelector<HTMLElement>(".biloo-driver-dock-host");
+      const dock = host?.querySelector<HTMLElement>(".biloo-driver-dock");
+      if (!host || !dock) return;
+      const viewport = Math.max(1, window.visualViewport?.height || window.innerHeight);
+      const target = Math.round(Math.min(Math.max(dock.scrollHeight + 2, viewport * 0.25), viewport * 0.75));
+      host.style.setProperty("--biloo-driver-dock-height", `${target}px`);
+      host.style.setProperty("height", `${target}px`, "important");
+      sheetHeightRef.current = target;
+    };
+    const schedule = () => { cancelAnimationFrame(frame); frame = requestAnimationFrame(fit); };
+    schedule();
+    const settle = window.setTimeout(schedule, 300);
+    const dock = document.querySelector<HTMLElement>(".biloo-driver-dock");
+    const resizer = typeof ResizeObserver === "undefined" || !dock ? null : new ResizeObserver(schedule);
+    dock?.querySelectorAll(":scope > *").forEach(child => resizer?.observe(child));
+    window.addEventListener("resize", schedule);
+    window.visualViewport?.addEventListener("resize", schedule);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.clearTimeout(settle);
+      resizer?.disconnect();
+      window.removeEventListener("resize", schedule);
+      window.visualViewport?.removeEventListener("resize", schedule);
+    };
+  }, [loading, state.online, verified, error, alertPermission, locationPermission, mapLocation.status]);
 
   const block = useMemo(() => {
     if (!verified) return verificationCopy(state.reviewStatus, state.rejectionReason);
@@ -704,7 +737,7 @@ export function DriverWorkspace({
 
   const driverDockViewport = () => Math.max(1, window.visualViewport?.height || window.innerHeight);
   const boundedDriverDockHeight = (height: number, viewport: number) =>
-    Math.min(Math.max(height, viewport * 0.34), viewport * 0.84);
+    Math.min(Math.max(height, viewport * 0.25), viewport * 0.75);
   const applyDriverDockHeight = (handle: HTMLButtonElement, height: number, viewport: number) => {
     const bounded = boundedDriverDockHeight(height, viewport);
     const host = handle.closest<HTMLElement>(".biloo-driver-dock-host");
@@ -721,6 +754,7 @@ export function DriverWorkspace({
     if (!host) return;
     event.preventDefault();
     event.stopPropagation();
+    dockAutoFit.current = false;
     const pointerId = event.pointerId;
     const height = applyDriverDockHeight(handle, host.getBoundingClientRect().height, driverDockViewport());
     sheetDrag.current = { pointerId, startY: event.clientY, startHeight: height };
@@ -743,7 +777,7 @@ export function DriverWorkspace({
       detach();
       const viewport = driverDockViewport();
       const current = sheetHeightRef.current ?? drag.startHeight;
-      const snapPoints = [0.38, 0.58, 0.8].map(ratio => boundedDriverDockHeight(viewport * ratio, viewport));
+      const snapPoints = [0.25, 0.5, 0.75].map(ratio => boundedDriverDockHeight(viewport * ratio, viewport));
       const settled = snapPoints.reduce((nearest, point) =>
         Math.abs(point - current) < Math.abs(nearest - current) ? point : nearest, snapPoints[0]);
       applyDriverDockHeight(handle, settled, viewport);
@@ -762,9 +796,10 @@ export function DriverWorkspace({
     const current = host.getBoundingClientRect().height || viewport * 0.48;
     const next = event.key === "ArrowUp" ? current + viewport * 0.1
       : event.key === "ArrowDown" ? current - viewport * 0.1
-        : event.key === "Home" ? viewport * 0.34
-          : event.key === "End" ? viewport * 0.84 : null;
+        : event.key === "Home" ? viewport * 0.25
+          : event.key === "End" ? viewport * 0.75 : null;
     if (next === null) return;
+    dockAutoFit.current = false;
     event.preventDefault();
     applyDriverDockHeight(event.currentTarget, next, viewport);
   };
@@ -821,7 +856,7 @@ export function DriverWorkspace({
           <section className="biloo-driver-dock" aria-label={say("Driver controls", "የአሽከርካሪ መቆጣጠሪያዎች")}>
             <button type="button" className="biloo-driver-dock-handle" role="slider"
               aria-label="Resize driver panel" aria-orientation="vertical"
-              aria-valuemin={34} aria-valuemax={84} aria-valuenow={48}
+              aria-valuemin={25} aria-valuemax={75} aria-valuenow={50}
               onPointerDown={sheetDragStart}
               onKeyDown={resizeDriverDockFromKeyboard}><span aria-hidden="true" /></button>
             <div className="biloo-driver-dock-meta">

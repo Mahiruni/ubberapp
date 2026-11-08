@@ -2,6 +2,7 @@
 
 import { useState, type ReactNode } from "react";
 import { Icon } from "./ui";
+import { useDriverSheet } from "./use-driver-sheet";
 import "./driver-trip-guidance.css";
 
 function ManeuverIcon({ type, modifier }: { type?: string; modifier?: string }) {
@@ -35,10 +36,15 @@ export function DriverTripGuidance({ badge, instruction, distance, detail, label
   // Details start open and only change when the Driver taps the summary.
   // Trip-stage updates never collapse the route and contact information.
   const [detailsOpen, setDetailsOpen] = useState(true);
+  const { panelRef, motion, snap } = useDriverSheet("medium");
 
   return (
-    <section className="nr-nav-bottom-card nr-driver-sheet biloo-driver-trip-sheet" aria-label={label}>
-      <div className="nr-driver-sheet-grab" aria-hidden="true"><span /></div>
+    <section ref={panelRef} className="nr-nav-bottom-card nr-driver-sheet biloo-driver-trip-sheet" aria-label={label}
+      data-snap={snap} data-dragging={motion.dragging || undefined} onPointerDown={event => event.stopPropagation()}>
+      <button ref={motion.handleRef} type="button" className="nr-driver-sheet-grab"
+        role="slider" aria-label="Resize trip panel" aria-orientation="vertical"
+        aria-valuemin={25} aria-valuemax={75} aria-valuenow={Math.round(motion.currentRatio * 100)}
+        {...motion.handleProps}><span aria-hidden="true" /></button>
       <div className="nr-driver-sheet-content">
         <div className="biloo-driver-trip-header">
           <section className="nr-nav-guidance biloo-driver-trip-guidance" aria-label={label} aria-live="polite">
