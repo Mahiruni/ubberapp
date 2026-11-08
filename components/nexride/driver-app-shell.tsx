@@ -29,6 +29,7 @@ import { DriverCancellationNotice } from "./driver-cancellation-notice";
 import { DriverSessionBridge } from "./driver-session-bridge";
 import { explicitSignOutRole } from "../../lib/nexride-startup";
 import { signOutNexRide } from "../../lib/nexride-sign-out";
+import "./driver-identity.css";
 
 export type DriverThemePreference = "system" | "light" | "dark";
 export type DriverResolvedTheme = "light" | "dark";
@@ -337,7 +338,11 @@ export function DriverStandaloneMenu({ activeOverride }: { activeOverride?: Driv
   return (
     <DriverThemeContext.Provider value={theme}>
       <div className="nr-driver-standalone-menu" data-theme={theme.resolvedTheme}>
-        <DriverHamburgerMenu activeOverride={activeOverride} />
+        {/* Same hamburger + Biloo pill as DriverHeader, so every Driver screen matches. */}
+        <div className="nr-driver-header-brand-group">
+          <DriverHamburgerMenu activeOverride={activeOverride} />
+          <Brand accent />
+        </div>
       </div>
     </DriverThemeContext.Provider>
   );
