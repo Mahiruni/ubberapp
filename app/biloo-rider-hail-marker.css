@@ -1,56 +1,42 @@
 /*
-  BILOO RIDER | Home location marker: a person hailing a ride (hand raised).
-  Replaces the "Your location" text pill. Presentation only: same marker element,
-  same GPS anchor (Mapbox anchors the marker's bottom at the true fix), the
-  aria-label stays on the marker so screen readers still announce "Your location".
-  Brand colours only: navy #08295f, yellow #f9c449, white outline for map contrast.
+  BILOO RIDER | Home location marker: the Rider's own saved avatar, hand raised.
+  Replaces the "Your location" text pill. No new artwork: this re-enables the
+  existing avatar and its built-in wave pose (biloo-rider-wave-pose), which the
+  clean-home stylesheet had hidden. Same marker element and GPS anchor; the
+  aria-label stays so screen readers still announce "Your location".
   Loaded after biloo-home-clean.css, same selectors, so it wins by order.
 */
 @media (max-width: 800px) {
-  /* Ground ring: marks the exact GPS point, smaller so the person reads first */
+  /* 1. Bring the saved avatar back on Home */
+  .nr-app[data-mode="rider"][data-theme] .rider-home-view .nr-live-location-marker.biloo-custom-map-avatar > .biloo-rider-avatar-art {
+    display: block !important;
+  }
+
+  /* 2. No text pill */
+  .nr-app[data-mode="rider"][data-theme] .rider-home-view .nr-live-location-marker.biloo-custom-map-avatar::after {
+    content: none !important;
+    display: none !important;
+  }
+
+  /* 3. Small ground ring under the feet marks the exact GPS point */
   .nr-app[data-mode="rider"][data-theme] .rider-home-view .nr-live-location-marker.biloo-custom-map-avatar::before {
     bottom: -7px;
+    z-index: 0 !important;
     width: 14px !important;
     height: 14px !important;
     border-width: 3.5px !important;
     box-shadow: 0 0 0 3px #ffffffb8, 0 2px 6px #08295f40;
   }
 
-  /* The person with a raised hand (no text) */
-  .nr-app[data-mode="rider"][data-theme] .rider-home-view .nr-live-location-marker.biloo-custom-map-avatar::after {
-    content: "" !important;
-    display: block !important;
-    position: absolute;
-    left: 50%;
-    top: auto;
-    bottom: 3px;
-    z-index: 2;
-    width: 50px;
-    height: 58px;
-    max-width: none;
-    padding: 0;
-    border: 0;
-    border-radius: 0;
-    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-2 0 50 58'%3E%3Cg fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cg stroke='%23fff' stroke-width='9.5'%3E%3Cpath d='M19 40 18 53M27 40 28 53'/%3E%3Cpath d='M15 25 11 37'/%3E%3Cpath d='M30 24 36 11'/%3E%3C/g%3E%3Cg stroke='%2308295f' stroke-width='5.5'%3E%3Cpath d='M19 40 18 53M27 40 28 53'/%3E%3Cpath d='M15 25 11 37'/%3E%3Cpath d='M30 24 36 11'/%3E%3C/g%3E%3Crect x='14' y='20' width='18' height='23' rx='8' fill='%2308295f' stroke='%23fff' stroke-width='2.5' paint-order='stroke'/%3E%3Ccircle cx='23' cy='11' r='7.2' fill='%2308295f' stroke='%23fff' stroke-width='2.5'/%3E%3Ccircle cx='36.5' cy='8.5' r='4.4' fill='%23f9c449' stroke='%2308295f' stroke-width='2'/%3E%3Cpath d='M41.5 3.5q3 3 .5 7M43.5 1.5q4.5 5 .8 11' stroke='%23f9c449' stroke-width='2'/%3E%3C/g%3E%3C/svg%3E") center bottom / contain no-repeat;
-    box-shadow: none;
-    color: transparent;
-    font-size: 0;
-    opacity: 1 !important;
-    transform: translateX(-50%) !important;
-    transform-origin: 50% 100%;
-    filter: drop-shadow(0 3px 4px #08295f40);
-    animation: bilooHailBob 2.6s ease-in-out infinite !important;
-    pointer-events: none;
+  /* 4. Hand up: show the avatar's wave pose while standing still.
+        Walking / jogging keep their own animation. */
+  .nr-app[data-mode="rider"][data-theme] .rider-home-view .nr-live-location-marker.biloo-custom-map-avatar:not([data-pickup-motion="walk"]):not([data-pickup-motion="jog"]):not(.is-stale):not(.is-paused) .biloo-rider-still {
+    display: none;
   }
-  .nr-app[data-mode="rider"][data-theme] .rider-home-view .nr-live-location-marker.biloo-custom-map-avatar:is(.is-stale, .is-paused)::after {
-    filter: grayscale(1) opacity(.65);
-    animation: none !important;
+  .nr-app[data-mode="rider"][data-theme] .rider-home-view .nr-live-location-marker.biloo-custom-map-avatar:not([data-pickup-motion="walk"]):not([data-pickup-motion="jog"]):not(.is-stale):not(.is-paused) .biloo-rider-wave-pose {
+    display: block;
   }
-}
-@keyframes bilooHailBob {
-  0%, 100% { translate: 0 0; rotate: 0deg; }
-  50%      { translate: 0 -2px; rotate: 1.5deg; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .nr-app[data-mode="rider"][data-theme] .rider-home-view .nr-live-location-marker.biloo-custom-map-avatar::after { animation: none !important; }
+  .nr-app[data-mode="rider"][data-theme] .rider-home-view .nr-live-location-marker.biloo-custom-map-avatar:not([data-pickup-motion="walk"]):not([data-pickup-motion="jog"]):not(.is-stale):not(.is-paused) .biloo-rider-wave-hand {
+    animation: biloo-rider-wave 850ms ease-in-out 7;
+  }
 }
