@@ -1,95 +1,61 @@
 /* Driver Home shortcuts: Activity · Earnings · Settings.
-   Slim, tactile tiles with a colored icon chip and a label tinted to match.
+   Plain, small, monochrome icons. No tile background, no border, no color.
+   Black in the light theme, white in the dark theme (black would vanish on navy).
+   Labels stay in the DOM for screen readers and tests, but are visually hidden.
    Loaded after driver-home-dock-pro.css so it owns the final look.
-   Resize every tile from one place: change --sc-height. */
+   Icon size: change --sc-icon. Tap area: change --sc-height. */
 .nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-shortcuts {
-  --sc-height: 66px;
-  --sc-ease: cubic-bezier(.2, .8, .2, 1);
+  --sc-icon: 20px;
+  --sc-height: 48px;
+  --sc-ink: #000;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-  margin-top: 4px;
+  gap: 0;
+  margin-top: 2px;
   padding: 0;
   border-top: 0;
 }
+.nr-driver-app-shell[data-theme="dark"] .biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-shortcuts { --sc-ink: #fff; }
 
-/* Tone palette: light theme label / chip gradient / glow. */
-.biloo-driver-dock-shortcuts button[data-tone="activity"] { --sc-ink: #1e4fc4; --sc-a: #4f8dff; --sc-b: #1f55d6; --sc-glow: 31 85 214; --sc-on: #fff; }
-.biloo-driver-dock-shortcuts button[data-tone="earnings"] { --sc-ink: #067a55; --sc-a: #2fd39b; --sc-b: #079468; --sc-glow: 7 148 104; --sc-on: #fff; }
-.biloo-driver-dock-shortcuts button[data-tone="settings"] { --sc-ink: #8a5c00; --sc-a: #ffd66b; --sc-b: #f0aa1e; --sc-glow: 240 170 30; --sc-on: #08295f; }
-.nr-driver-app-shell[data-theme="dark"] .biloo-driver-dock-shortcuts button[data-tone="activity"] { --sc-ink: #9bbcff; }
-.nr-driver-app-shell[data-theme="dark"] .biloo-driver-dock-shortcuts button[data-tone="earnings"] { --sc-ink: #6be8b8; }
-.nr-driver-app-shell[data-theme="dark"] .biloo-driver-dock-shortcuts button[data-tone="settings"] { --sc-ink: #f6c653; }
-
-/* The tile. */
+/* The button: invisible, just a comfortable tap area. */
 .nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-shortcuts button,
-.nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-shortcuts button + button {
-  position: relative;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 7px; min-width: 0; min-height: var(--sc-height); margin: 0; padding: 8px 4px 9px;
-  border: 1px solid var(--dock-border); border-radius: 18px;
-  background: var(--dock-surface);
-  box-shadow: 0 1px 2px rgb(8 41 95 / 6%), 0 8px 16px -10px rgb(8 41 95 / 24%);
-  color: var(--sc-ink);
-  font: inherit; font-size: 12px; font-weight: 750; letter-spacing: .01em; line-height: 1.2;
-  -webkit-tap-highlight-color: transparent; touch-action: manipulation;
-  transition: transform .2s var(--sc-ease), box-shadow .2s var(--sc-ease), border-color .2s var(--sc-ease), background-color .2s var(--sc-ease);
-  animation: biloo-shortcut-in .42s var(--sc-ease) both;
-}
-.biloo-driver-dock-shortcuts button:nth-child(2) { animation-delay: 45ms; }
-.biloo-driver-dock-shortcuts button:nth-child(3) { animation-delay: 90ms; }
+.nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-shortcuts button + button,
 .nr-driver-app-shell[data-theme="dark"] .biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-shortcuts button {
-  background: var(--dock-raised);
-  box-shadow: 0 1px 2px rgb(0 0 0 / 30%), 0 8px 18px -10px rgb(0 0 0 / 55%);
+  display: grid; place-items: center;
+  min-width: 0; min-height: var(--sc-height); margin: 0; padding: 0;
+  border: 0 !important; border-radius: 12px; outline-offset: 0;
+  background: transparent !important; box-shadow: none !important;
+  color: var(--sc-ink);
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  transition: opacity .16s ease, transform .16s cubic-bezier(.2, .8, .2, 1);
+  animation: none;
 }
 
-/* The colored icon chip. */
+/* The icon: small, flat, single color. */
 .nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-shortcuts button .biloo-shortcut-icon {
-  display: grid; place-items: center; flex: 0 0 auto;
-  width: 36px; height: 36px; border-radius: 12px;
-  background: linear-gradient(145deg, var(--sc-a), var(--sc-b));
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 38%), 0 5px 12px -4px rgb(var(--sc-glow) / 55%);
-  transition: transform .22s var(--sc-ease), box-shadow .22s var(--sc-ease);
+  display: grid; place-items: center; width: auto; height: auto;
+  background: none; box-shadow: none; border-radius: 0;
 }
 .nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-shortcuts button .biloo-shortcut-icon svg {
-  width: 20px; height: 20px; color: var(--sc-on) !important; stroke-width: 2;
+  width: var(--sc-icon); height: var(--sc-icon);
+  color: var(--sc-ink) !important; stroke-width: 1.9;
 }
-.biloo-driver-dock-shortcuts .biloo-shortcut-label { color: var(--sc-ink); overflow-wrap: anywhere; text-align: center; }
 
-/* Smooth feedback. */
+/* Label: screen-reader only. */
+.biloo-driver-dock-shortcuts .biloo-shortcut-label {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+  overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; border: 0;
+}
+
+/* Press feedback only: no color, no background. */
+.biloo-driver-dock-shortcuts button:active { opacity: .5; transform: scale(.92); }
 @media (hover: hover) {
-  .nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-shortcuts button:hover {
-    transform: translateY(-2px);
-    border-color: color-mix(in srgb, var(--sc-b) 45%, var(--dock-border));
-    box-shadow: 0 2px 4px rgb(8 41 95 / 8%), 0 14px 22px -12px rgb(var(--sc-glow) / 45%);
-  }
-  .biloo-driver-dock-shortcuts button:hover .biloo-shortcut-icon { transform: scale(1.06); }
+  .biloo-driver-dock-shortcuts button:hover { opacity: .7; }
 }
-.nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-shortcuts button:active {
-  transform: scale(.96);
-  border-color: color-mix(in srgb, var(--sc-b) 60%, var(--dock-border));
-  background: color-mix(in srgb, var(--sc-b) 7%, var(--dock-surface));
-}
-.biloo-driver-dock-shortcuts button:active .biloo-shortcut-icon { transform: scale(.94); }
 .biloo-driver-floating-home .biloo-driver-dock-shortcuts button:focus-visible {
-  outline: 3px solid var(--sc-b); outline-offset: 2px;
-}
-
-@keyframes biloo-shortcut-in {
-  from { opacity: 0; transform: translateY(8px) scale(.97); }
-  to   { opacity: 1; transform: none; }
-}
-
-/* Short phones: stay compact, keep a 48px+ tap target. */
-@media (max-height: 700px) {
-  .nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-shortcuts { --sc-height: 56px; gap: 8px; }
-  .biloo-driver-dock-shortcuts button { flex-direction: row; gap: 8px; padding: 6px 6px; }
-  .biloo-driver-dock-shortcuts .biloo-shortcut-icon { width: 32px; height: 32px; border-radius: 10px; }
-}
-@media (max-width: 340px) {
-  .biloo-driver-dock-shortcuts button { font-size: 11px; }
+  outline: 2px solid var(--sc-ink); outline-offset: 2px;
 }
 @media (prefers-reduced-motion: reduce) {
-  .biloo-driver-dock-shortcuts button, .biloo-driver-dock-shortcuts .biloo-shortcut-icon { animation: none !important; transition: none !important; }
-  .biloo-driver-dock-shortcuts button:hover, .biloo-driver-dock-shortcuts button:active { transform: none !important; }
+  .biloo-driver-dock-shortcuts button { transition: none; }
+  .biloo-driver-dock-shortcuts button:active { transform: none; }
 }
