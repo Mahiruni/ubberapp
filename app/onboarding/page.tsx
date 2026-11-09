@@ -14,7 +14,7 @@ import {
 } from "../../lib/nexride-startup";
 import "../nexride.css";
 import "../detail-system.css";
-import "../indrive-rider.css";
+import "../biloo-rider.css";
 export default function Onboarding() {
   return (
     <EntryShell>

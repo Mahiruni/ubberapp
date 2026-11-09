@@ -59,7 +59,7 @@ export function DriverMatching({ model, changeCategory, previewAssigned, home }:
       storageKey="nexride.rider.sheet.matching"
     />
     <div className="nr-matching-body" data-radar={searching ? 'true' : undefined}>
-      {/* inDrive-style radar: rings travel outward from the pickup while we search. */}
+      {/* Biloo radar: rings travel outward from the pickup while we search. */}
       {searching && <div className="biloo-radar" aria-hidden="true"><i/><i/><i/><span><Icon name="locate" size={26}/></span></div>}
       <div className={`nr-matching-symbol ${searching ? 'searching' : ''}`} aria-hidden="true"><Icon name={status === 'assigned' || status === 'cancelled' ? 'check' : connectionLost || degraded ? 'globe' : 'locate'} size={28} /></div>
       <header className="nr-matching-heading">

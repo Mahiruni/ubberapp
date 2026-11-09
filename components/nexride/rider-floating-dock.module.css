@@ -58,26 +58,26 @@
 @media (min-width: 801px) { .dock { display: none; } }
 @media (max-height: 500px) { .dock { height: 54px; } .dock a { flex-direction: row; gap: 7px; } }
 
-/* ───────── InDrive-style bottom tab bar (final layer) ───────── */
+/* ───────── Biloo bottom tab bar (final layer) ───────── */
 .dock {
   left: 0; right: 0; bottom: 0; height: calc(62px + var(--biloo-safe-bottom));
   grid-template-columns: repeat(4, minmax(0, 1fr));
   padding: 0 max(8px, var(--biloo-safe-right)) var(--biloo-safe-bottom) max(8px, var(--biloo-safe-left));
-  border: 0; border-top: 1px solid #ececec; border-radius: 0;
-  background: #fff; box-shadow: 0 -4px 20px rgb(0 0 0 / 5%);
+  border: 0; border-top: 1px solid #dfe6ef; border-radius: 0;
+  background: #fff; box-shadow: 0 -4px 20px rgb(8 41 95 / 8%);
   backdrop-filter: none; -webkit-backdrop-filter: none;
 }
 .dock::after { display: none; }
-.dock a { color: #8a8a8a; font-size: 11px; font-weight: 600; border-radius: 12px; gap: 4px; }
-.dock a[aria-current="page"] { color: #111; font-weight: 800; }
+.dock a { color: #63748b; font-size: 11px; font-weight: 600; border-radius: 12px; gap: 4px; }
+.dock a[aria-current="page"] { color: #08295f; font-weight: 800; }
 .dock a[aria-current="page"] svg { stroke-width: 2.4; }
 .dock a[aria-current="page"]::before {
-  content: ""; width: 44px; height: 3px; border-radius: 3px; background: #c6f432;
+  content: ""; width: 44px; height: 3px; border-radius: 3px; background: #f9c449;
   position: absolute; top: 0;
 }
 .dock a { position: relative; }
-.dock a:focus-visible { outline: 2px solid #111; }
-:global(.nr-app[data-theme="dark"]) .dock { background: #1b1b1b; border-top-color: #2c2c2c; box-shadow: none; }
-:global(.nr-app[data-theme="dark"]) .dock a { color: #a3a3a3; }
-:global(.nr-app[data-theme="dark"]) .dock a[aria-current="page"] { color: #fff; }
-@media (hover: hover) { .dock a:hover { background: #f4f4f4; } }
+.dock a:focus-visible { outline: 2px solid #08295f; }
+:global(.nr-app[data-theme="dark"]) .dock { background: #0d2949; border-top-color: #2d4766; box-shadow: none; }
+:global(.nr-app[data-theme="dark"]) .dock a { color: #b8cbe1; }
+:global(.nr-app[data-theme="dark"]) .dock a[aria-current="page"] { color: #f9c449; }
+@media (hover: hover) { .dock a:hover { background: #f0f4f8; } }

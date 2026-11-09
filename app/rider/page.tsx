@@ -20,7 +20,7 @@ import { ACTIVE_ACCOUNT_ROLE_KEY } from "../../lib/nexride-startup";
 import { ensureRiderProfile, RiderProfileBootstrapError } from "../../lib/nexride-rider-profile-bootstrap";
 import "../nexride.css";
 import "./rider-entry.css";
-import "../indrive-rider.css";
+import "../biloo-rider.css";
 
 export default function RiderWelcomePage() {
   return (

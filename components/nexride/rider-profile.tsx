@@ -262,12 +262,12 @@ export function RiderProfile(props:Props) {
         : say('Preview details stay on this device.','የማሳያ መረጃ በዚህ መሣሪያ ላይ ይቀመጣል።')}</span>
     </div>
 
-    <div className="ind-quick" role="group" aria-label={say('Quick actions','ፈጣን እርምጃዎች')}>
+    <div className="bl-quick" role="group" aria-label={say('Quick actions','ፈጣን እርምጃዎች')}>
       <button type="button" onClick={props.safety}><span><Icon name="shield" size={22}/></span>{say('Safety','ደህንነት')}</button>
       <button type="button" onClick={props.support}><span><Icon name="headphones" size={22}/></span>{say('Support','ድጋፍ')}</button>
     </div>
 
-    <button type="button" className="ind-drive-card" onClick={props.switchDriver}>
+    <button type="button" className="bl-drive-card" onClick={props.switchDriver}>
       <span><Icon name="navigation" size={22}/></span>
       <span><strong>{say('Drive with Biloo','በBiloo ያሽከርክሩ')}</strong><small>{say('Earn money on your own schedule','በራስዎ ሰዓት ገቢ ያግኙ')}</small></span>
       <Icon name="chevron" size={18}/>

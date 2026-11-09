@@ -1,5 +1,5 @@
 /**
- * Smooth vehicle motion for Biloo maps (inDrive-style gliding car).
+ * Smooth vehicle motion for Biloo maps (Biloo gliding car).
  *
  * GPS fixes arrive every few seconds. Drawing the car only when a fix arrives
  * makes it jump and spin. A Glider keeps one continuously moving "display"

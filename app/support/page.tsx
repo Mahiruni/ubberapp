@@ -10,7 +10,7 @@ import { supabase } from "../../lib/supabase";
 import "../nexride.css";
 import "../rider/supporting.css";
 import "../detail-system.css";
-import "../indrive-rider.css";
+import "../biloo-rider.css";
 
 const DRAFT_KEY = "nexride.support.draft";
 
@@ -315,7 +315,7 @@ export default function HelpSupportPage() {
           )}
         </form>
       </div>
-      {role === "rider" ? <RiderMenu active="messages" /> : <DriverStandaloneMenu activeOverride="messages" />}
+      {role === "rider" ? <RiderMenu active="messages" showBrand="fixed" /> : <DriverStandaloneMenu activeOverride="messages" />}
     </main>
   );
 }

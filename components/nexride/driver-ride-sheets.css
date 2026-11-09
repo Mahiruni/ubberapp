@@ -1,4 +1,4 @@
-/* inDrive-style Driver journey: request → to pickup → arrived → in trip → done.
+/* Biloo Driver journey: request → to pickup → arrived → in trip → done.
  *
  * Loaded after the existing driver sheet styles (many !important rules), so every
  * rule is scoped under `.nr-driver-app-shell.nr-driver-app-shell` and uses

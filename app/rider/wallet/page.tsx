@@ -12,7 +12,7 @@ import "../../nexride.css";
 import "../supporting.css";
 import "../../detail-system.css";
 import "../wallet-bybit-polish.css";
-import "../../indrive-rider.css";
+import "../../biloo-rider.css";
 
 type PaymentIssue = {
   id: string;
@@ -233,7 +233,7 @@ export default function RiderWalletPage() {
           </>
         )}
       </div>
-      <RiderMenu active="wallet" />
+      <RiderMenu active="wallet" showBrand="fixed" />
       <RiderFloatingDock active="wallet" />
     </main>
   );

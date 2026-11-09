@@ -198,7 +198,7 @@
   }
 }
 
-/* Biloo Rider: inDrive-inspired navigation discipline with original Biloo branding.
+/* Biloo Rider: Biloo navigation discipline.
    One circular menu trigger; shared profile avatar belongs only in the drawer. */
 @media(max-width:800px) {
   .nr-app[data-mode="rider"] .nr-rider-hamburger {

@@ -19,7 +19,7 @@ import {
 import "../../../nexride.css";
 import "../../supporting.css";
 import "../../../detail-system.css";
-import "../../../indrive-rider.css";
+import "../../../biloo-rider.css";
 
 export default function RiderReceiptPage() {
   const router = useRouter();
@@ -218,7 +218,7 @@ export default function RiderReceiptPage() {
           </>
         )}
       </div>
-      <RiderMenu active="trips" />
+      <RiderMenu active="trips" showBrand="fixed" />
     </main>
   );
 }

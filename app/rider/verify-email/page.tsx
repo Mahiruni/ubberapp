@@ -8,7 +8,7 @@ import { Button, InputField, PasswordField, useTranslation } from "../../../comp
 import { supabase } from "../../../lib/supabase";
 import { nexrideAuthRedirectUrl } from "../../../lib/nexride-auth-url";
 import "../../../app/nexride.css";
-import "../../indrive-rider.css";
+import "../../biloo-rider.css";
 
 type Purpose = "signup" | "recovery";
 const validEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);

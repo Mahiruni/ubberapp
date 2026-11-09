@@ -58,7 +58,7 @@ import "./wrapper-polish.css";
 import "./precision-rider.css";
 import "./nexride-2026-tokens.css";
 import "./biloo-home-clean.css";
-import "./indrive-rider.css";
+import "./biloo-rider.css";
 // Only load the map engine or settings screens when they are actually rendered.
 // This keeps Mapbox/geocoder and profile tooling out of unrelated initial bundles.
 const RiderMap = dynamic(() => import("../components/nexride/rider-map").then(mod => mod.RiderMap), {
@@ -447,6 +447,7 @@ function AppWorkspace({
             !riderMapView && (
               <RiderMenu
                 className="nr-rider-hamburger-inline"
+                showBrand="inline"
                 active={riderScreen === "wallet" ? "wallet" : (["destination", "rides", "finding", "trip", "live", "summary"].includes(riderScreen) ? "home" : riderScreen) as RiderMenuId}
                 onNavigate={(id) => navigate(id)}
                 isAdmin={isAdmin}

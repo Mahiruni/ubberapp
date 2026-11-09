@@ -18,6 +18,7 @@ import { useAppearance } from "../../lib/nexride-appearance";
 import { useSharedAccountPortrait } from "../../lib/nexride-shared-portrait";
 import { supabase } from "../../lib/supabase";
 import {
+  Brand,
   Icon,
   LanguageContext,
 } from "./ui";
@@ -35,12 +36,15 @@ export function RiderMenu({
   isAdmin: adminOverride,
   className = "",
   locked = false,
+  showBrand,
 }: {
   active?: RiderMenuId;
   onNavigate?: (id: RiderMenuId) => void;
   isAdmin?: boolean;
   className?: string;
   locked?: boolean;
+  /** Show the same hamburger + "biloo" pill as the Driver header. "fixed" pins it top-left (standalone pages); "inline" keeps it in flow (topbars). */
+  showBrand?: "fixed" | "inline";
 }) {
   const router = useRouter();
   const { preference, resolvedTheme, setPreference, error: appearanceError } = useAppearance("rider");
@@ -160,23 +164,32 @@ export function RiderMenu({
     }
   };
 
+  const trigger = (
+    <button
+      ref={triggerRef}
+      type="button"
+      className={`nr-rider-hamburger ${className}`}
+      data-open={open ? "true" : "false"}
+      aria-label={open ? say("Close menu", "ምናሌ ዝጋ") : say("Open menu", "ምናሌ ክፈት")}
+      aria-expanded={open}
+      aria-controls="nr-rider-drawer"
+      onClick={() => setOpen(value => !value)}
+      onKeyDown={onTriggerKeyDown}
+    >
+      <span className="nr-rider-hamburger-line long" />
+      <span className="nr-rider-hamburger-line long" />
+      <span className="nr-rider-hamburger-line short" />
+    </button>
+  );
+
   return (
     <div className="nr-rider-menu-root">
-      <button
-        ref={triggerRef}
-        type="button"
-        className={`nr-rider-hamburger ${className}`}
-        data-open={open ? "true" : "false"}
-        aria-label={open ? say("Close menu", "ምናሌ ዝጋ") : say("Open menu", "ምናሌ ክፈት")}
-        aria-expanded={open}
-        aria-controls="nr-rider-drawer"
-        onClick={() => setOpen(value => !value)}
-        onKeyDown={onTriggerKeyDown}
-      >
-        <span className="nr-rider-hamburger-line long" />
-        <span className="nr-rider-hamburger-line long" />
-        <span className="nr-rider-hamburger-line short" />
-      </button>
+      {showBrand ? (
+        <div className={`nr-rider-header-brand-group nr-rider-header-brand-group-${showBrand}`}>
+          {trigger}
+          <Brand accent />
+        </div>
+      ) : trigger}
 
       {open && createPortal(
         <div className={styles.layer} data-theme={resolvedTheme}>

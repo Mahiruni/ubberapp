@@ -13,7 +13,7 @@ import "../../../app/nexride.css";
 import "../rider-entry.css";
 import "../../../app/auth-experience.css";
 import "../../../app/detail-system.css";
-import "../../indrive-rider.css";
+import "../../biloo-rider.css";
 
 export default function CompleteRiderProfile() {
   const router = useRouter();

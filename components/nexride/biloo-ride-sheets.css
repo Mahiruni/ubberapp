@@ -1,4 +1,4 @@
-/* inDrive-style Rider sheets: "searching for a driver" and "driver on the way".
+/* Biloo Rider sheets: "searching for a driver" and "driver on the way".
  *
  * Loaded after the booking / matching / accepted-driver styles. Those use many
  * !important rules, so every rule here is scoped under `.nr-app` with a doubled
@@ -103,7 +103,7 @@
 }
 .nr-app .nr-matching-body[data-radar="true"] .nr-match-fare strong { font-size: 17px !important; }
 
-/* Full-width Cancel, calm red outline (inDrive keeps it secondary). */
+/* Full-width Cancel, calm red outline (kept secondary). */
 .nr-app .nr-driver-matching.nr-driver-matching > footer .nr-rider-cancel-button {
   width: 100% !important;
   min-height: 48px !important;
@@ -238,7 +238,7 @@
   .biloo-radar > i:first-child { opacity: .5; transform: scale(.8); }
 }
 
-/* Tighter, inDrive-like: drop the secondary label rows. */
+/* Tighter, compact: drop the secondary label rows. */
 .nr-app .nr-matching-body[data-radar="true"] .nr-match-progress { display: none !important; }
 .nr-app .nr-accepted-driver-card .nr-identity-status > div > p { display: none !important; }
 .nr-app .nr-accepted-driver-card .nr-identity-status h2 { font-size: 22px !important; }
