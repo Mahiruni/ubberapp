@@ -33,6 +33,7 @@ import "../../app/rider-home.css";
 import "./driver-home-floating.css";
 import "./driver-home-dock-pro.css";
 import "./driver-home-shortcuts.css";
+import "./driver-home-premium.css";
 
 export type DriverScreen = "home" | "earnings" | "map" | "profile";
 type ReviewStatus = "draft" | "pending" | "approved" | "rejected" | "suspended";
@@ -861,9 +862,16 @@ export function DriverWorkspace({
               onKeyDown={resizeDriverDockFromKeyboard}><span aria-hidden="true" /></button>
             <div className="biloo-driver-dock-meta">
               <span className="biloo-driver-dock-brand">BILOO DRIVER</span>
+              <div className="biloo-driver-dock-badges">
+                {state.rating !== null && state.rating > 0 && (
+                  <span className="biloo-driver-dock-rating" aria-label={say(`Rating ${state.rating.toFixed(2)} out of 5`, `ደረጃ ${state.rating.toFixed(2)} ከ5`)}>
+                    <Icon name="star" size={13} />{state.rating.toFixed(2)}
+                  </span>
+                )}
                 <span className="biloo-driver-dock-status" data-online={state.online}>
                   <span aria-hidden="true" />{state.online ? say("Online", "መስመር ላይ") : say("Offline", "ከመስመር ውጭ")}
                 </span>
+              </div>
             </div>
             <h1 className="biloo-driver-dock-title">{state.online ? say("Ready for rides", "ለጉዞ ዝግጁ") : say("Ready to drive?", "ለመንዳት ዝግጁ ነዎት?")}</h1>
             <p className="biloo-driver-dock-description" role="status" aria-live="polite">

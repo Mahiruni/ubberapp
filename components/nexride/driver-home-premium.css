@@ -1,0 +1,530 @@
+/*
+  BILOO DRIVER | First wrapper (Home dock), premium redesign.
+  Presentation only. Same markup contract, same handlers, same data, same
+  drag/snap/auto-fit behaviour. Loaded LAST from driver.tsx so it owns the final look.
+
+  Hierarchy
+    1. Availability control   (primary: red Offline / navy Online, white text)
+    2. Status + title         (what state am I in)
+    3. Shortcuts              (secondary buttons: Activity, Earnings, Settings)
+    4. Notices / permissions  (tertiary, only when needed)
+
+  Palette: BILOO navy, white, neutral greys. Red is reserved for Offline and errors.
+*/
+
+/* ------------------------------------------------------------------ tokens */
+.nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home {
+  --bd-navy: #102d50;
+  --bd-navy-hover: #153f70;
+  --bd-navy-press: #0a2040;
+  --bd-red: #c73542;
+  --bd-red-press: #ab2b37;
+  --bd-ink: #102d50;
+  --bd-ink-2: #4b6078;
+  --bd-surface: #ffffff;
+  --bd-raised: #f4f6f9;
+  --bd-line: #e2e8f0;
+  --bd-line-strong: #cbd5e1;
+  --bd-focus: #f5c75e;
+  --bd-ok: #0f7a56;
+  --bd-ok-bg: #eaf7f1;
+  --bd-ok-line: #bfe6d5;
+  --bd-bad-bg: #fdeff0;
+  --bd-bad-line: #f3c6ca;
+  --bd-bad-ink: #a32d3b;
+  --bd-radius-sheet: 28px;
+  --bd-radius-ctl: 18px;
+  --bd-radius-btn: 14px;
+  --bd-ease: cubic-bezier(.2, .8, .2, 1);
+  --bd-shadow: 0 -1px 0 rgba(16, 45, 80, .06), 0 -16px 48px rgba(16, 45, 80, .18);
+  --bd-font: var(--nr-font-latin, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif);
+  --dock-surface: var(--bd-surface);
+  --dock-text: var(--bd-ink);
+  --dock-muted: var(--bd-ink-2);
+  --dock-border: var(--bd-line);
+  --dock-raised: var(--bd-raised);
+  --dock-gold: var(--bd-focus);
+}
+.nr-driver-app-shell[data-theme="dark"] .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home {
+  --bd-navy: #f5f8fc;
+  --bd-navy-hover: #ffffff;
+  --bd-navy-press: #dfe8f3;
+  --bd-red: #d63f4c;
+  --bd-red-press: #b8323f;
+  --bd-ink: #f5f8fc;
+  --bd-ink-2: #b7c8dd;
+  --bd-surface: #102d50;
+  --bd-raised: #173a60;
+  --bd-line: #2c4a6b;
+  --bd-line-strong: #3d5f84;
+  --bd-ok: #8ff0c4;
+  --bd-ok-bg: #123f3a;
+  --bd-ok-line: #2f7360;
+  --bd-bad-bg: #402637;
+  --bd-bad-line: #6b3a4b;
+  --bd-bad-ink: #ffc1c8;
+  --bd-shadow: 0 -1px 0 rgba(255, 255, 255, .06), 0 -16px 48px rgba(0, 0, 0, .5);
+}
+
+/* -------------------------------------------------------------- typography */
+.nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-host,
+.nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-host :where(button, h1, p, span, strong) {
+  font-family: var(--bd-font);
+  font-feature-settings: "tnum" 1, "cv11" 1;
+  -webkit-font-smoothing: antialiased;
+}
+html[lang="am"] .nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-host,
+html[lang="am"] .nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-host :where(button, h1, p, span, strong) {
+  font-family: var(--nr-font-amharic, var(--bd-font));
+}
+
+/* ------------------------------------------------------------------- sheet */
+.nr-driver-app-shell[data-home="true"] .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-host {
+  border-radius: var(--bd-radius-sheet) var(--bd-radius-sheet) 0 0 !important;
+  box-shadow: var(--bd-shadow) !important;
+}
+.nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock {
+  gap: 10px;
+  padding: 0 20px calc(18px + max(0px, env(safe-area-inset-bottom, 0px)));
+  border: 0;
+  border-radius: var(--bd-radius-sheet) var(--bd-radius-sheet) 0 0;
+  background: var(--bd-surface);
+  color: var(--bd-ink);
+  box-shadow: none;
+  animation: bdDockIn .36s var(--bd-ease) both;
+}
+@keyframes bdDockIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Grab handle */
+.nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-handle {
+  width: 100%;
+  min-height: 36px;
+  margin: 0 0 -4px;
+  background: var(--bd-surface);
+  border-radius: 0;
+}
+.nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-handle span {
+  width: 36px;
+  height: 4px;
+  background: var(--bd-line-strong);
+  transition: width .18s var(--bd-ease), background-color .18s var(--bd-ease);
+}
+.nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-handle:active span {
+  width: 48px;
+  background: var(--bd-ink-2);
+}
+
+/* ------------------------------------------------- header: brand + badges */
+.nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 28px;
+}
+.nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-brand {
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: .18em;
+  color: var(--bd-ink-2);
+  white-space: nowrap;
+}
+.nr-driver-app-shell[data-theme="dark"] .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-brand {
+  color: var(--bd-focus);
+}
+.biloo-driver-dock-badges {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-status,
+.nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 11px 0 9px;
+  border: 1px solid var(--bd-line);
+  border-radius: 999px;
+  background: var(--bd-raised);
+  color: var(--bd-ink-2);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  transition: background-color .24s var(--bd-ease), border-color .24s var(--bd-ease), color .24s var(--bd-ease);
+}
+.nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-status > span {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--bd-red);
+  box-shadow: 0 0 0 3px rgba(199, 53, 66, .18);
+  transition: background-color .24s var(--bd-ease), box-shadow .24s var(--bd-ease);
+}
+.nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-status[data-online="true"] {
+  color: var(--bd-ok);
+  background: var(--bd-ok-bg);
+  border-color: var(--bd-ok-line);
+}
+.nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-status[data-online="true"] > span {
+  background: var(--bd-ok);
+  box-shadow: 0 0 0 3px rgba(15, 122, 86, .2);
+  animation: bdPulse 2.2s ease-in-out infinite;
+}
+@keyframes bdPulse {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(15, 122, 86, .2); }
+  50%      { box-shadow: 0 0 0 5px rgba(15, 122, 86, .08); }
+}
+.biloo-driver-dock-rating svg {
+  width: 13px;
+  height: 13px;
+  flex: none;
+  color: var(--bd-focus);
+  fill: currentColor;
+  stroke: none;
+}
+.nr-driver-app-shell[data-theme="light"] .biloo-driver-dock-rating svg,
+.nr-driver-app-shell:not([data-theme="dark"]) .biloo-driver-dock-rating svg { color: #d99a0b; }
+
+/* ------------------------------------------------------------------- copy */
+.nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-title {
+  margin: 4px 0 0;
+  font-size: clamp(24px, 6.6vw, 30px);
+  font-weight: 800;
+  letter-spacing: -.035em;
+  line-height: 1.12;
+  color: var(--bd-ink);
+}
+.nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-description {
+  margin: 0 0 6px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--bd-ink-2) !important;
+}
+
+/* ---------------------------------------------------- availability control */
+.nr-driver-app-shell[data-home="true"] .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-availability {
+  margin: 2px 0 0;
+}
+.nr-driver-app-shell[data-home="true"] .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .nr-driver-availability-swipe {
+  position: relative;
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  height: 64px !important;
+  min-height: 64px !important;
+  padding: 0 !important;
+  overflow: hidden;
+  border: 0 !important;
+  border-radius: var(--bd-radius-ctl) !important;
+  color: #fff !important;
+  background: var(--bd-navy) !important;
+  box-shadow: 0 10px 24px rgba(16, 45, 80, .26), inset 0 1px 0 rgba(255, 255, 255, .14) !important;
+  touch-action: none;
+  transition: background-color .32s var(--bd-ease), box-shadow .32s var(--bd-ease), transform .14s var(--bd-ease) !important;
+}
+.nr-driver-app-shell[data-theme="dark"][data-home="true"] .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .nr-driver-availability-swipe[data-online="true"] {
+  background: #1d4f86 !important;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, .4), inset 0 1px 0 rgba(255, 255, 255, .14) !important;
+}
+/* Offline: red, white text */
+.nr-driver-app-shell[data-home="true"] .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .nr-driver-availability-swipe[data-online="false"] {
+  background: var(--bd-red) !important;
+  box-shadow: 0 10px 24px rgba(199, 53, 66, .32), inset 0 1px 0 rgba(255, 255, 255, .18) !important;
+}
+/* Online: navy, white text */
+.nr-driver-app-shell[data-home="true"] .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .nr-driver-availability-swipe[data-online="true"] {
+  background: var(--bd-navy) !important;
+}
+.nr-driver-app-shell[data-theme="dark"][data-home="true"] .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .nr-driver-availability-swipe[data-online="true"] .nr-driver-swipe-label { color: #fff !important; }
+.nr-driver-app-shell[data-home="true"] .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .nr-driver-availability-swipe:active:not(:disabled) {
+  transform: scale(.985);
+}
+.nr-driver-app-shell[data-home="true"] .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .nr-driver-availability-swipe[data-online="false"]:active:not(:disabled) { background: var(--bd-red-press) !important; }
+.nr-driver-app-shell[data-home="true"] .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .nr-driver-availability-swipe[data-online="true"]:active:not(:disabled) { background: var(--bd-navy-press) !important; }
+.nr-driver-app-shell[data-home="true"] .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .nr-driver-availability-swipe:disabled {
+  opacity: .62;
+  cursor: not-allowed;
+  box-shadow: none !important;
+}
+.nr-driver-app-shell[data-home="true"] .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .nr-driver-availability-swipe[data-updating="true"]:disabled {
+  opacity: 1;
+  cursor: progress;
+}
+.nr-driver-app-shell[data-home="true"] .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .nr-driver-availability-swipe:focus-visible {
+  outline: 3px solid var(--bd-focus);
+  outline-offset: 3px;
+}
+
+/* Label: truly centred in the full control; the thumb never overlaps it */
+.nr-driver-app-shell[data-home="true"] .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .nr-driver-swipe-label {
+  position: absolute;
+  inset: 0 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: auto !important;
+  padding: 0 68px !important;
+  overflow: hidden;
+  color: #fff !important;
+  font-size: clamp(15px, 4.2vw, 17px) !important;
+  font-weight: 750 !important;
+  letter-spacing: -.005em;
+  line-height: 1.2;
+  text-align: center;
+  white-space: normal;
+  pointer-events: none;
+}
+
+/* Thumb: white, with a navy / red glyph. 52px matches the swipe maths in the component. */
+.nr-driver-app-shell[data-home="true"] .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .nr-driver-swipe-thumb {
+  top: 6px !important;
+  left: 6px;
+  width: 52px !important;
+  height: 52px !important;
+  display: grid;
+  place-items: center;
+  border-radius: 14px !important;
+  background: #fff !important;
+  color: var(--bd-navy) !important;
+  box-shadow: 0 4px 12px rgba(7, 27, 48, .24) !important;
+  touch-action: none;
+  transition: left .3s var(--bd-ease), transform .3s var(--bd-ease) !important;
+}
+.nr-driver-app-shell[data-theme="dark"][data-home="true"] .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .nr-driver-swipe-thumb { color: #102d50 !important; }
+.nr-driver-app-shell[data-home="true"] .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .nr-driver-availability-swipe[data-online="false"] .nr-driver-swipe-thumb {
+  color: var(--bd-red) !important;
+}
+.nr-driver-app-shell[data-home="true"] .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .nr-driver-availability-swipe[data-online="true"] .nr-driver-swipe-thumb {
+  left: calc(100% - 58px) !important;
+}
+.nr-driver-app-shell[data-home="true"] .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .nr-driver-availability-swipe[data-dragging="true"] .nr-driver-swipe-thumb {
+  transition: none !important;
+}
+.nr-driver-app-shell[data-home="true"] .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .nr-driver-swipe-thumb svg {
+  width: 22px;
+  height: 22px;
+  stroke-width: 2.2;
+}
+.nr-driver-app-shell[data-home="true"] .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .nr-driver-swipe-spinner {
+  width: 20px;
+  height: 20px;
+  border-width: 2.5px;
+}
+
+/* ------------------------------------------------ shortcuts (secondary) */
+.nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-shortcuts {
+  --sc-ink: var(--bd-ink);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 4px 0 0;
+  padding: 0;
+  border: 0;
+}
+.nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-shortcuts button,
+.nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-shortcuts button + button,
+.nr-driver-app-shell[data-theme="dark"] .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-shortcuts button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 0;
+  min-height: 76px;
+  margin: 0;
+  padding: 10px 6px 9px;
+  border: 1px solid var(--bd-line) !important;
+  border-radius: 16px;
+  background: var(--bd-raised) !important;
+  box-shadow: 0 1px 0 rgba(16, 45, 80, .04) !important;
+  color: var(--bd-ink);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: .005em;
+  cursor: pointer;
+  opacity: 1;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: transform .14s var(--bd-ease), background-color .18s var(--bd-ease), border-color .18s var(--bd-ease) !important;
+}
+.nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-shortcuts button .biloo-shortcut-icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: var(--bd-surface);
+  box-shadow: inset 0 0 0 1px var(--bd-line);
+}
+.nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-shortcuts button .biloo-shortcut-icon svg {
+  width: 20px;
+  height: 20px;
+  color: var(--bd-ink) !important;
+  stroke-width: 1.8;
+}
+/* Labels are visible and meaningful again (they were screen-reader only) */
+.nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-shortcuts .biloo-shortcut-label {
+  position: static;
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  overflow: visible;
+  clip: auto;
+  clip-path: none;
+  white-space: nowrap;
+  border: 0;
+  color: var(--bd-ink);
+}
+.nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-shortcuts button:active {
+  transform: scale(.97);
+  opacity: 1;
+  background: var(--bd-line) !important;
+  border-color: var(--bd-line-strong) !important;
+}
+@media (hover: hover) {
+  .nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-shortcuts button:hover {
+    opacity: 1;
+    border-color: var(--bd-line-strong) !important;
+  }
+}
+.nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-shortcuts button:focus-visible {
+  outline: 3px solid var(--bd-focus);
+  outline-offset: 2px;
+}
+
+/* ----------------------------------- notices, errors, permissions (tertiary) */
+.nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  padding: 10px 10px 10px 14px;
+  border: 1px solid var(--bd-line);
+  border-radius: 14px;
+  background: var(--bd-raised);
+  color: var(--bd-ink);
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.35;
+}
+.nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-notice button {
+  flex: none;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: var(--bd-radius-btn);
+  background: var(--bd-navy);
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 750;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform .14s var(--bd-ease), background-color .18s var(--bd-ease);
+}
+.nr-driver-app-shell[data-theme="dark"] .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-notice button { color: #102d50; }
+.nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-notice button:active:not(:disabled) {
+  transform: scale(.97);
+  background: var(--bd-navy-press);
+}
+.nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-notice button:disabled {
+  opacity: .55;
+  cursor: progress;
+}
+.nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-error {
+  margin: 0;
+  padding: 11px 14px;
+  border: 1px solid var(--bd-bad-line);
+  border-radius: 14px;
+  background: var(--bd-bad-bg);
+  color: var(--bd-bad-ink) !important;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-enable-alerts {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 48px;
+  padding: 0 16px;
+  border: 1px solid var(--bd-line-strong);
+  border-radius: var(--bd-radius-btn);
+  background: var(--bd-surface);
+  color: var(--bd-ink);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform .14s var(--bd-ease), background-color .18s var(--bd-ease);
+}
+.nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-enable-alerts:active {
+  transform: scale(.98);
+  background: var(--bd-raised);
+}
+.nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-permission {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--bd-ink-2) !important;
+}
+.nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock :is(button, a):focus-visible {
+  outline: 3px solid var(--bd-focus);
+  outline-offset: 2px;
+}
+
+/* ------------------------------------------------------- small Android phones */
+@media (max-height: 700px), (max-width: 340px) {
+  .nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock {
+    gap: 8px;
+    padding-inline: 16px;
+  }
+  .nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-title { font-size: 22px; }
+  .nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-shortcuts button,
+  .nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-shortcuts button + button { min-height: 62px; gap: 5px; padding-block: 7px; }
+  .nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-shortcuts button .biloo-shortcut-icon { width: 30px; height: 30px; border-radius: 10px; }
+  .nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-shortcuts button .biloo-shortcut-icon svg { width: 18px; height: 18px; }
+}
+@media (max-width: 340px) {
+  .biloo-driver-dock-rating { display: none !important; }
+}
+
+/* ------------------------------------------------------------------ desktop */
+@media (min-width: 900px) {
+  .nr-driver-app-shell[data-home="true"] .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-host {
+    border-radius: var(--bd-radius-sheet) !important;
+  }
+  .nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock {
+    border: 1px solid var(--bd-line);
+    border-radius: var(--bd-radius-sheet);
+    padding-bottom: 18px;
+  }
+}
+
+/* ------------------------------------------------------------ reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock,
+  .nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .biloo-driver-dock-status > span {
+    animation: none !important;
+  }
+  .nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home :is(button, .nr-driver-swipe-thumb, .biloo-driver-dock-status) {
+    transition: none !important;
+  }
+  .nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home button:active { transform: none !important; }
+}
