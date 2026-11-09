@@ -58,6 +58,7 @@ import "./wrapper-polish.css";
 import "./precision-rider.css";
 import "./nexride-2026-tokens.css";
 import "./biloo-home-clean.css";
+import "./biloo-rider-hail-marker.css";
 import "./indrive-rider.css";
 // Only load the map engine or settings screens when they are actually rendered.
 // This keeps Mapbox/geocoder and profile tooling out of unrelated initial bundles.
