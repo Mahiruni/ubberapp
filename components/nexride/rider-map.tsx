@@ -25,6 +25,10 @@ import {
 import { AVATAR_STORAGE, DEFAULT_MAP_AVATAR, RIDER_MAP_AVATAR_SIZE, loadMapAvatar, mapAvatarSvg, normalizeMapAvatar, type MapAvatar } from "../../lib/biloo-rider-map-avatar";
 import { applyBilooCityMapPalette, BILOO_STYLE_SWAP_OPTIONS } from "../../lib/biloo-map-palette";
 import { useRiderMotion } from './use-rider-motion';
+import { SmoothCar } from "../../lib/biloo-smooth-car";
+import { distanceMeters } from "../../lib/biloo-motion";
+import { freshDriverFix } from "../../lib/biloo-journey";
+import "./biloo-ride-motion.css";
 import { pickupSignal } from './use-pickup-signal';
 import "mapbox-gl/dist/mapbox-gl.css";
 import "@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css";
@@ -208,7 +212,11 @@ const searchAreaElement = () => {
   const root = document.createElement("div");
   root.className = "nr-pickup-search-area";
   root.innerHTML =
-    '<span class="nr-search-area-fill"></span><span class="nr-search-area-pulse"></span>';
+    '<span class="nr-search-area-fill"></span>' +
+    '<span class="nr-search-area-pulse"></span>' +
+    '<span class="nr-search-area-pulse"></span>' +
+    '<span class="nr-search-area-pulse"></span>' +
+    '<span class="nr-search-area-sweep"></span>';
   return root;
 };
 
@@ -696,9 +704,9 @@ export function RiderMap({
     new Map<
       string,
       {
-        marker: MapboxMarker;
-        lngLat: [number, number];
-        animation: number | null;
+        car: SmoothCar;
+        /** Last real fix handed to the glider, so repeat renders don't restart it. */
+        fixKey: string;
       }
     >(),
   );
@@ -1112,10 +1120,7 @@ export function RiderMap({
       liveMarker.current?.remove();
       liveMarkerLngLat.current = null;
       searchMarker.current?.remove();
-      for (const entry of nearbyDriverMarkers.current.values()) {
-        if (entry.animation !== null) cancelAnimationFrame(entry.animation);
-        entry.marker.remove();
-      }
+      for (const entry of nearbyDriverMarkers.current.values()) entry.car.destroy();
       nearbyDriverMarkers.current.clear();
       pickupMarker.current = null;
       destinationMarker.current = null;
@@ -1518,10 +1523,7 @@ export function RiderMap({
     if (!mounted || !map) return;
 
     if (!showNearbyDrivers && !assignedTrip) {
-      for (const entry of nearbyDriverMarkers.current.values()) {
-        if (entry.animation !== null) cancelAnimationFrame(entry.animation);
-        entry.marker.remove();
-      }
+      for (const entry of nearbyDriverMarkers.current.values()) entry.car.destroy();
       nearbyDriverMarkers.current.clear();
       return;
     }
@@ -1534,18 +1536,20 @@ export function RiderMap({
 
       for (const [key, entry] of nearbyDriverMarkers.current) {
         if (visible.has(key)) continue;
-        if (entry.animation !== null) cancelAnimationFrame(entry.animation);
-        entry.marker.remove();
+        entry.car.destroy();
         nearbyDriverMarkers.current.delete(key);
       }
 
-      const reducedMotion = matchMedia(
-        "(prefers-reduced-motion: reduce)",
-      ).matches;
-
       for (const driver of displayedDrivers) {
-        const target: [number, number] = [driver.lng, driver.lat];
-        const existing = nearbyDriverMarkers.current.get(driver.key);
+        const fixKey = `${driver.lng},${driver.lat},${driver.updatedAt}`;
+        const stale = Date.now() - Date.parse(driver.updatedAt) > 45_000;
+        // The assigned driver's car shows a live "N min" bubble while approaching.
+        const eta = assignedTrip?.status === 'approaching' ? assignedTrip.tracking : null;
+        const etaMinutes = eta && freshDriverFix(eta.updatedAt) && freshDriverFix(eta.etaUpdatedAt ?? 0)
+          && Number.isFinite(eta.etaMinutes) && eta.etaMinutes! > 0 ? Math.ceil(eta.etaMinutes!) : null;
+        const etaLabel = etaMinutes !== null
+          ? `${etaMinutes} ${language === "am" ? "ደቂቃ" : "min"}` : null;
+        let existing = nearbyDriverMarkers.current.get(driver.key);
 
         if (!existing) {
           const marker = new mapboxgl.default.Marker({
@@ -1557,60 +1561,21 @@ export function RiderMap({
             ),
             anchor: "center",
           })
-            .setLngLat(target)
+            .setLngLat([driver.lng, driver.lat])
             .addTo(currentMap);
-          nearbyDriverMarkers.current.set(driver.key, {
-            marker,
-            lngLat: target,
-            animation: null,
-          });
-          marker.getElement().classList.toggle('is-stale', Date.now() - Date.parse(driver.updatedAt) > 45_000);
-          continue;
+          existing = { car: new SmoothCar(currentMap, marker), fixKey: "" };
+          nearbyDriverMarkers.current.set(driver.key, existing);
         }
 
-        updateDriverCarMarker(existing.marker.getElement(), driver.avatar, driver.heading, bearing);
-        existing.marker.getElement().classList.toggle('is-stale', Date.now() - Date.parse(driver.updatedAt) > 45_000);
+        updateDriverCarMarker(existing.car.marker.getElement(), driver.avatar, driver.heading, bearing);
+        existing.car.setStale(stale);
+        existing.car.setLabel(stale ? null : etaLabel);
 
-        if (
-          existing.lngLat[0] === target[0] &&
-          existing.lngLat[1] === target[1]
-        )
-          continue;
-
-        if (existing.animation !== null)
-          cancelAnimationFrame(existing.animation);
-
-        if (reducedMotion) {
-          existing.marker.setLngLat(target);
-          existing.lngLat = target;
-          existing.animation = null;
-          continue;
+        // Only a genuinely new GPS fix starts a new glide; re-renders do nothing.
+        if (existing.fixKey !== fixKey) {
+          existing.fixKey = fixKey;
+          existing.car.push({ lng: driver.lng, lat: driver.lat, heading: driver.heading });
         }
-
-        const from = existing.lngLat;
-        const startedAt = performance.now();
-        const duration = 720;
-
-        const animate = (now: number) => {
-          const current = nearbyDriverMarkers.current.get(driver.key);
-          if (!current) return;
-          const progress = Math.min(1, (now - startedAt) / duration);
-          const eased = 1 - Math.pow(1 - progress, 3);
-          const next: [number, number] = [
-            from[0] + (target[0] - from[0]) * eased,
-            from[1] + (target[1] - from[1]) * eased,
-          ];
-          current.marker.setLngLat(next);
-          current.lngLat = next;
-          if (progress < 1) {
-            current.animation = requestAnimationFrame(animate);
-          } else {
-            current.animation = null;
-            current.lngLat = target;
-          }
-        };
-
-        existing.animation = requestAnimationFrame(animate);
       }
     });
 
@@ -1700,11 +1665,16 @@ export function RiderMap({
       syncLiveTripRoute(map, assignedTrip);
       if (!assignedTrip) { liveFrame.current = ''; return; }
       syncRoutes(map, undefined);
-      const key = `${assignedTrip.id}:${assignedTrip.status}:${tripLayoutRevision}`;
       const end = assignedTrip.status === 'in_trip' ? assignedTrip.destination : assignedTrip.pickup;
+      // While the driver approaches, re-frame car + pickup each time the gap has
+      // shrunk by ~40%, so the car stays in view and the map zooms in as it nears.
+      const gap = assignedTrip.status === 'approaching' && assignedTrip.tracking && validTripPoint(end)
+        ? distanceMeters({ lng: assignedTrip.tracking.lng, lat: assignedTrip.tracking.lat }, { lng: end.lng, lat: end.lat }) : 0;
+      const approachStep = gap > 0 ? Math.floor(Math.log(Math.max(120, gap)) / Math.log(1.7)) : 0;
+      const key = `${assignedTrip.id}:${assignedTrip.status}:${tripLayoutRevision}:${approachStep}`;
       const points = assignedTrip.status === 'completed'
         ? [assignedTrip.pickup, assignedTrip.destination].filter(validTripPoint)
-        : assignedTrip.route?.points || [assignedTrip.tracking, end].filter((p): p is { lat: number; lng: number } =>
+        : (assignedTrip.status === 'approaching' && gap > 0 ? undefined : assignedTrip.route?.points) || [assignedTrip.tracking, end].filter((p): p is { lat: number; lng: number } =>
           !!p && typeof p.lat === 'number' && Number.isFinite(p.lat) &&
           typeof p.lng === 'number' && Number.isFinite(p.lng));
       if (points.length > 1 && liveFrame.current !== key && !manualView.current) {

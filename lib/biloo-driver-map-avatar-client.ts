@@ -67,6 +67,8 @@ export function updateDriverCarMarker(element: HTMLElement, value: unknown, head
   }
   const source = driverMapAvatarSource(avatar);
   if (art.getAttribute('src') !== source) art.src = source;
+  // A SmoothCar animates the heading itself; do not snap it back to the raw GPS value.
+  if (element.dataset.smoothHeading === 'true') return;
   art.style.setProperty('--biloo-car-heading', `${typeof heading === 'number' && Number.isFinite(heading) && heading >= 0 && heading <= 360 ? heading - bearing : 0}deg`);
 }
 

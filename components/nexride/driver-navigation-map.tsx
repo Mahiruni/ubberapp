@@ -5,7 +5,9 @@ import type { Map as MapboxMap, Marker as MapboxMarker } from "mapbox-gl";
 import { Icon, Spinner } from "./ui";
 import { useDriverTheme } from "./driver-app-shell";
 import { applyBilooCityMapPalette, BILOO_STYLE_SWAP_OPTIONS } from "../../lib/biloo-map-palette";
-import { driverCarMarkerElement, useDriverMapAvatar } from "../../lib/biloo-driver-map-avatar-client";
+import { driverCarMarkerElement, updateDriverCarMarker, useDriverMapAvatar } from "../../lib/biloo-driver-map-avatar-client";
+import { SmoothCar } from "../../lib/biloo-smooth-car";
+import "./biloo-ride-motion.css";
 import { mapAvatarSvg, RIDER_MAP_AVATAR_SIZE, type MapAvatar } from '../../lib/biloo-rider-avatar-art';
 import { useRiderMotion } from './use-rider-motion';
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -78,6 +80,11 @@ export function DriverNavigationMap({
   const mapRef = useRef<MapboxMap | null>(null);
   const markers = useRef<MapboxMarker[]>([]);
   const riderMarker = useRef<MapboxMarker | null>(null);
+  // The car is one long-lived marker that glides; it is never rebuilt per GPS fix.
+  const car = useRef<SmoothCar | null>(null);
+  const lastVehicleKey = useRef("");
+  const followKey = useRef("");
+  const followZoom = useRef(16);
   const riderTexture = useRef('');
   const riderPose = useRiderMotion({ enabled: target === 'pickup' && !!riderAvatar, waveKey: riderWaveKey, arrivalKey: riderArrivalKey });
   const manualView = useRef(false);
@@ -166,6 +173,7 @@ export function DriverNavigationMap({
       markers.current.forEach((marker) => marker.remove());
       markers.current = [];
       riderMarker.current?.remove(); riderMarker.current = null;
+      car.current?.destroy(); car.current = null; lastVehicleKey.current = ""; followKey.current = "";
       mapRef.current?.remove();
       mapRef.current = null;
     };
@@ -239,11 +247,10 @@ export function DriverNavigationMap({
       markers.current.forEach((marker) => marker.remove());
       markers.current = [];
 
-      const addMarker = (point: NavigationCoordinate, kind: "vehicle" | "pickup" | "destination", active: boolean) => {
-        const element = kind === "vehicle" ? driverCarMarkerElement("Your Biloo vehicle", driverAvatar, heading, bearing) : document.createElement("div");
+      const addMarker = (point: NavigationCoordinate, kind: "pickup" | "destination", active: boolean) => {
+        const element = document.createElement("div");
         element.classList.add("nr-driver-map-marker", kind);
         if (active) element.classList.add("active");
-        if (gpsState !== "fresh" && kind === "vehicle") element.classList.add("stale");
         if (kind === "destination") {
           element.setAttribute("role", "img");
           element.setAttribute("aria-label", "Trip destination");
@@ -253,13 +260,57 @@ export function DriverNavigationMap({
         markers.current.push(marker);
       };
 
-      if (valid(vehicle)) addMarker(vehicle, "vehicle", false);
       if (valid(pickup) && !(target === 'pickup' && riderAvatar)) addMarker(pickup, "pickup", target === "pickup");
       if (valid(destination)) addMarker(destination, "destination", target === "destination");
     });
 
     return () => { cancelled = true; };
-  }, [vehicle?.lat, vehicle?.lng, pickup?.lat, pickup?.lng, destination?.lat, destination?.lng, target, gpsState, heading, mountedRevision, driverAvatar, bearing, !!riderAvatar]);
+  }, [pickup?.lat, pickup?.lng, destination?.lat, destination?.lng, target, mountedRevision, !!riderAvatar]);
+
+  // The driver's car: created once, then it glides + turns between real GPS fixes.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    if (!valid(vehicle)) {
+      car.current?.destroy(); car.current = null; lastVehicleKey.current = "";
+      return;
+    }
+    let cancelled = false;
+    void import("mapbox-gl").then((mapboxgl) => {
+      const current = mapRef.current;
+      if (cancelled || !current || !valid(vehicle)) return;
+      if (!car.current) {
+        const element = driverCarMarkerElement("Your Biloo vehicle", driverAvatar, heading, current.getBearing());
+        element.classList.add("nr-driver-map-marker", "vehicle");
+        const marker = new mapboxgl.default.Marker({ element, anchor: "center" }).setLngLat(lngLat(vehicle)).addTo(current);
+        car.current = new SmoothCar(current, marker);
+        lastVehicleKey.current = "";
+      }
+      const smooth = car.current;
+      updateDriverCarMarker(smooth.marker.getElement(), driverAvatar, heading, current.getBearing());
+      smooth.setStale(gpsState !== "fresh");
+      // Only a new fix starts a glide (a heading/avatar change must not restart it).
+      const key = `${vehicle.lat},${vehicle.lng}`;
+      if (lastVehicleKey.current === key) return;
+      lastVehicleKey.current = key;
+      smooth.push({ lng: vehicle.lng, lat: vehicle.lat, heading });
+      // Follow view: the camera travels with the car, same speed, so the car
+      // stays put on screen and the map slides under it.
+      if (view === "vehicle" && followKey.current && !manualView.current && smooth.glideDurationMs > 1) {
+        const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+        current.easeTo({
+          center: lngLat(vehicle),
+          bearing: smooth.headingTarget,
+          // Same zoom/tilt as the entry framing so an interrupted entry ease can't strand them.
+          zoom: followZoom.current,
+          pitch: 34,
+          duration: reduced ? 0 : Math.max(300, smooth.glideDurationMs),
+          easing: (t: number) => t,
+        });
+      }
+    });
+    return () => { cancelled = true; };
+  }, [vehicle?.lat, vehicle?.lng, heading, gpsState, driverAvatar, mountedRevision, view]);
 
   useEffect(() => {
     if (target !== 'pickup' || !riderAvatar || !valid(pickup)) {
@@ -302,6 +353,11 @@ export function DriverNavigationMap({
     if (viewChanged || targetChanged) manualView.current = false;
     lastCameraView.current = view;
     lastCameraTarget.current = target;
+    // Leaving follow mode: drop the padding the follow camera kept.
+    if (view !== "vehicle" && followKey.current) {
+      followKey.current = "";
+      map.setPadding({ top: 0, right: 0, bottom: 0, left: 0 });
+    }
     if (manualView.current) return;
 
     const points = route.filter(valid);
@@ -310,14 +366,19 @@ export function DriverNavigationMap({
     if (valid(targetPoint)) points.push(targetPoint);
 
     if (view === "vehicle" && valid(vehicle)) {
+      // Entering (or re-framing) follow mode happens once; after that the car
+      // effect moves the camera with every glide, so GPS fixes do not re-ease here.
+      const key = `${view}|${target}|${mountedRevision}|${cameraLayoutRevision}`;
+      if (followKey.current === key) return;
+      followKey.current = key;
+      map.setPadding(navigationMapPadding(map));
+      followZoom.current = Math.max(15.8, map.getZoom());
       map.easeTo({
         center: lngLat(vehicle),
-        zoom: Math.max(15.8, map.getZoom()),
+        zoom: followZoom.current,
         bearing: Number.isFinite(heading) ? Number(heading) : map.getBearing(),
         pitch: 34,
-        padding: navigationMapPadding(map),
-        retainPadding: false,
-        duration: matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 260,
+        duration: matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 500,
       });
       return;
     }
@@ -344,6 +405,11 @@ export function DriverNavigationMap({
     const map = mapRef.current;
     if (!map) return;
     manualView.current = false;
+    if (view === "vehicle" && valid(vehicle)) {
+      followKey.current = "";
+      setCameraLayoutRevision((value) => value + 1);
+      return;
+    }
     if (valid(vehicle)) {
       map.easeTo({ center: lngLat(vehicle), zoom: Math.max(map.getZoom(), 16), padding: navigationMapPadding(map), retainPadding: false, duration: 260 });
       return;

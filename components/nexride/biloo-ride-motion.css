@@ -1,0 +1,142 @@
+/* Biloo ride motion — the "searching → driver found → driver arriving" feel.
+ *
+ * 1. A car driven by SmoothCar turns every frame, so the old 0.3s CSS turn
+ *    transition is switched off for it (it fought the animation).
+ * 2. The car pops in when it first appears and carries a small ETA bubble.
+ * 3. The searching pulse on the map is a real radar: three ripples + a sweep.
+ * 4. The "driver found" card slides up and the ETA number ticks in.
+ * Everything honours prefers-reduced-motion.
+ */
+
+/* ---- 1 & 2. Car ------------------------------------------------------- */
+.biloo-driver-car-marker.biloo-driver-car-marker.is-gliding > .biloo-driver-car-art {
+  transition: none;
+  will-change: transform;
+}
+.biloo-driver-car-marker.is-entering > .biloo-driver-car-art {
+  animation: biloo-car-pop .55s cubic-bezier(.2, .9, .3, 1.25) both;
+}
+@keyframes biloo-car-pop {
+  from { opacity: 0; scale: .55; }
+  to { opacity: 1; scale: 1; }
+}
+
+.biloo-driver-car-marker .biloo-car-eta {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% - 2px);
+  transform: translateX(-50%);
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: #08295f;
+  color: #fff;
+  border: 1.5px solid #fff;
+  box-shadow: 0 3px 10px rgba(4, 28, 48, .28);
+  font: 800 12px/1 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  letter-spacing: -.01em;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: biloo-eta-in .3s ease-out both;
+}
+.biloo-driver-car-marker .biloo-car-eta::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  width: 8px;
+  height: 8px;
+  background: #08295f;
+  border-right: 1.5px solid #fff;
+  border-bottom: 1.5px solid #fff;
+  transform: translate(-50%, -4px) rotate(45deg);
+}
+.biloo-driver-car-marker.is-stale .biloo-car-eta { background: #5d6f85; }
+.biloo-driver-car-marker.is-stale .biloo-car-eta::after { background: #5d6f85; }
+@keyframes biloo-eta-in {
+  from { opacity: 0; transform: translate(-50%, 4px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* ---- 3. Searching radar ---------------------------------------------- */
+.nr-mapbox-surface .nr-pickup-search-area.nr-pickup-search-area {
+  width: 240px;
+  height: 240px;
+  overflow: visible;
+}
+.nr-pickup-search-area .nr-search-area-fill {
+  background: radial-gradient(circle, rgba(0, 200, 120, .16) 0%, rgba(0, 200, 120, .07) 55%, rgba(0, 200, 120, 0) 72%);
+  border: 0;
+}
+.nr-pickup-search-area .nr-search-area-pulse {
+  background: transparent;
+  border: 2px solid rgba(0, 200, 120, .55);
+  animation: biloo-radar-ripple 3.6s cubic-bezier(.2, .6, .4, 1) infinite;
+}
+.nr-pickup-search-area .nr-search-area-pulse:nth-of-type(3) { animation-delay: 1.2s; }
+.nr-pickup-search-area .nr-search-area-pulse:nth-of-type(4) { animation-delay: 2.4s; }
+.nr-pickup-search-area .nr-search-area-sweep {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, rgba(0, 200, 120, 0) 0deg, rgba(0, 200, 120, 0) 250deg, rgba(0, 200, 120, .34) 360deg);
+  -webkit-mask: radial-gradient(circle, #000 0%, #000 68%, transparent 70%);
+  mask: radial-gradient(circle, #000 0%, #000 68%, transparent 70%);
+  animation: biloo-radar-sweep 2.4s linear infinite;
+}
+@keyframes biloo-radar-ripple {
+  from { transform: scale(.12); opacity: .9; }
+  to { transform: scale(1); opacity: 0; }
+}
+@keyframes biloo-radar-sweep {
+  to { transform: rotate(360deg); }
+}
+
+/* ---- 4. Driver found / arriving card ---------------------------------- */
+.nr-accepted-driver-card {
+  animation: biloo-driver-found .45s cubic-bezier(.2, .9, .3, 1) both;
+}
+.nr-accepted-driver-card .nr-identity-status h2 {
+  animation: biloo-status-swap .35s ease-out both;
+}
+.nr-accepted-driver-card .nr-identity-eta b {
+  display: inline-block;
+  animation: biloo-eta-tick .4s ease-out both;
+}
+.nr-accepted-driver-card .nr-identity-portrait {
+  animation: biloo-portrait-pop .6s cubic-bezier(.2, .9, .3, 1.3) .1s both;
+}
+.nr-confirmed-driver-v2 {
+  animation: biloo-driver-found .45s cubic-bezier(.2, .9, .3, 1) both;
+}
+@keyframes biloo-driver-found {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes biloo-status-swap {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes biloo-eta-tick {
+  from { opacity: 0; transform: translateY(-6px) scale(.9); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes biloo-portrait-pop {
+  from { opacity: 0; transform: scale(.6); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .biloo-driver-car-marker.is-entering > .biloo-driver-car-art,
+  .biloo-driver-car-marker .biloo-car-eta,
+  .nr-pickup-search-area .nr-search-area-pulse,
+  .nr-pickup-search-area .nr-search-area-sweep,
+  .nr-accepted-driver-card,
+  .nr-accepted-driver-card .nr-identity-status h2,
+  .nr-accepted-driver-card .nr-identity-eta b,
+  .nr-accepted-driver-card .nr-identity-portrait,
+  .nr-confirmed-driver-v2 {
+    animation: none !important;
+  }
+  .nr-pickup-search-area .nr-search-area-sweep { display: none; }
+  .nr-pickup-search-area .nr-search-area-pulse { opacity: .35; transform: scale(.8); }
+}
