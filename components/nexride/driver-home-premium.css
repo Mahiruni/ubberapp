@@ -4,12 +4,12 @@
   drag/snap/auto-fit behaviour. Loaded LAST from driver.tsx so it owns the final look.
 
   Hierarchy
-    1. Availability control   (primary: red Offline / navy Online, white text)
+    1. Availability control   (primary: red Offline / green Online, white text)
     2. Status + title         (what state am I in)
     3. Shortcuts              (secondary buttons: Activity, Earnings, Settings)
     4. Notices / permissions  (tertiary, only when needed)
 
-  Palette: BILOO navy, white, neutral greys. Red is reserved for Offline and errors.
+  Palette: BILOO navy, white, neutral greys. Red = Offline and errors; green = Online.
 */
 
 /* ------------------------------------------------------------------ tokens */
@@ -19,6 +19,8 @@
   --bd-navy-press: #0a2040;
   --bd-red: #c73542;
   --bd-red-press: #ab2b37;
+  --bd-go: #087c57;
+  --bd-go-press: #06644a;
   --bd-ink: #102d50;
   --bd-ink-2: #4b6078;
   --bd-surface: #ffffff;
@@ -51,6 +53,8 @@
   --bd-navy-press: #dfe8f3;
   --bd-red: #d63f4c;
   --bd-red-press: #b8323f;
+  --bd-go: #0a8a62;
+  --bd-go-press: #087552;
   --bd-ink: #f5f8fc;
   --bd-ink-2: #b7c8dd;
   --bd-surface: #102d50;
@@ -231,25 +235,22 @@ html[lang="am"] .nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-fl
   touch-action: none;
   transition: background-color .32s var(--bd-ease), box-shadow .32s var(--bd-ease), transform .14s var(--bd-ease) !important;
 }
-.nr-driver-app-shell[data-theme="dark"][data-home="true"] .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .nr-driver-availability-swipe[data-online="true"] {
-  background: #1d4f86 !important;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, .4), inset 0 1px 0 rgba(255, 255, 255, .14) !important;
-}
 /* Offline: red, white text */
 .nr-driver-app-shell[data-home="true"] .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .nr-driver-availability-swipe[data-online="false"] {
   background: var(--bd-red) !important;
   box-shadow: 0 10px 24px rgba(199, 53, 66, .32), inset 0 1px 0 rgba(255, 255, 255, .18) !important;
 }
-/* Online: navy, white text */
+/* Online: green, white text */
 .nr-driver-app-shell[data-home="true"] .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .nr-driver-availability-swipe[data-online="true"] {
-  background: var(--bd-navy) !important;
+  background: var(--bd-go) !important;
+  box-shadow: 0 10px 24px rgba(8, 124, 87, .3), inset 0 1px 0 rgba(255, 255, 255, .18) !important;
 }
 .nr-driver-app-shell[data-theme="dark"][data-home="true"] .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .nr-driver-availability-swipe[data-online="true"] .nr-driver-swipe-label { color: #fff !important; }
 .nr-driver-app-shell[data-home="true"] .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .nr-driver-availability-swipe:active:not(:disabled) {
   transform: scale(.985);
 }
 .nr-driver-app-shell[data-home="true"] .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .nr-driver-availability-swipe[data-online="false"]:active:not(:disabled) { background: var(--bd-red-press) !important; }
-.nr-driver-app-shell[data-home="true"] .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .nr-driver-availability-swipe[data-online="true"]:active:not(:disabled) { background: var(--bd-navy-press) !important; }
+.nr-driver-app-shell[data-home="true"] .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .nr-driver-availability-swipe[data-online="true"]:active:not(:disabled) { background: var(--bd-go-press) !important; }
 .nr-driver-app-shell[data-home="true"] .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .nr-driver-availability-swipe:disabled {
   opacity: .62;
   cursor: not-allowed;
@@ -305,6 +306,7 @@ html[lang="am"] .nr-driver-app-shell .biloo-driver-floating-home.biloo-driver-fl
   color: var(--bd-red) !important;
 }
 .nr-driver-app-shell[data-home="true"] .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .nr-driver-availability-swipe[data-online="true"] .nr-driver-swipe-thumb {
+  color: var(--bd-go) !important;
   left: calc(100% - 58px) !important;
 }
 .nr-driver-app-shell[data-home="true"] .biloo-driver-floating-home.biloo-driver-floating-home.biloo-driver-floating-home .nr-driver-availability-swipe[data-dragging="true"] .nr-driver-swipe-thumb {
