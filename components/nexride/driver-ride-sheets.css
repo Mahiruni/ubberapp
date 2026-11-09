@@ -1,0 +1,256 @@
+/* inDrive-style Driver journey: request → to pickup → arrived → in trip → done.
+ *
+ * Loaded after the existing driver sheet styles (many !important rules), so every
+ * rule is scoped under `.nr-driver-app-shell.nr-driver-app-shell` and uses
+ * !important only where it has to win.
+ *
+ * Principles: one dark guidance banner, one white card per stop, one huge
+ * yellow primary button, round utility buttons, slim progress bars.
+ */
+
+:root {
+  --dr-ink: #10294f;
+  --dr-muted: #5d6f85;
+  --dr-line: #e3e9f0;
+  --dr-soft: #f4f6f9;
+  --dr-yellow: #f9c449;
+  --dr-green: #0a8f5a;
+  --dr-red: #c81e32;
+}
+
+/* =============== 1. INCOMING REQUEST =============== */
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-request-page.nr-driver-request-page .nr-request-sheet .nr-driver-sheet-content {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+  padding: 4px 16px 10px !important;
+}
+
+/* Heading row: small chip + countdown ring; the big title is redundant. */
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-request-page.nr-driver-request-page .nr-request-heading {
+  position: relative !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+}
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-request-page.nr-driver-request-page .nr-request-heading > div:first-child { display: none !important; }
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-request-page.nr-driver-request-page .nr-request-deadline { position: absolute !important; right: 0; top: 2px; z-index: 2; }
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-request-page.nr-driver-request-page .nr-request-heading h1 { display: none !important; }
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-request-page.nr-driver-request-page .nr-request-eyebrow {
+  background: var(--dr-soft) !important;
+  color: var(--dr-ink) !important;
+  border: 0 !important;
+}
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-request-page.nr-driver-request-page .nr-request-countdown { width: 52px !important; height: 52px !important; }
+
+/* Fare: the biggest thing on the card. */
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-request-page.nr-driver-request-page .nr-request-offer-value {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 12px !important;
+  padding-right: 64px !important;
+  margin: 0 !important;
+  padding: 0 2px !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-request-page.nr-driver-request-page .nr-request-offer-value small { font-size: 12px !important; color: var(--dr-muted) !important; }
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-request-page.nr-driver-request-page .nr-request-offer-value strong {
+  font-size: 38px !important;
+  line-height: 1.05 !important;
+  letter-spacing: -.02em;
+  color: var(--dr-ink) !important;
+}
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-request-page.nr-driver-request-page .nr-request-offer-value strong span { font-size: 15px !important; font-weight: 700; color: var(--dr-muted); }
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-request-page.nr-driver-request-page .nr-request-category {
+  padding: 7px 12px !important;
+  border-radius: 999px !important;
+  background: var(--dr-soft) !important;
+  font-size: 13px !important;
+}
+
+/* Route card. */
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-request-page.nr-driver-request-page .nr-request-route.nr-request-route-compact {
+  margin: 0 !important;
+  padding: 12px 14px !important;
+  border: 1px solid var(--dr-line) !important;
+  border-radius: 18px !important;
+  background: #fff !important;
+}
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-request-page.nr-driver-request-page .nr-request-route-stop strong {
+  display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;
+  font-size: 16px !important;
+}
+
+/* Distance / time / pickup distance as one chip row. */
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-request-page.nr-driver-request-page .nr-request-trip-facts,
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-request-page.nr-driver-request-page .nr-request-approach {
+  margin: 0 !important;
+  font-size: 13px !important;
+}
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-request-page.nr-driver-request-page .nr-request-approach {
+  padding: 9px 12px !important;
+  border-radius: 14px !important;
+  background: var(--dr-soft) !important;
+  border: 0 !important;
+}
+
+/* Actions: Accept is huge and full width; Decline / Skip sit under it. */
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-request-page.nr-driver-request-page .nr-driver-sheet-footer .nr-request-actions {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+}
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-request-page.nr-driver-request-page .nr-driver-sheet-footer .nr-request-actions > .nr-request-accept {
+  width: 100% !important;
+  min-height: 54px !important;
+  border-radius: 18px !important;
+  background: var(--dr-yellow) !important;
+  color: #08295f !important;
+  font-size: 19px !important;
+  font-weight: 800 !important;
+  box-shadow: 0 8px 20px rgba(249, 196, 73, .45) !important;
+}
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-request-page.nr-driver-request-page .nr-driver-sheet-footer .nr-request-actions-secondary {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 8px !important;
+}
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-request-page.nr-driver-request-page .nr-driver-sheet-footer .nr-request-actions-secondary > button {
+  width: auto !important;
+  min-height: 40px !important;
+  border-radius: 14px !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  background: var(--dr-soft) !important;
+  color: var(--dr-ink) !important;
+  border: 0 !important;
+}
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-request-page.nr-driver-request-page .nr-driver-sheet-footer .nr-request-actions-secondary > .nr-request-decline {
+  background: #fdecee !important;
+  color: var(--dr-red) !important;
+}
+
+/* =============== 2. TRIP SHEET (to pickup / arrived / in trip) =============== */
+/* Guidance banner: clean dark card with clear gap below it. */
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-navigation-page.nr-driver-navigation-page .biloo-driver-trip-header { display: flex !important; flex-direction: column !important; gap: 10px !important; }
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-navigation-page.nr-driver-navigation-page .biloo-driver-trip-guidance {
+  margin: 0 !important;
+  border-radius: 18px !important;
+  box-shadow: none !important;
+}
+
+/* Stop card. */
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-navigation-page.nr-driver-navigation-page .biloo-driver-trip-details {
+  border: 1px solid var(--dr-line) !important;
+  border-radius: 20px !important;
+  background: #fff !important;
+  box-shadow: none !important;
+  overflow: hidden;
+}
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-navigation-page.nr-driver-navigation-page .biloo-driver-trip-details > summary { padding: 8px 14px !important; }
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-navigation-page.nr-driver-navigation-page .nr-nav-current-destination h1 { font-size: 20px !important; line-height: 1.15 !important; }
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-navigation-page.nr-driver-navigation-page .nr-nav-current-destination small { color: var(--dr-green) !important; }
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-navigation-page.nr-driver-navigation-page .biloo-driver-trip-details-body { padding: 0 14px 14px !important; border-top: 1px solid var(--dr-line); }
+
+/* The category/stage line repeats the banner; the progress bar says it better. */
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-navigation-page.nr-driver-navigation-page .nr-nav-trip-meta { display: none !important; }
+
+/* Route: one tight pickup → destination card. */
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-navigation-page.nr-driver-navigation-page .biloo-prestige-trip-route {
+  margin: 12px 0 0 !important;
+  padding: 10px 12px !important;
+  border-radius: 14px !important;
+  background: var(--dr-soft) !important;
+  border: 0 !important;
+}
+
+/* Call / Chat / Share: round buttons. */
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-navigation-page.nr-driver-navigation-page .nr-nav-utility-row {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 6px !important;
+  margin: 14px 0 4px !important;
+}
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-navigation-page.nr-driver-navigation-page .nr-nav-utility-row > :is(a, button) {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 6px !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--dr-ink) !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+}
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-navigation-page.nr-driver-navigation-page .nr-nav-utility-row > :is(a, button) > svg {
+  box-sizing: content-box;
+  width: 20px; height: 20px;
+  padding: 10px;
+  border-radius: 50%;
+  background: var(--dr-soft);
+  box-shadow: inset 0 0 0 1px var(--dr-line);
+}
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-navigation-page.nr-driver-navigation-page .nr-nav-utility-row > :first-child > svg { background: var(--dr-yellow); box-shadow: 0 4px 12px rgba(249, 196, 73, .5); }
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-navigation-page.nr-driver-navigation-page .nr-nav-utility-row > :is(a, button):disabled { opacity: .45; }
+
+/* Stage progress: four slim bars. */
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-navigation-page.nr-driver-navigation-page .nr-nav-trip-progress {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 6px !important;
+  margin: 12px 0 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-navigation-page.nr-driver-navigation-page .nr-nav-trip-progress > span {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 5px !important;
+}
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-navigation-page.nr-driver-navigation-page .nr-nav-trip-progress > span::before,
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-navigation-page.nr-driver-navigation-page .nr-nav-trip-progress > span::after { display: none !important; }
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-navigation-page.nr-driver-navigation-page .nr-nav-trip-progress > span > i {
+  width: 100% !important; height: 5px !important; min-height: 0 !important;
+  border: 0 !important; border-radius: 999px !important;
+  background: var(--dr-line) !important;
+  overflow: hidden; font-size: 0 !important;
+}
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-navigation-page.nr-driver-navigation-page .nr-nav-trip-progress > span > i svg { display: none !important; }
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-navigation-page.nr-driver-navigation-page .nr-nav-trip-progress > span.done > i { background: var(--dr-green) !important; }
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-navigation-page.nr-driver-navigation-page .nr-nav-trip-progress > span.active > i { background: var(--dr-yellow) !important; }
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-navigation-page.nr-driver-navigation-page .nr-nav-trip-progress > span > small { font-size: 11px !important; text-align: left; color: var(--dr-muted) !important; }
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-navigation-page.nr-driver-navigation-page .nr-nav-trip-progress > span.active > small { color: var(--dr-ink) !important; font-weight: 800 !important; }
+
+/* Primary stage button: huge, yellow, one per stage. */
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-navigation-page.nr-driver-navigation-page .nr-driver-sheet-footer .nr-nav-pinned-actions .nr-nav-stage-primary {
+  width: 100% !important;
+  min-height: 58px !important;
+  border-radius: 18px !important;
+  background: var(--dr-yellow) !important;
+  color: #08295f !important;
+  font-size: 19px !important;
+  font-weight: 800 !important;
+  box-shadow: 0 8px 20px rgba(249, 196, 73, .45) !important;
+}
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-navigation-page.nr-driver-navigation-page .nr-driver-sheet-footer .nr-nav-pinned-actions .nr-nav-stage-primary:disabled { opacity: .55; box-shadow: none !important; }
+
+/* Trip details body: buttons first, then progress, then the route recap. */
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-navigation-page.nr-driver-navigation-page .biloo-driver-trip-details-body { display: flex !important; flex-direction: column !important; }
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-navigation-page.nr-driver-navigation-page .nr-nav-utility-row { order: 1; }
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-navigation-page.nr-driver-navigation-page .nr-nav-trip-progress { order: 2; }
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-navigation-page.nr-driver-navigation-page .biloo-prestige-trip-route { order: 3; }
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-navigation-page.nr-driver-navigation-page .biloo-rider-pickup-signal { order: 0; }
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-navigation-page.nr-driver-navigation-page .nr-nav-handoff { order: 4; }
+
+/* Older rules pinned Decline and Pass to separate grid rows; put them side by side. */
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-request-page.nr-driver-request-page .nr-driver-sheet-footer .nr-request-actions-secondary > .nr-request-pass { grid-row: 1 !important; grid-column: 1 !important; }
+.nr-driver-app-shell.nr-driver-app-shell .nr-driver-request-page.nr-driver-request-page .nr-driver-sheet-footer .nr-request-actions-secondary > .nr-request-decline { grid-row: 1 !important; grid-column: 2 !important; }

@@ -21,6 +21,7 @@ import "./driver-request.css";
 import "../../detail-system.css";
 import "../driver-wrapper-brand.css";
 import "../driver-sheet-pro.css";
+import "../../../components/nexride/driver-ride-sheets.css";
 
 type OfferStatus = "pending" | "accepted" | "declined" | "withdrawn" | "expired";
 
