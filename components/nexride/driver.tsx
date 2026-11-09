@@ -32,6 +32,7 @@ import "../../app/driver/driver-home-v2.css";
 import "../../app/rider-home.css";
 import "./driver-home-floating.css";
 import "./driver-home-dock-pro.css";
+import "./driver-home-shortcuts.css";
 
 export type DriverScreen = "home" | "earnings" | "map" | "profile";
 type ReviewStatus = "draft" | "pending" | "approved" | "rejected" | "suspended";
@@ -886,9 +887,9 @@ export function DriverWorkspace({
             {alertPermission === "default" && <button type="button" className="biloo-driver-dock-enable-alerts" onClick={() => void enableDriverAlerts()}><Icon name="bell" size={15} />{say("Enable ride notifications", "የጉዞ ማሳወቂያዎችን አንቃ")}</button>}
             {alertPermission === "denied" && <p className="biloo-driver-dock-permission" role="status">{say("Ride notifications are blocked in device settings.", "የጉዞ ማሳወቂያዎች በመሣሪያ ቅንብሮች ታግደዋል።")}</p>}
             <div className="biloo-driver-dock-shortcuts" aria-label={say("Driver shortcuts", "የአሽከርካሪ አቋራጮች")}>
-              <button type="button" onClick={() => router.push("/driver/activity")}><Icon name="clock" size={22}/><span>{say("Activity", "እንቅስቃሴ")}</span></button>
-              <button type="button" onClick={() => navigate("earnings")}><Icon name="wallet" size={22}/><span>{say("Earnings", "ገቢ")}</span></button>
-              <button type="button" onClick={() => router.push("/driver/profile/settings")}><Icon name="settings" size={22}/><span>{say("Settings", "ቅንብሮች")}</span></button>
+              <button type="button" data-tone="activity" onClick={() => router.push("/driver/activity")}><span className="biloo-shortcut-icon" aria-hidden="true"><Icon name="clock" size={20}/></span><span className="biloo-shortcut-label">{say("Activity", "እንቅስቃሴ")}</span></button>
+              <button type="button" data-tone="earnings" onClick={() => navigate("earnings")}><span className="biloo-shortcut-icon" aria-hidden="true"><Icon name="wallet" size={20}/></span><span className="biloo-shortcut-label">{say("Earnings", "ገቢ")}</span></button>
+              <button type="button" data-tone="settings" onClick={() => router.push("/driver/profile/settings")}><span className="biloo-shortcut-icon" aria-hidden="true"><Icon name="settings" size={20}/></span><span className="biloo-shortcut-label">{say("Settings", "ቅንብሮች")}</span></button>
             </div>
           </section>
         </div>
