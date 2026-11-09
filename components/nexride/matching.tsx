@@ -8,6 +8,7 @@ import type { Matching } from '../../lib/nexride-use-matching';
 import { elapsedLabel } from '../../lib/biloo-journey';
 import styles from './booking-interface.module.css';
 import './biloo-ride-sheets.css';
+import './biloo-matching-redesign.css';
 export function DriverMatching({ model, changeCategory, previewAssigned, home }: {
   model: Matching; changeCategory: () => void; previewAssigned: () => void; home: () => void;
 }) {
@@ -19,7 +20,14 @@ export function DriverMatching({ model, changeCategory, previewAssigned, home }:
   const status = snapshot?.status || 'searching';
   const cancelled = status === 'cancelled' || cancelSuccess;
   const degraded = !connectionLost && syncFailed;
+  const say = (en: string, am: string) => language === 'am' ? am : en;
   const title = connectionLost ? 'matchingConnection' : degraded ? 'matchingSyncProblem' : status === 'assigned' ? 'assigned' : status === 'delayed' ? 'matchingDelayed' : status === 'no_drivers' ? 'matchingEmpty' : status === 'cancelled' ? 'matchingCancelled' : 'finding';
+  const searchingState = status === 'searching' && !connectionLost && !degraded;
+  const headline = searchingState ? say('Matching you with a driver', 'ከአሽከርካሪ ጋር በማገናኘት ላይ')
+    : status === 'assigned' && !connectionLost && !degraded ? say('Your driver is on the way', 'አሽከርካሪዎ በመንገድ ላይ ነው')
+    : t(title);
+  const subtitle = searchingState ? say('Nearby drivers are being notified.', 'በአቅራቢያ ያሉ አሽከርካሪዎች እየተነገራቸው ነው።')
+    : t(connectionLost ? 'matchingConnectionNote' : degraded ? 'matchingSyncProblemNote' : status === 'assigned' ? 'matchingAcceptedNote' : status === 'no_drivers' ? 'matchingEmptyNote' : status === 'cancelled' ? 'matchingCancelledNote' : status === 'delayed' ? 'matchingDelayedNote' : 'matchingNote');
   useEffect(() => { if (status === 'assigned') heading.current?.focus(); }, [status]);
   // Close stale terms if dispatch changes while a confirmation is open.
   useEffect(() => { setConfirmVersion(null); }, [snapshot?.version]);
@@ -33,7 +41,6 @@ export function DriverMatching({ model, changeCategory, previewAssigned, home }:
   }, [searching]);
   const progress = snapshot?.progress;
   const startedAt = Date.parse(progress?.requestedAt || '');
-  const say = (en: string, am: string) => language === 'am' ? am : en;
   if (!request) return null;
   const preview = request.source === 'preview';
   const terms = snapshot?.cancellation;
@@ -59,22 +66,15 @@ export function DriverMatching({ model, changeCategory, previewAssigned, home }:
       storageKey="nexride.rider.sheet.matching"
     />
     <div className="nr-matching-body" data-radar={searching ? 'true' : undefined}>
-      {/* inDrive-style radar: rings travel outward from the pickup while we search. */}
-      {searching && <div className="biloo-radar" aria-hidden="true"><i/><i/><i/><span><Icon name="locate" size={26}/></span></div>}
-      <div className={`nr-matching-symbol ${searching ? 'searching' : ''}`} aria-hidden="true"><Icon name={status === 'assigned' || status === 'cancelled' ? 'check' : connectionLost || degraded ? 'globe' : 'locate'} size={28} /></div>
-      <header className="nr-matching-heading">
-        <span className="nr-matching-kicker">
-          {language === "am"
-            ? status === "assigned"
-              ? "አሽከርካሪ ተገኝቷል"
-              : "BILOO እየፈለገ ነው"
-            : status === "assigned"
-              ? "DRIVER MATCHED"
-              : "MATCHING YOUR RIDE"}
-        </span>
-        <h1 tabIndex={-1} ref={heading}>{t(title)}</h1>
-        <p>{t(connectionLost ? 'matchingConnectionNote' : degraded ? 'matchingSyncProblemNote' : status === 'assigned' ? 'matchingAcceptedNote' : status === 'no_drivers' ? 'matchingEmptyNote' : status === 'cancelled' ? 'matchingCancelledNote' : status === 'delayed' ? 'matchingDelayedNote' : 'matchingNote')}</p>
-      </header>
+      <div className="bm-hero">
+        {searching
+          ? <div className="bm-radar" aria-hidden="true"><i/><i/><i/><span><Icon name="locate" size={24}/></span></div>
+          : <div className="nr-matching-symbol" aria-hidden="true"><Icon name={status === 'assigned' || status === 'cancelled' ? 'check' : connectionLost || degraded ? 'globe' : 'locate'} size={28} /></div>}
+        <header className="bm-heading">
+          <h1 tabIndex={-1} ref={heading}>{headline}</h1>
+          <p>{subtitle}</p>
+        </header>
+      </div>
       {!preview && searching && status === 'delayed' && <p className="nr-match-online-wait-note" role="status">
         <Icon name="clock" size={16} />
         <span>{language === "am"
@@ -82,20 +82,19 @@ export function DriverMatching({ model, changeCategory, previewAssigned, home }:
           : "We’ll keep checking nearby drivers automatically."}</span>
       </p>}
       {!preview && status === 'no_drivers' && <p className="nr-match-online-wait-note" role="status"><Icon name="clock" size={16} /><span>{t('matchingKeepSearchingNote')}</span></p>}
-      <span className="nr-sr-only" role="status" aria-live="polite" aria-atomic="true">{t(title)}</span>
-      {searching && <div className="nr-match-progress" aria-label={t('matchingProgress')}>
-        <span><Icon name="check" size={16} />{t('matchingRequestSent')}</span><span className="nr-match-progress-line" />
-        <span><i className="nr-match-dots" aria-hidden="true"><b/><b/><b/></i>{progress?.phase === 'waiting' ? say('Waiting for driver response', 'የአሽከርካሪ ምላሽ በመጠባበቅ ላይ') : t('matchingAcceptance')}</span>
-      </div>}
-      {!preview && searching && progress && <div className="biloo-matching-live-meta" data-phase={progress.phase}>
-        {Number.isFinite(startedAt) && now >= startedAt && <span className="biloo-search-timer" role="timer" aria-label={say('Searching elapsed time', 'የፍለጋ የቆይታ ጊዜ')}>
-          <span className="biloo-search-timer-ring" aria-hidden="true">
-            <svg viewBox="0 0 52 52" focusable="false"><circle className="biloo-search-ring-track" cx="26" cy="26" r="21"/><circle className="biloo-search-ring-progress" cx="26" cy="26" r="21" style={{ strokeDashoffset: 132 - (Math.min(1, ((now - startedAt) / 1000 % 60) / 60) * 132) }}/></svg>
-            <Icon name="clock" size={19}/>
+      <span className="nr-sr-only" role="status" aria-live="polite" aria-atomic="true">{headline}</span>
+      {searching && <div className="bm-status">
+        {!preview && progress && Number.isFinite(startedAt) && now >= startedAt && <div className="bm-timer" role="timer" aria-label={say('Wait time', 'የመጠበቂያ ጊዜ')}>
+          <span className="bm-timer-ring" aria-hidden="true">
+            <svg viewBox="0 0 52 52" focusable="false"><circle className="bm-ring-track" cx="26" cy="26" r="21"/><circle className="bm-ring-progress" cx="26" cy="26" r="21" style={{ strokeDashoffset: 132 - (Math.min(1, ((now - startedAt) / 1000 % 60) / 60) * 132) }}/></svg>
+            <Icon name="clock" size={18}/>
           </span>
-          <span className="biloo-search-timer-copy"><small>{say('SEARCHING FOR YOUR DRIVER', 'አሽከርካሪ በመፈለግ ላይ')}</small><strong>{elapsedLabel((now - startedAt) / 1000)}</strong><em>{say('Time elapsed · Still searching', 'ያለፈ ጊዜ · ፍለጋው ቀጥሏል')}</em></span>
-        </span>}
-        {progress.deliveredAt && <span><Icon name="check" size={15}/>{say('Driver notified', 'አሽከርካሪው እንዲያውቅ ተደርጓል')}</span>}
+          <span className="bm-timer-copy"><small>{say('Wait time', 'የመጠበቂያ ጊዜ')}</small><strong>{elapsedLabel((now - startedAt) / 1000)}</strong><em>{say('Searching nearby', 'በአቅራቢያ በመፈለግ ላይ')}</em></span>
+        </div>}
+        <div className="bm-steps" aria-label={t('matchingProgress')}>
+          <span className="bm-step done"><Icon name="check" size={15}/>{say('Request sent', t('matchingRequestSent'))}</span>
+          <span className="bm-step"><i className="bm-dots" aria-hidden="true"><b/><b/><b/></i>{say('Driver confirmation', t('matchingAcceptance'))}</span>
+        </div>
       </div>}
       {status === 'assigned' && snapshot?.driver && <div className="nr-confirmed-driver nr-confirmed-driver-v2">
         <span className="nr-confirmed-driver-avatar"><Icon name="user" size={28}/></span>
@@ -107,15 +106,14 @@ export function DriverMatching({ model, changeCategory, previewAssigned, home }:
         </div>
         {snapshot.driver.pickupMinutes !== null && <div className="nr-confirmed-driver-eta"><small>{t('estimated')}</small><strong>{money(snapshot.driver.pickupMinutes)} {t('minutes')}</strong></div>}
       </div>}
-      <div className="nr-match-summary" aria-label={t('matchingSummary')}>
-        <div className="nr-match-place"><span className="nr-match-point"/><div><small>{t('pickup')}</small><strong>{request.journey.pickup && endpointName(request.journey.pickup, language, t)}</strong></div></div>
-        <div className="nr-match-place"><span className="nr-match-point destination"/><div><small>{t('dropoff')}</small><strong>{request.journey.destination && endpointName(request.journey.destination, language, t)}</strong></div></div>
-        {request.journey.routeState.status === 'ready' && request.journey.routeState.route && <div className="nr-match-route-meta" data-traffic={request.journey.routeState.route.traffic?.level || 'unavailable'}>
-          <span><Icon name="clock" size={15}/>{Math.max(1, Math.round(request.journey.routeState.route.durationSeconds / 60))} {t('minutes')}</span>
-          <span>{(request.journey.routeState.route.distanceMeters / 1000).toFixed(1)} {t('kilometers')}</span>
-        </div>}
-        <div className="nr-match-fare"><div><strong>{t(request.fare.category)}</strong><small>{t('cash')}</small></div><div><strong>{total !== null ? money(total) : '—'} <span>ETB</span></strong><small>{t(request.fare.priceType === 'sample' ? 'sampleFare' : request.fare.priceType === 'estimate' ? 'estimated' : 'confirmed')}</small></div></div>
-        {request.fare.charges.length > 0 && <details className="nr-match-charges"><summary>{t('matchingCharges')}</summary>{request.fare.charges.map((charge, i) => <p key={i}><span>{charge.name}</span><strong>{money(charge.amount)} ETB</strong></p>)}</details>}
+      <div className="bm-journey" aria-label={t('matchingSummary')}>
+        <div className="bm-route">
+          <div className="bm-stop"><span className="bm-dot"/><div><small>{t('pickup')}</small><strong>{request.journey.pickup && endpointName(request.journey.pickup, language, t)}</strong></div></div>
+          <div className="bm-stop"><span className="bm-dot end"/><div><small>{say('Drop-off', t('dropoff'))}</small><strong>{request.journey.destination && endpointName(request.journey.destination, language, t)}</strong></div></div>
+        </div>
+        {request.journey.routeState.status === 'ready' && request.journey.routeState.route && <p className="bm-meta" data-traffic={request.journey.routeState.route.traffic?.level || 'unavailable'}>{(request.journey.routeState.route.distanceMeters / 1000).toFixed(1)} {t('kilometers')} · {Math.max(1, Math.round(request.journey.routeState.route.durationSeconds / 60))} {t('minutes')}</p>}
+        <div className="bm-fare"><div><strong>{t(request.fare.category)}</strong><small>{t('cash')}</small></div><div><strong>{total !== null ? money(total) : '—'} <span>ETB</span></strong><small>{t(request.fare.priceType === 'sample' ? 'sampleFare' : request.fare.priceType === 'estimate' ? 'estimated' : 'confirmed')}</small></div></div>
+        {request.fare.charges.length > 0 && <details className="bm-charges"><summary>{t('matchingCharges')}</summary>{request.fare.charges.map((charge, i) => <p key={i}><span>{charge.name}</span><strong>{money(charge.amount)} ETB</strong></p>)}</details>}
       </div>
       {preview && <p className="nr-match-preview"><strong>{t('preview')}</strong> · {t('findingNote')}</p>}
       {actionFailed && <p className="nr-match-warning" role="alert">{t('matchingActionFailed')}</p>}
@@ -135,7 +133,7 @@ export function DriverMatching({ model, changeCategory, previewAssigned, home }:
         {status === 'no_drivers' && <Button variant="ghost" disabled={busy} onClick={home}>{t('home')}</Button>}
         {snapshot?.canChangeCategory && <Button variant="secondary" disabled={busy} onClick={changeCategory}>{t('matchingChangeCategory')}</Button>}
       </>}
-      {!cancelled && <Button variant="danger" className="nr-rider-cancel-button" disabled={busy || reconnecting || terms?.allowed === false} onClick={cancel}><Icon name="close" size={17} />{t(busy ? 'matchingUpdating' : 'matchingCancel')}</Button>}
+      {!cancelled && <Button variant="danger" className="nr-rider-cancel-button bm-cancel" disabled={busy || reconnecting || terms?.allowed === false} onClick={cancel}><Icon name="close" size={17} />{busy ? t('matchingUpdating') : say('Cancel booking', t('matchingCancel'))}</Button>}
       {!preview && !snapshot && <small className="nr-match-terms-note">{t('matchingTermsPending')}</small>}
     </footer>
     {confirmVersion !== null && <Dialog title={t('matchingCancelConfirm')} onClose={() => setConfirmVersion(null)}>
