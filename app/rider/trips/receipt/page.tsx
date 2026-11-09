@@ -19,6 +19,7 @@ import {
 import "../../../nexride.css";
 import "../../supporting.css";
 import "../../../detail-system.css";
+import "../../../indrive-rider.css";
 
 export default function RiderReceiptPage() {
   const router = useRouter();

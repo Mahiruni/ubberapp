@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "../../../components/nexride/ui";
 import { RiderMenu, usePersistedRiderTheme } from "../../../components/nexride/rider-menu";
+import { RiderFloatingDock } from "../../../components/nexride/rider-floating-dock";
 import { useOperationalTranslation } from "../../../components/nexride/operational-i18n";
 import { supabase } from "../../../lib/supabase";
 import { nexrideApiHeaders } from "../../../lib/nexride-api-auth";
@@ -11,6 +12,7 @@ import "../../nexride.css";
 import "../supporting.css";
 import "../../detail-system.css";
 import "../wallet-bybit-polish.css";
+import "../../indrive-rider.css";
 
 type PaymentIssue = {
   id: string;
@@ -136,7 +138,7 @@ export default function RiderWalletPage() {
   }
 
   return (
-    <main className="nr-app nr-support-page nr-wallet-page" data-theme={theme} data-mode="rider">
+    <main className="nr-app nr-support-page nr-wallet-page biloo-dock-page" data-theme={theme} data-mode="rider">
       <div className="nr-support-wrap">
         <header className="nr-support-head">
           <button className="nr-support-back" onClick={() => router.replace("/")} aria-label="Back to Biloo">
@@ -232,6 +234,7 @@ export default function RiderWalletPage() {
         )}
       </div>
       <RiderMenu active="wallet" />
+      <RiderFloatingDock active="wallet" />
     </main>
   );
 }

@@ -38,6 +38,7 @@ import { useJourney } from "../lib/nexride-journey";
 import { useRiderLocation } from "../lib/nexride-location";
 
 import { RiderMenu, type RiderMenuId } from "../components/nexride/rider-menu";
+import { RiderFloatingDock } from "../components/nexride/rider-floating-dock";
 import type { DriverScreen } from "../components/nexride/driver";
 import type { Language } from "../lib/nexride-i18n";
 import { LANGUAGE_EVENT } from "../components/nexride/language-provider";
@@ -57,6 +58,7 @@ import "./wrapper-polish.css";
 import "./precision-rider.css";
 import "./nexride-2026-tokens.css";
 import "./biloo-home-clean.css";
+import "./indrive-rider.css";
 // Only load the map engine or settings screens when they are actually rendered.
 // This keeps Mapbox/geocoder and profile tooling out of unrelated initial bundles.
 const RiderMap = dynamic(() => import("../components/nexride/rider-map").then(mod => mod.RiderMap), {
@@ -700,6 +702,16 @@ function AppWorkspace({
         )}
 
       </section>
+      {mode === "rider" && profileView && (
+        <RiderFloatingDock
+          active="account"
+          onNavigate={(tab) => {
+            if (tab === "home") setRiderScreen("home");
+            else if (tab === "activity") router.push("/rider/trips");
+            else if (tab === "wallet") router.push("/rider/wallet");
+          }}
+        />
+      )}
       {toast && (
         <div className="nr-toast" role="status">
           <Icon name="check" />

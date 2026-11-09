@@ -81,7 +81,7 @@ describe("Biloo premium Account experience", () => {
     const driverCss = source("components/nexride/driver-profile.module.css");
     const css = source("app/biloo-account-premium.css");
     expect(rider).toContain('className="biloo-account-protection-note"');
-    expect(rider).toContain("All your personal essentials, beautifully organized.");
+    expect(rider).toContain('className="ind-quick"');
     expect(driver).toContain('data-driver-account=""');
     expect(driver).toContain('say("Your account")');
     expect(driver).toContain('profile.rating === null ? "—"');

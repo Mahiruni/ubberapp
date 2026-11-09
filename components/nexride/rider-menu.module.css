@@ -121,3 +121,63 @@
 /* Shared BILOO drawer identity: product name with role beneath. */
 .brand { flex-direction: column; align-items: flex-start; justify-content: center; gap: 0; line-height: 1.1; }
 .brand small { margin-top: 3px; color: var(--muted); font-size: 11px; font-weight: 650; letter-spacing: .06em; }
+
+/* ───────── InDrive-style drawer (final layer) ───────── */
+.layer {
+  --surface: #fff; --ink: #1a1a1a; --muted: #7a7a7a; --line: #ececec;
+  --tile: #f4f4f4; --hover: #f4f4f4; --selected: #f4f4f4;
+  --accent: #1a1a1a; --gold: #c6f432;
+}
+.layer[data-theme="dark"] {
+  --surface: #1b1b1b; --ink: #fff; --muted: #a3a3a3; --line: #2c2c2c;
+  --tile: #262626; --hover: #262626; --selected: #262626;
+  --accent: #c6f432; --gold: #c6f432;
+}
+.backdrop { background: rgb(0 0 0 / 45%); backdrop-filter: none; }
+.drawer {
+  width: min(340px, 86vw); border: 0; border-radius: 0;
+  box-shadow: 8px 0 40px rgb(0 0 0 / 18%);
+  padding: calc(8px + var(--biloo-safe-top)) 0 calc(8px + var(--biloo-safe-bottom)) 0;
+}
+.header { padding: 4px 16px 0; }
+.brand strong { font-size: 18px; font-weight: 800; letter-spacing: -.03em; }
+.close { background: var(--tile); }
+.scroll { padding: 0 8px 8px; }
+.scroll > :global(.biloo-menu-profile-card) {
+  min-height: 0; margin: 4px 0 8px; padding: 12px 8px; gap: 14px;
+  border: 0; border-radius: 16px; background: transparent; color: var(--ink);
+}
+.layer[data-theme="dark"] :global(.biloo-menu-profile-card) { background: transparent; }
+.scroll > :global(.biloo-menu-profile-card) > svg { color: var(--muted); }
+.avatar {
+  flex: 0 0 64px; width: 64px; height: 64px; border: 3px solid var(--gold);
+  background: var(--tile); color: var(--ink); font-size: 20px; font-weight: 800;
+}
+.profileCopy strong { font-size: 18px; font-weight: 800; letter-spacing: -.02em; }
+.profileCopy small { color: var(--muted); font-size: 12px; }
+.sectionLabel { padding: 16px 12px 6px; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.nav { gap: 0; }
+.row { min-height: 54px; padding: 6px 10px; gap: 14px; border: 0; border-radius: 14px; }
+.row::before { display: none; }
+.icon { flex: 0 0 28px; width: 28px; height: 28px; border-radius: 0; background: transparent; color: var(--ink); }
+.copy strong { font-size: 16px; font-weight: 600; letter-spacing: -.01em; }
+.copy small { display: none; }
+.row > svg { color: var(--muted); }
+.row[aria-current="page"] { background: var(--selected); }
+.row[aria-current="page"]::before { display: none; }
+.row[aria-current="page"] .icon { background: transparent; color: var(--ink); }
+.row[aria-current="page"] .copy strong { font-weight: 800; }
+.secondary { margin-top: 10px; padding: 12px 0 0; border-top: 1px solid var(--line); }
+.drive { min-height: 56px; border: 0; border-radius: 16px; background: var(--gold); color: #111; }
+.drive .icon { background: transparent; color: #111; }
+.drive .copy small { display: block; color: #3d4a10; }
+.drive .copy strong { font-weight: 800; }
+.drive > svg { color: #111; }
+.footer { padding: 10px 16px 0; }
+.appearance { border: 0; background: var(--tile); border-radius: 999px; }
+.appearance button { width: 40px; height: 40px; border-radius: 999px; }
+.appearance button[aria-pressed="true"] { border-color: transparent; background: var(--gold); color: #111; }
+@media (hover: hover) {
+  .drive:not(:disabled):hover { background: #b7e529; }
+  .scroll > :global(.biloo-menu-profile-card):not(:disabled):hover { background: var(--hover); }
+}

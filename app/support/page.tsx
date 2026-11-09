@@ -10,6 +10,7 @@ import { supabase } from "../../lib/supabase";
 import "../nexride.css";
 import "../rider/supporting.css";
 import "../detail-system.css";
+import "../indrive-rider.css";
 
 const DRAFT_KEY = "nexride.support.draft";
 

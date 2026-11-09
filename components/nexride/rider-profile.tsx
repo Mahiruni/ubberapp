@@ -226,9 +226,7 @@ export function RiderProfile(props:Props) {
   return <section className="nr-account nr-account-v2 nr-account-standard" aria-labelledby="nr-account-title">
     <header className="nr-account-top nr-account-standard-top">
       <div>
-        <span className="nr-account-eyebrow">{say('YOUR SPACE / 05','የእርስዎ ቦታ / 05')}</span>
         <h1 id="nr-account-title" aria-label={say('Account','መለያ')}>{say('Account','መለያ')}</h1>
-        <p>{say('All your personal essentials, beautifully organized.','የግል መረጃዎ፣ ምርጫዎችዎ እና ደህንነትዎ በአንድ ቦታ።')}</p>
       </div>
     </header>
 
@@ -263,6 +261,17 @@ export function RiderProfile(props:Props) {
         ? say('Your account details are protected with secure sign-in.','የመለያዎ መረጃ በደህንነቱ በተጠበቀ መግቢያ ይጠበቃል።')
         : say('Preview details stay on this device.','የማሳያ መረጃ በዚህ መሣሪያ ላይ ይቀመጣል።')}</span>
     </div>
+
+    <div className="ind-quick" role="group" aria-label={say('Quick actions','ፈጣን እርምጃዎች')}>
+      <button type="button" onClick={props.safety}><span><Icon name="shield" size={22}/></span>{say('Safety','ደህንነት')}</button>
+      <button type="button" onClick={props.support}><span><Icon name="headphones" size={22}/></span>{say('Support','ድጋፍ')}</button>
+    </div>
+
+    <button type="button" className="ind-drive-card" onClick={props.switchDriver}>
+      <span><Icon name="navigation" size={22}/></span>
+      <span><strong>{say('Drive with Biloo','በBiloo ያሽከርክሩ')}</strong><small>{say('Earn money on your own schedule','በራስዎ ሰዓት ገቢ ያግኙ')}</small></span>
+      <Icon name="chevron" size={18}/>
+    </button>
 
     {loadError&&<div className="nr-account-inline-error" role="alert">
       <Icon name="info" size={18}/>

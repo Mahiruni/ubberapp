@@ -3,6 +3,7 @@ import "../../nexride.css";
 import "../rider-entry.css";
 import "../../auth-experience.css";
 import "../../detail-system.css";
+import "../../indrive-rider.css";
 
 export default function Page() {
   return <RiderAuthScreen mode="reset" />;

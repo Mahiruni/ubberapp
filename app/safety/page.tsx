@@ -12,6 +12,7 @@ import { NativeTripSharePanel } from "../../components/nexride/native-trip-share
 import "../nexride.css";
 import "./safety.css";
 import "../detail-system.css";
+import "../indrive-rider.css";
 
 type SafetyView = "home" | "sos" | "share" | "help" | "report";
 type SafetyRole = "rider" | "driver";
