@@ -6,6 +6,7 @@ import { elapsedLabel, freshDriverFix } from '../../lib/biloo-journey';
 import { useRouter } from 'next/navigation';
 import { PickupWaveButton } from './pickup-wave-button';
 import './accepted-driver-card.css';
+import './biloo-ride-sheets.css';
 export function AcceptedDriverCard({ snapshot, photo, photoStale, onPhotoError, tripId, safety }: {
   snapshot: TripSnapshot | null; photo: string; photoStale: boolean; onPhotoError: () => void; tripId: string; safety: () => void;
 }) {

@@ -7,6 +7,7 @@ import { fareTotal } from '../../lib/nexride-booking';
 import type { Matching } from '../../lib/nexride-use-matching';
 import { elapsedLabel } from '../../lib/biloo-journey';
 import styles from './booking-interface.module.css';
+import './biloo-ride-sheets.css';
 export function DriverMatching({ model, changeCategory, previewAssigned, home }: {
   model: Matching; changeCategory: () => void; previewAssigned: () => void; home: () => void;
 }) {
@@ -57,7 +58,9 @@ export function DriverMatching({ model, changeCategory, previewAssigned, home }:
       scrollSelector=".nr-matching-body"
       storageKey="nexride.rider.sheet.matching"
     />
-    <div className="nr-matching-body">
+    <div className="nr-matching-body" data-radar={searching ? 'true' : undefined}>
+      {/* inDrive-style radar: rings travel outward from the pickup while we search. */}
+      {searching && <div className="biloo-radar" aria-hidden="true"><i/><i/><i/><span><Icon name="locate" size={26}/></span></div>}
       <div className={`nr-matching-symbol ${searching ? 'searching' : ''}`} aria-hidden="true"><Icon name={status === 'assigned' || status === 'cancelled' ? 'check' : connectionLost || degraded ? 'globe' : 'locate'} size={28} /></div>
       <header className="nr-matching-heading">
         <span className="nr-matching-kicker">

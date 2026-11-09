@@ -1,0 +1,244 @@
+/* inDrive-style Rider sheets: "searching for a driver" and "driver on the way".
+ *
+ * Loaded after the booking / matching / accepted-driver styles. Those use many
+ * !important rules, so every rule here is scoped under `.nr-app` with a doubled
+ * class and uses !important only where it must beat them.
+ *
+ *  Searching : radar in the sheet, centred title, big elapsed timer, one compact
+ *              trip card, full-width Cancel.
+ *  Arriving  : big ETA, 3-segment progress bar, driver photo with ring,
+ *              number-plate badge, round Call / Chat / Share / Safety buttons.
+ */
+
+/* ======================= SEARCHING ======================= */
+.nr-app .nr-driver-matching.nr-driver-matching .nr-matching-body[data-radar="true"] {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  padding-top: 4px !important;
+}
+.nr-app .nr-driver-matching .nr-matching-body[data-radar="true"] > .nr-matching-symbol { display: none !important; }
+
+.biloo-radar {
+  position: relative;
+  align-self: center;
+  flex: 0 0 auto;
+  width: 132px;
+  height: 132px;
+  margin: 2px 0 4px;
+  display: grid;
+  place-items: center;
+  contain: layout paint;
+}
+.biloo-radar > i {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(0, 200, 120, .55);
+  background: radial-gradient(circle, rgba(0, 200, 120, .14), rgba(0, 200, 120, 0) 70%);
+  animation: biloo-sheet-ripple 3s cubic-bezier(.2, .6, .4, 1) infinite;
+  opacity: 0;
+}
+.biloo-radar > i:nth-child(2) { animation-delay: 1s; }
+.biloo-radar > i:nth-child(3) { animation-delay: 2s; }
+.biloo-radar > span {
+  position: relative;
+  z-index: 1;
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #f9c449;
+  color: #08295f;
+  box-shadow: 0 6px 18px rgba(8, 41, 95, .22), 0 0 0 5px #fff;
+  animation: biloo-sheet-beat 1.5s ease-in-out infinite;
+}
+@keyframes biloo-sheet-ripple {
+  0% { transform: scale(.42); opacity: .9; }
+  100% { transform: scale(1); opacity: 0; }
+}
+@keyframes biloo-sheet-beat {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.07); }
+}
+
+/* Centred title + subtitle under the radar. */
+.nr-app .nr-matching-body[data-radar="true"] .nr-matching-heading { text-align: center; }
+.nr-app .nr-matching-body[data-radar="true"] .nr-matching-heading h1 {
+  padding-right: 0 !important;
+  font-size: 22px !important;
+  margin: 2px 0 4px !important;
+}
+.nr-app .nr-matching-body[data-radar="true"] .nr-matching-heading p {
+  margin: 0 auto 8px !important;
+  max-width: 300px;
+}
+.nr-app .nr-matching-body[data-radar="true"] .nr-matching-kicker { display: none !important; }
+
+/* The three-step "request sent / waiting" row becomes a slim pulse bar. */
+.nr-app .nr-matching-body[data-radar="true"] .nr-match-progress { justify-content: center; margin-bottom: 4px !important; }
+
+/* Elapsed timer: one clear pill. */
+.nr-app .nr-matching-body[data-radar="true"] .biloo-matching-live-meta {
+  display: flex !important;
+  justify-content: center !important;
+  margin: 2px 0 10px !important;
+}
+
+/* Compact trip card: pickup + destination, fare on one line. */
+.nr-app .nr-matching-body[data-radar="true"] .nr-match-summary {
+  margin-top: 4px !important;
+  padding: 12px 14px !important;
+  border-radius: 18px !important;
+  box-shadow: 0 2px 10px rgba(8, 41, 95, .06);
+}
+.nr-app .nr-matching-body[data-radar="true"] .nr-match-place { position: relative; margin: 0 0 6px !important; min-height: 0 !important; }
+.nr-app .nr-matching-body[data-radar="true"] .nr-match-place + .nr-match-place { margin-top: 0 !important; }
+.nr-app .nr-matching-body[data-radar="true"] .nr-match-place strong {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.nr-app .nr-matching-body[data-radar="true"] .nr-match-fare strong { font-size: 17px !important; }
+
+/* Full-width Cancel, calm red outline (inDrive keeps it secondary). */
+.nr-app .nr-driver-matching.nr-driver-matching > footer .nr-rider-cancel-button {
+  width: 100% !important;
+  min-height: 48px !important;
+  border-radius: 14px !important;
+  background: transparent !important;
+  color: #c81e32 !important;
+  border: 1.5px solid #f0b4bb !important;
+}
+.nr-app[data-theme="dark"] .nr-driver-matching.nr-driver-matching > footer .nr-rider-cancel-button {
+  color: #ff9aa5 !important;
+  border-color: #7a3a43 !important;
+}
+
+/* ======================= DRIVER MATCHED (matching sheet) ======================= */
+.nr-app .nr-confirmed-driver-v2 {
+  align-items: center !important;
+  gap: 12px !important;
+  margin: 6px 0 4px !important;
+  padding: 14px !important;
+  border: 1px solid var(--booking-line, #e1e7ee) !important;
+  border-radius: 20px !important;
+  background: var(--booking-subtle, #f5f7fa) !important;
+}
+.nr-app .nr-confirmed-driver-v2 .nr-confirmed-driver-avatar {
+  width: 56px !important;
+  height: 56px !important;
+  box-shadow: 0 0 0 3px #f9c449;
+}
+.nr-app .nr-confirmed-driver-v2 .nr-confirmed-plate,
+.nr-app .nr-accepted-driver-card .nr-identity-plate {
+  display: inline-block;
+  padding: 4px 10px !important;
+  border: 2px solid #10294f !important;
+  border-radius: 8px !important;
+  background: #fff !important;
+  color: #10294f !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
+  letter-spacing: .08em !important;
+}
+.nr-app .nr-confirmed-driver-v2 .nr-confirmed-driver-eta { padding: 8px 12px; border-radius: 14px; background: #f9c449; color: #08295f; text-align: center !important; }
+.nr-app .nr-confirmed-driver-v2 .nr-confirmed-driver-eta strong { font-size: 20px !important; line-height: 1.1; color: #08295f !important; }
+.nr-app .nr-confirmed-driver-v2 .nr-confirmed-driver-eta small { color: #08295f !important; opacity: .75; }
+
+/* ======================= DRIVER ON THE WAY (trip sheet) ======================= */
+/* Big ETA chip. */
+.nr-app .nr-accepted-driver-card .nr-identity-eta {
+  min-width: 78px;
+  max-width: none !important;
+  padding: 8px 14px !important;
+  border: 0 !important;
+  border-radius: 16px !important;
+  background: #f9c449 !important;
+  color: #08295f !important;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(249, 196, 73, .45);
+}
+.nr-app .nr-accepted-driver-card .nr-identity-eta b { font-size: 30px !important; line-height: 1 !important; }
+
+/* Progress: three slim bars instead of numbered circles. */
+.nr-app .nr-accepted-driver-card .biloo-journey-progress { gap: 6px !important; margin: 14px 0 10px !important; }
+.nr-app .nr-accepted-driver-card .biloo-journey-progress li { flex-direction: column !important; align-items: stretch !important; gap: 5px !important; }
+.nr-app .nr-accepted-driver-card .biloo-journey-progress li > span {
+  width: 100% !important;
+  height: 5px !important;
+  flex: 0 0 5px !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: var(--journey-line, #e2e8ef) !important;
+  font-size: 0 !important;
+  overflow: hidden;
+  position: relative;
+}
+.nr-app .nr-accepted-driver-card .biloo-journey-progress li > span svg { display: none; }
+.nr-app .nr-accepted-driver-card .biloo-journey-progress li[data-complete="true"] > span { background: #087954 !important; }
+.nr-app .nr-accepted-driver-card .biloo-journey-progress li[aria-current="step"] > span { background: #f9c449 !important; }
+.nr-app .nr-accepted-driver-card .biloo-journey-progress li[aria-current="step"] > span::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .85), transparent);
+  transform: translateX(-100%);
+  animation: biloo-progress-sheen 1.8s ease-in-out infinite;
+}
+.nr-app .nr-accepted-driver-card .biloo-journey-progress li[aria-current="step"] small { color: var(--journey-text, #10294f); font-weight: 700; }
+@keyframes biloo-progress-sheen { to { transform: translateX(100%); } }
+
+/* Driver block. */
+.nr-app .nr-accepted-driver-card .nr-identity-driver { padding: 14px !important; border-radius: 20px !important; background: var(--journey-subtle, #f5f7fa) !important; border-color: transparent !important; }
+.nr-app .nr-accepted-driver-card .nr-identity-portrait {
+  width: 58px !important;
+  height: 58px !important;
+  flex-basis: 58px !important;
+  box-shadow: 0 0 0 3px #f9c449;
+}
+.nr-app .nr-accepted-driver-card .nr-identity-person h3 { font-size: 18px !important; }
+.nr-app .nr-accepted-driver-card .nr-identity-vehicle { align-items: center !important; }
+.nr-app .nr-accepted-driver-card .nr-identity-vehicle strong { font-size: 15px !important; }
+.nr-app .nr-accepted-driver-card .nr-identity-plate { max-width: 52%; text-align: center; }
+
+/* Round action buttons. */
+.nr-app .nr-accepted-driver-card .nr-identity-actions { gap: 4px !important; margin: 14px 0 6px !important; }
+.nr-app .nr-accepted-driver-card .nr-identity-actions button {
+  min-height: 0 !important;
+  padding: 0 !important;
+  gap: 7px !important;
+  border: 0 !important;
+  background: transparent !important;
+  font-size: 11px !important;
+  font-weight: 650;
+}
+.nr-app .nr-accepted-driver-card .nr-identity-actions button > svg {
+  box-sizing: content-box;
+  width: 22px;
+  height: 22px;
+  padding: 14px;
+  border-radius: 50%;
+  background: var(--journey-subtle, #f5f7fa);
+  box-shadow: inset 0 0 0 1px var(--journey-line, #e2e8ef);
+}
+.nr-app .nr-accepted-driver-card .nr-identity-actions button:first-child > svg {
+  background: #f9c449;
+  box-shadow: 0 4px 12px rgba(249, 196, 73, .5);
+  color: #08295f;
+}
+.nr-app .nr-accepted-driver-card .nr-identity-actions button:active > svg { transform: scale(.94); }
+.nr-app .nr-accepted-driver-card .nr-identity-actions button:first-child { background: transparent !important; color: var(--journey-text, #10294f) !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  .biloo-radar > i, .biloo-radar > span,
+  .nr-app .nr-accepted-driver-card .biloo-journey-progress li[aria-current="step"] > span::after { animation: none !important; }
+  .biloo-radar > i:first-child { opacity: .5; transform: scale(.8); }
+}
+
+/* Tighter, inDrive-like: drop the secondary label rows. */
+.nr-app .nr-matching-body[data-radar="true"] .nr-match-progress { display: none !important; }
+.nr-app .nr-accepted-driver-card .nr-identity-status > div > p { display: none !important; }
+.nr-app .nr-accepted-driver-card .nr-identity-status h2 { font-size: 22px !important; }
