@@ -61,13 +61,13 @@ export async function POST(request: Request) {
 
   const { data: existing } = await admin
     .from("payment_transactions")
-    .select("id,status,checkout_url,provider_tx_ref,amount_etb")
+    .select("id,ride_request_id,status,checkout_url,provider_tx_ref,amount_etb")
     .eq("rider_id", authorized.user.id)
     .eq("idempotency_key", idempotencyKey)
     .maybeSingle();
 
   if (existing) {
-    if (Number(existing.amount_etb) !== amount)
+    if (existing.ride_request_id !== ride.id || Number(existing.amount_etb) !== amount)
       return reply({ status: "idempotency_conflict" }, 409);
     if (existing.status === "paid")
       return reply({ status: "already_paid" }, 409);
@@ -84,7 +84,25 @@ export async function POST(request: Request) {
     }
   }
 
-  const txRef = existing?.provider_tx_ref || `nexride-${ride.id}-${randomUUID()}`;
+  // Never create a second active checkout session for the same completed ride.
+  if (!existing) {
+    const { data: activeAttempt, error: activeError } = await admin
+      .from("payment_transactions")
+      .select("id,status,checkout_url")
+      .eq("ride_request_id", ride.id)
+      .in("status", ["initialized", "pending", "paid"])
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (activeError) return reply({ status: "transaction_lookup_failed" }, 503);
+    if (activeAttempt?.status === "paid") return reply({ status: "already_paid" }, 409);
+    if (activeAttempt) return reply({
+      status: "payment_in_progress",
+      transactionId: activeAttempt.id,
+    }, 409);
+  }
+
+  const txRef = existing?.provider_tx_ref || `biloo-${ride.id}-${randomUUID()}`;
   let transactionId = existing?.id || "";
 
   if (!existing) {
@@ -136,6 +154,7 @@ export async function POST(request: Request) {
       .from("payment_transactions")
       .update({
         status: "pending",
+        provider_reference: initialized.reference,
         checkout_url: initialized.checkoutUrl,
         provider_payload: initialized.providerPayload,
         updated_at: new Date().toISOString(),
@@ -158,14 +177,8 @@ export async function POST(request: Request) {
       transactionId,
     });
   } catch {
-    await admin
-      .from("payment_transactions")
-      .update({
-        status: "failed",
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", transactionId);
-
-    return reply({ status: "provider_failed" }, 502);
+    // A timeout is not proof of failure: Chapa might have accepted the request.
+    // Keep the reserved reference until an operator/server reconciliation can verify it.
+    return reply({ status: "provider_unconfirmed", transactionId }, 202);
   }
 }

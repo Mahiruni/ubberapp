@@ -5,7 +5,7 @@ import {
   randomBytes,
 } from "node:crypto";
 
-const CHAPA_API = "https://api.chapa.co/v1";
+const CHAPA_API = "https://api.chapa.global/v2";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -27,12 +27,15 @@ const enabledFlag = () =>
 
 export function payoutConfiguration() {
   const provider = (process.env.PAYMENT_PROVIDER || "").trim().toLowerCase();
-  const providerSecret = process.env.PAYMENT_SECRET_KEY || "";
+  const providerSecret = process.env.CHAPA_SECRET_KEY || process.env.PAYMENT_SECRET_KEY || "";
+  const live = providerSecret.startsWith("CHAPA_LIVE_");
+  const sandboxAllowed = process.env.NODE_ENV !== "production" || /^(1|true|yes|on)$/i.test(process.env.BILOO_SANDBOX_PAYOUTS_ENABLED || "");
+  const keyAllowed = (providerSecret.startsWith("CHAPA_TEST_") && sandboxAllowed) || (live && /^(1|true|yes|on)$/i.test(process.env.BILOO_LIVE_PAYOUTS_APPROVED || ""));
   const encryptionSecret = process.env.PAYOUT_ENCRYPTION_KEY || "";
   const enabled =
     enabledFlag() &&
     provider === "chapa" &&
-    providerSecret.length > 0 &&
+    keyAllowed &&
     encryptionSecret.length >= 24;
 
   return { enabled, provider: enabled ? ("chapa" as const) : null };
@@ -41,7 +44,7 @@ export function payoutConfiguration() {
 function chapaSecret() {
   if (!payoutConfiguration().enabled)
     throw new Error("PAYOUTS_NOT_CONFIGURED");
-  return process.env.PAYMENT_SECRET_KEY!;
+  return process.env.CHAPA_SECRET_KEY || process.env.PAYMENT_SECRET_KEY || "";
 }
 
 function encryptionKey() {
@@ -67,10 +70,12 @@ function providerSummary(payload: unknown) {
     status: text(root?.status) || null,
     message: text(root?.message) || null,
     transferStatus: text(data?.status) || null,
-    reference:
-      text(data?.reference) ||
-      text(data?.tx_ref) ||
-      (typeof root?.data === "string" ? root.data : null),
+    reference: text(data?.chapa_reference) || text(data?.merchant_reference) ||
+      text(data?.reference) || null,
+    merchantReference: text(data?.merchant_reference) || null,
+    chapaReference: text(data?.chapa_reference) || null,
+    amount: typeof data?.amount === "number" || typeof data?.amount === "string" ? data.amount : null,
+    currency: text(data?.currency) || null,
   };
 }
 
@@ -122,6 +127,8 @@ function bankRows(payload: unknown): JsonRecord[] {
   const data = root?.data;
   if (Array.isArray(data)) return data.map(asRecord).filter(Boolean) as JsonRecord[];
   const nested = asRecord(data);
+  if (Array.isArray(nested?.items))
+    return nested.items.map(asRecord).filter(Boolean) as JsonRecord[];
   if (Array.isArray(nested?.data))
     return nested.data.map(asRecord).filter(Boolean) as JsonRecord[];
   if (Array.isArray(root?.banks))
@@ -130,7 +137,7 @@ function bankRows(payload: unknown): JsonRecord[] {
 }
 
 export async function listChapaPayoutBanks(): Promise<PayoutBank[]> {
-  const response = await fetch(CHAPA_API + "/banks", {
+  const response = await fetch(CHAPA_API + "/payouts/banks?country=ET", {
     cache: "no-store",
     signal: AbortSignal.timeout(12000),
     headers: {
@@ -144,16 +151,22 @@ export async function listChapaPayoutBanks(): Promise<PayoutBank[]> {
   const unique = new Map<string, string>();
   for (const row of bankRows(payload)) {
     const codeValue =
-      row.id ?? row.bank_code ?? row.code ?? row.slug ?? row.short_code;
+      row.bank_slug ?? row.bank_code ?? row.code ?? row.slug ?? row.short_code;
     const code =
       typeof codeValue === "number" && Number.isFinite(codeValue)
         ? String(codeValue)
         : text(codeValue);
     const name =
+      text(row.bank_name) ||
       text(row.name) ||
       text(row.bank_name) ||
       text(row.title) ||
       text(row.slug);
+    const currencies = asRecord(row.supported_currencies);
+    const etb = asRecord(currencies?.ETB);
+    const countries = asRecord(etb?.countries);
+    const et = asRecord(countries?.ET);
+    if (row.is_active === false || et?.is_enabled === false || !etb) continue;
     if (code && name && !unique.has(code)) unique.set(code, name);
   }
 
@@ -169,11 +182,7 @@ export async function initiateChapaPayout(input: {
   accountName: string;
   accountNumber: string;
 }) {
-  const bankCode = /^\d+$/.test(input.bankCode)
-    ? Number(input.bankCode)
-    : input.bankCode;
-
-  const response = await fetch(CHAPA_API + "/transfers", {
+  const response = await fetch(CHAPA_API + "/payouts", {
     method: "POST",
     cache: "no-store",
     signal: AbortSignal.timeout(15000),
@@ -181,14 +190,18 @@ export async function initiateChapaPayout(input: {
       Authorization: "Bearer " + chapaSecret(),
       "Content-Type": "application/json",
       Accept: "application/json",
+      "Idempotency-Key": input.reference,
     },
     body: JSON.stringify({
-      account_name: input.accountName,
-      account_number: input.accountNumber,
-      amount: input.amount.toFixed(2),
+      account: {
+        account_name: input.accountName,
+        account_number: input.accountNumber,
+        bank_slug: input.bankCode,
+      },
+      amount: input.amount,
       currency: "ETB",
-      reference: input.reference,
-      bank_code: bankCode,
+      merchant_reference: input.reference,
+      reason: "Biloo driver earnings settlement",
     }),
   });
 
@@ -211,12 +224,14 @@ export async function initiateChapaPayout(input: {
 
 export async function verifyChapaPayout(
   reference: string,
+  expectedAmount?: number,
+  expectedMerchantReference?: string,
 ): Promise<{
   state: PayoutProviderState;
   providerSummary: ReturnType<typeof providerSummary>;
 }> {
   const response = await fetch(
-    CHAPA_API + "/transfers/verify/" + encodeURIComponent(reference),
+    CHAPA_API + "/payouts/" + encodeURIComponent(reference) + "/verify",
     {
       cache: "no-store",
       signal: AbortSignal.timeout(12000),
@@ -234,6 +249,16 @@ export async function verifyChapaPayout(
 
   if (!response.ok)
     throw new Error("PAYOUT_VERIFICATION_UNAVAILABLE");
+
+  const amount = Number(summary.amount);
+  if (summary.currency !== "ETB" ||
+      !Number.isFinite(amount) ||
+      (expectedAmount !== undefined && Math.round(amount * 100) !== Math.round(expectedAmount * 100)) ||
+      (expectedMerchantReference && summary.merchantReference !== expectedMerchantReference) ||
+      (summary.chapaReference && reference !== summary.chapaReference &&
+       reference !== summary.merchantReference) ||
+      (!summary.chapaReference && !summary.merchantReference))
+    throw new Error("PAYOUT_VERIFICATION_MISMATCH");
 
   const raw = (summary.transferStatus || "").toLowerCase();
   const state: PayoutProviderState =

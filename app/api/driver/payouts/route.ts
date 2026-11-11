@@ -296,7 +296,7 @@ export async function POST(request: Request) {
     if (!account) return reply({ status: "payout_account_required" }, 409);
 
     const providerReference =
-      "nexride-payout-" + randomUUID();
+      "biloo-payout-" + randomUUID();
 
     const { data: reserved, error: reserveError } = await admin.rpc(
       "reserve_driver_payout_server",
@@ -339,7 +339,7 @@ export async function POST(request: Request) {
 
     if (existing) {
       try {
-        const verification = await verifyChapaPayout(reference);
+        const verification = await verifyChapaPayout(reference, payoutAmount, reference);
         if (verification.state === "paid") {
           await finalize(
             admin,
@@ -368,6 +368,8 @@ export async function POST(request: Request) {
           );
           return reply({ status: "failed", requestId }, 409);
         }
+        // Unknown status / 404 is not authorization to transmit again.
+        return reply({ status: "verification_required", requestId }, 202);
       } catch {
         return reply(
           { status: "verification_required", requestId },
@@ -447,7 +449,7 @@ export async function PATCH(request: Request) {
     const admin = serverAdminSupabase();
     let query = admin
       .from("driver_payout_requests")
-      .select("id,provider_reference,status")
+      .select("id,provider_reference,status,amount_etb")
       .eq("driver_id", authorized.user.id)
       .in("status", ["requested", "processing"])
       .order("created_at", { ascending: false })
@@ -461,7 +463,7 @@ export async function PATCH(request: Request) {
     for (const row of pending || []) {
       let verification;
       try {
-        verification = await verifyChapaPayout(row.provider_reference);
+        verification = await verifyChapaPayout(row.provider_reference, Number(row.amount_etb), row.provider_reference);
       } catch {
         continue;
       }
